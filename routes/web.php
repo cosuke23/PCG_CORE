@@ -219,26 +219,66 @@ Route::middleware(['admin.session', 'admin.audit'])->group(function () {
             ->whereNumber('id')->name('admin.messages.status');
     });
 
-    // ---- super admin + HR admin, organisation-scoped modules (App\Services\OrgScope) ----
-    Route::middleware('admin.role:super_admin,hr_admin')->group(function () {
-        // HRMIS overview (figures limited to the admin's scope)
-        Route::get('/admin/hrmis', [\App\Http\Controllers\HrmisDashboardController::class, 'index'])
-            ->name('admin.hrmis.index');
+    // ---- HRMIS modules: capability per route (App\Support\AdminPermissions),
+    //      data limited to the admin's command/unit (App\Services\OrgScope) ----
+    Route::get('/admin/hrmis', [\App\Http\Controllers\HrmisDashboardController::class, 'index'])
+        ->middleware('admin.can:personnel.view')->name('admin.hrmis.index');
 
-        // Organizational structure (view; changes are super admin only, below)
-        Route::get('/admin/organization', [\App\Http\Controllers\OrganizationController::class, 'index'])
-            ->name('admin.organization.index');
+    Route::get('/admin/organization', [\App\Http\Controllers\OrganizationController::class, 'index'])
+        ->middleware('admin.can:org.view')->name('admin.organization.index');
 
-        // Personnel master and assignments
-        Route::prefix('admin/personnel')->name('admin.personnel.')
-            ->controller(\App\Http\Controllers\PersonnelController::class)->group(function () {
+    Route::prefix('admin/personnel')->name('admin.personnel.')
+        ->controller(\App\Http\Controllers\PersonnelController::class)->group(function () {
+            Route::middleware('admin.can:personnel.view')->group(function () {
                 Route::get('/', 'index')->name('index');
+                Route::get('/{personnel}', 'show')->whereNumber('personnel')->name('show');
+            });
+            Route::middleware('admin.can:personnel.edit')->group(function () {
+                Route::get('/create', 'create')->name('create'); // new people come in through registrations
+                Route::get('/{personnel}/edit', 'edit')->whereNumber('personnel')->name('edit');
+                Route::post('/{personnel}', 'update')->whereNumber('personnel')->name('update');
+                Route::post('/{personnel}/assignments', 'assign')->whereNumber('personnel')->name('assign');
+                Route::post('/{personnel}/promotions', 'promote')->whereNumber('personnel')->name('promote');
+                Route::post('/{personnel}/trainings', 'addTraining')->whereNumber('personnel')->name('trainings.store');
+            });
+            Route::post('/{personnel}/documents', [\App\Http\Controllers\PersonnelDocumentController::class, 'store'])
+                ->middleware('admin.can:documents.upload')->whereNumber('personnel')->name('documents.store');
+        });
+
+    Route::prefix('admin/registrations')->name('admin.registrations.')
+        ->controller(\App\Http\Controllers\RegistrationController::class)->group(function () {
+            Route::middleware('admin.can:registration.review')->group(function () {
+                Route::get('/', 'index')->name('index');
+                Route::get('/{registration}', 'show')->whereNumber('registration')->name('show');
+                Route::post('/{registration}/review', 'review')->whereNumber('registration')->name('review');
+            });
+            Route::middleware('admin.can:registration.create')->group(function () {
                 Route::get('/create', 'create')->name('create');
                 Route::post('/', 'store')->name('store');
-                Route::get('/{personnel}', 'show')->whereNumber('personnel')->name('show');
-                Route::post('/{personnel}/assignments', 'assign')->whereNumber('personnel')->name('assign');
+                Route::get('/{registration}/edit', 'edit')->whereNumber('registration')->name('edit');
+                Route::post('/{registration}', 'update')->whereNumber('registration')->name('update');
+                Route::post('/{registration}/submit', 'submit')->whereNumber('registration')->name('submit');
             });
-    });
+            Route::post('/{registration}/decide', 'decide')->middleware('admin.can:registration.approve')
+                ->whereNumber('registration')->name('decide');
+        });
+
+    Route::prefix('admin/documents')->name('admin.documents.')
+        ->controller(\App\Http\Controllers\PersonnelDocumentController::class)->group(function () {
+            Route::middleware('admin.can:documents.view')->group(function () {
+                Route::get('/', 'index')->name('index');
+                Route::get('/{document}/download', 'download')->whereNumber('document')->name('download');
+            });
+            Route::post('/{document}/verify', 'verify')->middleware('admin.can:documents.verify')
+                ->whereNumber('document')->name('verify');
+        });
+
+    Route::get('/admin/reports', [\App\Http\Controllers\ReportController::class, 'index'])
+        ->middleware('admin.can:reports.view')->name('admin.reports.index');
+
+    // audit log: super admins and organisation-wide auditors
+    Route::get('/admin/accounts/audit-log', [\App\Http\Controllers\AdminAccountController::class, 'auditLog'])
+        ->middleware(['admin.can:audit.view', 'admin.orgwide'])->name('admin.accounts.audit');
 
     // ---- super admin only: organizational structure changes ----
     Route::middleware('admin.role:super_admin')->prefix('admin/organization')->name('admin.organization.')
@@ -318,7 +358,6 @@ Route::middleware(['admin.session', 'admin.audit'])->group(function () {
             Route::post('/{admin}/status', 'updateStatus')->name('status');
             Route::post('/{admin}/password', 'resetPassword')->name('password');
             Route::post('/{admin}/two-factor/reset', 'resetTwoFactor')->name('two-factor.reset');
-            Route::get('/audit-log', 'auditLog')->name('audit');
         });
 });
 

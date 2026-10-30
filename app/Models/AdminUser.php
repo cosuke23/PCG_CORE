@@ -16,6 +16,9 @@ class AdminUser extends Model
         self::ROLE_SUPER => 'Super admin — everything, incl. admin accounts and audit log',
         self::ROLE_HR => 'HR admin — registrations, HR analytics, unit accounts, training, messages',
         self::ROLE_LMS => 'LMS admin — training tracks, applications, courses, students, OSAERT',
+        'records_reviewer' => 'Records reviewer — reviews registrations and verifies documents (no approval)',
+        'records_approver' => 'Records approver — approves or rejects registrations, verifies documents, restricted documents',
+        'auditor' => 'Read-only auditor — personnel, documents list, reports and audit log; changes nothing',
     ];
 
     protected $fillable = ['name', 'email', 'password', 'role', 'org_unit_id', 'is_active'];

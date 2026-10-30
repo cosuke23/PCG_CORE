@@ -12,12 +12,14 @@ mariadb -uroot -e "DROP DATABASE IF EXISTS pcg_core_dev; CREATE DATABASE pcg_cor
 mariadb -uroot pcg_core_dev < database/dev/schema_inferred.sql
 php artisan migrate --force   # admin accounts, audit log, contact messages, indexes
 php artisan pcg:dev-seed
+php artisan pcg:personnel-sync --apply --assign-to=MEPCOM   # personnel master for the HRMIS pages
 php artisan serve --host=127.0.0.1 --port=8123
 
 node tests/e2e/crawl.js /tmp            # every page, every role: HTTP, PHP and JS errors
 node tests/e2e/flows-admin.js           # approve/reject, unit accounts, courses, students, CSV, OSAERT
 node tests/e2e/flows-users.js           # unit review, disciplinary upload, uploads, SOI save, training apply
 node tests/e2e/flow-register.js         # self-registration with a fake camera
+node tests/e2e/flow-hrmis.js            # registration -> approval -> 201 upload/verify -> promotion -> reports, scope, auditor
 ```
 
 `.env` for the run: `APP_ENV=local`, `DB_DATABASE=pcg_core_dev`. The seeder

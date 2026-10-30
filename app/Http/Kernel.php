@@ -58,6 +58,7 @@ class Kernel extends HttpKernel
         'admin.session' => \App\Http\Middleware\EnsureAdminSession::class,
         'admin.role' => \App\Http\Middleware\EnsureAdminRole::class,
         'admin.orgwide' => \App\Http\Middleware\EnsureAdminOrgWide::class,
+        'admin.can' => \App\Http\Middleware\EnsureAdminCan::class,
         'admin.audit' => \App\Http\Middleware\AuditAdminRequests::class,
         'unit.session' => \App\Http\Middleware\EnsureUnitSession::class,
         'unit.m1' => \App\Http\Middleware\EnsureUnitM1::class,

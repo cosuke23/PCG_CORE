@@ -50,6 +50,21 @@ class Personnel extends Model
         return $this->hasOne(PersonnelAssignment::class)->whereNull('end_date')->latestOfMany('start_date');
     }
 
+    public function documents()
+    {
+        return $this->hasMany(PersonnelDocument::class)->orderByDesc('is_current')->orderByDesc('id');
+    }
+
+    public function promotions()
+    {
+        return $this->hasMany(Promotion::class)->orderByDesc('effective_date')->orderByDesc('id');
+    }
+
+    public function trainings()
+    {
+        return $this->hasMany(PersonnelTraining::class)->orderByDesc('end_date')->orderByDesc('id');
+    }
+
     public function user()
     {
         return $this->belongsTo(User::class);

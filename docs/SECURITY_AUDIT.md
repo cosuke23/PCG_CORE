@@ -28,6 +28,13 @@ defence-in-depth.
 
 ---
 
+## 0b. HRMIS controls added 2026-10-31
+
+- Capability-based authorisation for every HRMIS route (`admin.can`), organisational data scope (`OrgScope`) on every personnel, registration, document and report query; out-of-scope records answer 404.
+- Four-eyes rules: a registration cannot be approved/rejected by its author or submitter; a document cannot be verified by its uploader; decisions need a personal admin account.
+- 201 documents stored outside `public/` (`PCG_DOCUMENT_ROOT`), random names, PDF/JPG/PNG only, size limit, checksum, served with `nosniff` and `no-store`; every upload/download/verification logged; medical category restricted.
+- CSV exports neutralise spreadsheet formulas; report views and exports are audited.
+
 ## 1. Findings and status
 
 ### Critical

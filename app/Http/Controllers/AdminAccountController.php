@@ -138,8 +138,8 @@ class AdminAccountController extends Controller
     /** Only HR admins can be limited to a command/unit; super and LMS admins are organisation-wide. */
     private function scopeError(string $role, $unitId): ?string
     {
-        return $unitId && $role !== AdminUser::ROLE_HR
-            ? 'Only HR admins can be limited to a command or unit. Super admins and LMS admins are organisation-wide.'
+        return $unitId && !in_array($role, \App\Support\AdminPermissions::scopableRoles(), true)
+            ? 'Super admins and LMS admins are organisation-wide and cannot be limited to a command or unit.'
             : null;
     }
 

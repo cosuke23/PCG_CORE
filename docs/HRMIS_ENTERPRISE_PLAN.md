@@ -60,11 +60,11 @@ admin_users + admin_scopes (role x org_unit subtree)
 | 1 | Organisation hierarchy: table, admin tree, add/edit/move, activate/deactivate, audit, tests | **Done** |
 | 2 | Personnel master (`personnel`, `ranks`), `pcg:personnel-sync` (dry run → apply, skips missing/shared serials) | **Done** |
 | 3 | Assignments and transfers (effective-dated, history kept, no overlaps), personnel lists per unit | **Done**. Mapping legacy `mother_unit` to subordinate units waits on D4 |
-| 4 | Organisation scope on HR admin accounts + isolation tests | **Done** (scope on `admin_users.org_unit_id`). Scoped HRMIS overview **done** (`/admin/hrmis`). Finer roles (reviewer/approver/auditor): next |
-| 5 | Registration workflow (draft/return/approve, history, duplicates) | Needs D6 (approval chain) |
-| 6 | 201 file repository (categories, versions, verification, download audit) | Private storage tool done (`pcg:move-uploads`); repository next |
-| 7 | Rank reference (done, 20 ranks, no civilians) + promotion history | Promotion history next |
-| 8 | Reports and exports (CSV/Excel, print), scoped | after 4 |
+| 4 | Organisation scope on HR admin accounts + isolation tests | **Done** (scope on `admin_users.org_unit_id`). Scoped HRMIS overview **done** (`/admin/hrmis`). Roles reviewer / approver / auditor **done** (capability matrix `App\Support\AdminPermissions`) |
+| 5 | Registration workflow (draft → submitted → returned / approved / rejected, history, duplicate checks, no self-approval) | **Done** |
+| 6 | 201 file repository: private storage, 9 configurable categories (medical restricted), versions, verification by someone other than the uploader, expiry, access log | **Done** |
+| 7 | Rank reference (20 ranks, no civilians) + promotion history (updates current rank, keeps history, no eligibility rules) | **Done** |
+| 8 | 11 reports, scoped, filters (unit, date range), pagination, CSV export (Excel), print view | **Done** |
 
 ## 5. Decisions needed from the owner
 
@@ -101,3 +101,29 @@ admin_users + admin_scopes (role x org_unit subtree)
 - `App\Services\OrgScope` filters every personnel query by the person's **current** assignment. Out-of-scope records answer 404. Unassigned records are visible organisation-wide only.
 - Scoped admins can assign only to units inside their scope (transfers to another command are done by HQ, i.e. an organisation-wide admin; policy to confirm).
 - The original MEPCOM admin pages (dashboard approvals, HR analytics, unit accounts, messages, training pages) list everyone, so they are **organisation-wide only** (`admin.orgwide` middleware; hidden from the navigation). Scoped admins also have no `/files` access until the scoped 201 module exists.
+
+## 8. Role and capability matrix (implemented; proposal to confirm against PCG procedures)
+
+| Capability | super_admin | hr_admin | records_reviewer | records_approver | auditor |
+|---|:-:|:-:|:-:|:-:|:-:|
+| View personnel, overview, reports, organisation | ✓ | ✓ | ✓ | ✓ | ✓ |
+| Edit personnel, assign/transfer, promotions, training | ✓ | ✓ | | | |
+| Prepare/submit registrations | ✓ | ✓ | | | |
+| Review (endorse / return) registrations | ✓ | ✓ | ✓ | ✓ | |
+| Approve / reject registrations (never one's own) | ✓ | ✓ | | ✓ | |
+| Upload 201 documents | ✓ | ✓ | | | |
+| Verify / reject documents (never one's own upload) | ✓ | ✓ | ✓ | ✓ | |
+| Restricted documents (medical) | ✓ | | | ✓ | |
+| Audit log | ✓ | | | | ✓ (org-wide only) |
+| Organisation changes, admin accounts | ✓ | | | | |
+
+All roles except super_admin and lms_admin can be limited to a command/unit. The matrix lives only in `app/Support/AdminPermissions.php`.
+
+## 9. Still open / needs PCG verification
+
+- Official approval chain per command (currently: one approval, any approver in scope, never the author).
+- Who may transfer between commands (currently organisation-wide admins only).
+- Which roles may see restricted (medical) documents.
+- Official MEPCOM, MSSC and MARSLEC subordinate unit lists (D4); other commands parked (D9).
+- Educational background is still kept in the personnel self-service SOI (`reinlist_academic`); it is not yet shown in the HR profile.
+- Running against the real `pcg_core` data (only possible on the owner's PC).

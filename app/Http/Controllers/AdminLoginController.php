@@ -244,8 +244,9 @@ class AdminLoginController extends Controller
             return 'admin.training-courses.index';
         }
 
-        // command/unit-scoped HR admins work in the scoped personnel module
-        return session('admin_org_unit_id') ? 'admin.hrmis.index' : 'admin.dashboard';
+        // scoped admins and the records/audit roles work in the scoped HRMIS modules
+        return session('admin_org_unit_id') || !in_array($role, [AdminUser::ROLE_SUPER, AdminUser::ROLE_HR], true)
+            ? 'admin.hrmis.index' : 'admin.dashboard';
     }
 
     public function logout(Request $request)

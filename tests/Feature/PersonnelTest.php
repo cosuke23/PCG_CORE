@@ -79,35 +79,6 @@ class PersonnelTest extends TestCase
         $this->assertEqualsCanonicalizing(['officer', 'non_officer'], Rank::distinct()->pluck('classification')->all());
     }
 
-    public function test_hr_creates_one_record_per_serial_number()
-    {
-        $this->withSession($this->hq())->post('/admin/personnel', $this->newPerson())->assertRedirect();
-
-        $p = Personnel::firstOrFail();
-        $this->assertSame('PO-12345', $p->serial_number);
-        $this->assertSame('Maria Santos', $p->full_name);
-        $this->assertSame('officer', $p->classification);
-        $this->assertSame($this->meplef->id, $p->currentAssignment->org_unit_id);
-
-        // same serial with other spacing/case is a duplicate
-        $this->withSession($this->hq())->post('/admin/personnel', $this->newPerson(['serial_number' => ' Po-12345 ', 'first_name' => 'Other']))
-            ->assertSessionHasErrors('serial_number');
-        $this->assertSame(1, Personnel::count());
-    }
-
-    public function test_same_name_needs_an_explicit_not_duplicate_confirmation()
-    {
-        $this->withSession($this->hq())->post('/admin/personnel', $this->newPerson());
-
-        $this->withSession($this->hq())->post('/admin/personnel', $this->newPerson(['serial_number' => 'NEW-1']))
-            ->assertSessionHasErrors('last_name');
-        $this->assertSame(1, Personnel::count());
-
-        $this->withSession($this->hq())->post('/admin/personnel', $this->newPerson(['serial_number' => 'NEW-1', 'confirm_not_duplicate' => 1]))
-            ->assertRedirect();
-        $this->assertSame(2, Personnel::count());
-    }
-
     public function test_mepcom_admin_sees_only_mepcom_personnel()
     {
         $ours = $this->person('MEP-1', $this->meplef, 'Ana Mepcom');
@@ -135,13 +106,11 @@ class PersonnelTest extends TestCase
             ->assertNotFound();
         $this->withSession($this->scoped($this->mepcom))->post("/admin/personnel/{$ours->id}/assignments", ['org_unit_id' => $this->mssc->id, 'start_date' => '2025-01-01'])
             ->assertSessionHasErrors('org_unit_id');
-        $this->withSession($this->scoped($this->mepcom))->post('/admin/personnel', $this->newPerson(['org_unit_id' => $this->mssc->id]))
-            ->assertSessionHasErrors('org_unit_id');
-        $this->withSession($this->scoped($this->mepcom))->post('/admin/personnel', $this->newPerson(['org_unit_id' => null]))
-            ->assertSessionHasErrors('org_unit_id');
 
         $this->assertSame(1, PersonnelAssignment::where('personnel_id', $ours->id)->count());
         $this->assertSame(2, Personnel::count());
+        // adding people directly is gone: they come in through registrations
+        $this->withSession($this->scoped($this->mepcom))->get('/admin/personnel/create')->assertRedirect(route('admin.registrations.create'));
     }
 
     public function test_transfer_closes_the_current_assignment_and_keeps_history()

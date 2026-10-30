@@ -30,6 +30,13 @@ return [
     // "selfies/<file>.png").
     'selfie_dir' => env('PCG_SELFIE_DIR') ?: public_path('selfies'),
 
+    // Private storage for the 201 file repository (personnel_documents).
+    // Never under public/; files are served only by PersonnelDocumentController.
+    'document_root' => env('PCG_DOCUMENT_ROOT') ?: storage_path('app/private/personnel-documents'),
+
+    // Upload limit for 201 documents, in kilobytes.
+    'document_max_kb' => (int) env('PCG_DOCUMENT_MAX_KB', 10240),
+
     // Reverse proxies to trust (comma-separated). Tailscale Serve: 127.0.0.1
     'trusted_proxies' => env('TRUSTED_PROXIES'),
 

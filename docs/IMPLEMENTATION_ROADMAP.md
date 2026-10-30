@@ -88,7 +88,8 @@ Last updated: 2026-10-30 · branch `claude/cool-wozniak-rni95k`
 - ✅ Checkpoints 2–4: personnel master, ranks, effective-dated assignments/transfers, `pcg:personnel-sync`, command-scoped HR admins with isolation tests
 - ✅ D7 tool: `pcg:move-uploads` (copy + verify, never deletes)
 - ✅ HRMIS overview (`/admin/hrmis`): personnel, officer/non-officer, 30-day movements, records needing attention, by unit and by rank, recent movements — all from the personnel master, limited to the admin's scope; landing page for command-scoped admins
-- ⬜ Next: reviewer/approver/auditor roles, registration workflow, 201 repository, promotion history
+- ✅ Roles (reviewer, approver, auditor) with a capability matrix; registration workflow; 201 file repository; promotions; training records; controlled editing; 11 scoped reports with CSV/print
+- ⛔ Real-data run and PCG policy confirmations: see HRMIS_ENTERPRISE_PLAN §9
 - 👤 On the PC: `git pull`, back up, `php artisan migrate`, `php artisan pcg:personnel-sync` (dry run) and send the output
 
 ## Phase 11 — Documentation ✅ (living)
@@ -115,5 +116,7 @@ Last updated: 2026-10-30 · branch `claude/cool-wozniak-rni95k`
 | 2026-10-31 | Personnel master + scope: `php artisan test` | **Passed** — 119 tests (MEPCOM-vs-MSSC isolation, transfers keep history, duplicates, sync dry-run/apply, move-uploads) |
 | 2026-10-31 | Browser: super admin creates MSSC person + transfer; MEPCOM-scoped admin sees 6/7, dashboard 403; crawl + all flows | **Passed** — crawl 51 ok (map tiles need internet), flows 25 + 16 + 2 |
 | 2026-10-31 | HRMIS overview: `php artisan test` | **Passed** — 122 tests (scoped figures, org-wide figures, empty state); browser desktop + 390 px, 0 JS/CSP errors, no horizontal scroll |
+| 2026-10-31 | HRMIS records modules: `php artisan test` | **Passed** — 144 tests (workflow, no self-approval, scope isolation, private/versioned/restricted documents, promotions, controlled edit, reports + CSV) |
+| 2026-10-31 | Browser: `flow-hrmis.js` (4 roles), crawl 76 pages × 7 roles, flows-admin/users/register | **Passed** — 18/18, 76 ok (map tiles need internet), 25 + 16 + 2 |
 | — | Real `pcg_core` data | **Blocked** — needs access on your PC |
 | — | Windows scripts, Tailscale | **Not tested** — no Windows/Tailscale in this environment |

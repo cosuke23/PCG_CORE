@@ -40,43 +40,54 @@
                 $lms = in_array($role, ['super_admin', 'lms_admin'], true);
                 $super = $role === 'super_admin';
                 $orgWide = !session('admin_org_unit_id'); // command/unit-scoped admins see scoped modules only
+                $can = fn ($c) => \App\Support\AdminPermissions::can($c);
+                $link = fn ($route, $icon, $label, $pattern) => ['href' => route($route), 'icon' => $icon, 'label' => $label, 'active' => request()->routeIs($pattern)];
             @endphp
             <nav class="pcg-nav">
-                @if ($hr)
-                    <div class="pcg-nav__section">Overview</div>
-                    @if ($orgWide)
-                    @include('layouts.partials.nav-link', ['href' => route('admin.dashboard'), 'icon' => 'gauge-high', 'label' => 'Dashboard', 'active' => request()->routeIs('admin.dashboard')])
+                @if ($can('personnel.view'))
+                    <div class="pcg-nav__section">HRMIS</div>
+                    @include('layouts.partials.nav-link', $link('admin.hrmis.index', 'chart-column', 'Overview', 'admin.hrmis.*'))
+                    @include('layouts.partials.nav-link', $link('admin.personnel.index', 'id-card', 'Personnel', 'admin.personnel.*'))
+                    @if ($can('registration.review'))
+                        @include('layouts.partials.nav-link', $link('admin.registrations.index', 'user-plus', 'Registrations', 'admin.registrations.*'))
                     @endif
-                    @include('layouts.partials.nav-link', ['href' => route('admin.hrmis.index'), 'icon' => 'chart-column', 'label' => 'HRMIS overview', 'active' => request()->routeIs('admin.hrmis.*')])
-                    @include('layouts.partials.nav-link', ['href' => route('admin.personnel.index'), 'icon' => 'id-card', 'label' => 'Personnel', 'active' => request()->routeIs('admin.personnel.*')])
-                    @include('layouts.partials.nav-link', ['href' => route('admin.organization.index'), 'icon' => 'sitemap', 'label' => 'Organization', 'active' => request()->routeIs('admin.organization.*')])
-                    @if ($orgWide)
-                    @include('layouts.partials.nav-link', ['href' => route('admin.hr-analytics'), 'icon' => 'chart-line', 'label' => 'HR analytics', 'active' => request()->routeIs('admin.hr-analytics')])
-                    @include('layouts.partials.nav-link', ['href' => route('admin.unit-users.index'), 'icon' => 'user-shield', 'label' => 'Unit accounts', 'active' => request()->routeIs('admin.unit-users.*')])
-                    @include('layouts.partials.nav-link', ['href' => route('admin.messages.index'), 'icon' => 'envelope', 'label' => 'Messages', 'active' => request()->routeIs('admin.messages.*')])
+                    @if ($can('documents.view'))
+                        @include('layouts.partials.nav-link', $link('admin.documents.index', 'folder-open', '201 documents', 'admin.documents.*'))
                     @endif
+                    @include('layouts.partials.nav-link', $link('admin.reports.index', 'table-list', 'Reports', 'admin.reports.*'))
+                    @include('layouts.partials.nav-link', $link('admin.organization.index', 'sitemap', 'Organization', 'admin.organization.*'))
                 @endif
 
-                @if ($orgWide)
-                <div class="pcg-nav__section">Training</div>
-                @include('layouts.partials.nav-link', ['href' => route('admin.training-applications.index'), 'icon' => 'file-signature', 'label' => 'Training applications', 'active' => request()->routeIs('admin.training-applications.*')])
-                @include('layouts.partials.nav-link', ['href' => route('administrative.tracks'), 'icon' => 'graduation-cap', 'label' => 'Administrative track', 'active' => request()->routeIs('administrative.tracks')])
-                @include('layouts.partials.nav-link', ['href' => route('operation_tracks.index'), 'icon' => 'ship', 'label' => 'Operational track', 'active' => request()->routeIs('operation_tracks.*')])
-                @include('layouts.partials.nav-link', ['href' => route('personnel.administrative.training'), 'icon' => 'user-graduate', 'label' => 'Administrative training', 'active' => request()->routeIs('personnel.administrative.training')])
-                @include('layouts.partials.nav-link', ['href' => route('personnel.operational.training'), 'icon' => 'anchor', 'label' => 'Operational training', 'active' => request()->routeIs('personnel.operational.training')])
+                @if ($hr && $orgWide)
+                    <div class="pcg-nav__section">MEPCOM registrations</div>
+                    @include('layouts.partials.nav-link', $link('admin.dashboard', 'gauge-high', 'Self-registrations', 'admin.dashboard'))
+                    @include('layouts.partials.nav-link', $link('admin.hr-analytics', 'chart-line', 'HR analytics', 'admin.hr-analytics'))
+                    @include('layouts.partials.nav-link', $link('admin.unit-users.index', 'user-shield', 'Unit accounts', 'admin.unit-users.*'))
+                    @include('layouts.partials.nav-link', $link('admin.messages.index', 'envelope', 'Messages', 'admin.messages.*'))
+                @endif
+
+                @if (($hr || $lms) && $orgWide)
+                    <div class="pcg-nav__section">Training</div>
+                    @include('layouts.partials.nav-link', $link('admin.training-applications.index', 'file-signature', 'Training applications', 'admin.training-applications.*'))
+                    @include('layouts.partials.nav-link', $link('administrative.tracks', 'graduation-cap', 'Administrative track', 'administrative.tracks'))
+                    @include('layouts.partials.nav-link', $link('operation_tracks.index', 'ship', 'Operational track', 'operation_tracks.*'))
+                    @include('layouts.partials.nav-link', $link('personnel.administrative.training', 'user-graduate', 'Administrative training', 'personnel.administrative.training'))
+                    @include('layouts.partials.nav-link', $link('personnel.operational.training', 'anchor', 'Operational training', 'personnel.operational.training'))
                 @endif
 
                 @if ($lms)
                     <div class="pcg-nav__section">MEPTDI LMS</div>
                     @include('layouts.partials.nav-link', ['href' => route('admin.training-courses.index'), 'icon' => 'book-open', 'label' => 'Training courses', 'active' => request()->routeIs('admin.training-courses.*') || request()->routeIs('training-courses.students.*')])
-                    @include('layouts.partials.nav-link', ['href' => route('admin.osaert.index'), 'icon' => 'water', 'label' => 'OSAERT trainees', 'active' => request()->routeIs('admin.osaert.index')])
-                    @include('layouts.partials.nav-link', ['href' => route('admin.osaert.certificates'), 'icon' => 'certificate', 'label' => 'OSAERT certificates', 'active' => request()->routeIs('admin.osaert.certificates')])
+                    @include('layouts.partials.nav-link', $link('admin.osaert.index', 'water', 'OSAERT trainees', 'admin.osaert.index'))
+                    @include('layouts.partials.nav-link', $link('admin.osaert.certificates', 'certificate', 'OSAERT certificates', 'admin.osaert.certificates'))
                 @endif
 
-                @if ($super)
+                @if ($super || ($can('audit.view') && $orgWide))
                     <div class="pcg-nav__section">Security</div>
-                    @include('layouts.partials.nav-link', ['href' => route('admin.accounts.index'), 'icon' => 'users-gear', 'label' => 'Admin accounts', 'active' => request()->routeIs('admin.accounts.index')])
-                    @include('layouts.partials.nav-link', ['href' => route('admin.accounts.audit'), 'icon' => 'clipboard-list', 'label' => 'Audit log', 'active' => request()->routeIs('admin.accounts.audit')])
+                    @if ($super)
+                        @include('layouts.partials.nav-link', $link('admin.accounts.index', 'users-gear', 'Admin accounts', 'admin.accounts.index'))
+                    @endif
+                    @include('layouts.partials.nav-link', $link('admin.accounts.audit', 'clipboard-list', 'Audit log', 'admin.accounts.audit'))
                 @endif
             </nav>
         </aside>
