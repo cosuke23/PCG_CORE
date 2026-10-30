@@ -11,6 +11,7 @@ composer install
 php artisan test              # in-memory SQLite (phpunit.xml) — never the real DB
 php artisan pcg:check         # read-only env/DB/folder health check
 php artisan pcg:hash-password # bcrypt hash for ADMIN_PASSWORD_HASH
+php artisan pcg:mail-test you@example.com  # send a test email, show active MAIL_* settings (password hidden)
 php artisan pcg:dev-seed      # sample data; refuses unless APP_ENV=local and DB name ends in _dev
 php artisan pcg:create-admin  # create an admin account (2FA set up at first sign-in)
 php artisan pcg:personnel-sync [--apply] [--assign-to=MEPCOM] [--map-units=database/data/mepcom_units.json]  # copy approved registrations into the personnel master (dry run by default)
