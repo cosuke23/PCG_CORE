@@ -10,7 +10,6 @@ use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\TempRegistrationController;
 use App\Http\Controllers\ApplicantDocumentController;
-use App\Http\Controllers\FaceVerificationController;
 
 use App\Http\Controllers\AdminController;
 use App\Http\Controllers\AdminLoginController;
@@ -52,6 +51,8 @@ use App\Http\Controllers\OsaertController;
 | Removed in the security hardening (they pointed at missing controller
 | methods and always returned HTTP 500):
 |   /services, /decision/submit, /meptdi-lms, GET /applicant/training/apply
+| Face verification (/face-verify...) removed 2026-10-30: never linked,
+| never finished; restore from git history (commit 88f19be) if needed.
 |
 */
 
@@ -64,7 +65,10 @@ use App\Http\Controllers\OsaertController;
 
 Route::get('/', [PageController::class, 'home'])->name('home');
 Route::get('/about', [PageController::class, 'about'])->name('about');
-Route::get('/contact', [PageController::class, 'contact'])->name('contact');
+Route::get('/contact', [\App\Http\Controllers\ContactController::class, 'show'])->name('contact');
+Route::post('/contact', [\App\Http\Controllers\ContactController::class, 'store'])
+    ->middleware('throttle:contact')
+    ->name('contact.store');
 
 Route::get('/institutes/meptdi', function () {
     return view('pages.meptdi');
@@ -73,7 +77,7 @@ Route::get('/institutes/meptdi', function () {
 // Public OSAERT certificate verification
 // Public OSAERT certificate verification (QR codes on printed certificates
 // link to /osaert/verify/{id}). Throttled to slow down enumeration.
-Route::middleware('throttle:60,1')->group(function () {
+Route::middleware('throttle:public-verify')->group(function () {
     Route::get('/osaert/verify', [OsaertController::class, 'verify'])
         ->name('osaert.verify');
     Route::get('/osaert/verify/{trainee}', [OsaertController::class, 'verifyCertificate'])
@@ -97,12 +101,12 @@ Route::get('/files/{path}', [\App\Http\Controllers\FileController::class, 'show'
 Route::get('/register', [RegisterController::class, 'showRegistrationForm'])
     ->name('register');
 Route::post('/register.submit', [RegisterController::class, 'register'])
-    ->middleware('throttle:10,1')
+    ->middleware('throttle:register')
     ->name('register.submit');
 
 Route::get('/login', [LoginController::class, 'showLoginForm'])->name('login');
 Route::post('/login', [LoginController::class, 'login'])
-    ->middleware('throttle:10,1')
+    ->middleware('throttle:login')
     ->name('login.store');
 
 Route::post('/logout', [LoginController::class, 'logout'])->name('logout');
@@ -133,12 +137,6 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/upload-201', [ApplicantDocumentController::class, 'store_201'])
         ->name('upload.201.store');
 
-    Route::get('/face-verify', [FaceVerificationController::class, 'showFaceVerification'])
-        ->name('face.verify');
-    Route::get('/applicant/{id}/face-verify', [FaceVerificationController::class, 'showFaceVerification'])
-        ->name('face.verify.applicant');
-    Route::post('/applicant/face-verify/result', [FaceVerificationController::class, 'saveResult'])
-        ->name('face.verify.result');
 
     // Multi-step profile (SOI) form
     Route::post('/temp-save/step1', [TempRegistrationController::class, 'saveStep1'])->name('temp.save.step1');
@@ -171,7 +169,7 @@ Route::middleware(['auth'])->group(function () {
 
 Route::get('/admin/login', [AdminLoginController::class, 'showLogin'])->name('admin.login');
 Route::post('/admin/login', [AdminLoginController::class, 'login'])
-    ->middleware('throttle:5,1')
+    ->middleware('throttle:admin-login')
     ->name('admin.login.submit');
 Route::post('/admin/logout', [AdminLoginController::class, 'logout'])->name('admin.logout');
 // Sidebar links use GET
@@ -180,9 +178,9 @@ Route::get('/admin/logout', [AdminController::class, 'logout'])->name('admin.log
 // Two-factor sign-in (after the password, before the admin session exists)
 Route::prefix('admin/two-factor')->name('admin.two-factor.')->group(function () {
     Route::get('/setup', [AdminLoginController::class, 'showSetup'])->name('setup');
-    Route::post('/setup', [AdminLoginController::class, 'confirmSetup'])->middleware('throttle:10,1')->name('setup.confirm');
+    Route::post('/setup', [AdminLoginController::class, 'confirmSetup'])->middleware('throttle:two-factor')->name('setup.confirm');
     Route::get('/challenge', [AdminLoginController::class, 'showChallenge'])->name('challenge');
-    Route::post('/challenge', [AdminLoginController::class, 'verifyChallenge'])->middleware('throttle:5,1')->name('challenge.verify');
+    Route::post('/challenge', [AdminLoginController::class, 'verifyChallenge'])->middleware('throttle:two-factor')->name('challenge.verify');
     Route::get('/recovery-codes', [AdminLoginController::class, 'showRecoveryCodes'])->name('recovery-codes');
 });
 
@@ -214,6 +212,11 @@ Route::middleware(['admin.session', 'admin.audit'])->group(function () {
             ->whereNumber('id')->name('admin.unit-users.role');
         Route::post('/admin/unit-users/{id}/status', [\App\Http\Controllers\UnitAccountController::class, 'updateStatus'])
             ->whereNumber('id')->name('admin.unit-users.status');
+
+        // Contact messages
+        Route::get('/admin/messages', [\App\Http\Controllers\ContactController::class, 'index'])->name('admin.messages.index');
+        Route::post('/admin/messages/{id}/status', [\App\Http\Controllers\ContactController::class, 'updateStatus'])
+            ->whereNumber('id')->name('admin.messages.status');
     });
 
     // ---- all admin roles: training tracks and applications ----
@@ -298,9 +301,9 @@ Route::middleware(['admin.session', 'admin.audit'])->group(function () {
 */
 
 Route::get('/unit/login', [UnitUserController::class, 'loginForm']);
-Route::post('/unit/login', [UnitUserController::class, 'login'])->middleware('throttle:10,1');
+Route::post('/unit/login', [UnitUserController::class, 'login'])->middleware('throttle:unit-login');
 Route::get('/unit/loginM1', [UnitUserController::class, 'loginFormM1']);
-Route::post('/unit/loginM1', [UnitUserController::class, 'loginM1'])->middleware('throttle:10,1');
+Route::post('/unit/loginM1', [UnitUserController::class, 'loginM1'])->middleware('throttle:unit-login');
 Route::get('/unit/logout', [UnitUserController::class, 'logout']);
 
 Route::middleware(['unit.session'])->group(function () {

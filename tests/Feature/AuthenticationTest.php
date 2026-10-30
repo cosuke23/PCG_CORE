@@ -232,4 +232,27 @@ class AuthenticationTest extends TestCase
             ->assertSee('Invalid email, password, or inactive account.')
             ->assertSee('value="unit@example.test"', false);
     }
+
+    /**
+     * Throttled routes used to share one per-IP counter, so failed personnel
+     * logins locked out the admin login. Each limiter now counts separately.
+     */
+    public function test_rate_limits_are_separate_per_login_form()
+    {
+        for ($i = 0; $i < 6; $i++) {
+            $this->post('/login', ['email' => "user$i@example.test", 'password' => 'wrong']);
+        }
+
+        $this->post('/admin/login', ['email' => 'admin@example.test', 'password' => 'correct-horse-battery'])
+            ->assertRedirect(route('admin.dashboard'));
+    }
+
+    public function test_admin_login_is_throttled_per_email()
+    {
+        for ($i = 0; $i < 5; $i++) {
+            $this->post('/admin/login', ['email' => 'admin@example.test', 'password' => 'wrong'])->assertStatus(302);
+        }
+
+        $this->post('/admin/login', ['email' => 'admin@example.test', 'password' => 'wrong'])->assertStatus(429);
+    }
 }

@@ -132,6 +132,17 @@ async function step(name, fn) {
     check('Registration page loads', true);
   });
 
+  await step('Guest sends a contact message', async () => {
+    const c = await login(browser, null);
+    await c.goto(BASE + '/contact');
+    await c.fill('#name', 'Flow Visitor'); await c.fill('#email', 'visitor@demo.test');
+    await c.fill('#message', 'Flow test: how do I reset my password?');
+    await Promise.all([c.waitForNavigation(), c.click('button:has-text("Send message")')]);
+    const n = sql("select count(*) from contact_messages where email='visitor@demo.test'");
+    check('Guest sends a contact message', n === '1' && (await c.content()).includes('Thank you'), `rows=${n}`);
+    check('No JS errors (contact)', c.jsErrors.length === 0, c.jsErrors.join(' | '));
+  });
+
   await browser.close();
   for (const r of results) console.log(r.join('  '));
 })().catch(e => { console.error('CRASH', e.message); for (const r of results) console.log(r.join('  ')); process.exit(1); });

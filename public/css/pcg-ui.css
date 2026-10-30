@@ -1107,3 +1107,26 @@ select.pcg-input {
     font-size: var(--pcg-text-base);
     letter-spacing: 0.06em;
 }
+
+/* --------------------------------------- pcg-ui inside the public layout */
+.pcg-public {
+    background: transparent;
+    padding: 7.5rem var(--pcg-space-4) var(--pcg-space-12);
+}
+
+.pcg-public__inner {
+    max-width: 680px;
+    margin: 0 auto;
+}
+
+.pcg .pcg-public__title {
+    margin: 0 0 var(--pcg-space-1);
+    font-size: var(--pcg-text-2xl);
+    font-weight: 700;
+    color: var(--pcg-navy-900);
+}
+
+textarea.pcg-input {
+    min-height: 140px;
+    resize: vertical;
+}
