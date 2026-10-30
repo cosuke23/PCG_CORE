@@ -1226,3 +1226,7 @@ textarea.pcg-input {
 .pcg-mb {
     margin-bottom: var(--pcg-space-6);
 }
+
+.pcg-stat--warning { border-top-color: var(--pcg-gold-500); }
+.pcg-stat--success { border-top-color: var(--pcg-success-700); }
+.pcg-stat--danger { border-top-color: var(--pcg-danger-700); }

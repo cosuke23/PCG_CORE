@@ -19,16 +19,30 @@
         @include('admin.partials.lms-menu')
 
         <!-- ================= MAIN ================= -->
-        <main class="flex-1 p-10">
+        <main class="flex-1 p-6">
             {{-- Unit accounts are managed on their own page (Admin → Unit accounts). --}}
-            <h2 class="text-3xl font-bold mb-6 text-center">Admin Dashboard</h2>
-
             <!-- SUMMARY -->
-            <div class="grid grid-cols-4 gap-4 mb-6">
-                <div class="bg-blue-600 text-white p-4 rounded">Total<br>{{ $totalUsers }}</div>
-                <div class="bg-yellow-500 text-white p-4 rounded">Pending<br>{{ $pendingUsers->count() }}</div>
-                <div class="bg-green-600 text-white p-4 rounded">Approved<br>{{ $approvedUsers }}</div>
-                <div class="bg-red-600 text-white p-4 rounded">Rejected<br>{{ $rejectedUsers }}</div>
+            <div class="pcg-stats">
+                <div class="pcg-stat">
+                    <span class="pcg-stat__label">Registered personnel</span>
+                    <span class="pcg-stat__value">{{ $totalUsers }}</span>
+                    <span class="pcg-stat__hint">all accounts</span>
+                </div>
+                <div class="pcg-stat pcg-stat--warning">
+                    <span class="pcg-stat__label">Pending approval</span>
+                    <span class="pcg-stat__value">{{ $pendingUsers->count() }}</span>
+                    <span class="pcg-stat__hint">double-click a row below to approve or reject</span>
+                </div>
+                <div class="pcg-stat pcg-stat--success">
+                    <span class="pcg-stat__label">Approved</span>
+                    <span class="pcg-stat__value">{{ $approvedUsers }}</span>
+                    <span class="pcg-stat__hint">can sign in</span>
+                </div>
+                <div class="pcg-stat pcg-stat--danger">
+                    <span class="pcg-stat__label">Rejected</span>
+                    <span class="pcg-stat__value">{{ $rejectedUsers }}</span>
+                    <span class="pcg-stat__hint">cannot sign in</span>
+                </div>
             </div>
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
 
