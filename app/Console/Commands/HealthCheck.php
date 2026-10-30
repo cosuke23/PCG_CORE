@@ -25,6 +25,12 @@ class HealthCheck extends Command
         $this->check('PHP 8.3+ recommended (8.2 security support ends 2026-12-31; verified on 8.5.12)', version_compare(PHP_VERSION, '8.3.0', '>='), 'warn');
         $this->check('APP_KEY is set', (bool) config('app.key'));
         $this->check('APP_DEBUG is off', !config('app.debug'), 'warn');
+        if (config('pcg.admin.two_factor', 'email') === 'email') {
+            $mailer = config('mail.default');
+            $this->check("Admin sign-in codes are emailed (MAIL_MAILER={$mailer}" . (in_array($mailer, ['log', 'array'], true) ? ': codes only go to storage/logs/laravel.log' : '') . ')',
+                !in_array($mailer, ['log', 'array'], true), 'warn');
+            $this->check('MAIL_FROM_ADDRESS is set', (bool) config('mail.from.address') && config('mail.from.address') !== 'hello@example.com', 'warn');
+        }
         $this->check('ADMIN_EMAIL and ADMIN_PASSWORD_HASH are set (setup admin, only until an admin account exists)',
             config('pcg.admin.email') && str_starts_with((string) config('pcg.admin.password_hash'), '$2y$'), 'warn');
 

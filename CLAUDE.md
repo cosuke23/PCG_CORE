@@ -29,7 +29,7 @@ Browser end-to-end checks against a `pcg_core_dev` database: `tests/e2e/README.m
 
 ## Architecture (actual)
 - Routes: `routes/web.php`, grouped by audience:
-  public · applicant (`auth`, `users` table) · unit checker (`unit.session`, `unit_users`; M1/all-units pages add `unit.m1`, role `m1_checker`) · admin (`admin.session` + `admin.audit` + `admin.role:...`; accounts in `admin_users` with roles super_admin / hr_admin / lms_admin and mandatory TOTP 2FA; the `.env` admin only works while no account exists). Login forms use the named rate limiters in RouteServiceProvider (never `throttle:N,M`, which shares one counter per IP).
+  public · applicant (`auth`, `users` table) · unit checker (`unit.session`, `unit_users`; M1/all-units pages add `unit.m1`, role `m1_checker`) · admin (`admin.session` + `admin.audit` + `admin.role:...`; accounts in `admin_users` with roles (see AdminPermissions) and mandatory 2FA: one-time email code by default (`PCG_ADMIN_2FA=email`, needs MAIL_*), or authenticator app (`totp`); the `.env` admin only works while no account exists). Login forms use the named rate limiters in RouteServiceProvider (never `throttle:N,M`, which shares one counter per IP).
   Every new non-public route MUST be inside the right group; add it to `tests/Feature/AccessControlTest.php`.
 - Controllers in `app/Http/Controllers` talk to the DB directly (mostly `DB::table`); ~30 tables have no model.
 - Join key across tables: `serial_number`. For applicant writes always take it from `$request->user()`, never from input.

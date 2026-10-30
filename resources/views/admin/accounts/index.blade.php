@@ -66,7 +66,9 @@
                                             @if (!$admin->is_active)
                                                 <span class="pcg-badge">Inactive</span>
                                             @endif
-                                            @if ($admin->hasTwoFactor())
+                                            @if (\App\Support\EmailLoginCode::enabled())
+                                                <span class="pcg-badge pcg-badge--success">Email code at sign-in</span>
+                                            @elseif ($admin->hasTwoFactor())
                                                 <span class="pcg-badge pcg-badge--success">2FA on</span>
                                             @else
                                                 <span class="pcg-badge pcg-badge--warning">2FA at next sign-in</span>

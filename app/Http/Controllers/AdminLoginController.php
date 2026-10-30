@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\AdminUser;
 use App\Support\AdminAudit;
+use App\Support\EmailLoginCode;
 use App\Support\Totp;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
@@ -66,6 +67,18 @@ class AdminLoginController extends Controller
         $request->session()->regenerate();
         session(['admin_2fa_user_id' => $admin->id]);
 
+        if (EmailLoginCode::enabled()) {
+            if (!EmailLoginCode::issue($admin)) {
+                session()->forget('admin_2fa_user_id');
+
+                return back()->withInput($request->only('email'))
+                    ->withErrors(['email' => 'The sign-in code could not be emailed. Check the mail settings (MAIL_*) in .env, then try again.']);
+            }
+            AdminAudit::record('two_factor.email_sent', $admin->email, [], null, $admin->email);
+
+            return redirect()->route('admin.two-factor.challenge');
+        }
+
         return redirect()->route($admin->hasTwoFactor() ? 'admin.two-factor.challenge' : 'admin.two-factor.setup');
     }
 
@@ -125,6 +138,9 @@ class AdminLoginController extends Controller
         if (!$admin) {
             return redirect()->route('admin.login');
         }
+        if (EmailLoginCode::enabled()) {
+            return redirect()->route('admin.two-factor.challenge'); // no app to set up
+        }
         if ($admin->hasTwoFactor()) {
             return redirect()->route('admin.two-factor.challenge');
         }
@@ -141,6 +157,9 @@ class AdminLoginController extends Controller
 
     public function confirmSetup(Request $request)
     {
+        if (EmailLoginCode::enabled()) {
+            return redirect()->route('admin.two-factor.challenge');
+        }
         $request->validate(['code' => 'required|string']);
 
         $admin = $this->pendingAdmin();
@@ -174,6 +193,13 @@ class AdminLoginController extends Controller
         if (!$admin) {
             return redirect()->route('admin.login');
         }
+        if (EmailLoginCode::enabled()) {
+            return view('admin.two-factor.email', [
+                'maskedEmail' => EmailLoginCode::masked($admin->email),
+                'minutes' => (int) config('pcg.admin.email_code_minutes', 10),
+                'hasRecovery' => $admin->recoveryCodesLeft() > 0,
+            ]);
+        }
         if (!$admin->hasTwoFactor()) {
             return redirect()->route('admin.two-factor.setup');
         }
@@ -186,6 +212,9 @@ class AdminLoginController extends Controller
         $request->validate(['code' => 'required|string|max:32']);
 
         $admin = $this->pendingAdmin();
+        if ($admin && EmailLoginCode::enabled()) {
+            return $this->verifyEmailCode($request, $admin);
+        }
         if (!$admin || !$admin->hasTwoFactor()) {
             return redirect()->route('admin.login');
         }
@@ -208,6 +237,43 @@ class AdminLoginController extends Controller
         $this->completeLogin($request, $admin);
 
         return redirect()->intended(route(self::homeRoute($admin->role)));
+    }
+
+    private function verifyEmailCode(Request $request, AdminUser $admin)
+    {
+        $input = trim($request->code);
+
+        // recovery codes (if the account has any) still work, e.g. when email is down
+        if (strlen(preg_replace('/\s+/', '', $input)) > 6 && $admin->useRecoveryCode($input)) {
+            AdminAudit::record('two_factor.recovery_code_used', $admin->email, ['left' => $admin->recoveryCodesLeft()], null, $admin->email);
+            EmailLoginCode::forget();
+        } elseif ($error = EmailLoginCode::check($admin, $input)) {
+            AdminAudit::record('two_factor.failed', $admin->email, ['method' => 'email'], null, $admin->email);
+
+            return back()->withErrors(['code' => $error]);
+        }
+
+        $this->completeLogin($request, $admin);
+
+        return redirect()->intended(route(self::homeRoute($admin->role)));
+    }
+
+    /** Sends a new email code (at most once a minute). */
+    public function resendCode()
+    {
+        $admin = $this->pendingAdmin();
+        if (!$admin || !EmailLoginCode::enabled()) {
+            return redirect()->route('admin.login');
+        }
+        if ($wait = EmailLoginCode::secondsUntilResend()) {
+            return back()->withErrors(['code' => "Please wait {$wait} seconds before requesting another code."]);
+        }
+        if (!EmailLoginCode::issue($admin)) {
+            return back()->withErrors(['code' => 'The code could not be emailed. Check the mail settings (MAIL_*) in .env.']);
+        }
+        AdminAudit::record('two_factor.email_sent', $admin->email, ['resend' => true], null, $admin->email);
+
+        return back()->with('success', 'A new code was sent. Earlier codes no longer work.');
     }
 
     public function showRecoveryCodes()
