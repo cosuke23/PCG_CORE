@@ -83,6 +83,10 @@ Last updated: 2026-10-30 · branch `claude/cool-wozniak-rni95k`
 - ✅ Funnel (public) helper `scripts/windows/tailscale-funnel.ps1` + `server.php` upload block under `artisan serve` (owner chose public access 2026-10-30)
 - 👤 Run `tailscale-funnel.ps1 on` on the PC (script not executed here: no Windows/PowerShell)
 
+## Enterprise HRMIS (Functional Commands) — see `docs/HRMIS_ENTERPRISE_PLAN.md`
+- ✅ Checkpoint 1: organisational hierarchy (`org_units`, Admin → Organization; tree, add/edit/move, activate/deactivate, cycle and duplicate-code checks, audited; 7 tests; browser-checked desktop + mobile)
+- 🔒 Checkpoints 2–8 wait on decisions D1–D9
+
 ## Phase 11 — Documentation ✅ (living)
 
 ## Test results log
@@ -103,5 +107,6 @@ Last updated: 2026-10-30 · branch `claude/cool-wozniak-rni95k`
 | 2026-10-30 | Apache: direct requests to `documents_toupload/`, `201_files/`, `selfies/` | **Passed** — 403; `/files/...` requires sign-in; `/.env` 404 |
 | 2026-10-30 | Training tables migration on a schema copy missing 6 of 7 tables | **Passed** — creates the 6, leaves the existing one, re-run no-op, rollback keeps a table with data |
 | 2026-10-30 | Browser flows through the new `server.php` router (fresh dev DB) | **Passed** — 25 admin, 16 user, 2 registration; upload folders 404 (incl. `..`, `%5C`, case tricks), assets 200 |
+| 2026-10-31 | Organisation module: `php artisan test` | **Passed** — 102 tests (7 new); MariaDB migrate OK; browser add-unit + confirm dialog, 0 JS/CSP errors |
 | — | Real `pcg_core` data | **Blocked** — needs access on your PC |
 | — | Windows scripts, Tailscale | **Not tested** — no Windows/Tailscale in this environment |

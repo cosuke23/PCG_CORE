@@ -217,7 +217,19 @@ Route::middleware(['admin.session', 'admin.audit'])->group(function () {
         Route::get('/admin/messages', [\App\Http\Controllers\ContactController::class, 'index'])->name('admin.messages.index');
         Route::post('/admin/messages/{id}/status', [\App\Http\Controllers\ContactController::class, 'updateStatus'])
             ->whereNumber('id')->name('admin.messages.status');
+
+        // Organizational structure (view; changes are super admin only, below)
+        Route::get('/admin/organization', [\App\Http\Controllers\OrganizationController::class, 'index'])
+            ->name('admin.organization.index');
     });
+
+    // ---- super admin only: organizational structure changes ----
+    Route::middleware('admin.role:super_admin')->prefix('admin/organization')->name('admin.organization.')
+        ->controller(\App\Http\Controllers\OrganizationController::class)->group(function () {
+            Route::post('/', 'store')->name('store');
+            Route::post('/{unit}', 'update')->whereNumber('unit')->name('update');
+            Route::post('/{unit}/status', 'status')->whereNumber('unit')->name('status');
+        });
 
     // ---- all admin roles: training tracks and applications ----
     Route::middleware('admin.role:super_admin,hr_admin,lms_admin')->group(function () {

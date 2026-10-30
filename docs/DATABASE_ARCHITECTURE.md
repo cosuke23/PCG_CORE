@@ -108,6 +108,7 @@ run inside a transaction, so a failed insert rolls back the delete.
 | `2026_10_30_000003_add_lookup_indexes` | indexes on `serial_number`, `personnel_id`, `applicant_id`, `course_id`, etc. — only where missing, skipping TEXT columns | drops only `pcg_idx_*` indexes it created |
 | `2026_10_30_000004_create_contact_messages_table` | `contact_messages` | drops the table |
 | `2026_10_30_000005_create_missing_training_tables` | `administrative_tracks`, `operation_tracks`, `rank_equivalencies`, `training_applications`, `training_courses`, `course_students`, `osaert_trainees` — **only those missing** (some `pcg_core` copies have none of them); existing tables untouched | drops only tables it created (comment `pcg:000005`) and only while empty |
+| `2026_10_31_000001_create_org_units_table` | `org_units` (PCG hierarchy; seeds NHQ-PCG + MSSC, MEPCOM, MARSLEC) | drops the table only while it holds just the 4 seeded units; otherwise refuses |
 
 Procedure on your PC:
 

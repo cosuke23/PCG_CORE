@@ -105,6 +105,16 @@
         }, true); // capture: "error" does not bubble
     });
 
+    // Confirmation for consequential actions: <button data-pcg-confirm="Question?">
+    document.addEventListener('submit', function (e) {
+        var submitter = e.submitter;
+        var question = submitter && submitter.getAttribute('data-pcg-confirm');
+        if (question && !window.confirm(question)) {
+            e.preventDefault();
+            e.stopImmediatePropagation();
+        }
+    }, true);
+
     // Restore the button when the page is shown again from the back/forward cache.
     window.addEventListener('pageshow', function () {
         document.querySelectorAll('form[data-pcg-busy] [type="submit"][aria-busy="true"]').forEach(function (submit) {

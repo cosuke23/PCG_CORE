@@ -30,6 +30,10 @@ class AccessControlTest extends TestCase
             ['post', '/training-courses/1/students/import-csv'],
             ['get', '/admin/osaert'],
             ['post', '/admin/osaert/bulk-upload'],
+            ['get', '/admin/organization'],
+            ['post', '/admin/organization'],
+            ['post', '/admin/organization/1'],
+            ['post', '/admin/organization/1/status'],
         ];
     }
 

@@ -44,6 +44,7 @@
                 @if ($hr)
                     <div class="pcg-nav__section">Overview</div>
                     @include('layouts.partials.nav-link', ['href' => route('admin.dashboard'), 'icon' => 'gauge-high', 'label' => 'Dashboard', 'active' => request()->routeIs('admin.dashboard')])
+                    @include('layouts.partials.nav-link', ['href' => route('admin.organization.index'), 'icon' => 'sitemap', 'label' => 'Organization', 'active' => request()->routeIs('admin.organization.*')])
                     @include('layouts.partials.nav-link', ['href' => route('admin.hr-analytics'), 'icon' => 'chart-line', 'label' => 'HR analytics', 'active' => request()->routeIs('admin.hr-analytics')])
                     @include('layouts.partials.nav-link', ['href' => route('admin.unit-users.index'), 'icon' => 'user-shield', 'label' => 'Unit accounts', 'active' => request()->routeIs('admin.unit-users.*')])
                     @include('layouts.partials.nav-link', ['href' => route('admin.messages.index'), 'icon' => 'envelope', 'label' => 'Messages', 'active' => request()->routeIs('admin.messages.*')])

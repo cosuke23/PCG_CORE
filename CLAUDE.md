@@ -3,7 +3,7 @@
 Laravel **12** monolith (PHP ≥ 8.2; verified on 8.5.12 — target version, Blade, MySQL/MariaDB database `pcg_core`; upgraded from 9.52 keeping the Laravel 9 directory structure — Http/Kernel, RouteServiceProvider, config/*.php)
 for the PCG Maritime Environmental Protection Command: personnel registration,
 SOI profile, document review, 201 files, training tracks, MEPTDI LMS, OSAERT.
-Read `docs/` before larger changes; `docs/IMPLEMENTATION_ROADMAP.md` is the progress checklist — update it.
+Read `docs/` before larger changes (enterprise HRMIS plan + open decisions: `docs/HRMIS_ENTERPRISE_PLAN.md`; org hierarchy lives in `org_units` / `App\Models\OrgUnit` — never hardcode commands/units); `docs/IMPLEMENTATION_ROADMAP.md` is the progress checklist — update it.
 
 ## Commands
 ```bash

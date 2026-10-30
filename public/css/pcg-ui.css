@@ -1230,3 +1230,53 @@ textarea.pcg-input {
 .pcg-stat--warning { border-top-color: var(--pcg-gold-500); }
 .pcg-stat--success { border-top-color: var(--pcg-success-700); }
 .pcg-stat--danger { border-top-color: var(--pcg-danger-700); }
+
+/* ------------------------------------------------- layout helpers */
+.pcg-stack { display: grid; gap: var(--pcg-space-6); align-content: start; }
+.pcg-mt { margin-top: var(--pcg-space-4); }
+
+/* ------------------------------------------------- organisation tree */
+.pcg-tree { margin: 0; }
+.pcg-tree__list { list-style: none; margin: 0; padding: 0; }
+.pcg-tree__list .pcg-tree__list {
+    margin-left: var(--pcg-space-4);
+    padding-left: var(--pcg-space-4);
+    border-left: 1px solid var(--pcg-gray-200);
+}
+.pcg-tree__item { margin: 2px 0; }
+.pcg-tree__branch > summary {
+    display: flex;
+    align-items: center;
+    gap: var(--pcg-space-2);
+    cursor: pointer;
+    list-style: none;
+}
+.pcg-tree__branch > summary::-webkit-details-marker { display: none; }
+.pcg-tree__branch > summary::before {
+    content: "\25B8";
+    width: 1rem;
+    flex: none;
+    color: var(--pcg-text-muted);
+    transition: transform .15s;
+}
+.pcg-tree__branch[open] > summary::before { transform: rotate(90deg); }
+.pcg-tree__leaf { padding-left: calc(1rem + var(--pcg-space-2)); }
+.pcg-tree__label {
+    display: inline-flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--pcg-space-2);
+    padding: var(--pcg-space-1) var(--pcg-space-2);
+    border-radius: var(--pcg-radius);
+    color: var(--pcg-text);
+    text-decoration: none;
+    font-size: var(--pcg-text-sm);
+}
+.pcg-tree__label:hover, .pcg-tree__label:focus-visible { background: var(--pcg-gray-100); }
+.pcg-tree__label.is-selected { background: var(--pcg-info-50); outline: 1px solid var(--pcg-info-700); }
+.pcg-tree__label.is-inactive { opacity: .65; }
+.pcg-tree__label span:not(.pcg-badge) { color: var(--pcg-text-muted); }
+
+.pcg-disclosure > summary { list-style: none; }
+.pcg-disclosure > summary::-webkit-details-marker { display: none; }
+.pcg-disclosure[open] > summary { margin-bottom: var(--pcg-space-4); }
