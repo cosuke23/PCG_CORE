@@ -231,6 +231,7 @@ class AdminLoginController extends Controller
             'admin_email'     => $admin->email,
             'admin_name'      => $admin->name,
             'admin_role'      => $admin->role,
+            'admin_org_unit_id' => $admin->org_unit_id,
         ]);
 
         $admin->forceFill(['last_login_at' => now(), 'last_login_ip' => $request->ip()])->save();
@@ -239,13 +240,18 @@ class AdminLoginController extends Controller
 
     public static function homeRoute(?string $role): string
     {
-        return $role === AdminUser::ROLE_LMS ? 'admin.training-courses.index' : 'admin.dashboard';
+        if ($role === AdminUser::ROLE_LMS) {
+            return 'admin.training-courses.index';
+        }
+
+        // command/unit-scoped HR admins work in the scoped personnel module
+        return session('admin_org_unit_id') ? 'admin.personnel.index' : 'admin.dashboard';
     }
 
     public function logout(Request $request)
     {
         AdminAudit::record('logout');
-        session()->forget(['admin_logged_in', 'admin_user_id', 'admin_email', 'admin_name', 'admin_role', 'admin_bootstrap', 'admin_2fa_user_id']);
+        session()->forget(['admin_logged_in', 'admin_user_id', 'admin_email', 'admin_name', 'admin_role', 'admin_org_unit_id', 'admin_bootstrap', 'admin_2fa_user_id']);
         $request->session()->regenerateToken();
 
         return redirect()->route('admin.login')->with('success', 'Admin logged out successfully');

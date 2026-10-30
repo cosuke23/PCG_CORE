@@ -58,7 +58,8 @@ class FileController extends Controller
         }
 
         $session = $request->session();
-        $isAdmin = (bool) $session->get('admin_logged_in');
+        // command/unit-scoped admins have no file access until the scoped 201 module exists
+        $isAdmin = (bool) $session->get('admin_logged_in') && !$session->get('admin_org_unit_id');
         $isM1 = $session->has('unit_user_id') && $session->get('unit_role') === \App\Models\UnitUser::ROLE_M1;
         $isUnit = $session->has('unit_user_id') && !$isM1;
 

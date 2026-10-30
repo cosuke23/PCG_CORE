@@ -1280,3 +1280,30 @@ textarea.pcg-input {
 .pcg-disclosure > summary { list-style: none; }
 .pcg-disclosure > summary::-webkit-details-marker { display: none; }
 .pcg-disclosure[open] > summary { margin-bottom: var(--pcg-space-4); }
+
+/* ------------------------------------------------- filters, form grid, pagination */
+.pcg-filters {
+    display: grid;
+    gap: var(--pcg-space-4);
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    align-items: end;
+}
+.pcg-filters .pcg-field { margin: 0; }
+.pcg-filters__actions { display: flex; gap: var(--pcg-space-2); }
+.pcg-form-grid {
+    display: grid;
+    gap: 0 var(--pcg-space-4);
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+}
+.pcg-check { display: flex; gap: var(--pcg-space-2); align-items: flex-start; font-size: var(--pcg-text-sm); }
+.pcg-btn--ghost { background: transparent; border-color: transparent; color: var(--pcg-text-muted); }
+.pcg-btn--ghost:hover { color: var(--pcg-text); }
+.pcg-pagination { display: flex; align-items: center; justify-content: space-between; gap: var(--pcg-space-3); }
+.pcg-pagination__info { font-size: var(--pcg-text-sm); color: var(--pcg-text-muted); }
+.pcg-pagination [aria-disabled="true"] { opacity: .5; pointer-events: none; }
+
+/* buttons rendered as links keep their own colours (".pcg a" would win otherwise) */
+.pcg a.pcg-btn--primary,
+.pcg a.pcg-btn--primary:hover { color: var(--pcg-white); text-decoration: none; }
+.pcg a.pcg-btn--secondary,
+.pcg a.pcg-btn--ghost { text-decoration: none; }

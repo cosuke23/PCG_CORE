@@ -109,6 +109,7 @@ run inside a transaction, so a failed insert rolls back the delete.
 | `2026_10_30_000004_create_contact_messages_table` | `contact_messages` | drops the table |
 | `2026_10_30_000005_create_missing_training_tables` | `administrative_tracks`, `operation_tracks`, `rank_equivalencies`, `training_applications`, `training_courses`, `course_students`, `osaert_trainees` — **only those missing** (some `pcg_core` copies have none of them); existing tables untouched | drops only tables it created (comment `pcg:000005`) and only while empty |
 | `2026_10_31_000001_create_org_units_table` | `org_units` (PCG hierarchy; seeds NHQ-PCG + MSSC, MEPCOM, MARSLEC) | drops the table only while it holds just the 4 seeded units; otherwise refuses |
+| `2026_10_31_000002_create_personnel_master_tables` | `ranks` (20 seeded), `personnel` (serial UNIQUE, link `user_id` UNIQUE), `personnel_assignments` (effective-dated), `admin_users.org_unit_id` | refuses while `personnel`/`personnel_assignments` hold rows; otherwise drops the three tables and the column |
 
 Procedure on your PC:
 

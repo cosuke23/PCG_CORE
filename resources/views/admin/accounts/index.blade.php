@@ -30,7 +30,7 @@
                             <thead>
                                 <tr>
                                     <th scope="col">Name</th>
-                                    <th scope="col">Role</th>
+                                    <th scope="col">Role and scope</th>
                                     <th scope="col">Security</th>
                                     <th scope="col">Actions</th>
                                 </tr>
@@ -50,6 +50,13 @@
                                                 <select class="pcg-input pcg-input--sm" id="role-{{ $admin->id }}" name="role">
                                                     @foreach (array_keys($roles) as $role)
                                                         <option value="{{ $role }}" @selected($admin->role === $role)>{{ str_replace('_', ' ', $role) }}</option>
+                                                    @endforeach
+                                                </select>
+                                                <label class="pcg-visually-hidden" for="scope-{{ $admin->id }}">Access scope of {{ $admin->email }}</label>
+                                                <select class="pcg-input pcg-input--sm" id="scope-{{ $admin->id }}" name="org_unit_id">
+                                                    <option value="">All of PCG</option>
+                                                    @foreach ($units as $unit)
+                                                        <option value="{{ $unit->id }}" @selected((int) $admin->org_unit_id === (int) $unit->id)>{{ str_repeat('— ', $unit->depth) }}{{ $unit->code }} only</option>
                                                     @endforeach
                                                 </select>
                                                 <button type="submit" class="pcg-btn pcg-btn--secondary pcg-btn--sm">Save</button>
@@ -118,6 +125,16 @@
                                 </label>
                             @endforeach
                         </fieldset>
+                        <div class="pcg-field">
+                            <label class="pcg-label" for="org_unit_id">Access scope</label>
+                            <select class="pcg-input" id="org_unit_id" name="org_unit_id">
+                                <option value="">All of PCG (organisation-wide)</option>
+                                @foreach ($units as $unit)
+                                    <option value="{{ $unit->id }}" @selected((string) old('org_unit_id') === (string) $unit->id)>{{ str_repeat('— ', $unit->depth) }}{{ $unit->code }} and its units only</option>
+                                @endforeach
+                            </select>
+                            <p class="pcg-help">HR admins only. A command HR admin (e.g. MEPCOM) sees and manages only personnel assigned there.</p>
+                        </div>
                         <div class="pcg-field">
                             <label class="pcg-label" for="password">Temporary password</label>
                             <input class="pcg-input" type="password" id="password" name="password" minlength="12" required autocomplete="new-password">

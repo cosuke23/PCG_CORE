@@ -18,8 +18,9 @@ class AdminAccountController extends Controller
     public function index()
     {
         return view('admin.accounts.index', [
-            'admins' => AdminUser::orderBy('name')->get(),
+            'admins' => AdminUser::with('orgUnit')->orderBy('name')->get(),
             'roles' => AdminUser::ROLES,
+            'units' => \App\Models\OrgUnit::flatTree()->where('is_active', true)->values(),
         ]);
     }
 
@@ -30,7 +31,11 @@ class AdminAccountController extends Controller
             'email' => 'required|email|max:255|unique:admin_users,email',
             'role' => ['required', Rule::in(array_keys(AdminUser::ROLES))],
             'password' => ['required', Password::min(12)],
+            'org_unit_id' => $this->scopeRule(),
         ]);
+        if ($error = $this->scopeError($data['role'], $data['org_unit_id'] ?? null)) {
+            return back()->withInput()->withErrors(['org_unit_id' => $error]);
+        }
 
         $wasBootstrap = !AdminLoginController::accountsEnabled();
 
@@ -39,6 +44,7 @@ class AdminAccountController extends Controller
             'email' => strtolower($data['email']),
             'password' => Hash::make($data['password']),
             'role' => $data['role'],
+            'org_unit_id' => $data['org_unit_id'] ?? null,
             'is_active' => true,
         ]);
 
@@ -52,15 +58,22 @@ class AdminAccountController extends Controller
 
     public function updateRole(Request $request, AdminUser $admin)
     {
-        $request->validate(['role' => ['required', Rule::in(array_keys(AdminUser::ROLES))]]);
+        $request->validate([
+            'role' => ['required', Rule::in(array_keys(AdminUser::ROLES))],
+            'org_unit_id' => $this->scopeRule(),
+        ]);
+        $scope = $request->input('org_unit_id') ?: null;
+        if ($error = $this->scopeError($request->role, $scope)) {
+            return back()->with('error', $error);
+        }
 
         if ($admin->role === AdminUser::ROLE_SUPER && $request->role !== AdminUser::ROLE_SUPER && $this->activeSupers() <= 1) {
             return back()->with('error', 'There must be at least one active super admin.');
         }
 
-        $admin->update(['role' => $request->role]);
+        $admin->update(['role' => $request->role, 'org_unit_id' => $scope]);
 
-        return back()->with('success', "Role of {$admin->email} changed.");
+        return back()->with('success', "Access of {$admin->email} changed. It applies from their next page load.");
     }
 
     public function updateStatus(Request $request, AdminUser $admin)
@@ -115,6 +128,19 @@ class AdminAccountController extends Controller
             'entries' => $query->paginate(50)->withQueryString(),
             'filters' => $request->only('action', 'admin'),
         ]);
+    }
+
+    private function scopeRule(): array
+    {
+        return ['nullable', 'integer', Rule::exists('org_units', 'id')->where('is_active', true)];
+    }
+
+    /** Only HR admins can be limited to a command/unit; super and LMS admins are organisation-wide. */
+    private function scopeError(string $role, $unitId): ?string
+    {
+        return $unitId && $role !== AdminUser::ROLE_HR
+            ? 'Only HR admins can be limited to a command or unit. Super admins and LMS admins are organisation-wide.'
+            : null;
     }
 
     private function activeSupers(): int

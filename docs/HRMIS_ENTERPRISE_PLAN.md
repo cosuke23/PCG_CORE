@@ -58,12 +58,12 @@ admin_users + admin_scopes (role x org_unit subtree)
 | # | Checkpoint | Status |
 |---|-----------|--------|
 | 1 | Organisation hierarchy: table, admin tree, add/edit/move, activate/deactivate, audit, tests | **Done** |
-| 2 | Personnel master + duplicate-serial report (read-only) + backfill command (dry-run first) | Needs decisions D2, D3 |
-| 3 | Assignments and transfers (effective-dated), personnel lists per unit, map legacy `mother_unit` text to units | Needs D4 |
-| 4 | Organisation-scoped admin roles + isolation tests; scoped dashboard | Needs D5 (changes admin authorisation) |
+| 2 | Personnel master (`personnel`, `ranks`), `pcg:personnel-sync` (dry run → apply, skips missing/shared serials) | **Done** |
+| 3 | Assignments and transfers (effective-dated, history kept, no overlaps), personnel lists per unit | **Done**. Mapping legacy `mother_unit` to subordinate units waits on D4 |
+| 4 | Organisation scope on HR admin accounts + isolation tests | **Done** (scope on `admin_users.org_unit_id`). Finer roles (reviewer/approver/auditor) and a scoped dashboard: next |
 | 5 | Registration workflow (draft/return/approve, history, duplicates) | Needs D6 (approval chain) |
-| 6 | 201 file repository (categories, versions, verification, private storage, download audit) | Needs D7 |
-| 7 | Rank reference + promotion history | Needs D8 |
+| 6 | 201 file repository (categories, versions, verification, download audit) | Private storage tool done (`pcg:move-uploads`); repository next |
+| 7 | Rank reference (done, 20 ranks, no civilians) + promotion history | Promotion history next |
 | 8 | Reports and exports (CSV/Excel, print), scoped | after 4 |
 
 ## 5. Decisions needed from the owner
@@ -79,3 +79,25 @@ admin_users + admin_scopes (role x org_unit subtree)
 | D7 | Move existing uploaded files out of `public/` into private storage (production data move). | Yes, after a backup (SECURITY_AUDIT A7). |
 | D8 | Official rank list and order, including civilian/non-uniformed personnel, if any. | Start from the ranks already in the registration form. |
 | D9 | Should the other 23 commands from the chart be added now as inactive or placeholder records? | Add them as records only (no workflows), once you confirm the chart is current. |
+
+## 6. Owner decisions (2026-10-31)
+
+| ID | Answer |
+|----|--------|
+| D1 | Canonical copy: `C:\Users\HRPC\Desktop\PCG_HRMIS` (this repository). |
+| D2 | Not answered explicitly; proceeded with the recommendation (new `personnel` table, `users` stays the login). Additive only. |
+| D3 | The serial number is the unique identifier (`personnel.serial_number` UNIQUE; compared trimmed and case-insensitively). |
+| D4 | MSSC and MARSLEC unit lists: on standby. MEPCOM list import: not answered, not imported. |
+| D5 | Approved. Implemented: HR admins can be limited to a command/unit; super and LMS admins stay organisation-wide. |
+| D6 | Approved: single approval, no self-approval, until the official chain is provided. |
+| D7 | Approved. `php artisan pcg:move-uploads` copies (never moves or deletes) the files; the owner switches `PCG_UPLOAD_ROOT` after checking. |
+| D8 | No civilian personnel. Ranks: the 20 uniformed ranks from the registration form. |
+| D9 | Parked. |
+
+## 7. How organisational scope works (implemented)
+
+- `admin_users.org_unit_id` NULL = organisation-wide; set = that unit and everything below it. Only `hr_admin` accounts can be scoped.
+- The admin session re-reads role, scope and active status on every request (`EnsureAdminSession`): changes apply immediately, deactivated admins are signed out.
+- `App\Services\OrgScope` filters every personnel query by the person's **current** assignment. Out-of-scope records answer 404. Unassigned records are visible organisation-wide only.
+- Scoped admins can assign only to units inside their scope (transfers to another command are done by HQ, i.e. an organisation-wide admin; policy to confirm).
+- The original MEPCOM admin pages (dashboard approvals, HR analytics, unit accounts, messages, training pages) list everyone, so they are **organisation-wide only** (`admin.orgwide` middleware; hidden from the navigation). Scoped admins also have no `/files` access until the scoped 201 module exists.

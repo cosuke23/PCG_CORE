@@ -18,7 +18,13 @@ class AdminUser extends Model
         self::ROLE_LMS => 'LMS admin — training tracks, applications, courses, students, OSAERT',
     ];
 
-    protected $fillable = ['name', 'email', 'password', 'role', 'is_active'];
+    protected $fillable = ['name', 'email', 'password', 'role', 'org_unit_id', 'is_active'];
+
+    /** Organisational scope (HR admins only). NULL = organisation-wide. */
+    public function orgUnit()
+    {
+        return $this->belongsTo(OrgUnit::class, 'org_unit_id');
+    }
 
     protected $hidden = ['password', 'two_factor_secret', 'two_factor_recovery_codes'];
 

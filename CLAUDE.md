@@ -13,6 +13,8 @@ php artisan pcg:check         # read-only env/DB/folder health check
 php artisan pcg:hash-password # bcrypt hash for ADMIN_PASSWORD_HASH
 php artisan pcg:dev-seed      # sample data; refuses unless APP_ENV=local and DB name ends in _dev
 php artisan pcg:create-admin  # create an admin account (2FA set up at first sign-in)
+php artisan pcg:personnel-sync [--apply] [--assign-to=MEPCOM]  # copy approved registrations into the personnel master (dry run by default)
+php artisan pcg:move-uploads [--apply]  # copy uploads out of public/ into private storage (never deletes)
 php artisan migrate           # additive pcg migrations only (back up first)
 npm run build:css             # only after adding a Tailwind class not used anywhere yet
 php artisan route:list
@@ -33,6 +35,7 @@ Browser end-to-end checks against a `pcg_core_dev` database: `tests/e2e/README.m
 - Project config: `config/pcg.php` (admin creds, `upload_root`, `selfie_dir`, `trusted_proxies`). No hardcoded paths/URLs/credentials.
 - Uploaded files live under `config('pcg.upload_root')` (default `public/`); link them with `App\Support\Uploads::url()` (served by `FileController` at `/files/{path}` after an access check — never link upload folders directly).
 - Views: Blade. Admin pages extend `layouts/admin` (app shell; nav lives there — never add sidebars to pages); sign-in and public verification pages extend `layouts/auth`; unit pages are standalone and include `unit/partials/nav`. Assets are self-hosted: `public/vendor/*` (pinned, see its README) and `public/css/tailwind.css` compiled from the views (`tailwind.config.js`). No CDNs. Vite is unused. Many links are root-absolute (`/profile`), so the app must be served at the root of a host/port with `public/` as document root.
+- Personnel master: `personnel` (serial_number UNIQUE) + `personnel_assignments` (effective-dated; transfers close the current row, never edit history). Admin org scope: `admin_users.org_unit_id`; every personnel query goes through `App\Services\OrgScope`; pages that list everyone need `admin.orgwide`.
 - Own-unit checkers may only act on personnel with `users.mother_unit = session('unit_name')`; M1 checkers and admins see all. Keep `UnitDocumentController::review` and `FileController` consistent with that.
 
 ## Database safety (strict)

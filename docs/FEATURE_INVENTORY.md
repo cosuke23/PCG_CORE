@@ -67,6 +67,8 @@ Status key: **Verified** = passed the browser checks on the dev database ·
 | Admin accounts (super admin) | `/admin/accounts` | **New.** Create, change role, reset password / 2FA, activate/deactivate; safeguards for the last super admin. Verified |
 | Audit log (super admin) | `/admin/accounts/audit-log` | **New.** Sign-ins, failures, every admin change. Verified |
 | Organization (super admin edits, HR admin views) | `/admin/organization` | **New.** Database-driven PCG hierarchy (HQ → command → office → unit → section), effective dates, activate/deactivate (never delete), audited. Seeded: NHQ-PCG, MSSC, MEPCOM, MARSLEC. Verified |
+| Personnel master (super/HR admin, scoped) | `/admin/personnel` | **New.** One record per serial number; list with search/filters, profile, add (duplicate checks), assign/transfer with history; limited to the admin's command/unit. Verified |
+| Admin access scope | `/admin/accounts` | **New.** HR admins can be limited to one command/unit (e.g. MEPCOM). Verified |
 | Messages (super/HR admin) | `/admin/messages` | **New.** Contact-form inbox. Verified |
 | Dashboard: approve / reject registrations | `/admin/dashboard` (double-click a row) | Verified. **Fixed: there was no Reject button**; registrant data escaped (stored XSS); password hashes no longer embedded in the page |
 | Unit accounts (new) | `/admin/unit-users` | Verified: create, set password, grant/remove M1, activate/deactivate |

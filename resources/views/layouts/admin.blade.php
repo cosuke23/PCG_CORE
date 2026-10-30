@@ -39,23 +39,31 @@
                 $hr = in_array($role, ['super_admin', 'hr_admin'], true);
                 $lms = in_array($role, ['super_admin', 'lms_admin'], true);
                 $super = $role === 'super_admin';
+                $orgWide = !session('admin_org_unit_id'); // command/unit-scoped admins see scoped modules only
             @endphp
             <nav class="pcg-nav">
                 @if ($hr)
                     <div class="pcg-nav__section">Overview</div>
+                    @if ($orgWide)
                     @include('layouts.partials.nav-link', ['href' => route('admin.dashboard'), 'icon' => 'gauge-high', 'label' => 'Dashboard', 'active' => request()->routeIs('admin.dashboard')])
+                    @endif
+                    @include('layouts.partials.nav-link', ['href' => route('admin.personnel.index'), 'icon' => 'id-card', 'label' => 'Personnel', 'active' => request()->routeIs('admin.personnel.*')])
                     @include('layouts.partials.nav-link', ['href' => route('admin.organization.index'), 'icon' => 'sitemap', 'label' => 'Organization', 'active' => request()->routeIs('admin.organization.*')])
+                    @if ($orgWide)
                     @include('layouts.partials.nav-link', ['href' => route('admin.hr-analytics'), 'icon' => 'chart-line', 'label' => 'HR analytics', 'active' => request()->routeIs('admin.hr-analytics')])
                     @include('layouts.partials.nav-link', ['href' => route('admin.unit-users.index'), 'icon' => 'user-shield', 'label' => 'Unit accounts', 'active' => request()->routeIs('admin.unit-users.*')])
                     @include('layouts.partials.nav-link', ['href' => route('admin.messages.index'), 'icon' => 'envelope', 'label' => 'Messages', 'active' => request()->routeIs('admin.messages.*')])
+                    @endif
                 @endif
 
+                @if ($orgWide)
                 <div class="pcg-nav__section">Training</div>
                 @include('layouts.partials.nav-link', ['href' => route('admin.training-applications.index'), 'icon' => 'file-signature', 'label' => 'Training applications', 'active' => request()->routeIs('admin.training-applications.*')])
                 @include('layouts.partials.nav-link', ['href' => route('administrative.tracks'), 'icon' => 'graduation-cap', 'label' => 'Administrative track', 'active' => request()->routeIs('administrative.tracks')])
                 @include('layouts.partials.nav-link', ['href' => route('operation_tracks.index'), 'icon' => 'ship', 'label' => 'Operational track', 'active' => request()->routeIs('operation_tracks.*')])
                 @include('layouts.partials.nav-link', ['href' => route('personnel.administrative.training'), 'icon' => 'user-graduate', 'label' => 'Administrative training', 'active' => request()->routeIs('personnel.administrative.training')])
                 @include('layouts.partials.nav-link', ['href' => route('personnel.operational.training'), 'icon' => 'anchor', 'label' => 'Operational training', 'active' => request()->routeIs('personnel.operational.training')])
+                @endif
 
                 @if ($lms)
                     <div class="pcg-nav__section">MEPTDI LMS</div>
@@ -82,7 +90,7 @@
                 <h1 class="pcg-topbar__title">@yield('title', 'Admin')</h1>
                 <div class="pcg-topbar__user">
                     <span>Signed in as <strong>{{ session('admin_name') ?: session('admin_email', 'Administrator') }}</strong>
-                        · {{ str_replace('_', ' ', session('admin_role', 'admin')) }}</span>
+                        · {{ str_replace('_', ' ', session('admin_role', 'admin')) }}{{ session('admin_org_unit_id') ? ' · ' . \App\Models\OrgUnit::whereKey(session('admin_org_unit_id'))->value('code') : '' }}</span>
                     <form action="{{ route('admin.logout') }}" method="POST">
                         @csrf
                         <button type="submit" class="pcg-btn pcg-btn--secondary pcg-btn--sm">

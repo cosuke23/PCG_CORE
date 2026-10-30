@@ -192,8 +192,8 @@ Route::prefix('admin/two-factor')->name('admin.two-factor.')->group(function () 
 */
 Route::middleware(['admin.session', 'admin.audit'])->group(function () {
 
-    // ---- super admin + HR admin ----
-    Route::middleware('admin.role:super_admin,hr_admin')->group(function () {
+    // ---- super admin + HR admin, organisation-wide pages ----
+    Route::middleware(['admin.role:super_admin,hr_admin', 'admin.orgwide'])->group(function () {
         Route::get('/admin/dashboard', [AdminController::class, 'dashboard'])->name('admin.dashboard');
         Route::post('/admin/approve/{id}', [AdminController::class, 'approve']);
         Route::post('/admin/reject/{id}', [AdminController::class, 'reject']);
@@ -217,10 +217,23 @@ Route::middleware(['admin.session', 'admin.audit'])->group(function () {
         Route::get('/admin/messages', [\App\Http\Controllers\ContactController::class, 'index'])->name('admin.messages.index');
         Route::post('/admin/messages/{id}/status', [\App\Http\Controllers\ContactController::class, 'updateStatus'])
             ->whereNumber('id')->name('admin.messages.status');
+    });
 
+    // ---- super admin + HR admin, organisation-scoped modules (App\Services\OrgScope) ----
+    Route::middleware('admin.role:super_admin,hr_admin')->group(function () {
         // Organizational structure (view; changes are super admin only, below)
         Route::get('/admin/organization', [\App\Http\Controllers\OrganizationController::class, 'index'])
             ->name('admin.organization.index');
+
+        // Personnel master and assignments
+        Route::prefix('admin/personnel')->name('admin.personnel.')
+            ->controller(\App\Http\Controllers\PersonnelController::class)->group(function () {
+                Route::get('/', 'index')->name('index');
+                Route::get('/create', 'create')->name('create');
+                Route::post('/', 'store')->name('store');
+                Route::get('/{personnel}', 'show')->whereNumber('personnel')->name('show');
+                Route::post('/{personnel}/assignments', 'assign')->whereNumber('personnel')->name('assign');
+            });
     });
 
     // ---- super admin only: organizational structure changes ----
@@ -231,8 +244,8 @@ Route::middleware(['admin.session', 'admin.audit'])->group(function () {
             Route::post('/{unit}/status', 'status')->whereNumber('unit')->name('status');
         });
 
-    // ---- all admin roles: training tracks and applications ----
-    Route::middleware('admin.role:super_admin,hr_admin,lms_admin')->group(function () {
+    // ---- all admin roles: training tracks and applications (organisation-wide) ----
+    Route::middleware(['admin.role:super_admin,hr_admin,lms_admin', 'admin.orgwide'])->group(function () {
         Route::get('/administrative-tracks', [AdministrativeTrackController::class, 'index'])
             ->name('administrative.tracks');
         Route::get('/personnel-administrative-training', [PersonnelAdministrativeTrainingController::class, 'index'])
