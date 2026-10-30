@@ -17,7 +17,7 @@ environment. Every command below must be run and checked on your PC (see §6).
 
 ## 1. Pre-flight (on the PC)
 
-1. Complete `DEVELOPMENT_SETUP.md` (PHP 8.2+); `php artisan pcg:check` is all `[ OK ]`, including "Uploads stored outside the web root".
+1. Complete `DEVELOPMENT_SETUP.md` (PHP 8.5 recommended, 8.2 minimum); back up, run `php artisan migrate`, create your admin with `php artisan pcg:create-admin` and sign in once to set up two-factor; `php artisan pcg:check` is all `[ OK ]`, including "Uploads stored outside the web root" and "Admin accounts exist".
 2. In `.env` set:
    ```dotenv
    APP_ENV=production

@@ -23,6 +23,7 @@ defence-in-depth.
 | A5 | Set `ADMIN_EMAIL` / `ADMIN_PASSWORD_HASH` in every `.env` (local and production) before deploying this branch. | Admin login now fails closed when these are missing. |
 | A6 | Ensure every row in `unit_users` has a bcrypt password — **Admin → Unit accounts → Set password** (accounts without one are flagged). | Unit login now verifies the password; accounts without one cannot log in. |
 | A6b | On **Admin → Unit accounts**, click **Grant M1 access** for the accounts that use the M1 (all units) login. | M1 access is now an explicit role; until granted, M1 users are refused at `/unit/loginM1`. |
+| A8 | Back up the database, run `php artisan migrate` (adds `admin_users`, `admin_audit_logs`, `contact_messages` and lookup indexes — nothing existing is changed), then `php artisan pcg:create-admin` and sign in to set up two-factor. | Admin accounts with roles and 2FA replace the shared `.env` admin. |
 | A7 | Move uploaded files out of the web root: copy `public/documents_toupload`, `public/201_files`, `public/disciplinary_actions` (and `selfies/`) into e.g. `storage/app/private/`, set `PCG_UPLOAD_ROOT` / `PCG_SELFIE_DIR`, run `php artisan pcg:check`, then remove the public copies. | Links already go through the access-checked `/files` route; this removes the files from the web server's reach entirely. Moving files is your call (production data). |
 
 ---
@@ -60,6 +61,8 @@ defence-in-depth.
 | H11 | The admin dashboard embedded every user's **password hash** and remember token in the page (rows serialised `users.*` to JSON) | `AdminController::dashboard`, `admin/dashboard.blade.php` | **Fixed** — explicit column list. |
 | H12 | Stored XSS against the admin: self-registered name/serial/unit were inserted as HTML into the approval dialog | `admin/dashboard.blade.php` | **Fixed** — escaped. |
 | H13 | Public `/osaert/verify` was written to list every OSAERT trainee's name and company (the page itself was missing, so it 500'd) | `OsaertController::verify` | **Fixed** — lookup by certificate number only; public verification routes throttled (60/min). Residual: `/osaert/verify/{id}` uses sequential IDs (printed QR codes depend on them); see risk 5. |
+| H15 | All `throttle:N,1` routes shared one per-IP counter: a few personnel logins from one office IP locked the admin out | `routes/web.php` | **Fixed** — named limiters per form, keyed by IP + email. |
+| H16 | 20 MB of face-recognition model files and an unfinished face-verification endpoint were publicly reachable | `public/face-api-models`, `FaceVerificationController` | **Fixed** — removed (feature was never linked or finished). |
 | H14 | Training tracks: a rank without an equivalent matched every track (`LIKE '%%'`) | `ApplicantTrainingController` | **Fixed**. |
 
 ### Medium / Low
@@ -67,11 +70,11 @@ defence-in-depth.
 | ID | Finding | Status |
 |----|---------|--------|
 | M1 | No security headers | **Fixed** — `SecurityHeaders` middleware (X-Frame-Options, nosniff, Referrer-Policy, Permissions-Policy, HSTS on HTTPS). |
-| M2 | No Content-Security-Policy; ~20 CDN scripts loaded without SRI, including the Tailwind *Play* CDN and unpinned `alpinejs@3.x.x`, `chart.js`, `sweetalert2@11` | **Partially fixed** — all third-party assets are now self-hosted with pinned versions (`public/vendor`, `public/css/tailwind.css`); no external scripts remain (map tiles excepted). CSP still open: many views use inline scripts. |
+| M2 | No Content-Security-Policy; ~20 CDN scripts loaded without SRI | **Fixed** — all assets self-hosted; enforced CSP with a per-request nonce on all 38 inline scripts, no inline event handlers (41 converted to `data-on-*` delegation), nothing from other origins except OpenStreetMap tiles/geocoding; `object-src 'none'`, `form-action`/`frame-ancestors 'self'`. Residual: `'unsafe-eval'` for Alpine.js, `'unsafe-inline'` styles. `PCG_CSP=report` for report-only. Verified: 0 violations across the crawl and all flows. |
 | M3 | Exception messages returned to users (`'Upload failed: ' . $e->getMessage()`) | Fixed in `storeDisciplinary`; review others. |
 | M4 | `GET /admin/logout` and `GET /unit/logout` (logout via GET is CSRF-able) | Kept for the existing sidebar links; low impact. Convert to POST forms in Phase 5. |
-| M5 | Admin session flag has no idle timeout separate from `SESSION_LIFETIME` (120 min) | Open. |
-| M6 | No MFA for admin | Open — recommend TOTP once admin moves to a real user table. |
+| M5 | No audit trail; admin session had no separate idle timeout | **Partially fixed** — `admin_audit_logs` records sign-ins, failed attempts, 2FA events and every state-changing admin request (Admin → Audit log). Idle timeout still = `SESSION_LIFETIME` (120 min). |
+| M6 | No MFA for admin; single shared admin identity in `.env` | **Fixed** — `admin_users` with roles (super/HR/LMS) and **mandatory TOTP two-factor** (RFC 6238, replay-protected, encrypted secret, 8 hashed recovery codes). The `.env` admin only works until the first account exists. |
 | M7 | `.gitignore` was a PowerShell script fragment; `storage/` missing from the repo | Fixed. |
 | M8 | `spatie/laravel-ignition` exposed `/_ignition/*` when `APP_DEBUG=true` | **Fixed** — package removed in the Laravel 12 upgrade. Keep `APP_DEBUG=false` outside development. |
 | L1 | DOM `innerHTML` built from server data: rejection comments shown to applicants (stored XSS), names, file URLs in unit dashboards and 201 files | **Fixed** — `escapeHtml()` applied in `applicant/dashboard`, `unit/dashboard`, `unit/dashboard_m1`, `unit/201_files_index`. |
@@ -103,14 +106,16 @@ defence-in-depth.
 - [x] Remove PII from logs (H8)
 - [x] Escape server data in `innerHTML` (L1)
 - [x] Transactions around profile delete-and-reinsert saves
-- [ ] Content-Security-Policy (M2, part 2) — needs inline scripts moved to files
-- [ ] Admin accounts in the database with roles + MFA (M6)
+- [x] Content-Security-Policy with nonces; no inline handlers (M2)
+- [x] Admin accounts in the database with roles + mandatory 2FA + audit log (M5, M6)
+- [x] Separate rate limits per form (H15)
+- [ ] **Owner:** run `php artisan migrate` (after a backup) and create your super admin (A8)
 
 ## 3. Unresolved risks (accepted until fixed)
 
 1. **Leaked admin password** in the public git history until it is rotated (A1) — the only critical item left, and only you can do it.
 2. **Uploaded files inside `public/`** until they are moved (A7). Apache blocks direct requests via `public/.htaccess`; `php artisan serve` does not.
-3. **Single shared admin identity** from `.env`, no MFA, no audit trail of who approved/rejected whom (M5, M6). Recommended next: admin accounts in the database with roles — a schema change that needs your approval.
-4. **No Content-Security-Policy** (M2): inline scripts in the legacy views must move to files first.
+3. **Admin idle timeout** equals the general session lifetime (120 min); shorten `SESSION_LIFETIME` if admins share PCs.
+4. **CSP residuals**: `'unsafe-eval'` (Alpine.js) and inline styles are allowed; removing them needs the Alpine CSP build and a rewrite of the SOI form.
 5. **Sequential certificate IDs**: `/osaert/verify/{id}` can be enumerated to list trainee names and companies (throttled to 60/min). A random verification token per certificate would fix it but needs a new column and reprinting of QR codes.
 6. **Inferred schema**: everything was verified on a database reconstructed from the code, not on the real `pcg_core`. Run `database/audit/inspect_schema.sql` and `php artisan pcg:check` against it.

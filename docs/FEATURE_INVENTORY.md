@@ -1,6 +1,8 @@
 # Feature Inventory — PCG_CORE (MEPCOM HRMIS)
 
-Last verified: 2026-10-30, branch `claude/cool-wozniak-rni95k`.
+Last verified: 2026-10-30, branch `claude/cool-wozniak-rni95k`, on PHP 8.3 and **PHP 8.5.12**, with the Content-Security-Policy enforced.
+
+Admin roles: **super admin** (everything), **HR admin** (approvals, HR analytics, unit accounts, messages, training), **LMS admin** (training tracks/applications, courses, students, OSAERT).
 
 ## How this was verified
 
@@ -26,7 +28,7 @@ Status key: **Verified** = passed the browser checks on the dev database ·
 | Feature | Route | Status |
 |---------|-------|--------|
 | Home, About, Contact, MEPTDI page | `/`, `/about`, `/contact`, `/institutes/meptdi` | Verified |
-| Contact page form | `/contact` | **Not functional by design of the original**: the `<form>` has no action and no backend (needs a decision: remove, or implement with mail settings) |
+| Contact page form | `/contact` | **Built** (had no backend): messages stored in `contact_messages`, read under Admin → Messages; validation, anti-spam field, 5/min. Verified end to end |
 | Self-registration (officer / non-officer, live selfie) | `/register?type=…`, `POST /register.submit` | **Verified** end to end with a camera: creates a `Pending` user with a real PNG selfie. Fixed: intro video blocked the form when the video file is missing |
 | OSAERT certificate lookup | `/osaert/verify?certificate=OSAERT-YYYY-NNNNNN` | **Fixed** (view never existed, HTTP 500). Lookup by number; does not list trainees |
 | OSAERT certificate page (QR target) | `/osaert/verify/{id}` | **Fixed**: used the admin layout (admin menu + Logout shown publicly) and showed blank dates |
@@ -36,14 +38,14 @@ Status key: **Verified** = passed the browser checks on the dev database ·
 | Feature | Route(s) | Status |
 |---------|----------|--------|
 | Sign in / out | `/login`, `POST /logout` | Verified. Fixed: rejected users could sign in |
-| Dashboard (rejection alerts, LMS class) | `/dashboard` | Verified. Fixed: rejection comments were inserted as HTML (stored XSS) |
+| Dashboard | `/dashboard` | **Redesigned** (personnel app shell): documents uploaded, review status, reviewer remarks, enrolled MEPTDI classes, task tiles. Fixed: LMS card always shown with a dead link; stored XSS in remarks |
 | SOI profile, 6 steps | `/profile`, `/temp-save/step1…6` | Verified (step 1 save end to end). Fixed: undefined Alpine components, serial-number IDOR, non-transactional saves |
 | Required documents upload | `/upload-documents` | Verified (upload, success message, own-file access, non-PDF refused). Fixed: no server validation, no messages |
 | 201 files upload | `/upload-201` | **Fixed** (HTTP 500: `@vite` without a build). Verified upload |
 | Generate SOI | `/generate-soi` | Verified (renders) |
 | Training tracks, apply | `/applicant/administrative-training`, `/applicant/operational-training`, `POST /applicant/training/apply` | Verified (application created). Fixed: ranks without an equivalent saw every track |
 | Open own files | `/files/...` | Verified; other people's files return 404 |
-| Face verification | `/face-verify` | **Incomplete** (unchanged): not linked; result endpoint validates against an unused `applicants` table |
+| Face verification | — | **Removed** (never linked or finished; 20 MB of public model files). Restore from git history if wanted |
 
 ## Unit checkers (login: `unit_users`)
 
@@ -61,7 +63,10 @@ Status key: **Verified** = passed the browser checks on the dev database ·
 
 | Feature | Route(s) | Status |
 |---------|----------|--------|
-| Sign in / out | `/admin/login` | Verified. Fixed: hardcoded credentials, errors never shown, logout bugs |
+| Sign in / out | `/admin/login` → two-factor | Verified. Accounts in `admin_users` with mandatory TOTP 2FA (enrolment via QR code, recovery codes). Fixed: hardcoded credentials, errors never shown, logout bugs |
+| Admin accounts (super admin) | `/admin/accounts` | **New.** Create, change role, reset password / 2FA, activate/deactivate; safeguards for the last super admin. Verified |
+| Audit log (super admin) | `/admin/accounts/audit-log` | **New.** Sign-ins, failures, every admin change. Verified |
+| Messages (super/HR admin) | `/admin/messages` | **New.** Contact-form inbox. Verified |
 | Dashboard: approve / reject registrations | `/admin/dashboard` (double-click a row) | Verified. **Fixed: there was no Reject button**; registrant data escaped (stored XSS); password hashes no longer embedded in the page |
 | Unit accounts (new) | `/admin/unit-users` | Verified: create, set password, grant/remove M1, activate/deactivate |
 | HR analytics | `/admin/hr-analytics` | Verified (renders with data) |

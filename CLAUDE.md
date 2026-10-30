@@ -12,6 +12,8 @@ php artisan test              # in-memory SQLite (phpunit.xml) — never the rea
 php artisan pcg:check         # read-only env/DB/folder health check
 php artisan pcg:hash-password # bcrypt hash for ADMIN_PASSWORD_HASH
 php artisan pcg:dev-seed      # sample data; refuses unless APP_ENV=local and DB name ends in _dev
+php artisan pcg:create-admin  # create an admin account (2FA set up at first sign-in)
+php artisan migrate           # additive pcg migrations only (back up first)
 npm run build:css             # only after adding a Tailwind class not used anywhere yet
 php artisan route:list
 php artisan serve --host=127.0.0.1 --port=8000
@@ -24,7 +26,7 @@ Browser end-to-end checks against a `pcg_core_dev` database: `tests/e2e/README.m
 
 ## Architecture (actual)
 - Routes: `routes/web.php`, grouped by audience:
-  public · applicant (`auth`, `users` table) · unit checker (`unit.session`, `unit_users`; M1/all-units pages add `unit.m1`, role `m1_checker`) · admin (`admin.session`, single admin from `.env`).
+  public · applicant (`auth`, `users` table) · unit checker (`unit.session`, `unit_users`; M1/all-units pages add `unit.m1`, role `m1_checker`) · admin (`admin.session` + `admin.audit` + `admin.role:...`; accounts in `admin_users` with roles super_admin / hr_admin / lms_admin and mandatory TOTP 2FA; the `.env` admin only works while no account exists). Login forms use the named rate limiters in RouteServiceProvider (never `throttle:N,M`, which shares one counter per IP).
   Every new non-public route MUST be inside the right group; add it to `tests/Feature/AccessControlTest.php`.
 - Controllers in `app/Http/Controllers` talk to the DB directly (mostly `DB::table`); ~30 tables have no model.
 - Join key across tables: `serial_number`. For applicant writes always take it from `$request->user()`, never from input.
@@ -34,7 +36,8 @@ Browser end-to-end checks against a `pcg_core_dev` database: `tests/e2e/README.m
 - Own-unit checkers may only act on personnel with `users.mother_unit = session('unit_name')`; M1 checkers and admins see all. Keep `UnitDocumentController::review` and `FileController` consistent with that.
 
 ## Database safety (strict)
-- **Never** run `migrate`, `migrate:fresh/refresh/reset`, `db:wipe` against `pcg_core` — migrations do not match the real schema (duplicate `users`/`services`).
+- `database/migrations/` holds only **additive** migrations written for `pcg_core` (admin_users, admin_audit_logs, contact_messages, lookup indexes). The original migrations, which do not match the real schema, live in `database/migrations/legacy/` and are never loaded. `php artisan migrate` (after a backup) is therefore safe; **never** run `migrate:fresh/refresh/reset` or `db:wipe` against `pcg_core`.
+- New migrations must be additive, idempotent where possible, and reversible (down() undoes only what up() did).
 - No DROP/TRUNCATE/mass DELETE; no schema change without: reason, impact, backup, reversible migration, rollback, validation, and the owner's approval.
 - Never commit `.env`, dumps (`*.sql`), or files from `public/documents_toupload`, `public/201_files`, `public/disciplinary_actions`, `selfies/`.
 
@@ -47,6 +50,8 @@ Browser end-to-end checks against a `pcg_core_dev` database: `tests/e2e/README.m
 - Status values are mixed-case in the DB (`Approved`/`approved`) — compare case-insensitively.
 - UI: new/redesigned pages use `public/css/pcg-ui.css` tokens and `.pcg-*` components plus `public/js/pcg-ui.js` (no CDN, no inline scripts, no build step). Sign-in pages extend `layouts/auth`. Don't add new CDN dependencies.
 - Insert server data into the DOM with `textContent`, or `escapeHtml()` when building HTML strings.
+- CSP is enforced: inline `<script>` blocks must carry `nonce="{{ $cspNonce ?? '' }}"`; **no inline event handlers** (`onclick=` etc. — a test fails) — use `data-on-click="globalFunction" data-args='[...]'` (or `pcg.*` built-ins) handled by `public/js/pcg-ui.js`; no external origins.
+- Personnel pages extend `layouts/personnel`; admin pages `layouts/admin`.
 
 ## Testing
 - Feature tests create only the tables they need on SQLite (see `tests/Feature/AuthenticationTest.php`). PHPUnit 11: static data providers with `#[DataProvider]`.

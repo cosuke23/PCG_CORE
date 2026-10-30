@@ -50,8 +50,18 @@ Run `php artisan pcg:check` again until every line is `[ OK ]`.
 
 ### Database
 
-Use the existing `pcg_core` database. **Do not run `php artisan migrate`**: the
-migrations don't describe the real schema (see `DATABASE_ARCHITECTURE.md`).
+Use the existing `pcg_core` database. `php artisan migrate` only runs the
+additive migrations approved on 2026-10-30 (admin accounts, audit log,
+contact messages, indexes — see `DATABASE_ARCHITECTURE.md` §4b). **Back up
+first**, then:
+
+```powershell
+php artisan migrate --pretend   # review
+php artisan migrate
+php artisan pcg:create-admin    # your super admin; set up 2FA at first sign-in
+```
+
+Never run `migrate:fresh`, `migrate:refresh`, `migrate:reset` or `db:wipe`.
 To set up a second machine, import a backup in phpMyAdmin (Import tab) or with
 `mysql -u root -p pcg_core < backup.sql`. Keep backups outside the repository.
 
@@ -88,7 +98,10 @@ php artisan pcg:dev-seed
 ```
 
 Sample logins (password `Demo@12345`): `member@demo.test` (/login),
-`unit@demo.test` (/unit/login), `m1@demo.test` (/unit/loginM1). The seeder
+`unit@demo.test` (/unit/login), `m1@demo.test` (/unit/loginM1). Admins
+(run `php artisan migrate` before seeding): `admin@`, `hr@`, `lms@demo.test`,
+password `Admin@Demo12345`, authenticator key `JBSWY3DPEHPK3PXPJBSWY3DPEHPK3PXP`
+(add it to an authenticator app as a time-based key). Development only. The seeder
 refuses to run unless `APP_ENV=local` and the database name ends in `_dev`.
 
 ## 3. Run

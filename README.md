@@ -16,4 +16,4 @@ php artisan pcg:check
 php artisan serve --host=127.0.0.1
 ```
 
-Do not run `php artisan migrate` against the existing `pcg_core` database (see docs/DATABASE_ARCHITECTURE.md).
+`php artisan migrate` only adds new tables and indexes (back up first; see docs/DATABASE_ARCHITECTURE.md §4b). Never run `migrate:fresh/refresh/reset`. PHP 8.5 upgrade: docs/PHP_UPGRADE_WINDOWS.md.

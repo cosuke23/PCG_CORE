@@ -99,9 +99,31 @@ run inside a transaction, so a failed insert rolls back the delete.
    20 `WHERE serial_number = ?` lookups.
 6. **Unused tables**: `services`. `profiles` is probably legacy.
 
+## 4b. Approved additive changes (2026-10-30)
+
+| Migration | Adds | Rollback |
+|-----------|------|----------|
+| `2026_10_30_000001_create_admin_users_table` | `admin_users` (name, email, bcrypt password, role, is_active, encrypted TOTP secret, hashed recovery codes, last sign-in) | drops the table |
+| `2026_10_30_000002_create_admin_audit_logs_table` | `admin_audit_logs` (who, action, route, result, IP, details) | drops the table |
+| `2026_10_30_000003_add_lookup_indexes` | indexes on `serial_number`, `personnel_id`, `applicant_id`, `course_id`, etc. — only where missing, skipping TEXT columns | drops only `pcg_idx_*` indexes it created |
+| `2026_10_30_000004_create_contact_messages_table` | `contact_messages` | drops the table |
+
+Procedure on your PC:
+
+```powershell
+& "C:\xampp\mysql\bin\mysqldump.exe" -u root -p --single-transaction --routines --triggers pcg_core > D:\backups\pcg_core_before_migrate.sql
+php artisan migrate --pretend      # shows the SQL, changes nothing
+php artisan migrate                # prints each index: added / skip (reason)
+php artisan pcg:check
+php artisan pcg:create-admin
+```
+
+Rollback, newest first: `php artisan migrate:rollback --step=1`; repeat as needed. Each step undoes only that migration.
+Tested on a copy of the schema with every secondary index removed: indexes added, data intact, re-run a no-op, rollback exact.
+
 ## 5. Change procedure (mandatory)
 
-No schema change has been made in this branch. Any future change must provide:
+Any future schema change must provide:
 
 1. Reason and the affected tables/columns.
 2. **Backup first**: `mysqldump --single-transaction --routines --triggers pcg_core > backups/pcg_core_YYYYMMDD.sql`
