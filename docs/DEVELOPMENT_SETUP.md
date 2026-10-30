@@ -130,6 +130,9 @@ Make sure `LoadModule rewrite_module modules/mod_rewrite.so` is enabled in
 `httpd.conf`, restart Apache, and browse `http://localhost:8080`. Set
 `APP_URL=http://localhost:8080`.
 
+This exact virtual host (with Linux paths) was tested on Apache 2.4: the full
+browser suite passes, and direct requests to the upload folders get 403.
+
 `Require local` means only this PC can connect. Tailscale Serve connects from
 localhost, so remote access still works.
 

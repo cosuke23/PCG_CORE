@@ -87,5 +87,7 @@ Last updated: 2026-10-30 · branch `claude/cool-wozniak-rni95k`
 | 2026-10-30 | Unit/M1/personnel flows (review, disciplinary, uploads, own files, SOI save, training apply) | **Passed** — 14/14 |
 | 2026-10-30 | Self-registration with camera selfie | **Passed** |
 | 2026-10-30 | `config:cache`, `route:cache`, `view:cache` | **Passed** |
+| 2026-10-30 | Apache 2.4 virtual host as documented (`public/` docroot, `AllowOverride All`, `Require local`): crawl + all flows | **Passed** — same results as `artisan serve` |
+| 2026-10-30 | Apache: direct requests to `documents_toupload/`, `201_files/`, `selfies/` | **Passed** — 403; `/files/...` requires sign-in; `/.env` 404 |
 | — | Real `pcg_core` data | **Blocked** — needs access on your PC |
 | — | Windows scripts, Tailscale | **Not tested** — no Windows/Tailscale in this environment |
