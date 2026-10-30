@@ -6,7 +6,7 @@ without the live database or the production server.
 
 ## 1. What the system is
 
-A **Laravel 9** monolith that serves the Philippine Coast Guard **Maritime
+A **Laravel 12** monolith (upgraded from 9.52 on 2026-10-30) that serves the Philippine Coast Guard **Maritime
 Environmental Protection Command (MEPCOM)** human-resources information system:
 
 - public institutional pages (home, about, contact, MEPTDI institute page);
@@ -25,8 +25,8 @@ Environmental Protection Command (MEPCOM)** human-resources information system:
 
 | Layer | Technology (evidence) |
 |-------|-----------------------|
-| Language | PHP `^8.0.2` (`composer.json`); verified to run on PHP 8.3 |
-| Framework | `laravel/framework` **v9.52.21** (`composer.lock`) — end of life |
+| Language | PHP `^8.2` (`composer.json`); verified on PHP 8.3 |
+| Framework | `laravel/framework` **v12.x** (`composer.lock`), Sanctum 4, PHPUnit 11. Was 9.52 (end of life, 50 advisories); `composer audit` now reports none. The Laravel 9 directory structure (Http/Kernel, RouteServiceProvider) is kept — still supported by Laravel 12 |
 | Packages | `laravel/sanctum` 3 (installed, not used by any route besides the default `/api/user`), `laravel/tinker`, `guzzlehttp/guzzle` |
 | Views | Blade templates; 3 layouts (`layouts/app`, `layouts/admin`) plus many full-page standalone templates |
 | CSS | Tailwind via the **Play CDN** (`cdn.tailwindcss.com`) in 15 views, Bootstrap 5.3 in one view, large inline `<style>` blocks |

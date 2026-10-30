@@ -24,9 +24,10 @@ const check = (name, ok, detail = '') => { results.push([ok ? 'PASS' : 'FAIL', n
   const pending = sql("select id,email from users where status='Pending' order by id limit 2").split('\n').map(l => l.split('\t'));
   for (const [idx, action] of [[0, 'Approve'], [1, 'Reject']]) {
     const [id, email] = pending[idx];
-    await page.goto(BASE + '/admin/dashboard');
-    await page.fill('input[type=search]', email).catch(() => {});
-    await page.waitForTimeout(300);
+    await page.goto(BASE + '/admin/dashboard', { waitUntil: 'networkidle' });
+    await page.waitForSelector('.dt-search input[type=search]');  // DataTables initialised
+    await page.fill('.dt-search input[type=search]', email);
+    await page.locator('#personnelTable tbody tr', { hasText: email }).first().waitFor();
     await page.locator('#personnelTable tbody tr', { hasText: email }).first().dblclick();
     await page.click(`.swal2-popup button:has-text("${action}")`);
     await page.waitForSelector('.swal2-popup:has-text("' + (action === 'Approve' ? 'Approved!' : 'Rejected') + '")', { timeout: 5000 }).catch(() => {});

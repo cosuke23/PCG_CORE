@@ -1,67 +1,99 @@
 # Feature Inventory — PCG_CORE (MEPCOM HRMIS)
 
-Status key
-- **Works (code)**: code path is complete and consistent with its view. It has
-  **not** been run against the real database.
-- **Verified**: exercised in this environment (artisan server or automated test).
-- **Broken / Fixed**: defect found by reading the code, and what was done about it.
-- **Blocked**: needs the real `pcg_core` database to test.
+Last verified: 2026-10-30, branch `claude/cool-wozniak-rni95k`.
+
+## How this was verified
+
+- **Automated tests** (`php artisan test`, in-memory SQLite): access control,
+  logins, uploads, file access, unit/M1 separation, OSAERT logic.
+- **Browser end-to-end** (`tests/e2e`, Chromium) against **`pcg_core_dev`**, a
+  local MariaDB 10.11 database built from `database/dev/schema_inferred.sql`
+  (the schema reconstructed from the code) and `php artisan pcg:dev-seed`
+  sample data. Each role signs in through the real form, every page is opened
+  (HTTP, PHP and JavaScript errors recorded), and each form is submitted, with
+  the database checked afterwards.
+
+**Not yet verified against the real `pcg_core` data.** The dev schema is
+inferred; differences surface as SQL errors, so run
+`database/audit/inspect_schema.sql` and `php artisan pcg:check` on your PC.
+
+Status key: **Verified** = passed the browser checks on the dev database ·
+**Fixed** = was broken, now verified · **Blocked** = needs something external
+(noted).
 
 ## Public
 
 | Feature | Route | Status |
 |---------|-------|--------|
-| Home, About, Contact, MEPTDI page | `/`, `/about`, `/contact`, `/institutes/meptdi` | **Verified** (HTTP 200) |
-| Contact form | `/contact` | **Non-functional**: `<form>` has no action, no method and no controller, so it submits nowhere |
-| Registration (officer / non-officer, live selfie) | `/register?type=officer\|non_officer`, `POST /register.submit` | Form **verified** (200; bad type → 404). Submit **blocked** (DB). Selfie validation added |
-| OSAERT certificate verification | `/osaert/verify`, `/osaert/verify/{trainee}` | **Blocked** (needs `osaert_trainees`) |
-| `/services` | — | **Removed**: pointed at a missing method (always 500) |
+| Home, About, Contact, MEPTDI page | `/`, `/about`, `/contact`, `/institutes/meptdi` | Verified |
+| Contact page form | `/contact` | **Not functional by design of the original**: the `<form>` has no action and no backend (needs a decision: remove, or implement with mail settings) |
+| Self-registration (officer / non-officer, live selfie) | `/register?type=…`, `POST /register.submit` | **Verified** end to end with a camera: creates a `Pending` user with a real PNG selfie. Fixed: intro video blocked the form when the video file is missing |
+| OSAERT certificate lookup | `/osaert/verify?certificate=OSAERT-YYYY-NNNNNN` | **Fixed** (view never existed, HTTP 500). Lookup by number; does not list trainees |
+| OSAERT certificate page (QR target) | `/osaert/verify/{id}` | **Fixed**: used the admin layout (admin menu + Logout shown publicly) and showed blank dates |
 
-## Applicant / personnel portal (login: `users`, `auth`)
-
-| Feature | Route(s) | Status |
-|---------|----------|--------|
-| Login / logout | `/login`, `POST /logout` | **Verified** by tests (approved user logs in; pending/rejected/unknown refused). **Fixed** the rejected-user bypass. Redesigned; the non-working "Forgot password" link (no reset flow exists) is replaced by an instruction to contact the administrator, and the Bootstrap register modal by two direct links |
-| Dashboard (rejected-document alerts, LMS class) | `/dashboard` | Works (code) · Blocked |
-| SOI profile, 6-step save | `/profile`, `/temp-save/step1…6` | Works (code) · Blocked. **Fixed** serial-number IDOR in step 1. Steps 3, 4 and 6 delete-then-insert without a transaction |
-| Legacy one-shot SOI save | `POST /reinlist/store` | Only called from commented-out JS. Now requires login and is restricted to your own serial |
-| Profile update (legacy `profiles` table) | `POST /profile/update` | Works (code); stores the photo on the `public` disk (needs `php artisan storage:link`) |
-| Upload required documents | `/upload-documents`, `POST /documents/upload` | Works (code). **Fixed**: no server-side validation; errors and success messages were never displayed |
-| 201 file upload | `/upload-201`, `POST /upload-201` | Works (code) |
-| Generate SOI (printable) | `/generate-soi` | Works (code) · Blocked |
-| Training: view tracks, apply | `/applicant/administrative-training`, `/applicant/operational-training`, `/applicant/training/apply` | Works (code) · Blocked |
-| Face verification | `/face-verify`, `/applicant/{id}/face-verify`, `POST /applicant/face-verify/result` | **Incomplete**: page has no menu link; `saveResult` validates against an `applicants` table that the code doesn't use anywhere else. `public/face-api-models/` is shipped but no view loads face-api.js |
-
-## Unit checker portal (login: `unit_users`, `unit.session`)
+## Personnel (login: `users`)
 
 | Feature | Route(s) | Status |
 |---------|----------|--------|
-| Login (unit / M1) | `/unit/login`, `/unit/loginM1` | **Fixed**: password was not checked. **Verified** by tests |
-| Unit dashboard (own unit) | `/unit/dashboard` | Works (code) · Blocked |
-| M1 dashboard (all units) | `/unit/dashboardM1` | Works (code) · Blocked |
-| Approve / reject documents | `POST /unit/documents/review` | **Fixed — was broken**: route pointed at the empty `UnitReviewController`. Now uses `UnitDocumentController::review` (same field names) |
-| Serial lookup | `/unit/search-serial/{serial}` | Works (code) |
-| 201 files list and detail | `/unit/201-files`, `/unit/201-files/{serial}` | Works (code). File links pointed at production. **Fixed** to `PCG_UPLOAD_URL` |
-| Disciplinary upload / delete | `POST /unit/disciplinary/store`, `DELETE /unit/disciplinary/delete/{id}` | **Fixed**: delete crashed (missing `Storage` import) and looked in the wrong folder |
-| Create unit account | `POST /unit-users/store` (admin only) | **Incomplete**: no UI form calls it |
+| Sign in / out | `/login`, `POST /logout` | Verified. Fixed: rejected users could sign in |
+| Dashboard (rejection alerts, LMS class) | `/dashboard` | Verified. Fixed: rejection comments were inserted as HTML (stored XSS) |
+| SOI profile, 6 steps | `/profile`, `/temp-save/step1…6` | Verified (step 1 save end to end). Fixed: undefined Alpine components, serial-number IDOR, non-transactional saves |
+| Required documents upload | `/upload-documents` | Verified (upload, success message, own-file access, non-PDF refused). Fixed: no server validation, no messages |
+| 201 files upload | `/upload-201` | **Fixed** (HTTP 500: `@vite` without a build). Verified upload |
+| Generate SOI | `/generate-soi` | Verified (renders) |
+| Training tracks, apply | `/applicant/administrative-training`, `/applicant/operational-training`, `POST /applicant/training/apply` | Verified (application created). Fixed: ranks without an equivalent saw every track |
+| Open own files | `/files/...` | Verified; other people's files return 404 |
+| Face verification | `/face-verify` | **Incomplete** (unchanged): not linked; result endpoint validates against an unused `applicants` table |
 
-## Admin / MEPTDI LMS (login: `.env` admin, `admin.session`)
+## Unit checkers (login: `unit_users`)
 
 | Feature | Route(s) | Status |
 |---------|----------|--------|
-| Admin login / logout | `/admin/login`, `POST /admin/logout`, `GET /admin/logout` | **Verified** by tests. **Fixed**: hardcoded credentials; GET logout cleared the wrong session keys; sidebar logout links sent GET to a POST-only route (405); login errors were never displayed; form was hidden behind a "click to access" animation |
-| User approval dashboard | `/admin/dashboard`, `POST /admin/approve/{id}`, `/admin/reject/{id}` | Works (code) · Blocked |
-| HR analytics | `/admin/hr-analytics` | Works (code) · Blocked |
-| Administrative / operational tracks | `/administrative-tracks`, `/operation-tracks` (CRUD) | Works (code) · Blocked |
-| Personnel vs. training matrices | `/personnel-administrative-training`, `/personnel/operational-training` | Works (code) · Blocked |
-| Training applications | `/admin/training-applications`, `PATCH …/{id}/status` | Works (code) · Blocked |
-| Training courses + students (CSV import / template) | `/admin/training-courses`, `/training-courses/{course}/students…` | Works (code) · Blocked. Two "add student" forms use `action="#"` (`students/create`, `students/index`) and need checking |
-| OSAERT trainees (bulk CSV), certificates | `/admin/osaert…` | Works (code) · Blocked |
-| MEPTDI LMS dashboard | `/meptdi-lms` | **Removed**: pointed at a missing method (always 500) |
+| Own-unit sign in | `/unit/login` | Verified. Fixed: password was never checked |
+| M1 sign in | `/unit/loginM1` | Verified. Requires the M1 role (new) |
+| Document review, own unit | `/unit/dashboard`, `POST /unit/documents/review` | **Fixed** (form posted to an empty controller). Verified approve and reject-with-comment. Limited to own unit (new) |
+| Document review, all units (M1) | `/unit/dashboardM1` | Verified |
+| 201 files (M1) | `/unit/201-files` | Verified |
+| Serial search + disciplinary upload (M1) | `/unit/search-serial/{serial}`, `POST /unit/disciplinary/store` | Verified upload. Fixed: delete crashed |
+| Navigation | sidebar | **Fixed**: four links pointed to `#` |
+
+## Admin / MEPTDI LMS (login: `.env` admin)
+
+| Feature | Route(s) | Status |
+|---------|----------|--------|
+| Sign in / out | `/admin/login` | Verified. Fixed: hardcoded credentials, errors never shown, logout bugs |
+| Dashboard: approve / reject registrations | `/admin/dashboard` (double-click a row) | Verified. **Fixed: there was no Reject button**; registrant data escaped (stored XSS); password hashes no longer embedded in the page |
+| Unit accounts (new) | `/admin/unit-users` | Verified: create, set password, grant/remove M1, activate/deactivate |
+| HR analytics | `/admin/hr-analytics` | Verified (renders with data) |
+| Administrative / operational tracks | `/administrative-tracks`, `/operation-tracks` | Verified (read-only lists; there is no create/edit UI although `operation-tracks` has store/update/destroy routes) |
+| Personnel vs training matrices | `/personnel-administrative-training`, `/personnel/operational-training` | Verified |
+| Training applications + status | `/admin/training-applications` | Verified status update |
+| Training courses CRUD | `/admin/training-courses` | Verified create, edit, delete. Fixed: a JS syntax error disabled the table and the delete confirmation |
+| Course students: add, CSV import, remove | `/training-courses/{id}/students` | **Fixed** (add and remove posted to `#`; add sent the wrong field; name/serial never saved). Verified all three |
+| OSAERT trainees: bulk CSV, year filters | `/admin/osaert` | Verified. Fixed: year filters missed `yyyy-mm-dd` rows |
+| OSAERT certificates (printable, QR) | `/admin/osaert/certificates` | Verified. Fixed: malformed numbers like `OSAERT-6-14-000002` |
+
+## Removed (pointed at missing code, always HTTP 500)
+
+`/services`, `/decision/submit`, `/meptdi-lms`, `GET /applicant/training/apply`.
+A test now fails if any route points at a missing controller method.
+
+## Missing files (not in git; copy from production)
+
+Public pages reference images/videos that are not in the repository:
+`backgrounds/MEPCOM.png`, `MEPLEF_new.png`, `NOCOP_new.png`, `MFSIF.png`,
+`MEPAcES.png`, `MEPRCGS.png`, `MEPTDI.png`, `HSS.png`, `MEPPU.png`,
+`images/pcg_ship.jpg`, and the videos `backgrounds/0406.mp4`,
+`MEPCOM AVP FOR BEACON.mp4`, `mepcom 4.mp4` (videos are git-ignored by
+design). Pages still work; those images show as broken until copied.
+
+## Needs internet
+
+Map tiles on the document-upload page (OpenStreetMap). Everything else is
+self-hosted.
 
 ## Dead code (kept, not routed)
 
-`DecisionController`, `UnitReviewController`, `UploadController` (empty);
-`TrainingCourseStudentController` (wrong namespace, duplicate);
-`unit/dashboard_m1` and `unit/dashboard` duplicate ~600 lines;
-7 backup view files. Delete them once you confirm they aren't needed.
+`DecisionController`, `UnitReviewController`, `UploadController` (empty),
+`TrainingCourseStudentController` (wrong namespace, duplicate), 7 view backup
+files. Safe to delete after your confirmation.

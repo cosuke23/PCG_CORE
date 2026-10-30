@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use PHPUnit\Framework\Attributes\DataProvider;
 use Tests\TestCase;
 
 /**
@@ -10,7 +11,7 @@ use Tests\TestCase;
  */
 class AccessControlTest extends TestCase
 {
-    public function adminRoutes(): array
+    public static function adminRoutes(): array
     {
         return [
             ['get', '/admin/dashboard'],
@@ -32,7 +33,7 @@ class AccessControlTest extends TestCase
         ];
     }
 
-    public function unitRoutes(): array
+    public static function unitRoutes(): array
     {
         return [
             ['get', '/unit/dashboard'],
@@ -46,7 +47,7 @@ class AccessControlTest extends TestCase
         ];
     }
 
-    public function applicantRoutes(): array
+    public static function applicantRoutes(): array
     {
         return [
             ['get', '/dashboard'],
@@ -62,7 +63,7 @@ class AccessControlTest extends TestCase
         ];
     }
 
-    /** @dataProvider adminRoutes */
+    #[DataProvider('adminRoutes')]
     public function test_admin_routes_require_admin_session(string $method, string $uri)
     {
         $this->withoutMiddleware(\App\Http\Middleware\VerifyCsrfToken::class);
@@ -70,7 +71,7 @@ class AccessControlTest extends TestCase
         $this->$method($uri)->assertRedirect(route('admin.login'));
     }
 
-    /** @dataProvider unitRoutes */
+    #[DataProvider('unitRoutes')]
     public function test_unit_routes_require_unit_session(string $method, string $uri)
     {
         $this->withoutMiddleware(\App\Http\Middleware\VerifyCsrfToken::class);
@@ -78,7 +79,7 @@ class AccessControlTest extends TestCase
         $this->$method($uri)->assertRedirect('/unit/login');
     }
 
-    /** @dataProvider applicantRoutes */
+    #[DataProvider('applicantRoutes')]
     public function test_applicant_routes_require_login(string $method, string $uri)
     {
         $this->withoutMiddleware(\App\Http\Middleware\VerifyCsrfToken::class);

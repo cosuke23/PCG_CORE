@@ -1,6 +1,6 @@
 # PCG_CORE — MEPCOM HRMIS
 
-Laravel 9 application for the PCG Maritime Environmental Protection Command (personnel registration, SOI profile, document review, 201 files, training/LMS, OSAERT).
+Laravel 12 application (PHP 8.2+) for the PCG Maritime Environmental Protection Command (personnel registration, SOI profile, document review, 201 files, training/LMS, OSAERT).
 
 - Setup on Windows: [docs/DEVELOPMENT_SETUP.md](docs/DEVELOPMENT_SETUP.md)
 - Private remote access (Tailscale): [docs/DEPLOYMENT_GUIDE.md](docs/DEPLOYMENT_GUIDE.md)

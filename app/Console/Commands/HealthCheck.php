@@ -21,6 +21,7 @@ class HealthCheck extends Command
     {
         $this->line('PHP ' . PHP_VERSION . ' | Laravel ' . app()->version() . ' | env=' . app()->environment());
 
+        $this->check('PHP 8.2 or newer', version_compare(PHP_VERSION, '8.2.0', '>='));
         $this->check('APP_KEY is set', (bool) config('app.key'));
         $this->check('APP_DEBUG is off', !config('app.debug'), 'warn');
         $this->check('ADMIN_EMAIL and ADMIN_PASSWORD_HASH are set',
@@ -33,6 +34,10 @@ class HealthCheck extends Command
         foreach ([storage_path('framework/sessions'), storage_path('framework/views'), storage_path('logs'), config('pcg.upload_root')] as $dir) {
             $this->check("Writable: $dir", is_dir($dir) && is_writable($dir));
         }
+
+        $uploads = realpath((string) config('pcg.upload_root')) ?: (string) config('pcg.upload_root');
+        $public = realpath(public_path()) ?: public_path();
+        $this->check('Uploads stored outside the web root (PCG_UPLOAD_ROOT)', !str_starts_with($uploads, $public), 'warn');
 
         try {
             DB::connection()->getPdo();
