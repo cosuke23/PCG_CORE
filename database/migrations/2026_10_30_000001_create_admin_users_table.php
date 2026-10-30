@@ -13,7 +13,7 @@ return new class extends Migration
 {
     public function up(): void
     {
-        Schema::create('admin_users', function (Blueprint $table) {
+        if (!Schema::hasTable('admin_users')) Schema::create('admin_users', function (Blueprint $table) {
             $table->id();
             $table->string('name');
             $table->string('email')->unique();

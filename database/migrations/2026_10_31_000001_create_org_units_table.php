@@ -20,6 +20,10 @@ return new class extends Migration
 
     public function up(): void
     {
+        if (Schema::hasTable('org_units')) {
+            return; // already created (e.g. migration record missing): nothing to do
+        }
+
         Schema::create('org_units', function (Blueprint $table) {
             $table->id();
             $table->foreignId('parent_id')->nullable()->constrained('org_units')->restrictOnDelete();
