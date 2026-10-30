@@ -10,7 +10,7 @@ part of your workflow.
 
 | Software | Version | Check |
 |----------|---------|-------|
-| PHP | **8.2 or newer** (Laravel 12). XAMPP 8.2.x is fine; older XAMPP (PHP 8.0/8.1) must be updated | `php -v` |
+| PHP | **8.5 recommended** (verified on 8.5.12); minimum 8.2 (Laravel 12). PHP 8.2 security support ends 2026-12-31. Upgrade steps: `docs/PHP_UPGRADE_WINDOWS.md` | `php -v` |
 | PHP extensions | `pdo_mysql`, `mbstring`, `openssl`, `fileinfo`, `gd`, `curl` | `php -m` |
 | Composer | 2.x | `composer -V` |
 | MySQL or MariaDB | the server that already hosts `pcg_core` | XAMPP Control Panel / `mysql --version` |

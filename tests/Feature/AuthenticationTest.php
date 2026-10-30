@@ -51,7 +51,7 @@ class AuthenticationTest extends TestCase
         ]);
     }
 
-    private function makeUser(string $status, string $emailPrefix = null): User
+    private function makeUser(string $status, ?string $emailPrefix = null): User
     {
         return User::forceCreate([
             'name' => 'Test Member',

@@ -17,7 +17,9 @@ Need composer "Install Composer from https://getcomposer.org/download/"
 $phpVersion = php -r "echo PHP_VERSION;"
 Write-Host "PHP $phpVersion"
 php -r "exit(version_compare(PHP_VERSION, '8.2.0', '>=') ? 0 : 1);"
-if ($LASTEXITCODE -ne 0) { Write-Host "PHP 8.2+ required (Laravel 12). Update XAMPP/Laragon PHP." -ForegroundColor Red; exit 1 }
+if ($LASTEXITCODE -ne 0) { Write-Host "PHP 8.2+ required (Laravel 12). See docs\PHP_UPGRADE_WINDOWS.md" -ForegroundColor Red; exit 1 }
+php -r "exit(version_compare(PHP_VERSION, '8.3.0', '>=') ? 0 : 1);"
+if ($LASTEXITCODE -ne 0) { Write-Host "PHP 8.2 security support ends 2026-12-31. Recommended: PHP 8.5 (docs\PHP_UPGRADE_WINDOWS.md)." -ForegroundColor Yellow }
 
 foreach ($ext in 'pdo_mysql','mbstring','openssl','fileinfo','gd','curl') {
     php -r "exit(extension_loaded('$ext') ? 0 : 1);"

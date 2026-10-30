@@ -1,6 +1,6 @@
 # CLAUDE.md — PCG_CORE (MEPCOM HRMIS)
 
-Laravel **12** monolith (PHP ≥ 8.2, Blade, MySQL/MariaDB database `pcg_core`; upgraded from 9.52 keeping the Laravel 9 directory structure — Http/Kernel, RouteServiceProvider, config/*.php)
+Laravel **12** monolith (PHP ≥ 8.2; verified on 8.5.12 — target version, Blade, MySQL/MariaDB database `pcg_core`; upgraded from 9.52 keeping the Laravel 9 directory structure — Http/Kernel, RouteServiceProvider, config/*.php)
 for the PCG Maritime Environmental Protection Command: personnel registration,
 SOI profile, document review, 201 files, training tracks, MEPTDI LMS, OSAERT.
 Read `docs/` before larger changes; `docs/IMPLEMENTATION_ROADMAP.md` is the progress checklist — update it.

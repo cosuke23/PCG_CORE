@@ -22,6 +22,7 @@ class HealthCheck extends Command
         $this->line('PHP ' . PHP_VERSION . ' | Laravel ' . app()->version() . ' | env=' . app()->environment());
 
         $this->check('PHP 8.2 or newer', version_compare(PHP_VERSION, '8.2.0', '>='));
+        $this->check('PHP 8.3+ recommended (8.2 security support ends 2026-12-31; verified on 8.5.12)', version_compare(PHP_VERSION, '8.3.0', '>='), 'warn');
         $this->check('APP_KEY is set', (bool) config('app.key'));
         $this->check('APP_DEBUG is off', !config('app.debug'), 'warn');
         $this->check('ADMIN_EMAIL and ADMIN_PASSWORD_HASH are set (setup admin, only until an admin account exists)',
