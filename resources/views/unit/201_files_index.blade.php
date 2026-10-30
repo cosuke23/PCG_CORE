@@ -5,6 +5,7 @@
     <meta charset="UTF-8">
     <title>201 Files</title>
     <link rel="stylesheet" href="{{ asset('css/tailwind.css') }}">
+    <script src="{{ asset('js/pcg-ui.js') }}" defer></script>
 </head>
 
 <body class="bg-[#f5f5f7] min-h-screen overflow-hidden">
@@ -56,7 +57,7 @@
 
                     <tbody>
                         @foreach ($personnel as $p)
-                            <tr onclick="openModal('{{ $p->serial_number }}')"
+                            <tr data-on-click="openModal" data-args='@json([$p->serial_number])'
                                 class="border-t hover:bg-indigo-50 cursor-pointer">
 
                                 <td class="p-4">
@@ -93,7 +94,7 @@
                     <p id="serial_number" class="text-gray-500"></p>
                 </div>
 
-                <button onclick="closeModal()">✕</button>
+                <button data-on-click="closeModal">✕</button>
 
             </div>
 
@@ -107,7 +108,7 @@
 
     </div>
 
-    <script>
+    <script nonce="{{ $cspNonce ?? '' }}">
         // Escape server data before inserting it with innerHTML.
         function escapeHtml(value) {
             return String(value ?? '').replace(/[&<>"']/g, c => ({

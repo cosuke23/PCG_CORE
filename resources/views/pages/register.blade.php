@@ -245,7 +245,7 @@
 
 
     <!-- STEP FORM JS -->
-    <script>
+    <script nonce="{{ $cspNonce ?? '' }}">
         function stepForm() {
             return {
                 step: 0,
@@ -262,7 +262,7 @@
             }
         }
     </script>
-    <script>
+    <script nonce="{{ $cspNonce ?? '' }}">
         function unitDropdown() {
             return {
                 selectedCommand: '',
@@ -497,7 +497,7 @@
     </script>
 
     <!-- MAIN JS -->
-    <script>
+    <script nonce="{{ $cspNonce ?? '' }}">
         document.addEventListener("DOMContentLoaded", () => {
 
             // AGE

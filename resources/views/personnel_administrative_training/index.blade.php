@@ -353,7 +353,7 @@
     <script src="{{ asset('vendor/datatables/dataTables-2.3.2.min.js') }}"></script>
 
 
-    <script>
+    <script nonce="{{ $cspNonce ?? '' }}">
         $(document).ready(function() {
 
             $('#personnelTrainingTable').DataTable({

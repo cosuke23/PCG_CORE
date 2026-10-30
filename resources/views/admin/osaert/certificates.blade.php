@@ -321,6 +321,7 @@
             }
         }
     </style>
+    <script src="{{ asset('js/pcg-ui.js') }}" defer></script>
 </head>
 
 <body>
@@ -329,14 +330,14 @@
         <div class="action-bar">
 
             <button type="button"
-                    onclick="window.print()"
+                    data-on-click="pcg.print"
                     class="action-button print-button">
                 <i class="fas fa-print"></i>
                 Print / Save as PDF
             </button>
 
             <button type="button"
-                    onclick="window.close()"
+                    data-on-click="pcg.close"
                     class="action-button close-button">
                 <i class="fas fa-times"></i>
                 Close
@@ -476,7 +477,7 @@
 
     <script src="{{ asset('vendor/qrcodejs/qrcode-1.0.0.min.js') }}"></script>
 
-    <script>
+    <script nonce="{{ $cspNonce ?? '' }}">
         document.addEventListener('DOMContentLoaded', function () {
 
             document.querySelectorAll('.qr-code').forEach(function (element) {

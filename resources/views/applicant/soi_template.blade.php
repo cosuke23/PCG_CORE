@@ -77,6 +77,7 @@
         }
     </style>
     <link rel="stylesheet" href="{{ asset('css/tailwind.css') }}">
+    <script src="{{ asset('js/pcg-ui.js') }}" defer></script>
 </head>
 
 <body>
@@ -1123,7 +1124,7 @@
 
         <div class="text-center font-bold underline text-lg">RESTRICTED</div>
     </div>
-    <button onclick="window.print()"
+    <button data-on-click="pcg.print"
         class="print-hidden fixed bottom-10 right-10 bg-blue-700 text-white font-bold py-3 px-6 rounded-full shadow-2xl z-50">
         🖨️ PRINT DOCUMENT
     </button>

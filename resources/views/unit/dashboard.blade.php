@@ -7,6 +7,7 @@
     <title>Document Checker</title>
 
     <link rel="stylesheet" href="{{ asset('css/tailwind.css') }}">
+    <script src="{{ asset('js/pcg-ui.js') }}" defer></script>
 </head>
 
 <body id="body"
@@ -72,7 +73,7 @@
 
                 <!-- MODE -->
                 <button
-                    onclick="toggleMode()"
+                    data-on-click="toggleMode"
                     id="modeBtn"
                     class="bg-white border border-gray-300 rounded-full px-5 py-3 flex items-center gap-3 shadow-sm hover:shadow-md transition">
 
@@ -184,7 +185,7 @@
                             @foreach ($documents as $doc)
 
                             <tr
-                                ondblclick='openModal(@json($doc))'
+                                data-on-dblclick="openModal" data-args='@json([$doc])'
                                 class="border-t border-gray-100 hover:bg-indigo-50 transition cursor-pointer">
 
                                 <!-- NAME -->
@@ -289,7 +290,7 @@
 
                 </div>
 
-                <button onclick="closeModal()"
+                <button data-on-click="closeModal"
                     class="w-12 h-12 rounded-full bg-gray-100 hover:bg-red-100 hover:text-red-500 transition">
 
                     ✕
@@ -320,7 +321,7 @@
 
                         <input type="checkbox"
                             id="checkAll"
-                            onclick="toggleAll(this)"
+                            data-on-click="toggleAll" data-args='["$this"]'
                             class="w-5 h-5">
 
                         <label for="checkAll"
@@ -350,7 +351,7 @@
                     <div class="flex flex-col md:flex-row gap-4 mt-8">
 
                         <button type="button"
-                            onclick="submitDecision('approved')"
+                            data-on-click="submitDecision" data-args='["approved"]'
                             class="flex-1 bg-green-500 hover:bg-green-600 text-white py-4 rounded-2xl font-semibold text-lg">
 
                             ✔ ACCEPT
@@ -358,7 +359,7 @@
                         </button>
 
                         <button type="button"
-                            onclick="submitDecision('rejected')"
+                            data-on-click="submitDecision" data-args='["rejected"]'
                             class="flex-1 bg-red-500 hover:bg-red-600 text-white py-4 rounded-2xl font-semibold text-lg">
 
                             ❌ REJECT
@@ -374,7 +375,7 @@
         </div>
 
     </div>
-    <script>
+    <script nonce="{{ $cspNonce ?? '' }}">
         let darkMode = false;
 
         function toggleMode() {
@@ -494,7 +495,7 @@
             }
         }
     </script>
-    <script>
+    <script nonce="{{ $cspNonce ?? '' }}">
         // Escape server data before inserting it with innerHTML.
         function escapeHtml(value) {
             return String(value ?? '').replace(/[&<>"']/g, c => ({

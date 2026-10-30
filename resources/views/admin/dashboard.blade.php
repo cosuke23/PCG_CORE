@@ -131,7 +131,7 @@
         </div>
     </div>
     <script src="{{ asset('vendor/chartjs/chart-4.4.4.umd.min.js') }}"></script>
-    <script>
+    <script nonce="{{ $cspNonce ?? '' }}">
         const courseLabels = @json($courseCounts->keys()->values());
         const courseData = @json($courseCounts->values());
 
@@ -190,7 +190,7 @@
             }
         });
     </script>
-    <script>
+    <script nonce="{{ $cspNonce ?? '' }}">
         @if (session('swal_success'))
             Swal.fire({
                 icon: 'success',
@@ -202,7 +202,7 @@
     </script>
 
     <!-- ================= SCRIPTS ================= -->
-    <script>
+    <script nonce="{{ $cspNonce ?? '' }}">
         const FILES_URL = @json(\App\Support\Uploads::baseUrl());
         const NO_PHOTO_URL = @json(asset('images/no-photo.svg'));
 

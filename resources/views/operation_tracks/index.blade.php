@@ -503,7 +503,7 @@
     </script>
 
 
-    <script>
+    <script nonce="{{ $cspNonce ?? '' }}">
         $(document).ready(function() {
 
             /*

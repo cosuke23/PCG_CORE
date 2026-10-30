@@ -336,7 +336,7 @@
                     {{-- UPLOAD CSV --}}
                     <button
                         type="button"
-                        onclick="document.getElementById('csvUploadModal').classList.remove('hidden')"
+                        data-on-click="pcg.show" data-args='["#csvUploadModal"]'
                         class="bg-green-600 hover:bg-green-700 text-white px-5 py-2.5 rounded-lg">
 
                         <i class="fas fa-file-import mr-2"></i>
@@ -367,7 +367,7 @@
 
                 <button
                     type="button"
-                    onclick="document.getElementById('csvUploadModal').classList.add('hidden')"
+                    data-on-click="pcg.hide" data-args='["#csvUploadModal"]'
                     class="text-gray-500 hover:text-red-500 text-2xl">
 
                     &times;
@@ -411,7 +411,7 @@
                     {{-- Cancel --}}
                     <button
                         type="button"
-                        onclick="document.getElementById('csvUploadModal').classList.add('hidden')"
+                        data-on-click="pcg.hide" data-args='["#csvUploadModal"]'
                         class="px-4 py-2 bg-gray-500 hover:bg-gray-600
                    text-white rounded-lg">
 

@@ -20,7 +20,7 @@
         @if (($rejectedCount ?? 0) > 0)
             <div id="rejectNotif" class="fixed top-5 right-5 z-50">
 
-                <div onclick="openRejectedModal()"
+                <div data-on-click="openRejectedModal"
                     class="bg-red-600 hover:bg-red-700 text-white px-4 py-3 rounded-xl shadow-lg cursor-pointer flex items-center gap-3 animate-bounce">
 
                     <span class="font-bold">⚠ Rejected Docs</span>
@@ -97,7 +97,7 @@
                             View reviewer remarks and missing requirements.
                         </p>
 
-                        <button type="button" onclick="openRejectedModal()"
+                        <button type="button" data-on-click="openRejectedModal"
                             class="text-red-400 hover:text-yellow-300 text-sm font-medium">
                             View Rejected Docs →
                         </button>
@@ -115,7 +115,7 @@
                             View available Administrative and Operational training courses.
                         </p>
 
-                        <button type="button" onclick="openTrainingCourseModal()"
+                        <button type="button" data-on-click="openTrainingCourseModal"
                             class="text-blue-400 hover:text-yellow-300 text-sm font-medium">
                             View Training Courses →
                         </button>
@@ -132,7 +132,7 @@
                 w-full max-w-2xl p-6 relative">
 
                             <!-- CLOSE BUTTON -->
-                            <button type="button" onclick="closeTrainingCourseModal()"
+                            <button type="button" data-on-click="closeTrainingCourseModal"
                                 class="absolute top-4 right-5 text-gray-400 hover:text-white text-2xl">
                                 &times;
                             </button>
@@ -245,7 +245,7 @@
                             <!-- CANCEL -->
                             <div class="mt-6 text-right">
 
-                                <button type="button" onclick="closeTrainingCourseModal()"
+                                <button type="button" data-on-click="closeTrainingCourseModal"
                                     class="px-5 py-2 rounded-xl bg-gray-700
                        hover:bg-gray-600 text-gray-200 text-sm">
 
@@ -260,7 +260,7 @@
                     </div>
 
 
-                    <script>
+                    <script nonce="{{ $cspNonce ?? '' }}">
                         function openTrainingCourseModal() {
                             const modal = document.getElementById('trainingCourseModal');
 
@@ -328,7 +328,7 @@
             <div class="flex justify-between items-center mb-4">
                 <h2 class="text-xl font-semibold">Rejected Documents</h2>
 
-                <button onclick="closeRejectedModal()" class="text-red-400 text-xl">
+                <button data-on-click="closeRejectedModal" class="text-red-400 text-xl">
                     ✖
                 </button>
             </div>
@@ -342,7 +342,7 @@
 @endsection
 
 <!-- ================= JS ================= -->
-<script>
+<script nonce="{{ $cspNonce ?? '' }}">
         // Escape server data before inserting it with innerHTML.
         function escapeHtml(value) {
             return String(value ?? '').replace(/[&<>"']/g, c => ({

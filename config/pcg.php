@@ -33,4 +33,7 @@ return [
     // Reverse proxies to trust (comma-separated). Tailscale Serve: 127.0.0.1
     'trusted_proxies' => env('TRUSTED_PROXIES'),
 
+    // Content-Security-Policy: enforce (default) | report | off
+    'csp' => env('PCG_CSP', 'enforce'),
+
 ];

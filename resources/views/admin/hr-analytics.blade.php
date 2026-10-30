@@ -47,7 +47,7 @@
                     Fiscal Year:
                 </label>
 
-                <select name="year" id="year" onchange="this.form.submit()"
+                <select name="year" id="year" data-on-change="pcg.submit-form"
                     class="border border-gray-300 rounded-lg
                            px-4 py-2 bg-white shadow-sm
                            focus:ring-2 focus:ring-blue-500">
@@ -399,7 +399,7 @@
 </div>
 <script src="{{ asset('vendor/chartjs/chart-4.4.4.umd.min.js') }}"></script>
 
-<script>
+<script nonce="{{ $cspNonce ?? '' }}">
     /*
         |--------------------------------------------------------------------------
         | DATA FROM LARAVEL

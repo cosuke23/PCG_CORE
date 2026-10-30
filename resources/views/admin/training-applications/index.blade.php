@@ -632,7 +632,7 @@
 
                                         <select
                                             name="status"
-                                            onchange="this.form.submit()"
+                                            data-on-change="pcg.submit-form"
                                             class="bg-gray-800 border border-white/10 text-white text-sm rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
 
                                             <option value="Pending"
@@ -724,7 +724,7 @@
 
 <script src="{{ asset('vendor/sweetalert2/sweetalert2-11.22.0.all.min.js') }}"></script>
 
-<script>
+<script nonce="{{ $cspNonce ?? '' }}">
 
 window.addEventListener('load', function () {
 
@@ -747,7 +747,7 @@ window.addEventListener('load', function () {
 
 <script src="{{ asset('vendor/chartjs/chart-4.4.4.umd.min.js') }}"></script>
 
-<script>
+<script nonce="{{ $cspNonce ?? '' }}">
 
 window.addEventListener('load', function () {
 

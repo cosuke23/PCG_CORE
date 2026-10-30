@@ -354,7 +354,7 @@
 
 
 {{-- ================= SCRIPTS ================= --}}
-<script>
+<script nonce="{{ $cspNonce ?? '' }}">
     $(document).ready(function() {
 
         $('#trainingCoursesTable').DataTable({

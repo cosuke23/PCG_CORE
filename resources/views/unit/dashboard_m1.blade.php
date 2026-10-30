@@ -7,6 +7,7 @@
     <title>Document Checker</title>
 
     <link rel="stylesheet" href="{{ asset('css/tailwind.css') }}">
+    <script src="{{ asset('js/pcg-ui.js') }}" defer></script>
 </head>
 
 <body id="body" class="bg-[#f5f5f7] min-h-screen overflow-hidden transition-all duration-300">
@@ -61,7 +62,7 @@
 
                 <div class="bg-white rounded-3xl p-8 w-full max-w-md shadow-2xl relative">
 
-                    <button onclick="closeSerialModal()"
+                    <button data-on-click="closeSerialModal"
                         class="absolute top-4 right-4 text-gray-500 hover:text-red-500 text-xl">
 
                         ✕
@@ -95,7 +96,7 @@
                                     <input type="file" name="disciplinary_files[]" accept=".pdf,.jpg,.jpeg,.png"
                                         class="flex-1 border border-gray-300 rounded-xl p-3">
 
-                                    <button type="button" onclick="removeRow(this)"
+                                    <button type="button" data-on-click="removeRow" data-args='["$this"]'
                                         class="bg-red-500 hover:bg-red-600 text-white px-4 py-3 rounded-xl">
 
                                         ✕
@@ -106,7 +107,7 @@
 
                             </div>
 
-                            <button type="button" onclick="addRow()"
+                            <button type="button" data-on-click="addRow"
                                 class="mt-4 bg-indigo-500 hover:bg-indigo-600 text-white px-5 py-3 rounded-2xl">
 
                                 + Add File
@@ -128,7 +129,7 @@
             </div>
             <script src="{{ asset('vendor/sweetalert2/sweetalert2-11.22.0.all.min.js') }}"></script>
             @if (session('success'))
-                <script>
+                <script nonce="{{ $cspNonce ?? '' }}">
                     Swal.fire({
                         icon: 'success',
                         title: 'Success',
@@ -137,7 +138,7 @@
                     });
                 </script>
             @endif
-            <script>
+            <script nonce="{{ $cspNonce ?? '' }}">
                 function addRow() {
 
                     let html = `
@@ -149,7 +150,7 @@
                 class="flex-1 border border-gray-300 rounded-xl p-3">
 
             <button type="button"
-                onclick="removeRow(this)"
+                data-on-click="removeRow" data-args='["$this"]'
                 class="bg-red-500 hover:bg-red-600 text-white px-4 py-3 rounded-xl">
 
                 ✕
@@ -168,7 +169,7 @@
                     btn.closest('.disciplinary-row').remove();
                 }
             </script>
-            <script>
+            <script nonce="{{ $cspNonce ?? '' }}">
         // Escape server data before inserting it with innerHTML.
         function escapeHtml(value) {
             return String(value ?? '').replace(/[&<>"']/g, c => ({
@@ -283,7 +284,7 @@
                 </div>
 
                 <!-- MODE -->
-                <button onclick="toggleMode()" id="modeBtn"
+                <button data-on-click="toggleMode" id="modeBtn"
                     class="bg-white border border-gray-300 rounded-full px-5 py-3 flex items-center gap-3 shadow-sm hover:shadow-md transition">
 
                     <span id="modeText" class="text-sm font-semibold text-black">
@@ -386,7 +387,7 @@
                         <tbody>
 
                             @foreach ($documents as $doc)
-                                <tr ondblclick='openModal(@json($doc))'
+                                <tr data-on-dblclick="openModal" data-args='@json([$doc])'
                                     class="border-t border-gray-100 hover:bg-indigo-50 transition cursor-pointer">
 
                                     <!-- NAME -->
@@ -486,7 +487,7 @@
 
                 </div>
 
-                <button onclick="closeModal()"
+                <button data-on-click="closeModal"
                     class="w-12 h-12 rounded-full bg-gray-100 hover:bg-red-100 hover:text-red-500 transition">
 
                     ✕
@@ -509,7 +510,7 @@
                     <!-- CHECK ALL -->
                     <div class="bg-white border border-gray-200 rounded-2xl p-4 mb-6 flex items-center gap-3">
 
-                        <input type="checkbox" id="checkAll" onclick="toggleAll(this)" class="w-5 h-5">
+                        <input type="checkbox" id="checkAll" data-on-click="toggleAll" data-args='["$this"]' class="w-5 h-5">
 
                         <label for="checkAll" class="font-semibold text-black">
 
@@ -534,14 +535,14 @@
                     <!-- BUTTONS -->
                     <div class="flex flex-col md:flex-row gap-4 mt-8">
 
-                        <button type="button" onclick="submitDecision('approved')"
+                        <button type="button" data-on-click="submitDecision" data-args='["approved"]'
                             class="flex-1 bg-green-500 hover:bg-green-600 text-white py-4 rounded-2xl font-semibold text-lg">
 
                             ✔ ACCEPT
 
                         </button>
 
-                        <button type="button" onclick="submitDecision('rejected')"
+                        <button type="button" data-on-click="submitDecision" data-args='["rejected"]'
                             class="flex-1 bg-red-500 hover:bg-red-600 text-white py-4 rounded-2xl font-semibold text-lg">
 
                             ❌ REJECT
@@ -557,7 +558,7 @@
         </div>
 
     </div>
-    <script>
+    <script nonce="{{ $cspNonce ?? '' }}">
         document.getElementById('tableSearch').addEventListener('keyup', function() {
 
             let value = this.value.toLowerCase();
@@ -578,7 +579,7 @@
 
         });
     </script>
-    <script>
+    <script nonce="{{ $cspNonce ?? '' }}">
         let darkMode = false;
 
         function toggleMode() {
@@ -698,7 +699,7 @@
             }
         }
     </script>
-    <script>
+    <script nonce="{{ $cspNonce ?? '' }}">
         // Escape server data before inserting it with innerHTML.
         function escapeHtml(value) {
             return String(value ?? '').replace(/[&<>"']/g, c => ({
@@ -761,7 +762,7 @@
                         preview = `
                     <img src="${escapeHtml(url)}"
                         style="width:100%; max-height:500px; object-fit:contain;"
-                        onerror="this.style.display='none'; this.nextElementSibling.style.display='block';"
+                        data-on-error="pcg.img-fallback"
                     >
                     <div style="display:none;color:red;">Image failed to load</div>
                 `;

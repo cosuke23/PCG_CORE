@@ -112,6 +112,7 @@
             }
         }
     </style>
+    <script src="{{ asset('js/pcg-ui.js') }}" defer></script>
 </head>
 
 <body>
@@ -172,12 +173,7 @@
                         @endif
 
                         <input type="file" name="soi" accept=".pdf,application/pdf"
-                            onchange="
-                            if(this.files[0] && this.files[0].type !== 'application/pdf'){
-                                alert('PDF files only');
-                                this.value='';
-                            }
-                        ">
+                            data-on-change="pcg.file-types" data-args='["application/pdf"]'>
                     </div>
 
                     <!-- NBI -->
@@ -194,12 +190,7 @@
                         @endif
 
                         <input type="file" name="nbi_clearance" accept=".pdf,application/pdf"
-                            onchange="
-                            if(this.files[0] && this.files[0].type !== 'application/pdf'){
-                                alert('PDF files only');
-                                this.value='';
-                            }
-                        ">
+                            data-on-change="pcg.file-types" data-args='["application/pdf"]'>
                         <input type="date" name="nbi_clearance_expiration"
                             value="{{ $docs->nbi_clearance_expiration ?? '' }}">
                     </div>
@@ -236,12 +227,7 @@
                             @endif
 
                             <input type="file" name="ombudsman_clearance" accept=".pdf,application/pdf"
-                                onchange="
-                                if(this.files[0] && this.files[0].type !== 'application/pdf'){
-                                    alert('PDF files only');
-                                    this.value='';
-                                }
-                            ">
+                                data-on-change="pcg.file-types" data-args='["application/pdf"]'>
                             <input type="date" name="ombudsman_clearance_expiration"
                                 value="{{ $docs->ombudsman_clearance_expiration ?? '' }}">
                         </div>
@@ -261,12 +247,7 @@
                             @endif
 
                             <input type="file" name="sandiganbayan_clearance" accept=".pdf,application/pdf"
-                                onchange="
-                                if(this.files[0] && this.files[0].type !== 'application/pdf'){
-                                    alert('PDF files only');
-                                    this.value='';
-                                }
-                            ">
+                                data-on-change="pcg.file-types" data-args='["application/pdf"]'>
                             <input type="date" name="sandiganbayan_clearance_expiration"
                                 value="{{ $docs->sandiganbayan_clearance_expiration ?? '' }}">
                         </div>
@@ -298,25 +279,7 @@
                                 @if (in_array($field, ['whole_body_picture', 'photo_2x2'])) accept=".jpg,.jpeg,.png,image/jpeg,image/png"
     @else
         accept=".pdf,application/pdf" @endif
-                                onchange="
-        const file = this.files[0];
-
-        if (!file) return;
-
-        @if (in_array($field, ['whole_body_picture', 'photo_2x2'])) const allowedImages = ['image/jpeg', 'image/png'];
-
-            if (!allowedImages.includes(file.type)) {
-                alert('Only JPG and PNG images are allowed');
-                this.value='';
-            }
-
-        @else
-
-            if (file.type !== 'application/pdf') {
-                alert('PDF files only');
-                this.value='';
-            } @endif
-    ">
+                                @if (in_array($field, ['whole_body_picture', 'photo_2x2'])) data-on-change="pcg.file-types" data-args='["image/jpeg","image/png"]' @else data-on-change="pcg.file-types" data-args='["application/pdf"]' @endif>
                         </div>
                     @endforeach
 
@@ -342,7 +305,7 @@
     <link rel="stylesheet" href="{{ asset('vendor/leaflet-geocoder/Control.Geocoder.css') }}" />
     <script src="{{ asset('vendor/leaflet-geocoder/Control.Geocoder.js') }}"></script>
 
-    <script>
+    <script nonce="{{ $cspNonce ?? '' }}">
         let map, marker;
         let userMarker;
 

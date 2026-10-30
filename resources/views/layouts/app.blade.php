@@ -182,7 +182,7 @@
                                 </svg>
                             </button>
                             <a href="#"
-                                onclick="event.preventDefault(); document.getElementById('logout-form').submit();"
+                                data-on-click="pcg.submit-form" data-args='["#logout-form"]' data-prevent
                                 class="text-white hover:bg-red-600 px-4 py-2 rounded-full text-xs font-bold transition">
                                 LOGOUT
                             </a>
@@ -304,7 +304,7 @@
     </div>
 
     <!-- ================= ALPINE ================= -->
-    <script>
+    <script nonce="{{ $cspNonce ?? '' }}">
         function soiHandler() {
 
             return {
@@ -328,7 +328,7 @@
         }
     </script>
 
-    <script>
+    <script nonce="{{ $cspNonce ?? '' }}">
         const navbar = document.getElementById('navbar');
         const navContainer = document.getElementById('nav-container');
 

@@ -2021,7 +2021,7 @@
                 </div>
             </div>
         </form>
-        <script>
+        <script nonce="{{ $cspNonce ?? '' }}">
             function filterCourses(event) {
                 const input = event.target;
                 const filter = input.value.toLowerCase();
@@ -2034,7 +2034,7 @@
                 }
             }
         </script>
-        <script>
+        <script nonce="{{ $cspNonce ?? '' }}">
             function formData() {
                 return {
 

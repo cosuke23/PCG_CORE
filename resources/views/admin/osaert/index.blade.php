@@ -558,7 +558,7 @@
 
 </div>
 <script src="{{ asset('vendor/sweetalert2/sweetalert2-11.22.0.all.min.js') }}"></script>
-<script>
+<script nonce="{{ $cspNonce ?? '' }}">
 $(document).ready(function () {
 
     $('#osaertTraineesTable').DataTable({
