@@ -4,6 +4,8 @@
 !.env.example
 *.sql
 !/database/audit/*.sql
+# Schema-only file for the local *_dev database (no data)
+!/database/dev/*.sql
 *.sql.gz
 /backups/
 
