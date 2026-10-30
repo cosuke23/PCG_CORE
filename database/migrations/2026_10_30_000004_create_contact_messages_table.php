@@ -12,7 +12,7 @@ return new class extends Migration
 {
     public function up(): void
     {
-        Schema::create('contact_messages', function (Blueprint $table) {
+        if (!Schema::hasTable('contact_messages')) Schema::create('contact_messages', function (Blueprint $table) {
             $table->id();
             $table->string('name');
             $table->string('email');

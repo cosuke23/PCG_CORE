@@ -24,7 +24,7 @@ return new class extends Migration
 {
     public function up(): void
     {
-        Schema::create('ranks', function (Blueprint $table) {
+        if (!Schema::hasTable('ranks')) Schema::create('ranks', function (Blueprint $table) {
             $table->id();
             $table->string('code', 20)->unique();
             $table->string('name', 100);
@@ -59,13 +59,17 @@ return new class extends Migration
         ];
         $seniority = ['officer' => 0, 'non_officer' => 0];
         foreach ($ranks as [$class, $code, $name]) {
+            $seniority[$class]++;
+            if (DB::table('ranks')->where('code', $code)->exists()) {
+                continue;
+            }
             DB::table('ranks')->insert([
                 'code' => $code, 'name' => $name, 'classification' => $class,
-                'seniority' => ++$seniority[$class], 'created_at' => $now, 'updated_at' => $now,
+                'seniority' => $seniority[$class], 'created_at' => $now, 'updated_at' => $now,
             ]);
         }
 
-        Schema::create('personnel', function (Blueprint $table) {
+        if (!Schema::hasTable('personnel')) Schema::create('personnel', function (Blueprint $table) {
             $table->id();
             $table->string('serial_number', 100)->unique();   // permanent identifier (owner decision)
             $table->string('last_name', 100)->nullable();
@@ -88,7 +92,7 @@ return new class extends Migration
             $table->timestamps();
         });
 
-        Schema::create('personnel_assignments', function (Blueprint $table) {
+        if (!Schema::hasTable('personnel_assignments')) Schema::create('personnel_assignments', function (Blueprint $table) {
             $table->id();
             $table->foreignId('personnel_id')->constrained('personnel')->restrictOnDelete();
             $table->foreignId('org_unit_id')->constrained('org_units')->restrictOnDelete();
@@ -104,7 +108,7 @@ return new class extends Migration
             $table->index(['org_unit_id', 'end_date']);
         });
 
-        Schema::table('admin_users', function (Blueprint $table) {
+        if (!Schema::hasColumn('admin_users', 'org_unit_id')) Schema::table('admin_users', function (Blueprint $table) {
             $table->foreignId('org_unit_id')->nullable()->after('role')->constrained('org_units')->nullOnDelete();
         });
     }

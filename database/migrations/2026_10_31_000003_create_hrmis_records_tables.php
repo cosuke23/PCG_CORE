@@ -23,7 +23,7 @@ return new class extends Migration
 
     public function up(): void
     {
-        Schema::create('personnel_registrations', function (Blueprint $table) {
+        if (!Schema::hasTable('personnel_registrations')) Schema::create('personnel_registrations', function (Blueprint $table) {
             $table->id();
             $table->string('status', 20)->default('draft')->index(); // draft | submitted | returned | approved | rejected
             $table->string('serial_number', 100)->index();
@@ -54,7 +54,7 @@ return new class extends Migration
             $table->timestamps();
         });
 
-        Schema::create('registration_events', function (Blueprint $table) {
+        if (!Schema::hasTable('registration_events')) Schema::create('registration_events', function (Blueprint $table) {
             $table->id();
             $table->foreignId('registration_id')->constrained('personnel_registrations')->restrictOnDelete();
             $table->string('action', 30);              // created | updated | submitted | endorsed | returned | approved | rejected
@@ -66,7 +66,7 @@ return new class extends Migration
             $table->timestamp('created_at')->nullable();
         });
 
-        Schema::create('document_categories', function (Blueprint $table) {
+        if (!Schema::hasTable('document_categories')) Schema::create('document_categories', function (Blueprint $table) {
             $table->id();
             $table->string('code', 40)->unique();
             $table->string('name', 150);
@@ -90,13 +90,16 @@ return new class extends Migration
             ['other', 'Other personnel documents', false, false],
         ];
         foreach ($categories as $i => [$code, $name, $restricted, $expiry]) {
+            if (DB::table('document_categories')->where('code', $code)->exists()) {
+                continue;
+            }
             DB::table('document_categories')->insert([
                 'code' => $code, 'name' => $name, 'is_restricted' => $restricted, 'tracks_expiry' => $expiry,
                 'sort_order' => $i, 'created_at' => $now, 'updated_at' => $now,
             ]);
         }
 
-        Schema::create('personnel_documents', function (Blueprint $table) {
+        if (!Schema::hasTable('personnel_documents')) Schema::create('personnel_documents', function (Blueprint $table) {
             $table->id();
             $table->foreignId('personnel_id')->constrained('personnel')->restrictOnDelete();
             $table->foreignId('category_id')->constrained('document_categories')->restrictOnDelete();
@@ -120,7 +123,7 @@ return new class extends Migration
             $table->index(['personnel_id', 'category_id']);
         });
 
-        Schema::create('document_access_logs', function (Blueprint $table) {
+        if (!Schema::hasTable('document_access_logs')) Schema::create('document_access_logs', function (Blueprint $table) {
             $table->id();
             $table->foreignId('document_id')->constrained('personnel_documents')->restrictOnDelete();
             $table->string('action', 20);                        // upload | download | verify | reject
@@ -130,7 +133,7 @@ return new class extends Migration
             $table->timestamp('created_at')->nullable();
         });
 
-        Schema::create('promotions', function (Blueprint $table) {
+        if (!Schema::hasTable('promotions')) Schema::create('promotions', function (Blueprint $table) {
             $table->id();
             $table->foreignId('personnel_id')->constrained('personnel')->restrictOnDelete();
             $table->foreignId('from_rank_id')->nullable()->constrained('ranks')->restrictOnDelete();
@@ -143,7 +146,7 @@ return new class extends Migration
             $table->index(['personnel_id', 'effective_date']);
         });
 
-        Schema::create('personnel_trainings', function (Blueprint $table) {
+        if (!Schema::hasTable('personnel_trainings')) Schema::create('personnel_trainings', function (Blueprint $table) {
             $table->id();
             $table->foreignId('personnel_id')->constrained('personnel')->restrictOnDelete();
             $table->string('title');

@@ -12,7 +12,7 @@ return new class extends Migration
 {
     public function up(): void
     {
-        Schema::create('admin_audit_logs', function (Blueprint $table) {
+        if (!Schema::hasTable('admin_audit_logs')) Schema::create('admin_audit_logs', function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger('admin_user_id')->nullable()->index();
             $table->string('admin_email')->nullable();
