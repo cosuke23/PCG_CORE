@@ -34,7 +34,11 @@ class RegisterController extends Controller
      */
     public function register(Request $request)
     {
-        Log::info('Registration attempt started', ['request' => $request->all()]);
+        // Never log passwords or the base64 selfie.
+        Log::info('Registration attempt started', [
+            'email' => $request->email,
+            'serial_number' => $request->serial_number,
+        ]);
 
         try {
 
@@ -80,48 +84,35 @@ class RegisterController extends Controller
             // ✅ SELFIE UPLOAD (FIXED & CLEAN)
             // ======================================================
 
-            // $selfieData = $validated['selfie_image'];
-
-            // if (str_contains($selfieData, 'base64,')) {
-            //     $selfieData = explode(',', $selfieData)[1];
-            // }
-
-            // $image = base64_decode($selfieData);
-
-            // // folder (PUBLIC ACCESSIBLE)
-            // $folderPath = public_path('selfies');
-
-            // if (!file_exists($folderPath)) {
-            //     mkdir($folderPath, 0777, true);
-            // }
-
-            // // filename
-            // $fileName = uniqid() . '.png';
-            // $filePath = $folderPath . '/' . $fileName;
-
-            // // save image
-            // file_put_contents($filePath, $image);
-            // chmod($filePath, 0777);
             $selfieData = $validated['selfie_image'];
 
             if (str_contains($selfieData, 'base64,')) {
                 $selfieData = explode(',', $selfieData)[1];
             }
 
-            $image = base64_decode($selfieData);
+            $image = base64_decode($selfieData, true);
 
-            // ✅ SAVE DIRECTLY TO THIS FOLDER
-            $folderPath = '/home/sghwkf6wslnz/public_html/pcg-mepcom.com/selfies';
+            // Only accept real PNG/JPEG data (the camera capture sends PNG).
+            $imageInfo = $image !== false ? @getimagesizefromstring($image) : false;
 
-            if (!file_exists($folderPath)) {
-                mkdir($folderPath, 0777, true);
+            if (!$imageInfo || !in_array($imageInfo[2], [IMAGETYPE_PNG, IMAGETYPE_JPEG], true)) {
+                return back()
+                    ->withErrors(['selfie_image' => 'Please capture a valid selfie photo.'])
+                    ->withInput($request->except(['password', 'password_confirmation', 'selfie_image']));
             }
 
-            $fileName = uniqid() . '.png';
+            // Production (cPanel) sets PCG_SELFIE_DIR to the old fixed path.
+            $folderPath = config('pcg.selfie_dir');
+
+            if (!file_exists($folderPath)) {
+                mkdir($folderPath, 0755, true);
+            }
+
+            $fileName = bin2hex(random_bytes(16)) . '.png';
             $filePath = $folderPath . '/' . $fileName;
 
             file_put_contents($filePath, $image);
-            chmod($filePath, 0777);
+            chmod($filePath, 0644);
             // ✅ SAVE RELATIVE PATH TO DB (IMPORTANT)
             $selfiePath = 'selfies/' . $fileName;
 
@@ -165,7 +156,7 @@ class RegisterController extends Controller
 
             return back()
                 ->withErrors($e->errors())
-                ->withInput();
+                ->withInput($request->except(['password', 'password_confirmation', 'selfie_image']));
         } catch (\Exception $e) {
 
             Log::error('Registration failed', [
@@ -174,7 +165,7 @@ class RegisterController extends Controller
 
             return back()
                 ->withErrors(['error' => 'Registration failed. Please try again.'])
-                ->withInput();
+                ->withInput($request->except(['password', 'password_confirmation', 'selfie_image']));
         }
     }
 }

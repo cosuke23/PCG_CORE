@@ -3,59 +3,63 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-use App\Models\User;
-use Illuminate\Support\Facades\Session;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Log;
 
 class AdminLoginController extends Controller
 {
-    // Show admin login page
     public function showLogin()
     {
         return view('admin.login');
     }
 
-    // Handle admin login
     public function login(Request $request)
     {
-        // Validate input
         $request->validate([
             'email'    => 'required|email',
             'password' => 'required|string',
         ]);
 
-        // STATIC ADMIN LOGIN
-        $adminEmail    = 'emsorix19@gmail.com';
-        $adminPassword = 'Juls@0730';
+        // Credentials come from .env (see config/pcg.php). They were
+        // previously hardcoded here.
+        $adminEmail = config('pcg.admin.email');
+        $adminHash  = config('pcg.admin.password_hash');
 
-        if ($request->email === $adminEmail && $request->password === $adminPassword) {
-            // Store admin session
+        if (!$adminEmail || !$adminHash) {
+            Log::error('Admin login is not configured: set ADMIN_EMAIL and ADMIN_PASSWORD_HASH in .env');
+
+            return back()
+                ->withErrors(['email' => 'Admin login is not configured on this server.'])
+                ->withInput($request->only('email'));
+        }
+
+        $emailMatches = hash_equals(strtolower($adminEmail), strtolower($request->email));
+
+        if ($emailMatches && Hash::check($request->password, $adminHash)) {
+            $request->session()->regenerate();
+
             session([
                 'admin_logged_in' => true,
                 'admin_email'     => $adminEmail,
             ]);
-            $pendingUsers  = User::where('status', 'Pending')->get();
-            $approvedUsers = User::where('status', 'Approved')->count();
-            $rejectedUsers = User::where('status', 'Rejected')->count();
-            $totalUsers    = User::count();
+
             return redirect()
                 ->route('admin.dashboard')
-                ->with('success', 'Admin login successful!')
-                ->with('pendingUsers', $pendingUsers)
-                ->with('approvedUsers', $approvedUsers)
-                ->with('rejectedUsers', $rejectedUsers)
-                ->with('totalUsers', $totalUsers);
+                ->with('success', 'Admin login successful!');
         }
 
-        // Invalid credentials
+        Log::warning('Failed admin login', ['ip' => $request->ip()]);
+
         return back()
             ->withErrors(['email' => 'Invalid admin credentials'])
             ->withInput($request->only('email'));
     }
 
-    // Admin logout
-    public function logout()
+    public function logout(Request $request)
     {
-        session()->forget('admin_logged_in');
+        session()->forget(['admin_logged_in', 'admin_email']);
+        $request->session()->regenerateToken();
+
         return redirect()->route('admin.login')->with('success', 'Admin logged out successfully');
     }
 }

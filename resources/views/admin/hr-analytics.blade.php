@@ -135,7 +135,7 @@
             {{-- Logout --}}
 
             <a
-                href="{{ route('admin.logout') }}"
+                href="{{ route('admin.logout.legacy') }}"
                 class="flex items-center px-4 py-3 rounded hover:bg-red-700 transition">
 
                 <i class="fas fa-right-from-bracket w-5 mr-2"></i>

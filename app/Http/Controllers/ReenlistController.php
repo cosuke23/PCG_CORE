@@ -10,8 +10,14 @@ class ReenlistController extends Controller
 {
     public function store(Request $request)
     {
-        // Start logging the incoming request
-        Log::info('Reenlistment Store Started', ['all_data' => $request->all()]);
+        // Records are keyed by serial number; only allow writing your own.
+        $request->merge([
+            'basic' => array_merge((array) $request->input('basic', []), [
+                'serial_number' => $request->user()->serial_number,
+            ]),
+        ]);
+
+        Log::info('Reenlistment Store Started', ['serial_number' => $request->user()->serial_number]);
 
         DB::beginTransaction();
 

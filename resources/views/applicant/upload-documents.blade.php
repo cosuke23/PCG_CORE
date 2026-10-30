@@ -132,6 +132,26 @@
 
             <h2>Upload Required Documents</h2>
 
+            @if (session('success'))
+                <div role="status" style="background:#dcfce7;color:#166534;padding:10px 14px;border-radius:8px;margin-bottom:12px;">
+                    {{ session('success') }}
+                </div>
+            @endif
+            @if (session('error'))
+                <div role="alert" style="background:#fee2e2;color:#991b1b;padding:10px 14px;border-radius:8px;margin-bottom:12px;">
+                    {{ session('error') }}
+                </div>
+            @endif
+            @if ($errors->any())
+                <div role="alert" style="background:#fee2e2;color:#991b1b;padding:10px 14px;border-radius:8px;margin-bottom:12px;">
+                    <ul style="margin:0;padding-left:18px;">
+                        @foreach ($errors->all() as $error)
+                            <li>{{ $error }}</li>
+                        @endforeach
+                    </ul>
+                </div>
+            @endif
+
             <form id="uploadForm" action="/documents/upload" method="POST" enctype="multipart/form-data">
                 @csrf
 
@@ -147,7 +167,7 @@
                         @if (!empty($docs->soi))
                             <small style="color:#22c55e;">
                                 ✔ Uploaded:
-                                <a href="{{ url('public/documents_toupload/' . $docs->soi) }}" target="_blank">View</a>
+                                <a href="{{ \App\Support\Uploads::url('documents_toupload/' . $docs->soi) }}" target="_blank">View</a>
                             </small>
                         @endif
 
@@ -167,7 +187,7 @@
                         @if (!empty($docs->nbi_clearance))
                             <small style="color:#22c55e;">
                                 ✔ Uploaded:
-                                <a href="{{ url('public/documents_toupload/' . $docs->nbi_clearance) }}" target="_blank">View</a>
+                                <a href="{{ \App\Support\Uploads::url('documents_toupload/' . $docs->nbi_clearance) }}" target="_blank">View</a>
                             </small>
                             <br>
                             <small>Exp: {{ $docs->nbi_clearance_expiration }}</small>
@@ -208,7 +228,7 @@
                             @if (!empty($docs->ombudsman_clearance))
                                 <small style="color:#22c55e;">
                                     ✔ Uploaded:
-                                    <a href="{{ url('public/documents_toupload/' . $docs->ombudsman_clearance) }}"
+                                    <a href="{{ \App\Support\Uploads::url('documents_toupload/' . $docs->ombudsman_clearance) }}"
                                         target="_blank">View</a>
                                 </small>
                                 <br>
@@ -233,7 +253,7 @@
                             @if (!empty($docs->sandiganbayan_clearance))
                                 <small style="color:#22c55e;">
                                     ✔ Uploaded:
-                                    <a href="{{ url('public/documents_toupload/' . $docs->sandiganbayan_clearance) }}"
+                                    <a href="{{ \App\Support\Uploads::url('documents_toupload/' . $docs->sandiganbayan_clearance) }}"
                                         target="_blank">View</a>
                                 </small>
                                 <br>
@@ -268,7 +288,7 @@
                             @if (!empty($docs->$field))
                                 <small style="color:#22c55e;">
                                     ✔ Uploaded:
-                                    <a href="{{ url('public/documents_toupload/' . $docs->$field) }}" target="_blank">
+                                    <a href="{{ \App\Support\Uploads::url('documents_toupload/' . $docs->$field) }}" target="_blank">
                                         View
                                     </a>
                                 </small>

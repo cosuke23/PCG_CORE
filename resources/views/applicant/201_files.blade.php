@@ -205,7 +205,7 @@
                                 <div style="margin-bottom:8px;">
                                     <small style="color:#22c55e;">
                                         ✔ Uploaded:
-                                        <a href="{{ url('public/' . $documents->$key) }}" target="_blank"
+                                        <a href="{{ \App\Support\Uploads::url($documents->$key) }}" target="_blank"
                                             style="color:#22c55e;">
                                             View File
                                         </a>

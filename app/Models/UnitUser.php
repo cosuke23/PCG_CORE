@@ -24,6 +24,10 @@ class UnitUser extends Model
         'is_active',
     ];
 
+    protected $hidden = [
+        'password',
+    ];
+
     protected $casts = [
         'permissions' => 'array',
         'is_active' => 'boolean',

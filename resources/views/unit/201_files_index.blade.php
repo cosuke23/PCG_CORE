@@ -118,7 +118,7 @@
     </div>
 
     <script>
-        const BASE_URL = "https://pcg-mepcom.com/public/";
+        const BASE_URL = @json(\App\Support\Uploads::baseUrl());
 
         // SEARCH
         document.getElementById('tableSearch').addEventListener('keyup', function() {

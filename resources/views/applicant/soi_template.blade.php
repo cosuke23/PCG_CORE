@@ -1088,7 +1088,7 @@
             <div
                 class="w-40 h-48 border-2 border-black flex items-center justify-center text-center p-2 mb-12 overflow-hidden">
                 @if (!empty($personnel_data->photo_2x2))
-                    <img src="https://pcg-mepcom.com/public/documents_toupload/{{ $personnel_data->photo_2x2 }}"
+                    <img src="{{ \App\Support\Uploads::url('documents_toupload/' . $personnel_data->photo_2x2) }}"
                         class="w-full h-full object-cover" alt="2x2 Photo">
                 @else
                     <p class="text-sm">

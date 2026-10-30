@@ -774,7 +774,7 @@
                     // IMPORTANT: DO NOT force "documents/"
                     // because your files use /photos/, /nbi/, etc.
 
-                    let url = "https://pcg-mepcom.com/public/documents_toupload/" + cleanPath;
+                    let url = @json(\App\Support\Uploads::url('documents_toupload/')) + cleanPath;
 
                     let isImg = /\.(jpg|jpeg|png|gif|webp)$/i.test(cleanPath);
                     let isPdf = /\.pdf$/i.test(cleanPath);

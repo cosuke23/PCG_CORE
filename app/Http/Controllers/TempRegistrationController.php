@@ -19,6 +19,11 @@ class TempRegistrationController extends Controller
         // Log the incoming request
         Log::info('Temp Save Step 1 Request: ' . json_encode($request->all()));
 
+        // The serial number always comes from the logged-in account. It used to
+        // come from the request, which let any user overwrite another
+        // member's reinlist_basic_info record.
+        $request->merge(['serial_number' => $request->user()->serial_number]);
+
         try {
             // Validate only the necessary fields for step 1
             $validated = $request->validate([

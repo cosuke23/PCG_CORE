@@ -17,10 +17,32 @@ class ApplicantDocumentController extends Controller
             'user_id' => Auth::id()
         ]);
 
-        return view('applicant.documents_upload');
+        // The "applicant.documents_upload" view never existed; send users to
+        // the working upload page instead of a 500 error.
+        return redirect()->route('upload.documents');
     }
     public function store(Request $request)
     {
+        // Previously no server-side file validation: any file type (e.g. .php)
+        // could be written into the web root.
+        $request->validate([
+            'soi'                     => 'nullable|file|mimes:pdf|max:10240',
+            'nbi_clearance'           => 'nullable|file|mimes:pdf|max:10240',
+            'ombudsman_clearance'     => 'nullable|file|mimes:pdf|max:10240',
+            'sandiganbayan_clearance' => 'nullable|file|mimes:pdf|max:10240',
+            'ofr'                     => 'nullable|file|mimes:pdf|max:10240',
+            'medical_clearance'       => 'nullable|file|mimes:pdf|max:10240',
+            'pft_clearance'           => 'nullable|file|mimes:pdf|max:10240',
+            'residential_sketch'      => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:10240',
+            'whole_body_picture'      => 'nullable|file|mimes:jpg,jpeg,png|max:10240',
+            'photo_2x2'               => 'nullable|file|mimes:jpg,jpeg,png|max:10240',
+            'nbi_clearance_expiration'           => 'nullable|date',
+            'ombudsman_clearance_expiration'     => 'nullable|date',
+            'sandiganbayan_clearance_expiration' => 'nullable|date',
+            'latitude'                => 'nullable|numeric|between:-90,90',
+            'longitude'               => 'nullable|numeric|between:-180,180',
+        ]);
+
         try {
 
             Log::info('=== UPLOAD START ===');
@@ -44,19 +66,18 @@ class ApplicantDocumentController extends Controller
                 $folder = preg_replace('#^(storage/|public/)#', '', $folder);
 
                 // base path (REAL FILE LOCATION)
-                $basePath = '/home/sghwkf6wslnz/public_html/pcg-mepcom.com/public/documents_toupload';
-                // $basePath = '/home/sghwkf6wslnz/public_html/public/documents_toupload';
+                $basePath = config('pcg.upload_root') . '/documents_toupload';
                 // final folder path
                 $pathFolder = rtrim($basePath, '/') . '/' . $folder;
                 $pathFolder = preg_replace('#/+#', '/', $pathFolder);
 
                 // create directory if not exists
                 if (!file_exists($pathFolder)) {
-                    mkdir($pathFolder, 0777, true);
+                    mkdir($pathFolder, 0755, true);
                 }
 
                 // filename
-                $fileName = time() . '_' . $file->getClientOriginalName();
+                $fileName = time() . '_' . preg_replace('/[^A-Za-z0-9._-]/', '_', $file->getClientOriginalName());
 
                 // move file
                 $file->move($pathFolder, $fileName);
@@ -246,11 +267,11 @@ class ApplicantDocumentController extends Controller
 
 
         // BASE STORAGE PATH (REAL SERVER PATH)
-        $basePath = '/home/sghwkf6wslnz/public_html/pcg-mepcom.com/public';
+        $basePath = config('pcg.upload_root');
 
         // Ensure base folder exists
         if (!is_dir($basePath)) {
-            mkdir($basePath, 0777, true);
+            mkdir($basePath, 0755, true);
         }
 
         /**
@@ -272,7 +293,7 @@ class ApplicantDocumentController extends Controller
 
             // create folder if not exists
             if (!is_dir($pathFolder)) {
-                mkdir($pathFolder, 0777, true);
+                mkdir($pathFolder, 0755, true);
             }
 
             // safe filename

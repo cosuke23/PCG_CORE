@@ -575,7 +575,7 @@
                         path = 'documents/' + path;
                     }
 
-                    let url = "/public/documents_toupload/" + path;
+                    let url = @json(\App\Support\Uploads::url('documents_toupload/')) + path;
 
                     let isImg = /\.(jpg|jpeg|png|gif|webp)$/i.test(path);
                     let isPdf = /\.pdf$/i.test(path);

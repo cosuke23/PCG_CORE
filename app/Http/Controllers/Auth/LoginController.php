@@ -21,28 +21,34 @@ class LoginController extends Controller
      */
     public function login(Request $request)
     {
-        $credentials = $request->only('email', 'password');
+        $credentials = $request->validate([
+            'email'    => 'required|email',
+            'password' => 'required|string',
+        ]);
 
         if (Auth::attempt($credentials)) {
 
             $user = Auth::user();
 
             // Check if approved
-            if ($user->status !== 'Approved') {
+            // Only approved accounts may log in. Statuses are stored with mixed
+            // case ("Approved", "Pending", "Rejected"); compare case-insensitively
+            // so that no unexpected value falls through to a successful login.
+            $status = strtolower(trim((string) $user->status));
+
+            if ($status !== 'approved') {
 
                 Auth::logout();
 
-                if ($user->status === 'Pending') {
-                    return back()->withErrors([
-                        'email' => 'Your account is waiting for admin approval.'
-                    ]);
-                }
+                $message = match ($status) {
+                    'pending'  => 'Your account is waiting for admin approval.',
+                    'rejected' => 'Your account has been rejected by admin.',
+                    default    => 'Your account is not active. Please contact the administrator.',
+                };
 
-                if ($user->status === 'rejected') {
-                    return back()->withErrors([
-                        'email' => 'Your account has been rejected by admin.'
-                    ]);
-                }
+                return back()
+                    ->withErrors(['email' => $message])
+                    ->withInput($request->only('email'));
             }
 
             $request->session()->regenerate();
@@ -60,7 +66,7 @@ class LoginController extends Controller
 
         return back()->withErrors([
             'email' => 'Invalid credentials.'
-        ]);
+        ])->withInput($request->only('email'));
     }
 
     /**
