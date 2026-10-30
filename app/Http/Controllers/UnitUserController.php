@@ -185,7 +185,8 @@ class UnitUserController extends Controller
             'email'         => 'required|email|max:255|unique:unit_users,email',
             'username'      => 'nullable|string|max:100',
             'password'      => 'required|string|min:8',
-            'unit_name'     => 'required|string|max:255',
+            'unit_name'     => 'nullable|required_without:role|string|max:255',
+            'role'          => 'nullable|string|max:255',
             'unit_code'     => 'nullable|string|max:50',
             'is_active'     => 'nullable|boolean',
         ]);
@@ -199,7 +200,9 @@ class UnitUserController extends Controller
             'username' => $request->username,
             'password' => Hash::make($request->password),
             'role' => "unit_checker",
-            'unit_name' => $request->unit_name,
+            // The admin form's "role" dropdown actually lists units
+            // (MEPLEF, NOCOP, ...); use it when the free-text unit is empty.
+            'unit_name' => $request->unit_name ?: $request->role,
             'unit_code' => $request->unit_code,
             'permissions' => $request->permissions,
             'is_active' => $request->boolean('is_active', true),

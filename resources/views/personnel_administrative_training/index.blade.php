@@ -11,15 +11,14 @@
 
 
     {{-- Tailwind --}}
-    <script src="https://cdn.tailwindcss.com"></script>
 
 
     {{-- Font Awesome --}}
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+    <link rel="stylesheet" href="{{ asset('vendor/fontawesome/css/all.min.css') }}">
 
 
     {{-- DataTables --}}
-    <link rel="stylesheet" href="https://cdn.datatables.net/2.3.2/css/dataTables.dataTables.min.css">
+    <link rel="stylesheet" href="{{ asset('vendor/datatables/dataTables.dataTables-2.3.2.min.css') }}">
 
 
     <style>
@@ -44,6 +43,7 @@
         }
     </style>
 
+    <link rel="stylesheet" href="{{ asset('css/tailwind.css') }}">
 </head>
 
 
@@ -482,9 +482,9 @@
     {{-- JAVASCRIPT --}}
     {{-- ========================================================= --}}
 
-    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <script src="{{ asset('vendor/jquery/jquery-3.7.1.min.js') }}"></script>
 
-    <script src="https://cdn.datatables.net/2.3.2/js/dataTables.min.js"></script>
+    <script src="{{ asset('vendor/datatables/dataTables-2.3.2.min.js') }}"></script>
 
 
     <script>

@@ -7,7 +7,7 @@
     <title>OSAERT Certificates</title>
 
     <link rel="stylesheet"
-          href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+          href="{{ asset('vendor/fontawesome/css/all.min.css') }}">
 
     <style>
         * {
@@ -477,7 +477,7 @@
 
     @endforelse
 
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <script src="{{ asset('vendor/qrcodejs/qrcode-1.0.0.min.js') }}"></script>
 
     <script>
         document.addEventListener('DOMContentLoaded', function () {

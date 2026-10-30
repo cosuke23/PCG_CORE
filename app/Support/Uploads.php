@@ -3,21 +3,24 @@
 namespace App\Support;
 
 /**
- * Public URLs for files under config('pcg.upload_root').
+ * URLs for uploaded personnel files.
  *
- * Production (cPanel) serves the project root, so uploaded files live at
- * https://pcg-mepcom.com/public/... and sets PCG_UPLOAD_URL accordingly.
- * Locally the web root is public/, so the default is asset('').
+ * Files are served through FileController (/files/{path}), which checks
+ * that the viewer may see them. $relativePath is the database value with
+ * its area prefix, e.g. "documents_toupload/documents/123_soi.pdf",
+ * "201_files/soi/123_x.pdf" or "selfies/abc.png".
  */
 class Uploads
 {
     public static function baseUrl(): string
     {
-        return rtrim(config('pcg.upload_url') ?: asset(''), '/') . '/';
+        return url('files') . '/';
     }
 
     public static function url(?string $relativePath): string
     {
-        return self::baseUrl() . ltrim((string) $relativePath, '/');
+        $segments = array_map('rawurlencode', explode('/', ltrim((string) $relativePath, '/')));
+
+        return self::baseUrl() . implode('/', $segments);
     }
 }

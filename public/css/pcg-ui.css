@@ -52,7 +52,7 @@
     --pcg-link: var(--pcg-navy-600);
 
     /* Type */
-    --pcg-font: "Segoe UI", system-ui, -apple-system, Roboto, "Helvetica Neue", Arial, sans-serif;
+    --pcg-font: "Inter", "Segoe UI", system-ui, -apple-system, Roboto, "Helvetica Neue", Arial, sans-serif;
     --pcg-text-xs: 0.75rem;
     --pcg-text-sm: 0.875rem;
     --pcg-text-base: 1rem;

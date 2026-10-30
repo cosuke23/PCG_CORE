@@ -3,7 +3,7 @@
 @section('title', 'PCG Dashboard')
 
 @section('content')
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="{{ asset('vendor/sweetalert2/sweetalert2-11.22.0.all.min.js') }}"></script>
 
     <!-- ================= BACKGROUND ================= -->
     <div class="relative min-h-screen text-white overflow-hidden"

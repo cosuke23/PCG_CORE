@@ -8,22 +8,21 @@
     <title>Administrative Course Track | MEPCOM Admin</title>
 
     {{-- Tailwind CSS --}}
-    <script src="https://cdn.tailwindcss.com"></script>
 
     {{-- Font Awesome --}}
     <link
         rel="stylesheet"
-        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+        href="{{ asset('vendor/fontawesome/css/all.min.css') }}">
 
     {{-- DataTables CSS --}}
     <link
         rel="stylesheet"
-        href="https://cdn.datatables.net/2.3.2/css/dataTables.dataTables.min.css">
+        href="{{ asset('vendor/datatables/dataTables.dataTables-2.3.2.min.css') }}">
 
     {{-- DataTables Responsive CSS --}}
     <link
         rel="stylesheet"
-        href="https://cdn.datatables.net/responsive/3.0.5/css/responsive.dataTables.min.css">
+        href="{{ asset('vendor/datatables/responsive.dataTables-3.0.5.min.css') }}">
 
     <style>
         /* =========================
@@ -98,6 +97,7 @@
             color: #1d4ed8 !important;
         }
     </style>
+    <link rel="stylesheet" href="{{ asset('css/tailwind.css') }}">
 </head>
 
 <body class="bg-slate-100 min-h-screen">
@@ -592,16 +592,16 @@
     {{-- ================= JAVASCRIPT ================= --}}
 
     {{-- jQuery --}}
-    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <script src="{{ asset('vendor/jquery/jquery-3.7.1.min.js') }}"></script>
 
     {{-- DataTables --}}
     <script
-        src="https://cdn.datatables.net/2.3.2/js/dataTables.min.js">
+        src="{{ asset('vendor/datatables/dataTables-2.3.2.min.js') }}">
     </script>
 
     {{-- DataTables Responsive --}}
     <script
-        src="https://cdn.datatables.net/responsive/3.0.5/js/dataTables.responsive.min.js">
+        src="{{ asset('vendor/datatables/dataTables.responsive-3.0.5.min.js') }}">
     </script>
 
 

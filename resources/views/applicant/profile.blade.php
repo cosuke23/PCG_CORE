@@ -10,10 +10,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script src="//unpkg.com/alpinejs" defer></script>
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    {{-- Alpine.js is loaded once by layouts/app (a second copy initialised the form twice) --}}
+    <script src="{{ asset('vendor/sweetalert2/sweetalert2-11.22.0.all.min.js') }}"></script>
     <title>SOI Form</title>
+    <link rel="stylesheet" href="{{ asset('css/tailwind.css') }}">
 </head>
 
 <body class="bg-gray-900 text-white">

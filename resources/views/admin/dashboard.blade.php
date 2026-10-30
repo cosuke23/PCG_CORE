@@ -3,16 +3,16 @@
 @section('title', 'Admin Dashboard')
 
 @section('styles')
-    <link rel="stylesheet" href="https://cdn.datatables.net/2.3.2/css/dataTables.dataTables.min.css">
+    <link rel="stylesheet" href="{{ asset('vendor/datatables/dataTables.dataTables-2.3.2.min.css') }}">
 
-    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <script src="{{ asset('vendor/jquery/jquery-3.7.1.min.js') }}"></script>
 
-    <script src="https://cdn.datatables.net/2.3.2/js/dataTables.min.js"></script>
+    <script src="{{ asset('vendor/datatables/dataTables-2.3.2.min.js') }}"></script>
 @endsection
 
 @section('content')
 
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="{{ asset('vendor/sweetalert2/sweetalert2-11.22.0.all.min.js') }}"></script>
 
     <div class="flex min-h-screen bg-gray-100">
 
@@ -157,10 +157,10 @@
 
                                 <td>
                                     @if ($user->selfie_image)
-                                        <img src="{{ asset($user->selfie_image) }}"
+                                        <img src="{{ \App\Support\Uploads::url($user->selfie_image) }}"
                                             class="w-10 h-10 rounded object-cover">
                                     @else
-                                        <img src="{{ asset('selfies/no_profile.jpg') }}"
+                                        <img src="{{ asset('images/no-photo.svg') }}"
                                             class="w-10 h-10 rounded object-cover">
                                     @endif
                                 </td>
@@ -206,7 +206,7 @@
 
         </div>
     </div>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="{{ asset('vendor/chartjs/chart-4.4.4.umd.min.js') }}"></script>
     <script>
         const courseLabels = @json($courseCounts->keys()->values());
         const courseData = @json($courseCounts->values());
@@ -279,6 +279,16 @@
 
     <!-- ================= SCRIPTS ================= -->
     <script>
+        const FILES_URL = @json(\App\Support\Uploads::baseUrl());
+        const NO_PHOTO_URL = @json(asset('images/no-photo.svg'));
+
+        // Registration data is user-supplied: escape before inserting as HTML.
+        function escapeHtml(value) {
+            return String(value ?? '').replace(/[&<>"']/g, c => ({
+                '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+            })[c]);
+        }
+
         $(document).ready(function() {
 
             // ================= DATA TABLE =================
@@ -334,15 +344,15 @@
                 if (user.status === 'Pending') {
 
                     let photo = user.selfie_image ?
-                        '/' + user.selfie_image :
-                        '/selfies/no_profile.jpg';
+                        FILES_URL + user.selfie_image :
+                        NO_PHOTO_URL;
 
                     Swal.fire({
                         title: 'Approve this user?',
                         html: `
                         <div style="text-align:center">
 
-                            <img src="${photo}"
+                            <img src="${escapeHtml(photo)}"
                                 style="
                                     width:90px;
                                     height:90px;
@@ -357,22 +367,22 @@
                                 font-size:18px;
                                 font-weight:bold;
                             ">
-                                ${user.name}
+                                ${escapeHtml(user.name)}
                             </h3>
 
                             <p style="margin:2px 0;">
                                 <b>Serial:</b>
-                                ${user.serial_number ?? 'N/A'}
+                                ${escapeHtml(user.serial_number ?? 'N/A')}
                             </p>
 
                             <p style="margin:2px 0;">
                                 <b>Unit:</b>
-                                ${user.unit_assignment ?? 'N/A'}
+                                ${escapeHtml(user.unit_assignment ?? 'N/A')}
                             </p>
 
                             <p style="margin:2px 0;">
                                 <b>Email:</b>
-                                ${user.email ?? 'N/A'}
+                                ${escapeHtml(user.email ?? 'N/A')}
                             </p>
 
                         </div>
@@ -432,8 +442,8 @@
                 $('#modalPhoto').attr(
                     'src',
                     user.selfie_image ?
-                    '/' + user.selfie_image :
-                    '/selfies/no_profile.jpg'
+                    FILES_URL + user.selfie_image :
+                    NO_PHOTO_URL
                 );
 
                 $('#modalName').text(user.name || 'N/A');

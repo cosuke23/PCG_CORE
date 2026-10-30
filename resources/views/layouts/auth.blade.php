@@ -12,6 +12,7 @@
     <meta name="robots" content="noindex">
     <title>@yield('title', 'Sign in') · MEPCOM HRMIS</title>
     <link rel="icon" href="{{ asset('favicon.ico') }}">
+    <link rel="stylesheet" href="{{ asset('vendor/inter/inter.css') }}">
     <link rel="stylesheet" href="{{ asset('css/pcg-ui.css') }}">
     <script src="{{ asset('js/pcg-ui.js') }}" defer></script>
 </head>

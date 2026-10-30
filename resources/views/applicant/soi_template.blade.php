@@ -4,7 +4,6 @@
 <head>
     <meta charset="UTF-8">
     <title>Summary of Information</title>
-    <script src="https://cdn.tailwindcss.com"></script>
     <style>
         /* To remove browser-generated headers/footers (Date, Page Title, URL):
            Browsers usually hide these if the page margins are set correctly
@@ -77,6 +76,7 @@
             }
         }
     </style>
+    <link rel="stylesheet" href="{{ asset('css/tailwind.css') }}">
 </head>
 
 <body>

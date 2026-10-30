@@ -77,6 +77,13 @@ Route::get('/osaert/verify/{trainee}', [OsaertController::class, 'verifyCertific
     ->name('osaert.verify.certificate');
 
 
+// Uploaded personnel files. FileController checks the viewer: admins and
+// unit checkers see all files, personnel only their own.
+Route::get('/files/{path}', [\App\Http\Controllers\FileController::class, 'show'])
+    ->where('path', '.*')
+    ->name('files.show');
+
+
 /*
 |--------------------------------------------------------------------------
 | Applicant registration & login

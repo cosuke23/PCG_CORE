@@ -137,5 +137,5 @@
 </section>
 
 <!-- Alpine.js CDN -->
-<script src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
+<script src="{{ asset('vendor/alpinejs/alpine-3.14.9.min.js') }}" defer></script>
 @endsection

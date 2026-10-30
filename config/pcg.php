@@ -20,13 +20,11 @@ return [
     ],
 
     // Folder that holds documents_toupload/, 201_files/ and
-    // disciplinary_actions/. Production (cPanel) used
+    // disciplinary_actions/. Files are served only through /files/{path}
+    // (FileController), so this should be OUTSIDE the web root, e.g.
+    // storage/app/private. Production (cPanel) used
     // /home/<account>/public_html/pcg-mepcom.com/public
     'upload_root' => env('PCG_UPLOAD_ROOT') ?: public_path(),
-
-    // Base URL that serves upload_root. Empty = this app's public/ URL.
-    // Production: https://pcg-mepcom.com/public
-    'upload_url' => env('PCG_UPLOAD_URL'),
 
     // Folder for registration selfies (stored in users.selfie_image as
     // "selfies/<file>.png").

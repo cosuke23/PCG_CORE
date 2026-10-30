@@ -6,7 +6,6 @@
     <title>@yield('title') - Admin Panel</title>
 
     <!-- Tailwind CSS CDN -->
-    <script src="https://cdn.tailwindcss.com"></script>
 
     <!-- Optional: dark mode support -->
     <script>
@@ -16,6 +15,7 @@
     </script>
 
     @yield('styles')
+    <link rel="stylesheet" href="{{ asset('css/tailwind.css') }}">
 </head>
 <body class="bg-gray-100 dark:bg-gray-900 min-h-screen flex flex-col">
 

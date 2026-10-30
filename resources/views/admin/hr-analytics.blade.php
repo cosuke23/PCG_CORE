@@ -3,7 +3,7 @@
 @section('title', 'HR Analytics Dashboard')
 
 @section('styles')
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="{{ asset('vendor/chartjs/chart-4.4.4.umd.min.js') }}"></script>
 <style>
     .analytics-card {
         transition: all 0.2s ease;
@@ -523,7 +523,7 @@
     </main>
 
 </div>
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="{{ asset('vendor/chartjs/chart-4.4.4.umd.min.js') }}"></script>
 
 <script>
     /*

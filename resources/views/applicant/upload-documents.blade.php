@@ -5,7 +5,7 @@
     <meta charset="UTF-8">
     <title>Upload Required Documents</title>
 
-    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+    <link rel="stylesheet" href="{{ asset('vendor/leaflet/leaflet.css') }}" />
 
     <style>
         body {
@@ -338,9 +338,9 @@
 
         </div>
     </div>
-    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
-    <link rel="stylesheet" href="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.css" />
-    <script src="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.js"></script>
+    <script src="{{ asset('vendor/leaflet/leaflet.js') }}"></script>
+    <link rel="stylesheet" href="{{ asset('vendor/leaflet-geocoder/Control.Geocoder.css') }}" />
+    <script src="{{ asset('vendor/leaflet-geocoder/Control.Geocoder.js') }}"></script>
 
     <script>
         let map, marker;

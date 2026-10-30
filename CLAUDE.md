@@ -24,8 +24,8 @@ Windows helpers: `scripts/windows/setup.ps1`, `start.ps1`, `tailscale-serve.ps1`
   Every new non-public route MUST be inside the right group; add it to `tests/Feature/AccessControlTest.php`.
 - Controllers in `app/Http/Controllers` talk to the DB directly (mostly `DB::table`); ~30 tables have no model.
 - Join key across tables: `serial_number`. For applicant writes always take it from `$request->user()`, never from input.
-- Project config: `config/pcg.php` (admin creds, `upload_root`, `upload_url`, `selfie_dir`, `trusted_proxies`). No hardcoded paths/URLs/credentials.
-- Uploaded files live under `config('pcg.upload_root')` (default `public/`); build URLs with `App\Support\Uploads::url()`.
+- Project config: `config/pcg.php` (admin creds, `upload_root`, `selfie_dir`, `trusted_proxies`). No hardcoded paths/URLs/credentials.
+- Uploaded files live under `config('pcg.upload_root')` (default `public/`); link them with `App\Support\Uploads::url()` (served by `FileController` at `/files/{path}` after an access check — never link upload folders directly).
 - Views: Blade + CDN Tailwind/Alpine/jQuery/DataTables; Vite is configured but unused. Many links are root-absolute (`/profile`), so the app must be served at the root of a host/port with `public/` as document root.
 
 ## Database safety (strict)

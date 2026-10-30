@@ -16,7 +16,6 @@
          TAILWIND CSS
     ========================================================== --}}
 
-    <script src="https://cdn.tailwindcss.com"></script>
 
 
     {{-- =========================================================
@@ -25,7 +24,7 @@
 
     <link
         rel="stylesheet"
-        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+        href="{{ asset('vendor/fontawesome/css/all.min.css') }}">
 
 
     {{-- =========================================================
@@ -34,7 +33,7 @@
 
     <link
         rel="stylesheet"
-        href="https://cdn.datatables.net/2.3.2/css/dataTables.dataTables.min.css">
+        href="{{ asset('vendor/datatables/dataTables.dataTables-2.3.2.min.css') }}">
 
 
     {{-- =========================================================
@@ -43,7 +42,7 @@
 
     <link
         rel="stylesheet"
-        href="https://cdn.datatables.net/responsive/3.0.5/css/responsive.dataTables.min.css">
+        href="{{ asset('vendor/datatables/responsive.dataTables-3.0.5.min.css') }}">
 
 
     <style>
@@ -155,6 +154,7 @@
         }
     </style>
 
+    <link rel="stylesheet" href="{{ asset('css/tailwind.css') }}">
 </head>
 
 
@@ -916,17 +916,17 @@
 ========================================================== --}}
 
     <script
-        src="https://code.jquery.com/jquery-3.7.1.min.js">
+        src="{{ asset('vendor/jquery/jquery-3.7.1.min.js') }}">
     </script>
 
 
     <script
-        src="https://cdn.datatables.net/2.3.2/js/dataTables.min.js">
+        src="{{ asset('vendor/datatables/dataTables-2.3.2.min.js') }}">
     </script>
 
 
     <script
-        src="https://cdn.datatables.net/responsive/3.0.5/js/dataTables.responsive.min.js">
+        src="{{ asset('vendor/datatables/dataTables.responsive-3.0.5.min.js') }}">
     </script>
 
 

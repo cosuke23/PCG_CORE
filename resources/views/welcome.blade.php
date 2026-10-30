@@ -7,7 +7,6 @@
 
     <link href="https://fonts.bunny.net/css2?family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
 
-    <script src="https://cdn.tailwindcss.com"></script>
 
     <style>
         body {
@@ -26,6 +25,7 @@
             border: 1px solid rgba(255, 215, 0, 0.3);
         }
     </style>
+    <link rel="stylesheet" href="{{ asset('css/tailwind.css') }}">
 </head>
 <body class="antialiased">
     <div class="relative min-h-screen hero-bg flex flex-col items-center">

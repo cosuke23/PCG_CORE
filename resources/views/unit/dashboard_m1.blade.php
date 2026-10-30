@@ -6,7 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Document Checker</title>
 
-    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="{{ asset('css/tailwind.css') }}">
 </head>
 
 <body id="body" class="bg-[#f5f5f7] min-h-screen overflow-hidden transition-all duration-300">
@@ -161,7 +161,7 @@
                 </div>
 
             </div>
-            <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+            <script src="{{ asset('vendor/sweetalert2/sweetalert2-11.22.0.all.min.js') }}"></script>
             @if (session('success'))
                 <script>
                     Swal.fire({
