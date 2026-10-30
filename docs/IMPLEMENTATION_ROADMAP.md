@@ -102,5 +102,6 @@ Last updated: 2026-10-30 · branch `claude/cool-wozniak-rni95k`
 | 2026-10-30 | Apache 2.4 virtual host as documented (`public/` docroot, `AllowOverride All`, `Require local`): crawl + all flows | **Passed** — same results as `artisan serve` |
 | 2026-10-30 | Apache: direct requests to `documents_toupload/`, `201_files/`, `selfies/` | **Passed** — 403; `/files/...` requires sign-in; `/.env` 404 |
 | 2026-10-30 | Training tables migration on a schema copy missing 6 of 7 tables | **Passed** — creates the 6, leaves the existing one, re-run no-op, rollback keeps a table with data |
+| 2026-10-30 | Browser flows through the new `server.php` router (fresh dev DB) | **Passed** — 25 admin, 16 user, 2 registration; upload folders 404 (incl. `..`, `%5C`, case tricks), assets 200 |
 | — | Real `pcg_core` data | **Blocked** — needs access on your PC |
 | — | Windows scripts, Tailscale | **Not tested** — no Windows/Tailscale in this environment |
