@@ -7,6 +7,13 @@
 > [`database/audit/inspect_schema.sql`](../database/audit/inspect_schema.sql) in
 > phpMyAdmin and replacing the "inferred" sections with the real output.
 
+## 0. Development copy
+
+`database/dev/schema_inferred.sql` recreates these 40 tables (DDL only, no
+data) for a local `pcg_core_dev` database; `php artisan pcg:dev-seed` adds
+sample data. All browser end-to-end checks ran against it (MariaDB 10.11).
+It is **inferred** — compare it with the real schema before relying on it.
+
 ## 1. Engine and connection
 
 - Driver: `mysql` (`config/database.php`), works with MySQL or MariaDB. The exact
@@ -40,7 +47,7 @@ There are no foreign keys in the code's assumptions; relationships are implicit.
 | Table | Used by | Key columns (from code) |
 |-------|---------|-------------------------|
 | `users` | Login, Register, Admin, HR analytics, many joins | `id`, `rank`, `serial_number`, `name`, `email` (unique), `password` (bcrypt), `registration_type` (`officer`/`non_officer`), `selfie_image`, `date_of_birth`, `date_of_appointment`, `ete`, `mother_unit`, `sub_unit`, `unit_assignment`, `status` (`Pending`/`Approved`/`Rejected`), timestamps |
-| `unit_users` | Unit login, `unit-users/store` | `id`, `user_id`, `personnel_id`, `serial_number`, `full_name`, `email`, `username`, `password` (bcrypt), `role`, `unit_name`, `unit_code`, `permissions` (JSON), `is_active` |
+| `unit_users` | Unit login, `unit-users/store` | `id`, `user_id`, `personnel_id`, `serial_number`, `full_name`, `email`, `username`, `password` (bcrypt), `role` (`unit_checker` = own unit, `m1_checker` = all units — enforced since 2026-10-30), `unit_name`, `unit_code`, `permissions` (JSON), `is_active` |
 | `profiles` | `Profile` model (PK `user_id`) — legacy profile, `FaceVerificationController` | address, education, `photo`, `profile_code` |
 
 ### SOI / re-enlistment ("reinlist") — one person = many rows keyed by `serial_number`

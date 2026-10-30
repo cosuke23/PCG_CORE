@@ -1,6 +1,6 @@
 # Security Audit — PCG_CORE (MEPCOM HRMIS)
 
-Audit date: 2026-10-30 · Baseline commit: `83459a9` ("first commit") · Branch: `claude/cool-wozniak-rni95k`
+Audit date: 2026-10-30 · Baseline commit: `83459a9` ("first commit") · Branch: `claude/cool-wozniak-rni95k` · Last updated: 2026-10-30 (Laravel 12 upgrade, M1 separation, file access control)
 
 Scope: source code in this repository. The live `pcg_core` database and the
 production server (`pcg-mepcom.com`) were **not** accessed; findings about them
@@ -21,7 +21,9 @@ defence-in-depth.
 | A3 | Decide whether to purge the secret from git history (e.g. `git filter-repo`). | Rewriting history is destructive and needs your explicit approval; rotation (A1) is what actually removes the risk. |
 | A4 | On production, check that `https://pcg-mepcom.com/.env`, `/storage/logs/laravel.log`, `/composer.json` and `/public/documents_toupload/` are **not** reachable *(needs verification)*. | The views link to `https://pcg-mepcom.com/public/...`, which means the web server's document root is the project root, not `public/`. That layout exposes everything unless a root `.htaccess` blocks it. |
 | A5 | Set `ADMIN_EMAIL` / `ADMIN_PASSWORD_HASH` in every `.env` (local and production) before deploying this branch. | Admin login now fails closed when these are missing. |
-| A6 | Ensure every row in `unit_users` has a bcrypt password. | Unit login now verifies the password; accounts without one cannot log in. |
+| A6 | Ensure every row in `unit_users` has a bcrypt password — **Admin → Unit accounts → Set password** (accounts without one are flagged). | Unit login now verifies the password; accounts without one cannot log in. |
+| A6b | On **Admin → Unit accounts**, click **Grant M1 access** for the accounts that use the M1 (all units) login. | M1 access is now an explicit role; until granted, M1 users are refused at `/unit/loginM1`. |
+| A7 | Move uploaded files out of the web root: copy `public/documents_toupload`, `public/201_files`, `public/disciplinary_actions` (and `selfies/`) into e.g. `storage/app/private/`, set `PCG_UPLOAD_ROOT` / `PCG_SELFIE_DIR`, run `php artisan pcg:check`, then remove the public copies. | Links already go through the access-checked `/files` route; this removes the files from the web server's reach entirely. Moving files is your call (production data). |
 
 ---
 
@@ -37,7 +39,7 @@ defence-in-depth.
 | C4 | Rejected applicants could log in: admin writes `Rejected`, login compared with `rejected` and any other non-`Approved` status fell through to a successful login | `Auth\LoginController::login` | **Fixed** — case-insensitive; anything other than `approved` is refused. Tested. |
 | C5 | Unrestricted file upload into the web root: `/documents/upload` had no server-side type validation and kept the client file name (`time()_<original name>`) | `ApplicantDocumentController::store` | **Fixed** — `mimes`/`max` validation per field, file names sanitised. Tested with a `.php` upload. |
 | C6 | Any logged-in (or, before C2, anonymous) user could overwrite another member's profile records by sending a different `serial_number` | `TempRegistrationController::saveStep1`, `ReenlistController::store` | **Fixed** — serial number forced to the logged-in account's. |
-| C7 | Sensitive personnel documents (NBI/Ombudsman/Sandiganbayan clearances, medical, 201 files, disciplinary records, selfies) are stored under the public web root and served without authentication. File names are only `time()` + original name, so they are guessable. | Upload handlers write to `public/documents_toupload`, `public/201_files`, `public/disciplinary_actions`; views link to them directly | **Open** — needs migration to private storage with an authorised download controller (roadmap Phase 6). Moving the existing files touches production data, so it needs your approval. |
+| C7 | Sensitive personnel documents (NBI/Ombudsman/Sandiganbayan clearances, medical, 201 files, disciplinary records, selfies) were stored under the public web root and served without authentication; file names were guessable (`time()` + original name). | Upload handlers wrote to `public/documents_toupload`, `public/201_files`, `public/disciplinary_actions`; views linked to them directly | **Fixed in code** — every link goes through `FileController` (`/files/{path}`): personnel get only their own files, own-unit checkers only their unit's required documents, M1 checkers and admins everything; traversal-safe; `public/.htaccess` blocks direct requests to those folders. **Owner step A7:** move existing files out of `public/` and set `PCG_UPLOAD_ROOT` (the `.htaccess` block does not apply to `php artisan serve`). |
 | C8 | Production document root appears to be the project root, exposing `.env`, logs and source *(needs verification)* | URLs `https://pcg-mepcom.com/public/...` in views | **Open** — server configuration (A4). |
 
 ### High
@@ -47,26 +49,31 @@ defence-in-depth.
 | H1 | Passwords and the base64 selfie were written to the log on every registration (`$request->all()`) | `RegisterController::register` | **Fixed** — logs e-mail and serial only. |
 | H2 | Selfie upload accepted any base64 payload and wrote it with `chmod 0777` | `RegisterController::register` | **Fixed** — must decode to PNG/JPEG, random file name, `0644`. |
 | H3 | Upload folders created `0777` | upload handlers | **Fixed** — `0755`. |
-| H4 | Hardcoded production file-system paths (`/home/sghwkf6wslnz/...`) made uploads fail anywhere else and leaked the hosting account name | 4 controllers | **Fixed** — `PCG_UPLOAD_ROOT`, `PCG_SELFIE_DIR`, `PCG_UPLOAD_URL` in `config/pcg.php`. |
+| H4 | Hardcoded production file-system paths (`/home/sghwkf6wslnz/...`) made uploads fail anywhere else and leaked the hosting account name | 4 controllers | **Fixed** — `PCG_UPLOAD_ROOT`, `PCG_SELFIE_DIR` in `config/pcg.php`. |
 | H5 | No login rate limiting | routes | **Fixed** — `throttle` on all login/registration POSTs. |
 | H6 | Session fixation: admin and unit logins did not regenerate the session | controllers | **Fixed**. |
-| H7 | Outdated, end-of-life framework: Laravel 9.52 (security support ended Feb 2024). `composer audit` reports 50 advisories in 14 packages, including 1 critical and 1 high in `laravel/framework`, plus `symfony/http-foundation`, `league/commonmark`, `guzzlehttp/guzzle`. | `composer.lock` | **Open** — roadmap Phase 4b (upgrade to a supported Laravel; needs regression testing against the real DB). |
+| H7 | Outdated, end-of-life framework: Laravel 9.52 (security support ended Feb 2024). `composer audit` reported 50 advisories in 14 packages (1 critical). | `composer.lock` | **Fixed** — upgraded to Laravel 12 (PHP 8.2+), Sanctum 4, PHPUnit 11; `composer audit` reports no advisories. Verified by 70 tests and the browser end-to-end suite. |
 | H8 | Extensive PII logging: full request payloads (addresses, government IDs, dependents) logged by `ReenlistController`, `TempRegistrationController`, `UnitDocumentController`, `UnitUserController::storeDisciplinary` | `Log::info(... $request->all())` | **Fixed** — payload dumps removed from Register, Reenlist, profile save steps 1–6, unit review and disciplinary upload; logs keep IDs and counts only. (CSV-import logs still record trainee names supplied by the admin.) |
-| H9 | Unit checkers can see/act on any unit's personnel: `dashboardM1`, `index_201`, `show_201`, `searchSerial`, review/disciplinary endpoints are not scoped by `unit_name` / role | `UnitUserController` | **Open** — needs your rule for which unit roles may see which units. |
-| H10 | `/unit-users/store` lets the admin create unit accounts, but no admin UI calls it; previously it was public and unvalidated | `UnitUserController::store` | **Fixed** (admin-only + validation). |
+| H9 | Unit checkers could see and act on any unit's personnel: all-units dashboard, 201 files, serial search, disciplinary upload, and approve/reject for any serial number | `UnitUserController`, `UnitDocumentController` | **Fixed** — M1 is an explicit role (`m1_checker`) granted on Admin → Unit accounts; M1 pages require it (`unit.m1`); own-unit checkers can only review and open files of their own unit. **Owner step A6b:** grant M1 to existing M1 accounts. |
+| H10 | `/unit-users/store` was public and unvalidated | `UnitUserController::store` | **Fixed** (admin-only + validation; new Unit accounts page). |
+
+| H11 | The admin dashboard embedded every user's **password hash** and remember token in the page (rows serialised `users.*` to JSON) | `AdminController::dashboard`, `admin/dashboard.blade.php` | **Fixed** — explicit column list. |
+| H12 | Stored XSS against the admin: self-registered name/serial/unit were inserted as HTML into the approval dialog | `admin/dashboard.blade.php` | **Fixed** — escaped. |
+| H13 | Public `/osaert/verify` was written to list every OSAERT trainee's name and company (the page itself was missing, so it 500'd) | `OsaertController::verify` | **Fixed** — lookup by certificate number only; public verification routes throttled (60/min). Residual: `/osaert/verify/{id}` uses sequential IDs (printed QR codes depend on them); see risk 5. |
+| H14 | Training tracks: a rank without an equivalent matched every track (`LIKE '%%'`) | `ApplicantTrainingController` | **Fixed**. |
 
 ### Medium / Low
 
 | ID | Finding | Status |
 |----|---------|--------|
 | M1 | No security headers | **Fixed** — `SecurityHeaders` middleware (X-Frame-Options, nosniff, Referrer-Policy, Permissions-Policy, HSTS on HTTPS). |
-| M2 | No Content-Security-Policy; ~20 CDN scripts loaded without SRI, including the Tailwind *Play* CDN (not for production) and unpinned `alpinejs@3.x.x`, `chart.js`, `sweetalert2@11` | Open — Phase 5 (bundle assets with Vite, then add CSP). |
+| M2 | No Content-Security-Policy; ~20 CDN scripts loaded without SRI, including the Tailwind *Play* CDN and unpinned `alpinejs@3.x.x`, `chart.js`, `sweetalert2@11` | **Partially fixed** — all third-party assets are now self-hosted with pinned versions (`public/vendor`, `public/css/tailwind.css`); no external scripts remain (map tiles excepted). CSP still open: many views use inline scripts. |
 | M3 | Exception messages returned to users (`'Upload failed: ' . $e->getMessage()`) | Fixed in `storeDisciplinary`; review others. |
 | M4 | `GET /admin/logout` and `GET /unit/logout` (logout via GET is CSRF-able) | Kept for the existing sidebar links; low impact. Convert to POST forms in Phase 5. |
 | M5 | Admin session flag has no idle timeout separate from `SESSION_LIFETIME` (120 min) | Open. |
 | M6 | No MFA for admin | Open — recommend TOTP once admin moves to a real user table. |
 | M7 | `.gitignore` was a PowerShell script fragment; `storage/` missing from the repo | Fixed. |
-| M8 | `spatie/laravel-ignition` exposes `/_ignition/*` when `APP_DEBUG=true` | Keep `APP_DEBUG=false` outside development; install with `composer install --no-dev` on servers. |
+| M8 | `spatie/laravel-ignition` exposed `/_ignition/*` when `APP_DEBUG=true` | **Fixed** — package removed in the Laravel 12 upgrade. Keep `APP_DEBUG=false` outside development. |
 | L1 | DOM `innerHTML` built from server data: rejection comments shown to applicants (stored XSS), names, file URLs in unit dashboards and 201 files | **Fixed** — `escapeHtml()` applied in `applicant/dashboard`, `unit/dashboard`, `unit/dashboard_m1`, `unit/201_files_index`. |
 | L2 | Blade output is escaped with `{{ }}` throughout; no `{!! !!}` with user data found | OK. |
 | L3 | CSRF: all POST forms include `@csrf`; `VerifyCsrfToken` has no exclusions | OK. |
@@ -85,21 +92,25 @@ defence-in-depth.
 - [x] Stop logging passwords and selfies
 - [x] Login throttling, session regeneration, security headers
 - [x] Configurable upload paths/URLs; trusted proxy for Tailscale
-- [x] Automated tests (`php artisan test`, 48 tests)
+- [x] Automated tests (`php artisan test`, 70 tests) + browser end-to-end suite (`tests/e2e`)
 - [ ] **Owner:** rotate the leaked password (A1), make repo private (A2)
 - [ ] **Owner:** verify production document root (A4)
-- [ ] Move personnel documents to private storage + authorised download route (C7)
-- [ ] Scope unit-checker data access by unit/role (H9)
+- [x] Authorised download route for personnel documents (C7) — **owner:** move existing files (A7)
+- [x] Scope unit-checker data access by unit/role (H9) — **owner:** grant M1 (A6b)
+- [x] Upgrade Laravel / dependencies (H7): Laravel 12, `composer audit` clean
+- [x] Self-host all front-end assets (M2, part 1)
+- [x] Password hashes out of the admin page (H11); admin-side stored XSS (H12)
 - [x] Remove PII from logs (H8)
 - [x] Escape server data in `innerHTML` (L1)
 - [x] Transactions around profile delete-and-reinsert saves
-- [ ] Upgrade Laravel / dependencies (H7)
-- [ ] Self-host front-end assets, add CSP and SRI (M2)
+- [ ] Content-Security-Policy (M2, part 2) — needs inline scripts moved to files
 - [ ] Admin accounts in the database with roles + MFA (M6)
 
 ## 3. Unresolved risks (accepted until fixed)
 
-1. Personnel documents remain publicly reachable by URL (C7) on any server where `public/` is web-accessible.
-2. Unit checkers are not restricted to their own unit (H9).
-3. Known CVEs in the framework and libraries (H7).
-4. Single shared admin identity, no audit trail of who approved/rejected whom.
+1. **Leaked admin password** in the public git history until it is rotated (A1) — the only critical item left, and only you can do it.
+2. **Uploaded files inside `public/`** until they are moved (A7). Apache blocks direct requests via `public/.htaccess`; `php artisan serve` does not.
+3. **Single shared admin identity** from `.env`, no MFA, no audit trail of who approved/rejected whom (M5, M6). Recommended next: admin accounts in the database with roles — a schema change that needs your approval.
+4. **No Content-Security-Policy** (M2): inline scripts in the legacy views must move to files first.
+5. **Sequential certificate IDs**: `/osaert/verify/{id}` can be enumerated to list trainee names and companies (throttled to 60/min). A random verification token per certificate would fix it but needs a new column and reprinting of QR codes.
+6. **Inferred schema**: everything was verified on a database reconstructed from the code, not on the real `pcg_core`. Run `database/audit/inspect_schema.sql` and `php artisan pcg:check` against it.

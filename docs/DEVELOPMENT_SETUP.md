@@ -55,17 +55,41 @@ migrations don't describe the real schema (see `DATABASE_ARCHITECTURE.md`).
 To set up a second machine, import a backup in phpMyAdmin (Import tab) or with
 `mysql -u root -p pcg_core < backup.sql`. Keep backups outside the repository.
 
-### Unit-checker passwords
+### Unit-checker accounts
 
-Unit login now checks passwords. Accounts that have none cannot log in. Set a
-password from the project folder:
+Unit login checks passwords, and the M1 (all units) login requires the M1
+role. Sign in as admin → **Unit accounts**: accounts without a password are
+flagged; use **Set password** and **Grant M1 access** as needed.
+
+### Uploaded files (recommended: outside the web root)
 
 ```powershell
-php artisan tinker
->>> DB::table('unit_users')->where('email','checker@example.com')->update(['password' => Hash::make('NewStrongPassword!')]);
+mkdir storage\app\private
+robocopy public\documents_toupload   storage\app\private\documents_toupload   /E
+robocopy public\201_files            storage\app\private\201_files            /E
+robocopy public\disciplinary_actions storage\app\private\disciplinary_actions /E
+robocopy public\selfies              storage\app\private\selfies              /E
 ```
 
-(This changes real user data, so do it deliberately, one account at a time.)
+Then in `.env`: `PCG_UPLOAD_ROOT=C:/path/to/PCG_CORE/storage/app/private` and
+`PCG_SELFIE_DIR=C:/path/to/PCG_CORE/storage/app/private/selfies`, run
+`php artisan config:clear` and `php artisan pcg:check`, open a few documents
+in the app, and only then delete the copies under `public\`.
+
+### Development database with sample data (optional)
+
+To try every page without real data, use a separate `pcg_core_dev` database:
+
+```powershell
+mysql -u root -e "CREATE DATABASE pcg_core_dev CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci"
+mysql -u root pcg_core_dev < database\dev\schema_inferred.sql
+# .env: APP_ENV=local, DB_DATABASE=pcg_core_dev
+php artisan pcg:dev-seed
+```
+
+Sample logins (password `Demo@12345`): `member@demo.test` (/login),
+`unit@demo.test` (/unit/login), `m1@demo.test` (/unit/loginM1). The seeder
+refuses to run unless `APP_ENV=local` and the database name ends in `_dev`.
 
 ## 3. Run
 
@@ -117,12 +141,19 @@ localhost, so remote access still works.
 ## 4. Tests and checks
 
 ```powershell
-php artisan test          # 48 tests, in-memory SQLite, never touches pcg_core
+php artisan test          # 70 tests, in-memory SQLite, never touches pcg_core
 php artisan pcg:check     # read-only environment check
 php artisan route:list
 # (Laravel Pint is installed, but the existing code is not Pint-formatted yet)
-composer audit            # dependency advisories
+composer audit            # dependency advisories (currently none)
 ```
+
+Browser end-to-end checks (dev database + Node.js + Playwright):
+see `tests/e2e/README.md`.
+
+Front-end assets are self-hosted in `public/vendor` and `public/css`. Node.js
+is **not** needed to run the app. Only if you add a Tailwind class that is not
+used anywhere yet: `npm install` then `npm run build:css`.
 
 ## 5. Troubleshooting
 

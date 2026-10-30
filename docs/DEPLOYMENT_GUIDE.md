@@ -17,7 +17,7 @@ environment. Every command below must be run and checked on your PC (see §6).
 
 ## 1. Pre-flight (on the PC)
 
-1. Complete `DEVELOPMENT_SETUP.md`; `php artisan pcg:check` is all `[ OK ]`.
+1. Complete `DEVELOPMENT_SETUP.md` (PHP 8.2+); `php artisan pcg:check` is all `[ OK ]`, including "Uploads stored outside the web root".
 2. In `.env` set:
    ```dotenv
    APP_ENV=production
@@ -139,10 +139,16 @@ are encrypted and access-controlled. Test a restore into a scratch database.
 
 This guide does not change production. If this branch is deployed there:
 
-- `.env`: `ADMIN_EMAIL`, `ADMIN_PASSWORD_HASH`,
-  `PCG_UPLOAD_ROOT=/home/<account>/public_html/pcg-mepcom.com/public`,
-  `PCG_SELFIE_DIR=/home/<account>/public_html/pcg-mepcom.com/selfies`,
-  `PCG_UPLOAD_URL=https://pcg-mepcom.com/public`, `APP_DEBUG=false`.
-- Run `composer install --no-dev --optimize-autoloader`, then `php artisan config:cache`.
-- Every active `unit_users` row needs a bcrypt password before deployment.
+- **PHP 8.2+** on the host (Laravel 12).
+- `.env`: `ADMIN_EMAIL`, `ADMIN_PASSWORD_HASH`, `APP_DEBUG=false`,
+  `PCG_UPLOAD_ROOT` / `PCG_SELFIE_DIR` — ideally a folder outside
+  `public_html`; for the current layout:
+  `/home/<account>/public_html/pcg-mepcom.com/public` and
+  `/home/<account>/public_html/pcg-mepcom.com/selfies`.
+- `composer install --no-dev --optimize-autoloader`, then
+  `php artisan config:cache && php artisan route:cache && php artisan view:cache`.
+- Every active `unit_users` row needs a bcrypt password, and M1 checkers need
+  the M1 role, before deployment (Admin → Unit accounts).
 - Fix the document root so it points at `public/` (Security Audit A4/C8).
+- Documents are now linked via `/files/...`; old direct `/public/...` links
+  are blocked by `public/.htaccess`.

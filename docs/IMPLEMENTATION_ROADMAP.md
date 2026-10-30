@@ -1,107 +1,91 @@
 # Implementation Roadmap — PCG_CORE
 
-Legend: ✅ done & verified · 🟡 done, needs verification on your PC/DB ·
-⬜ not started · ⛔ blocked (reason given) · 🔒 needs your approval
+Legend: ✅ done & verified · 🟡 done, needs verification on your PC / real data ·
+⬜ not started · ⛔ blocked (reason) · 🔒 needs your approval · 👤 only you can do it
 
-Last updated: 2026-10-30 (branch `claude/cool-wozniak-rni95k`)
+Last updated: 2026-10-30 · branch `claude/cool-wozniak-rni95k`
+
+## Your action list (in order)
+
+1. 👤 **Change the leaked admin password everywhere it is used**, make the GitHub repo private (SECURITY_AUDIT §0, A1–A2).
+2. 👤 On your PC: `scripts\windows\setup.ps1`, set `.env` (DB, `ADMIN_EMAIL`, `ADMIN_PASSWORD_HASH`), then `php artisan pcg:check` until all `[ OK ]`. **PHP 8.2+ is required** (Laravel 12).
+3. 👤 Run `database/audit/inspect_schema.sql` in phpMyAdmin and send me the output — the only way to confirm the inferred schema matches `pcg_core`.
+4. 👤 Admin → **Unit accounts**: set passwords where flagged, **Grant M1 access** to M1 checkers (A6, A6b).
+5. 👤 Move uploaded files out of `public/` and set `PCG_UPLOAD_ROOT` (A7) — production data, so your call.
+6. 👤 `tailscale serve --bg http://127.0.0.1:8000`, then fill in DEPLOYMENT_GUIDE §6.
+7. 👤 Copy the missing images/videos from production (FEATURE_INVENTORY → Missing files).
 
 ## Phase 1 — Discovery ✅
-- ✅ Repository, stack, routes, controllers, models, views, config inspected
-- ✅ `SYSTEM_ARCHITECTURE.md`, `DATABASE_ARCHITECTURE.md` (inferred), `SECURITY_AUDIT.md`, `FEATURE_INVENTORY.md`
-- ✅ `composer audit` run (50 advisories, 14 packages)
-- ⛔ Live schema review: no DB access here → run `database/audit/inspect_schema.sql` and send me the output
-- ⛔ Visual reference https://cgmeptdi.com/ was blocked by this session's network policy
+- ✅ Architecture, database (inferred), security, feature docs
+- ✅ Schema reconstructed from code: `database/dev/schema_inferred.sql` (40 tables)
+- ⛔ Real schema: needs `inspect_schema.sql` output from you
+- ⛔ Visual reference https://cgmeptdi.com/ blocked by this session's network policy
 
 ## Phase 2 — Planning ✅
-- ✅ This roadmap; priorities = security → broken features → localhost/Tailscale → UI → refactor
 
 ## Phase 3 — Backup
-- ✅ Git checkpoint: baseline `83459a9`; all work is on a branch
-- ⬜ **You:** `mysqldump` of `pcg_core` before any DB change (DEPLOYMENT_GUIDE §7)
+- ✅ Git history on a branch; baseline `83459a9`
+- 👤 `mysqldump` before any schema change (DEPLOYMENT_GUIDE §7)
 
-## Phase 4 — Architecture & security (critical) ✅
-- ✅ Hardcoded admin credentials removed → `.env` + bcrypt + `pcg:hash-password`
-- ✅ Access-control middleware on every applicant / unit / admin route (+ tests)
-- ✅ Unit login verifies password; session regeneration; login throttling
-- ✅ Rejected-user login bypass fixed
-- ✅ Upload validation, file-name sanitising, 0755/0644 permissions
-- ✅ Serial-number IDOR on profile saves
-- ✅ No passwords/selfies in logs (Register, Reenlist)
-- ✅ Security headers; trusted-proxy support
-- ✅ Hardcoded server paths/URLs → `config/pcg.php`, `App\Support\Uploads`
-- ✅ `.gitignore`, `.env.example`, `storage/` skeleton, README
-- ✅ 48 automated tests (`php artisan test`)
-- ⬜ **You:** rotate the exposed password, make the GitHub repo private (SECURITY_AUDIT §0)
-- 🔒 Purge secret from git history (history rewrite)
-
-### Phase 4b — remaining security work
-- ⬜ Move personnel documents to private storage + authorised download route (C7) — 🔒 moves existing files
-- ⬜ Scope unit checkers to their unit / role (H9) — needs your access rules
-- ✅ Remove PII from logs (H8)
-- ✅ Escape server data inserted with `innerHTML` (stored XSS via rejection comments)
-- ⬜ Upgrade Laravel 9 → supported version + dependencies (H7)
-- ⬜ Admin users in DB with roles; MFA (M6)
+## Phase 4 — Security ✅ (code side complete)
+- ✅ Hardcoded credentials removed; access control on every route; unit password check; rejected-user bypass; upload validation; serial IDOR; PII out of logs; transactions; security headers; throttling
+- ✅ Personnel files served only via access-checked `/files/{path}`; direct access blocked in `.htaccess`
+- ✅ Own-unit vs M1 checkers separated (role, middleware, review and file scoping)
+- ✅ Stored XSS fixed (rejection comments; registrant data in admin dialog); password hashes removed from admin page
+- ✅ **Laravel 9.52 → 12**; `composer audit` 50 advisories → 0; Ignition removed
+- 🔒 Purge leaked secret from git history (rewrite)
+- 🔒 Admin accounts in the database with roles + MFA (schema change)
+- ⬜ Content-Security-Policy (inline scripts must move to files first)
+- 🔒 Random verification tokens for OSAERT certificates (schema change + reprint)
 
 ## Phase 5 — UI/UX
-- ✅ Design system `public/css/pcg-ui.css` (navy / white / gold tokens, type and spacing scale, forms, buttons, alerts, badges, cards) — plain CSS, **no Node/build step, no CDN** (decision: keeps Windows setup simple and allows a strict CSP later)
-- ✅ `public/js/pcg-ui.js` (password toggle, double-submit guard), external file so CSP can forbid inline scripts
-- ✅ Web-sized brand images `public/images/brand/*.webp` (logos 20–30 KB instead of ~1 MB)
-- ✅ Sign-in shell `layouts/auth` + partials; redesigned **all four sign-in pages** (personnel, admin, unit, M1). Verified in Chromium at 1366×800 and 390×844: no console errors, no horizontal overflow, error states, password toggle
-- ⬜ App shell for signed-in areas (sidebar + top bar) replacing the 6 copied admin sidebars
-- ⬜ Shared table, form and empty-state components
-- ⬜ Redesign next: admin dashboard & sidebar → unit dashboards → applicant dashboard/profile → LMS/OSAERT pages → public pages (these need the real DB to verify)
-- ⬜ Remove CDN Tailwind/Bootstrap/jQuery page by page as pages migrate; then CSP + SRI
-- ⬜ Accessibility pass (labels, focus states, contrast, keyboard use of modals)
-- ⛔ Reference site comparison: allow `cgmeptdi.com` in the environment network settings
+- ✅ Design system `public/css/pcg-ui.css` + `public/js/pcg-ui.js` (no build, no CDN)
+- ✅ All sign-in pages; public certificate verification pages
+- ✅ Admin app shell (one sidebar, top bar, messages) on all admin pages; six copied sidebars removed
+- ✅ New Unit accounts page
+- ✅ Unit pages: real navigation, messages, logo
+- ✅ All CDN assets self-hosted (Tailwind compiled, jQuery, DataTables, SweetAlert2, Chart.js, Font Awesome, Leaflet, Alpine, Inter font)
+- ⬜ Restyle page content of legacy admin/unit/applicant pages with pcg-ui components (works today with compiled Tailwind)
+- ⬜ Applicant area app shell (currently the public site navbar)
+- ⛔ Comparison with cgmeptdi.com (network)
 
-## Phase 6 — Functional fixes
-- ✅ Unit document review route (was an empty controller)
-- ✅ Admin sidebar logout (405), GET logout not logging out
-- ✅ `GET /documents/upload` 500; disciplinary delete crash
-- ✅ Removed routes to missing methods (`/services`, `/decision/submit`, `/meptdi-lms`)
-- ⬜ Contact form has no backend — decide: remove or implement (needs mail settings)
-- ⬜ "Add student" forms with `action="#"` — verify against intended flow
-- ⬜ UI to create unit-checker accounts (`/unit-users/store` exists, no form)
-- ⬜ Face verification: finish or remove (no link, wrong validation table)
-- ✅ Wrap SOI steps 3/4/6 delete-and-reinsert in transactions (test proves old rows survive a failed insert)
-- ⬜ Remove dead controllers and backup views (after your confirmation)
+## Phase 6 — Functional fixes ✅
+- ✅ Unit review route; admin Reject button; add/remove student; student list; OSAERT verify page, certificate page, year filters and numbers; `/upload-201` 500; training-courses JS error; SOI undefined components; logout bugs; disciplinary delete; dead routes and links
+- ⬜ Contact form: decide remove vs implement (needs mail settings)
+- ⬜ Face verification: finish or remove
+- ⬜ Track create/edit UI (routes exist for operational tracks only)
+- ⬜ Delete dead controllers and backup views (after your confirmation)
 
-## Phase 7 — Database validation ⛔ (needs DB access/output)
-- ⬜ Run `inspect_schema.sql`; update DATABASE_ARCHITECTURE.md with real schema
-- ⬜ `php artisan schema:dump`; retire duplicate migrations
-- 🔒 Add missing `serial_number` indexes (additive, reversible)
-- 🔒 Normalise status casing; OSAERT dates → DATE
+## Phase 7 — Database validation
+- ✅ Dev database: `schema_inferred.sql` + `php artisan pcg:dev-seed` (refuses anything but `*_dev`)
+- ⛔ Real schema comparison (needs your `inspect_schema.sql` output)
+- 🔒 Add missing `serial_number` indexes; normalise status casing; OSAERT dates → DATE
 
-## Phase 8 — Testing
-- ✅ Access-control and authentication tests
-- ⬜ Feature tests per module against a schema-dump test DB (after Phase 7)
-- ⬜ Browser console / responsive checks (after Phase 5)
+## Phase 8 — Testing ✅
+- ✅ 70 PHPUnit tests (access control, logins, uploads, files, unit/M1, OSAERT, transactions, route integrity)
+- ✅ Browser end-to-end (`tests/e2e`): 47 pages × roles with no PHP/JS errors; 34 form-flow checks
+- 🟡 Same suites against a copy of the real data
 
-## Phase 9 — Localhost (Windows)
-- ✅ Setup/start scripts (`scripts/windows/*.ps1`) — 🟡 untested on Windows
-- ✅ `php artisan pcg:check` health command
-- ✅ App boots and public pages return 200 (verified here on PHP 8.3, empty SQLite)
-- ⬜ **You:** run `setup.ps1`, `pcg:check` against real `pcg_core`, report results
+## Phase 9 — Localhost (Windows) 🟡
+- ✅ Scripts, `pcg:check`, docs; app verified on PHP 8.3 + MariaDB 10.11 (Linux)
+- 👤 Run on your Windows PC (action list 2)
 
-## Phase 10 — Tailscale
-- ✅ Guide + helper script; HTTPS link generation behind proxy simulated
-- ⬜ **You:** `tailscale serve --bg …`, fill validation checklist (DEPLOYMENT_GUIDE §6)
+## Phase 10 — Tailscale 🟡
+- ✅ Guide, helper script, trusted-proxy support (simulated)
+- 👤 Run and validate (action list 6)
 
 ## Phase 11 — Documentation ✅ (living)
-- ✅ All docs in `docs/`, `CLAUDE.md`, `README.md`
 
 ## Test results log
 
 | Date | Item | Result |
 |------|------|--------|
-| 2026-10-30 | `php artisan test` (48) | **Passed** |
-| 2026-10-30 | `php artisan test` (50, + transaction rollback) | **Passed** |
-| 2026-10-30 | `php artisan test` (52, + sign-in pages) | **Passed** |
-| 2026-10-30 | Sign-in pages in Chromium, desktop + mobile: render, error states, password toggle, no overflow, no console errors | **Passed** |
-| 2026-10-30 | Public pages `/`, `/about`, `/contact`, `/institutes/meptdi`, `/login`, `/register?type=officer`, `/admin/login`, `/unit/login`, `/unit/loginM1` | **Passed** (200) |
-| 2026-10-30 | Protected pages redirect when logged out | **Passed** |
-| 2026-10-30 | `/osaert/verify` | **Blocked** — needs `osaert_trainees` (real DB) |
-| 2026-10-30 | All Blade templates compile (`view:cache`) | **Passed** |
-| 2026-10-30 | CRUD, uploads, reports, analytics | **Not tested** — needs real DB |
-| 2026-10-30 | Windows scripts | **Not tested** — no Windows here |
-| 2026-10-30 | Tailscale access | **Not tested** — must run on your PC |
+| 2026-10-30 | `php artisan test` (Laravel 12) | **Passed** — 70 tests, 217 assertions |
+| 2026-10-30 | `composer audit` | **Passed** — no advisories |
+| 2026-10-30 | Browser crawl, every page × role (dev DB) | **Passed** — 47 pages; only external map tiles fail (no internet in sandbox) |
+| 2026-10-30 | Admin flows (approve, reject, unit accounts, courses, students, CSV, OSAERT, applications) | **Passed** — 18/18, twice |
+| 2026-10-30 | Unit/M1/personnel flows (review, disciplinary, uploads, own files, SOI save, training apply) | **Passed** — 14/14 |
+| 2026-10-30 | Self-registration with camera selfie | **Passed** |
+| 2026-10-30 | `config:cache`, `route:cache`, `view:cache` | **Passed** |
+| — | Real `pcg_core` data | **Blocked** — needs access on your PC |
+| — | Windows scripts, Tailscale | **Not tested** — no Windows/Tailscale in this environment |
