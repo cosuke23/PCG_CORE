@@ -439,7 +439,7 @@
 
                                 <span class="font-medium text-gray-700">
 
-                                    {{ $student->personnel->personnel_id ?? 'N/A' }}
+                                    {{ $student->serial_number ?: 'N/A' }}
 
                                 </span>
 
@@ -449,7 +449,7 @@
 
                                 <div class="font-semibold text-gray-800">
 
-                                    {{ $student->personnel->name ?? 'N/A' }}
+                                    {{ $student->full_name ?: ($student->personnel->name ?? 'N/A') }}
 
                                 </div>
 
@@ -495,18 +495,9 @@
 
                                 <div class="flex items-center gap-1">
 
-                                    <a href="#"
-                                        class="bg-blue-500 hover:bg-blue-600 text-white px-3 py-2 rounded"
-                                        title="View Student">
 
 
-                                        <i class="fa-solid fa-eye"></i>
-
-
-                                    </a>
-
-
-                                    <form action="#"
+                                    <form action="{{ route('training-courses.students.destroy', [$course, $student]) }}"
                                         method="POST"
                                         class="remove-student-form">
 

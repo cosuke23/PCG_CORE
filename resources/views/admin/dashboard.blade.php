@@ -20,86 +20,7 @@
 
         <!-- ================= MAIN ================= -->
         <main class="flex-1 p-10">
-            <div id="unitAccountModal" class="hidden fixed inset-0 bg-black/50 z-50 flex items-center justify-center">
-
-                <div class="bg-white rounded-lg shadow-xl w-full max-w-3xl">
-
-                    <div class="flex justify-between items-center border-b p-4">
-                        <h2 class="font-bold text-lg">Add Unit Account</h2>
-                        <button id="closeUnitModal" class="text-red-600 text-xl">✕</button>
-                    </div>
-
-                    <form action="{{ route('unit-users.store') }}" method="POST">
-                        @csrf
-
-                        <div class="grid grid-cols-2 gap-4 p-6">
-
-                            <input name="personnel_id" class="border p-2 rounded" placeholder="Personnel ID">
-                            <input name="serial_number" class="border p-2 rounded" placeholder="Serial Number">
-
-                            <input name="full_name" class="border p-2 rounded" placeholder="Full Name">
-                            <input name="email" class="border p-2 rounded" placeholder="Email">
-
-                            <input name="username" class="border p-2 rounded" placeholder="Username">
-                            <input type="password" name="password" class="border p-2 rounded" placeholder="Password">
-                            <select name="role" class="border p-2 rounded w-full">
-
-                                <option value="">-- Select Unit --</option>
-
-                                <option value="MEPLEF">
-                                    Marine Environmental Protection Law Enforcement Force (MEPLEF)
-                                </option>
-
-                                <option value="NOCOP">
-                                    National Operations Center for Oil Pollution (NOCOP)
-                                </option>
-
-                                <option value="MSFIS">
-                                    Marine Science Forensic Investigation Service (MSFIS)
-                                </option>
-
-                                <option value="MEPRCGS">
-                                    Marine Environmental Protection Regulatory Compliance and Governance Service (MEPRCGS)
-                                </option>
-
-                                <option value="MEPTDI">
-                                    Marine Environmental Protection Training and Doctrine Institute (MEPTDI)
-                                </option>
-
-                                <option value="MEPG">
-                                    Marine Environmental Protection Group (MEPG)
-                                </option>
-
-                            </select>
-
-                            <input name="unit_code" value="1" class="border p-2 rounded" placeholder="Unit Code"
-                                hidden>
-
-                            <div class="col-span-2">
-                                <input name="unit_name" class="border p-2 rounded w-full" placeholder="Unit Name">
-                            </div>
-
-                            <div class="col-span-2">
-                                <textarea name="permissions" value="1" class="border p-2 rounded w-full" placeholder='["view","edit"]' hidden></textarea>
-                            </div>
-
-                            <select name="is_active" class="border p-2 rounded">
-                                <option value="1">Active</option>
-                                <option value="0">Inactive</option>
-                            </select>
-
-                        </div>
-
-                        <div class="border-t p-4 flex justify-end">
-                            <button class="bg-green-600 text-white px-6 py-2 rounded">
-                                Save Account
-                            </button>
-                        </div>
-
-                    </form>
-
-                </div>
-            </div>
+            {{-- Unit accounts are managed on their own page (Admin → Unit accounts). --}}
             <h2 class="text-3xl font-bold mb-6 text-center">Admin Dashboard</h2>
 
             <!-- SUMMARY -->
@@ -389,47 +310,56 @@
                     `,
                         icon: 'question',
                         showCancelButton: true,
+                        showDenyButton: true,
                         confirmButtonColor: '#16a34a',
-                        cancelButtonColor: '#d33',
-                        confirmButtonText: 'Approve'
+                        denyButtonColor: '#b42318',
+                        cancelButtonColor: '#6b7280',
+                        confirmButtonText: 'Approve',
+                        denyButtonText: 'Reject',
+                        cancelButtonText: 'Cancel'
                     }).then(function(result) {
 
-                        if (result.isConfirmed) {
-
-                            $.ajax({
-                                url: `/admin/approve/${user.id}`,
-                                type: 'POST',
-
-                                data: {
-                                    _token: '{{ csrf_token() }}'
-                                },
-
-                                success: function() {
-
-                                    Swal.fire({
-                                        icon: 'success',
-                                        title: 'Approved!',
-                                        text: 'User has been approved successfully.'
-                                    }).then(function() {
-                                        location.reload();
-                                    });
-
-                                },
-
-                                error: function(xhr) {
-
-                                    console.error(xhr);
-
-                                    Swal.fire({
-                                        icon: 'error',
-                                        title: 'Error',
-                                        text: 'Unable to approve the user.'
-                                    });
-
-                                }
-                            });
-
+                        if (!result.isConfirmed && !result.isDenied) {
+                            return;
                         }
+
+                        // Reject used to have no button at all (route existed, no UI).
+                        const action = result.isConfirmed ? 'approve' : 'reject';
+
+                        $.ajax({
+                            url: `/admin/${action}/${user.id}`,
+                            type: 'POST',
+
+                            data: {
+                                _token: '{{ csrf_token() }}'
+                            },
+
+                            success: function() {
+
+                                Swal.fire({
+                                    icon: 'success',
+                                    title: action === 'approve' ? 'Approved!' : 'Rejected',
+                                    text: action === 'approve'
+                                        ? 'User has been approved successfully.'
+                                        : 'User has been rejected and cannot sign in.'
+                                }).then(function() {
+                                    location.reload();
+                                });
+
+                            },
+
+                            error: function(xhr) {
+
+                                console.error(xhr);
+
+                                Swal.fire({
+                                    icon: 'error',
+                                    title: 'Error',
+                                    text: `Unable to ${action} the user.`
+                                });
+
+                            }
+                        });
 
                     });
 
@@ -461,31 +391,6 @@
 
             $('.closeModal').click(function() {
                 $('#userModal').addClass('hidden');
-            });
-
-
-            // ================= OPEN UNIT MODAL =================
-
-            $('#openUnitModalBtn').click(function() {
-                $('#unitAccountModal').removeClass('hidden');
-            });
-
-
-            // ================= CLOSE UNIT MODAL =================
-
-            $('#closeUnitModal').click(function() {
-                $('#unitAccountModal').addClass('hidden');
-            });
-
-
-            // ================= CLOSE MODAL WHEN CLICKING OUTSIDE =================
-
-            $('#unitAccountModal').click(function(e) {
-
-                if (e.target === this) {
-                    $('#unitAccountModal').addClass('hidden');
-                }
-
             });
 
         });

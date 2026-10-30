@@ -1,19 +1,8 @@
-<!DOCTYPE html>
-<html lang="en">
+@extends('layouts.admin')
 
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+@section('title', 'Administrative Course Track')
 
-    <title>Administrative Course Track | MEPCOM Admin</title>
-
-    {{-- Tailwind CSS --}}
-
-    {{-- Font Awesome --}}
-    <link
-        rel="stylesheet"
-        href="{{ asset('vendor/fontawesome/css/all.min.css') }}">
-
+@section('styles')
     {{-- DataTables CSS --}}
     <link
         rel="stylesheet"
@@ -97,117 +86,13 @@
             color: #1d4ed8 !important;
         }
     </style>
-    <link rel="stylesheet" href="{{ asset('css/tailwind.css') }}">
-</head>
+    
+@endsection
 
-<body class="bg-slate-100 min-h-screen">
-
+@section('content')
     <div class="flex min-h-screen">
 
-        {{-- ================= SIDEBAR ================= --}}
-        <aside class="w-64 bg-slate-900 text-white flex flex-col">
-
-            {{-- Logo / Title --}}
-            <div class="p-6 border-b border-slate-700">
-
-                <h2 class="text-xl font-bold">
-                    MEPCOM Admin
-                </h2>
-
-            </div>
-
-
-            {{-- Navigation --}}
-            <nav class="p-4 space-y-2 flex-1">
-
-                {{-- Dashboard --}}
-                <a href="{{ route('admin.dashboard') }}"
-                    class="flex items-center px-4 py-3 rounded hover:bg-slate-800 transition">
-
-                    <i class="fas fa-gauge-high w-5 mr-2"></i>
-
-                    Dashboard
-
-                </a>
-
-
-                {{-- HR Analytics --}}
-                <a href="{{ route('admin.hr-analytics') }}"
-                    class="flex items-center px-4 py-3 rounded hover:bg-slate-800 transition">
-
-                    <i class="fas fa-chart-line w-5 mr-2"></i>
-
-                    HR Analytics
-
-                </a>
-
-
-                {{-- Administrative Track --}}
-                <a href="{{ route('administrative.tracks') }}"
-                    class="flex items-center px-4 py-3 rounded bg-blue-600 hover:bg-slate-800 transition">
-
-                    <i class="fas fa-graduation-cap w-5 mr-2"></i>
-
-                    Administrative Track
-
-                </a>
-
-
-                {{-- Operational Track --}}
-                <a href="{{ route('operation_tracks.index') }}"
-                    class="flex items-center px-4 py-3 rounded hover:bg-slate-800 transition">
-
-                    <i class="fas fa-ship w-5 mr-2"></i>
-
-                    Operational Track
-
-                </a>
-
-                <a href="{{ route('personnel.operational.training') }}"
-                    class="flex items-center px-4 py-3 rounded hover:bg-slate-800 transition">
-
-                    <i class="fas fa-ship w-5 mr-2"></i>
-
-                    Operational Training
-
-                </a>
-                {{-- Personnel Administrative Training --}}
-                <a href="{{ route('personnel.administrative.training') }}"
-                    class="flex items-center px-4 py-3 rounded hover:bg-slate-800 transition">
-
-                    <i class="fas fa-user-graduate w-5 mr-2"></i>
-
-                    Personnel Training
-
-                </a>
-
-
-                {{-- Add Unit Account --}}
-                <button
-                    type="button"
-                    id="openUnitModalBtn"
-                    class="w-full flex items-center text-left px-4 py-3 rounded hover:bg-blue-700 transition">
-
-                    <i class="fas fa-plus w-5 mr-2"></i>
-
-                    Add Unit Account
-
-                </button>
-
-
-                {{-- Logout --}}
-                <a href="{{ route('admin.logout.legacy') }}"
-                    class="flex items-center px-4 py-3 rounded hover:bg-red-700 transition">
-
-                    <i class="fas fa-right-from-bracket w-5 mr-2"></i>
-
-                    Logout
-
-                </a>
-
-            </nav>
-
-        </aside>
+        {{-- Sidebar: provided by layouts/admin --}}
 
         {{-- ================= MAIN CONTENT ================= --}}
         <main class="flex-1 overflow-y-auto">
@@ -671,7 +556,4 @@
 
         });
     </script>
-
-</body>
-
-</html>
+@endsection

@@ -189,6 +189,12 @@ Route::middleware(['admin.session'])->group(function () {
     // Unit checker accounts
     Route::post('/unit-users/store', [UnitUserController::class, 'store'])
         ->name('unit-users.store');
+    Route::get('/admin/unit-users', [\App\Http\Controllers\UnitAccountController::class, 'index'])
+        ->name('admin.unit-users.index');
+    Route::post('/admin/unit-users/{id}/password', [\App\Http\Controllers\UnitAccountController::class, 'updatePassword'])
+        ->whereNumber('id')->name('admin.unit-users.password');
+    Route::post('/admin/unit-users/{id}/status', [\App\Http\Controllers\UnitAccountController::class, 'updateStatus'])
+        ->whereNumber('id')->name('admin.unit-users.status');
 
     // Training tracks
     Route::get('/administrative-tracks', [AdministrativeTrackController::class, 'index'])

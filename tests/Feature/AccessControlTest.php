@@ -98,4 +98,36 @@ class AccessControlTest extends TestCase
             ->assertHeader('X-Content-Type-Options', 'nosniff')
             ->assertHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
     }
+
+    /**
+     * Several routes used to point at methods or views that did not exist
+     * (always HTTP 500). Every controller action must exist.
+     */
+    public function test_every_route_points_to_an_existing_controller_method()
+    {
+        $missing = [];
+
+        foreach (app('router')->getRoutes() as $route) {
+            $action = $route->getActionName();
+
+            if (!str_contains($action, '@') || !str_starts_with($action, 'App\\')) {
+                continue;
+            }
+
+            [$class, $method] = explode('@', $action);
+
+            if (!class_exists($class) || !method_exists($class, $method)) {
+                $missing[] = $route->uri() . ' -> ' . $action;
+            }
+        }
+
+        $this->assertSame([], $missing);
+    }
+
+    public function test_new_admin_pages_require_admin_session()
+    {
+        $this->get('/admin/unit-users')->assertRedirect(route('admin.login'));
+        $this->post('/admin/unit-users/1/password')->assertRedirect(route('admin.login'));
+        $this->post('/admin/unit-users/1/status')->assertRedirect(route('admin.login'));
+    }
 }

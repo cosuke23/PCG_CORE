@@ -125,7 +125,7 @@
             {{-- FORM --}}
             <div class="p-6">
 
-                <form action="#"
+                <form action="{{ route('training-courses.students.store', $course) }}"
                     method="POST">
 
                     @csrf
@@ -152,8 +152,8 @@
                                 </label>
 
 
-                                <select name="user_id"
-                                    id="user_id"
+                                <select name="serial_number"
+                                    id="serial_number"
                                     required
                                     class="w-full border border-gray-300 rounded-lg px-4 py-3
                focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
@@ -167,7 +167,7 @@
 
                                     @foreach($personnel as $person)
 
-                                    <option value="{{ $person->id }}">
+                                    <option value="{{ $person->user_serial_number }}" @selected(old('serial_number') === $person->user_serial_number)>
 
                                         {{ $person->rank ?? '' }}
 
@@ -186,7 +186,7 @@
                                 </select>
 
 
-                                @error('user_id')
+                                @error('serial_number')
 
                                 <p class="text-red-600 text-sm mt-1">
 

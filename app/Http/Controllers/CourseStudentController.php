@@ -17,7 +17,7 @@ class CourseStudentController extends Controller
      */
     public function index(TrainingCourse $course)
     {
-        $students = CourseStudent::with('trainingCourse')
+        $students = CourseStudent::with(['trainingCourse', 'personnel'])
             ->where('course_id', $course->id)
             ->latest()
             ->get();
@@ -105,7 +105,9 @@ class CourseStudentController extends Controller
 
         // Prevent duplicate enrollment
         $exists = CourseStudent::where('course_id', $course->id)
-            ->where('user_id', $user->id)
+            ->where(function ($q) use ($user) {
+                $q->where('user_id', $user->id)->orWhere('serial_number', $user->serial_number);
+            })
             ->exists();
 
         if ($exists) {
@@ -114,9 +116,13 @@ class CourseStudentController extends Controller
                 ->with('error', 'This personnel is already enrolled in this training course.');
         }
 
+        // Same fields as the CSV import, so both kinds of enrollment
+        // show up the same way in the student list.
         CourseStudent::create([
-            'course_id' => $course->id,
-            'user_id'   => $user->id,
+            'course_id'     => $course->id,
+            'user_id'       => $user->id,
+            'serial_number' => $user->serial_number,
+            'full_name'     => $user->name,
         ]);
 
         return redirect()

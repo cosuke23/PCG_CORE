@@ -236,6 +236,37 @@ class OsaertController extends Controller
         );
     }
 
+    public function certificates(Request $request)
+    {
+        $startedYear = $request->get('started_year');
+        $endedYear = $request->get('ended_year');
+
+        $query = OsaertTrainee::query();
+
+        if ($startedYear) {
+            $query->whereYearOf('date_attended', $startedYear);
+        }
+
+        if ($endedYear) {
+            $query->whereYearOf('date_ended', $endedYear);
+        }
+
+        $trainees = $query
+            ->whereNotNull('date_ended')
+            ->where('date_ended', '!=', '')
+            ->orderBy('name')
+            ->get();
+
+        return view(
+            'admin.osaert.certificates',
+            compact(
+                'trainees',
+                'startedYear',
+                'endedYear'
+            )
+        );
+    }
+
     /**
      * Public certificate lookup by certificate number (OSAERT-YYYY-NNNNNN).
      * It does not list trainees: names are only shown for a valid number.
