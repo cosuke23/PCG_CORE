@@ -25,4 +25,15 @@ class TrustProxies extends Middleware
         Request::HEADER_X_FORWARDED_PORT |
         Request::HEADER_X_FORWARDED_PROTO |
         Request::HEADER_X_FORWARDED_AWS_ELB;
+
+    public function __construct()
+    {
+        // Comma-separated list from .env, e.g. TRUSTED_PROXIES=127.0.0.1
+        // when Tailscale Serve proxies HTTPS to the local server.
+        $proxies = config('pcg.trusted_proxies');
+
+        if ($proxies) {
+            $this->proxies = array_map('trim', explode(',', $proxies));
+        }
+    }
 }

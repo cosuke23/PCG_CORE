@@ -8,6 +8,7 @@ class CourseStudent extends Model
 {
     protected $fillable = [
         'course_id',
+        'user_id',
         'serial_number',
         'full_name',
         'date_attended',
@@ -18,6 +19,12 @@ class CourseStudent extends Model
         'date_attended' => 'date',
         'date_ended' => 'date',
     ];
+
+    // Enrolled personnel account (users.serial_number).
+    public function personnel()
+    {
+        return $this->belongsTo(User::class, 'serial_number', 'serial_number');
+    }
 
     public function trainingCourse()
     {

@@ -11,6 +11,11 @@ class UnitUser extends Model
 
     protected $table = 'unit_users';
 
+    // Roles: own-unit checker, or M1 checker (all units, 201 files,
+    // disciplinary records).
+    public const ROLE_UNIT = 'unit_checker';
+    public const ROLE_M1 = 'm1_checker';
+
     protected $fillable = [
         'user_id',
         'personnel_id',
@@ -22,6 +27,10 @@ class UnitUser extends Model
         'unit_code',
         'permissions',
         'is_active',
+    ];
+
+    protected $hidden = [
+        'password',
     ];
 
     protected $casts = [

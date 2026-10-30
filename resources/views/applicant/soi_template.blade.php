@@ -4,7 +4,6 @@
 <head>
     <meta charset="UTF-8">
     <title>Summary of Information</title>
-    <script src="https://cdn.tailwindcss.com"></script>
     <style>
         /* To remove browser-generated headers/footers (Date, Page Title, URL):
            Browsers usually hide these if the page margins are set correctly
@@ -77,6 +76,8 @@
             }
         }
     </style>
+    <link rel="stylesheet" href="{{ asset('css/tailwind.css') }}">
+    <script src="{{ asset('js/pcg-ui.js') }}" defer></script>
 </head>
 
 <body>
@@ -1088,7 +1089,7 @@
             <div
                 class="w-40 h-48 border-2 border-black flex items-center justify-center text-center p-2 mb-12 overflow-hidden">
                 @if (!empty($personnel_data->photo_2x2))
-                    <img src="https://pcg-mepcom.com/public/documents_toupload/{{ $personnel_data->photo_2x2 }}"
+                    <img src="{{ \App\Support\Uploads::url('documents_toupload/' . $personnel_data->photo_2x2) }}"
                         class="w-full h-full object-cover" alt="2x2 Photo">
                 @else
                     <p class="text-sm">
@@ -1123,7 +1124,7 @@
 
         <div class="text-center font-bold underline text-lg">RESTRICTED</div>
     </div>
-    <button onclick="window.print()"
+    <button data-on-click="pcg.print"
         class="print-hidden fixed bottom-10 right-10 bg-blue-700 text-white font-bold py-3 px-6 rounded-full shadow-2xl z-50">
         🖨️ PRINT DOCUMENT
     </button>

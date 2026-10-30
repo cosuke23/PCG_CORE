@@ -7,7 +7,7 @@
     <title>OSAERT Certificates</title>
 
     <link rel="stylesheet"
-          href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+          href="{{ asset('vendor/fontawesome/css/all.min.css') }}">
 
     <style>
         * {
@@ -321,6 +321,7 @@
             }
         }
     </style>
+    <script src="{{ asset('js/pcg-ui.js') }}" defer></script>
 </head>
 
 <body>
@@ -329,14 +330,14 @@
         <div class="action-bar">
 
             <button type="button"
-                    onclick="window.print()"
+                    data-on-click="pcg.print"
                     class="action-button print-button">
                 <i class="fas fa-print"></i>
                 Print / Save as PDF
             </button>
 
             <button type="button"
-                    onclick="window.close()"
+                    data-on-click="pcg.close"
                     class="action-button close-button">
                 <i class="fas fa-times"></i>
                 Close
@@ -348,10 +349,7 @@
     @forelse($trainees as $trainee)
 
         @php
-            $year = substr(trim((string) $trainee->date_ended), -4);
-
-            $certificateNumber = 'OSAERT-' . $year . '-' .
-                str_pad($trainee->id, 6, '0', STR_PAD_LEFT);
+            $certificateNumber = $trainee->certificate_number;
 
             $verificationUrl = url('/osaert/verify/' . $trainee->id);
         @endphp
@@ -477,9 +475,9 @@
 
     @endforelse
 
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <script src="{{ asset('vendor/qrcodejs/qrcode-1.0.0.min.js') }}"></script>
 
-    <script>
+    <script nonce="{{ $cspNonce ?? '' }}">
         document.addEventListener('DOMContentLoaded', function () {
 
             document.querySelectorAll('.qr-code').forEach(function (element) {

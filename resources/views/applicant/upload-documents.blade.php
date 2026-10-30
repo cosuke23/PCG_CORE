@@ -5,7 +5,7 @@
     <meta charset="UTF-8">
     <title>Upload Required Documents</title>
 
-    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+    <link rel="stylesheet" href="{{ asset('vendor/leaflet/leaflet.css') }}" />
 
     <style>
         body {
@@ -112,6 +112,7 @@
             }
         }
     </style>
+    <script src="{{ asset('js/pcg-ui.js') }}" defer></script>
 </head>
 
 <body>
@@ -132,6 +133,26 @@
 
             <h2>Upload Required Documents</h2>
 
+            @if (session('success'))
+                <div role="status" style="background:#dcfce7;color:#166534;padding:10px 14px;border-radius:8px;margin-bottom:12px;">
+                    {{ session('success') }}
+                </div>
+            @endif
+            @if (session('error'))
+                <div role="alert" style="background:#fee2e2;color:#991b1b;padding:10px 14px;border-radius:8px;margin-bottom:12px;">
+                    {{ session('error') }}
+                </div>
+            @endif
+            @if ($errors->any())
+                <div role="alert" style="background:#fee2e2;color:#991b1b;padding:10px 14px;border-radius:8px;margin-bottom:12px;">
+                    <ul style="margin:0;padding-left:18px;">
+                        @foreach ($errors->all() as $error)
+                            <li>{{ $error }}</li>
+                        @endforeach
+                    </ul>
+                </div>
+            @endif
+
             <form id="uploadForm" action="/documents/upload" method="POST" enctype="multipart/form-data">
                 @csrf
 
@@ -147,17 +168,12 @@
                         @if (!empty($docs->soi))
                             <small style="color:#22c55e;">
                                 ✔ Uploaded:
-                                <a href="{{ url('public/documents_toupload/' . $docs->soi) }}" target="_blank">View</a>
+                                <a href="{{ \App\Support\Uploads::url('documents_toupload/' . $docs->soi) }}" target="_blank">View</a>
                             </small>
                         @endif
 
                         <input type="file" name="soi" accept=".pdf,application/pdf"
-                            onchange="
-                            if(this.files[0] && this.files[0].type !== 'application/pdf'){
-                                alert('PDF files only');
-                                this.value='';
-                            }
-                        ">
+                            data-on-change="pcg.file-types" data-args='["application/pdf"]'>
                     </div>
 
                     <!-- NBI -->
@@ -167,19 +183,14 @@
                         @if (!empty($docs->nbi_clearance))
                             <small style="color:#22c55e;">
                                 ✔ Uploaded:
-                                <a href="{{ url('public/documents_toupload/' . $docs->nbi_clearance) }}" target="_blank">View</a>
+                                <a href="{{ \App\Support\Uploads::url('documents_toupload/' . $docs->nbi_clearance) }}" target="_blank">View</a>
                             </small>
                             <br>
                             <small>Exp: {{ $docs->nbi_clearance_expiration }}</small>
                         @endif
 
                         <input type="file" name="nbi_clearance" accept=".pdf,application/pdf"
-                            onchange="
-                            if(this.files[0] && this.files[0].type !== 'application/pdf'){
-                                alert('PDF files only');
-                                this.value='';
-                            }
-                        ">
+                            data-on-change="pcg.file-types" data-args='["application/pdf"]'>
                         <input type="date" name="nbi_clearance_expiration"
                             value="{{ $docs->nbi_clearance_expiration ?? '' }}">
                     </div>
@@ -208,7 +219,7 @@
                             @if (!empty($docs->ombudsman_clearance))
                                 <small style="color:#22c55e;">
                                     ✔ Uploaded:
-                                    <a href="{{ url('public/documents_toupload/' . $docs->ombudsman_clearance) }}"
+                                    <a href="{{ \App\Support\Uploads::url('documents_toupload/' . $docs->ombudsman_clearance) }}"
                                         target="_blank">View</a>
                                 </small>
                                 <br>
@@ -216,12 +227,7 @@
                             @endif
 
                             <input type="file" name="ombudsman_clearance" accept=".pdf,application/pdf"
-                                onchange="
-                                if(this.files[0] && this.files[0].type !== 'application/pdf'){
-                                    alert('PDF files only');
-                                    this.value='';
-                                }
-                            ">
+                                data-on-change="pcg.file-types" data-args='["application/pdf"]'>
                             <input type="date" name="ombudsman_clearance_expiration"
                                 value="{{ $docs->ombudsman_clearance_expiration ?? '' }}">
                         </div>
@@ -233,7 +239,7 @@
                             @if (!empty($docs->sandiganbayan_clearance))
                                 <small style="color:#22c55e;">
                                     ✔ Uploaded:
-                                    <a href="{{ url('public/documents_toupload/' . $docs->sandiganbayan_clearance) }}"
+                                    <a href="{{ \App\Support\Uploads::url('documents_toupload/' . $docs->sandiganbayan_clearance) }}"
                                         target="_blank">View</a>
                                 </small>
                                 <br>
@@ -241,12 +247,7 @@
                             @endif
 
                             <input type="file" name="sandiganbayan_clearance" accept=".pdf,application/pdf"
-                                onchange="
-                                if(this.files[0] && this.files[0].type !== 'application/pdf'){
-                                    alert('PDF files only');
-                                    this.value='';
-                                }
-                            ">
+                                data-on-change="pcg.file-types" data-args='["application/pdf"]'>
                             <input type="date" name="sandiganbayan_clearance_expiration"
                                 value="{{ $docs->sandiganbayan_clearance_expiration ?? '' }}">
                         </div>
@@ -268,7 +269,7 @@
                             @if (!empty($docs->$field))
                                 <small style="color:#22c55e;">
                                     ✔ Uploaded:
-                                    <a href="{{ url('public/documents_toupload/' . $docs->$field) }}" target="_blank">
+                                    <a href="{{ \App\Support\Uploads::url('documents_toupload/' . $docs->$field) }}" target="_blank">
                                         View
                                     </a>
                                 </small>
@@ -278,25 +279,7 @@
                                 @if (in_array($field, ['whole_body_picture', 'photo_2x2'])) accept=".jpg,.jpeg,.png,image/jpeg,image/png"
     @else
         accept=".pdf,application/pdf" @endif
-                                onchange="
-        const file = this.files[0];
-
-        if (!file) return;
-
-        @if (in_array($field, ['whole_body_picture', 'photo_2x2'])) const allowedImages = ['image/jpeg', 'image/png'];
-
-            if (!allowedImages.includes(file.type)) {
-                alert('Only JPG and PNG images are allowed');
-                this.value='';
-            }
-
-        @else
-
-            if (file.type !== 'application/pdf') {
-                alert('PDF files only');
-                this.value='';
-            } @endif
-    ">
+                                @if (in_array($field, ['whole_body_picture', 'photo_2x2'])) data-on-change="pcg.file-types" data-args='["image/jpeg","image/png"]' @else data-on-change="pcg.file-types" data-args='["application/pdf"]' @endif>
                         </div>
                     @endforeach
 
@@ -318,11 +301,11 @@
 
         </div>
     </div>
-    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
-    <link rel="stylesheet" href="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.css" />
-    <script src="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.js"></script>
+    <script src="{{ asset('vendor/leaflet/leaflet.js') }}"></script>
+    <link rel="stylesheet" href="{{ asset('vendor/leaflet-geocoder/Control.Geocoder.css') }}" />
+    <script src="{{ asset('vendor/leaflet-geocoder/Control.Geocoder.js') }}"></script>
 
-    <script>
+    <script nonce="{{ $cspNonce ?? '' }}">
         let map, marker;
         let userMarker;
 
@@ -392,12 +375,7 @@
                     let userLat = pos.coords.latitude;
                     let userLng = pos.coords.longitude;
 
-                    userMarker = L.marker([userLat, userLng], {
-                            icon: L.icon({
-                                iconUrl: "https://maps.google.com/mapfiles/ms/icons/blue-dot.png",
-                                iconSize: [32, 32]
-                            })
-                        }).addTo(map)
+                    userMarker = L.marker([userLat, userLng]).addTo(map)
                         .bindPopup("📍 Your Current Location")
                         .openPopup();
 

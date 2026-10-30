@@ -60,7 +60,7 @@
                             Training Year
                         </label>
 
-                        <select id="yearInGrade" name="year_in_grade" onchange="filterTraining()"
+                        <select id="yearInGrade" name="year_in_grade" data-on-change="filterTraining"
                             class="w-full bg-gray-800 border border-white/10
                                    rounded-xl px-4 py-2.5 text-white
                                    focus:outline-none focus:ring-2
@@ -85,7 +85,7 @@
 
             </div>
             @if (session('success'))
-                <script>
+                <script nonce="{{ $cspNonce ?? '' }}">
                     document.addEventListener('DOMContentLoaded', function() {
                         Swal.fire({
                             icon: 'success',
@@ -98,7 +98,7 @@
             @endif
 
             @if (session('error'))
-                <script>
+                <script nonce="{{ $cspNonce ?? '' }}">
                     document.addEventListener('DOMContentLoaded', function() {
                         Swal.fire({
                             icon: 'warning',
@@ -503,7 +503,7 @@
 
     </div>
 
-    <script>
+    <script nonce="{{ $cspNonce ?? '' }}">
         function filterTraining() {
             const year = document.getElementById('yearInGrade').value;
 

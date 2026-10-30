@@ -25,16 +25,27 @@ class DashboardController extends Controller
             ->where('status', 'rejected')
             ->get();
 
-        $hasClass = DB::table('course_students')
-            ->where('serial_number', $serial)
-            ->get();
+        // Enrolled MEPTDI classes (was only used as an always-true flag).
+        $classes = DB::table('course_students as cs')
+            ->leftJoin('training_courses as tc', 'tc.id', '=', 'cs.course_id')
+            ->where('cs.serial_number', $serial)
+            ->orderByDesc('cs.date_attended')
+            ->get(['tc.course_name', 'tc.status as course_status', 'cs.date_attended', 'cs.date_ended']);
 
-        $rejectedCount = $rejectedDocs->count();
+        // Required-documents progress (personnel_data has one column per document).
+        $documentFields = ['soi', 'nbi_clearance', 'ombudsman_clearance', 'sandiganbayan_clearance', 'ofr',
+            'medical_clearance', 'pft_clearance', 'whole_body_picture', 'photo_2x2', 'residential_sketch'];
+        $documents = DB::table('personnel_data')->where('personnel_id', $user->id)->first();
+        $uploaded = $documents ? collect($documentFields)->filter(fn ($f) => !empty($documents->$f))->count() : 0;
+
         return view('applicant.dashboard', [
             'user' => $user,
             'rejectedDocs' => $rejectedDocs,
-            'rejectedCount' => $rejectedCount,
-            'hasClass' => $hasClass
+            'rejectedCount' => $rejectedDocs->count(),
+            'classes' => $classes,
+            'documentStatus' => $documents->status ?? null,
+            'documentsUploaded' => $uploaded,
+            'documentsTotal' => count($documentFields),
         ]);
     }
 

@@ -6,15 +6,17 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>@yield('title', 'Dashboard')</title>
 
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
-    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
-    <link rel="stylesheet" href="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.css" />
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/css/bootstrap.min.css" rel="stylesheet">
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="{{ asset('vendor/alpinejs/alpine-3.14.9.min.js') }}" defer></script>
+    <link rel="stylesheet" href="{{ asset('vendor/leaflet/leaflet.css') }}" />
+    <link rel="stylesheet" href="{{ asset('vendor/leaflet-geocoder/Control.Geocoder.css') }}" />
+    <link href="{{ asset('vendor/bootstrap/bootstrap-5.3.1.min.css') }}" rel="stylesheet">
+    <script src="{{ asset('vendor/bootstrap/bootstrap-5.3.1.bundle.min.js') }}"></script>
+    <script src="{{ asset('vendor/sweetalert2/sweetalert2-11.22.0.all.min.js') }}"></script>
+    <link rel="stylesheet" href="{{ asset('vendor/inter/inter.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/pcg-ui.css') }}">
+    <script src="{{ asset('js/pcg-ui.js') }}" defer></script>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap');
+        /* Inter is self-hosted: vendor/inter/inter.css */
 
         body {
             font-family: 'Inter', sans-serif;
@@ -86,18 +88,8 @@
             box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
         }
     </style>
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    colors: {
-                        pcgblue: '#0033A0',
-                        mepcomGold: '#FFD700',
-                    }
-                }
-            }
-        };
-    </script>
+    {{-- Tailwind theme colours (pcgblue, mepcomGold) live in tailwind.config.js --}}
+    <link rel="stylesheet" href="{{ asset('css/tailwind.css') }}">
 </head>
 
 <body class="min-h-screen antialiased bg-gray-100" x-data="soiHandler()">
@@ -190,7 +182,7 @@
                                 </svg>
                             </button>
                             <a href="#"
-                                onclick="event.preventDefault(); document.getElementById('logout-form').submit();"
+                                data-on-click="pcg.submit-form" data-args='["#logout-form"]' data-prevent
                                 class="text-white hover:bg-red-600 px-4 py-2 rounded-full text-xs font-bold transition">
                                 LOGOUT
                             </a>
@@ -312,7 +304,7 @@
     </div>
 
     <!-- ================= ALPINE ================= -->
-    <script>
+    <script nonce="{{ $cspNonce ?? '' }}">
         function soiHandler() {
 
             return {
@@ -336,7 +328,7 @@
         }
     </script>
 
-    <script>
+    <script nonce="{{ $cspNonce ?? '' }}">
         const navbar = document.getElementById('navbar');
         const navContainer = document.getElementById('nav-container');
 

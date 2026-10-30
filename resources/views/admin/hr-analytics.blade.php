@@ -3,7 +3,7 @@
 @section('title', 'HR Analytics Dashboard')
 
 @section('styles')
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="{{ asset('vendor/chartjs/chart-4.4.4.umd.min.js') }}"></script>
 <style>
     .analytics-card {
         transition: all 0.2s ease;
@@ -20,133 +20,7 @@
 
 <div class="flex min-h-screen bg-gray-100">
 
-    {{-- ================= SIDEBAR ================= --}}
-    <aside class="w-64 bg-slate-900 text-white flex flex-col">
-
-
-        {{-- Logo / Title --}}
-
-        <div class="p-6 border-b border-slate-700">
-
-            <h2 class="text-xl font-bold">
-                MEPCOM Admin
-            </h2>
-
-        </div>
-
-
-        {{-- Navigation --}}
-
-        <nav class="p-4 space-y-2 flex-1">
-
-
-            {{-- Dashboard --}}
-
-            <a
-                href="{{ route('admin.dashboard') }}"
-                class="flex items-center px-4 py-3 rounded hover:bg-slate-800 transition">
-
-                <i class="fas fa-gauge-high w-5 mr-2"></i>
-
-                Dashboard
-
-            </a>
-
-
-            {{-- HR Analytics --}}
-
-            <a
-                href="{{ route('admin.hr-analytics') }}"
-                class="flex items-center px-4 py-3 rounded bg-blue-600 hover:bg-slate-800 transition">
-
-                <i class="fas fa-chart-line w-5 mr-2"></i>
-
-                HR Analytics
-
-            </a>
-
-
-            {{-- Administrative Track --}}
-
-            <a
-                href="{{ route('administrative.tracks') }}"
-                class="flex items-center px-4 py-3 rounded hover:bg-slate-800 transition">
-
-                <i class="fas fa-graduation-cap w-5 mr-2"></i>
-
-                Administrative Track
-
-            </a>
-
-
-            {{-- Operational Track --}}
-
-            <a
-                href="{{ route('operation_tracks.index') }}"
-                class="flex items-center px-4 py-3 rounded hover:bg-slate-800 transition">
-
-                <i class="fas fa-ship w-5 mr-2"></i>
-
-                Operational Track
-
-            </a>
-
-
-            {{-- Administrative Training --}}
-
-            <a
-                href="{{ route('personnel.administrative.training') }}"
-                class="flex items-center px-4 py-3 rounded hover:bg-slate-800 transition">
-
-                <i class="fas fa-user-graduate w-5 mr-2"></i>
-
-                Administrative Training
-
-            </a>
-
-
-            {{-- Operational Training --}}
-
-            <a
-                href="{{ route('personnel.operational.training') }}"
-                class="flex items-center px-4 py-3 rounded hover:bg-blue-700 transition">
-
-                <i class="fas fa-ship w-5 mr-2"></i>
-
-                Operational Training
-
-            </a>
-
-
-            {{-- Add Unit Account --}}
-
-            <button
-                type="button"
-                id="openUnitModalBtn"
-                class="w-full flex items-center text-left px-4 py-3 rounded hover:bg-blue-700 transition">
-
-                <i class="fas fa-plus w-5 mr-2"></i>
-
-                Add Unit Account
-
-            </button>
-
-
-            {{-- Logout --}}
-
-            <a
-                href="{{ route('admin.logout') }}"
-                class="flex items-center px-4 py-3 rounded hover:bg-red-700 transition">
-
-                <i class="fas fa-right-from-bracket w-5 mr-2"></i>
-
-                Logout
-
-            </a>
-
-        </nav>
-
-    </aside>
+    {{-- Sidebar: provided by layouts/admin --}}
 
     {{-- ================= MAIN CONTENT ================= --}}
     <main class="flex-1 p-10">
@@ -173,7 +47,7 @@
                     Fiscal Year:
                 </label>
 
-                <select name="year" id="year" onchange="this.form.submit()"
+                <select name="year" id="year" data-on-change="pcg.submit-form"
                     class="border border-gray-300 rounded-lg
                            px-4 py-2 bg-white shadow-sm
                            focus:ring-2 focus:ring-blue-500">
@@ -523,9 +397,9 @@
     </main>
 
 </div>
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="{{ asset('vendor/chartjs/chart-4.4.4.umd.min.js') }}"></script>
 
-<script>
+<script nonce="{{ $cspNonce ?? '' }}">
     /*
         |--------------------------------------------------------------------------
         | DATA FROM LARAVEL

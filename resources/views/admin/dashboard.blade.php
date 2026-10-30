@@ -3,111 +3,46 @@
 @section('title', 'Admin Dashboard')
 
 @section('styles')
-    <link rel="stylesheet" href="https://cdn.datatables.net/2.3.2/css/dataTables.dataTables.min.css">
+    <link rel="stylesheet" href="{{ asset('vendor/datatables/dataTables.dataTables-2.3.2.min.css') }}">
 
-    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <script src="{{ asset('vendor/jquery/jquery-3.7.1.min.js') }}"></script>
 
-    <script src="https://cdn.datatables.net/2.3.2/js/dataTables.min.js"></script>
+    <script src="{{ asset('vendor/datatables/dataTables-2.3.2.min.js') }}"></script>
 @endsection
 
 @section('content')
 
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="{{ asset('vendor/sweetalert2/sweetalert2-11.22.0.all.min.js') }}"></script>
 
     <div class="flex min-h-screen bg-gray-100">
 
         @include('admin.partials.lms-menu')
 
         <!-- ================= MAIN ================= -->
-        <main class="flex-1 p-10">
-            <div id="unitAccountModal" class="hidden fixed inset-0 bg-black/50 z-50 flex items-center justify-center">
-
-                <div class="bg-white rounded-lg shadow-xl w-full max-w-3xl">
-
-                    <div class="flex justify-between items-center border-b p-4">
-                        <h2 class="font-bold text-lg">Add Unit Account</h2>
-                        <button id="closeUnitModal" class="text-red-600 text-xl">✕</button>
-                    </div>
-
-                    <form action="{{ route('unit-users.store') }}" method="POST">
-                        @csrf
-
-                        <div class="grid grid-cols-2 gap-4 p-6">
-
-                            <input name="personnel_id" class="border p-2 rounded" placeholder="Personnel ID">
-                            <input name="serial_number" class="border p-2 rounded" placeholder="Serial Number">
-
-                            <input name="full_name" class="border p-2 rounded" placeholder="Full Name">
-                            <input name="email" class="border p-2 rounded" placeholder="Email">
-
-                            <input name="username" class="border p-2 rounded" placeholder="Username">
-                            <input type="password" name="password" class="border p-2 rounded" placeholder="Password">
-                            <select name="role" class="border p-2 rounded w-full">
-
-                                <option value="">-- Select Unit --</option>
-
-                                <option value="MEPLEF">
-                                    Marine Environmental Protection Law Enforcement Force (MEPLEF)
-                                </option>
-
-                                <option value="NOCOP">
-                                    National Operations Center for Oil Pollution (NOCOP)
-                                </option>
-
-                                <option value="MSFIS">
-                                    Marine Science Forensic Investigation Service (MSFIS)
-                                </option>
-
-                                <option value="MEPRCGS">
-                                    Marine Environmental Protection Regulatory Compliance and Governance Service (MEPRCGS)
-                                </option>
-
-                                <option value="MEPTDI">
-                                    Marine Environmental Protection Training and Doctrine Institute (MEPTDI)
-                                </option>
-
-                                <option value="MEPG">
-                                    Marine Environmental Protection Group (MEPG)
-                                </option>
-
-                            </select>
-
-                            <input name="unit_code" value="1" class="border p-2 rounded" placeholder="Unit Code"
-                                hidden>
-
-                            <div class="col-span-2">
-                                <input name="unit_name" class="border p-2 rounded w-full" placeholder="Unit Name">
-                            </div>
-
-                            <div class="col-span-2">
-                                <textarea name="permissions" value="1" class="border p-2 rounded w-full" placeholder='["view","edit"]' hidden></textarea>
-                            </div>
-
-                            <select name="is_active" class="border p-2 rounded">
-                                <option value="1">Active</option>
-                                <option value="0">Inactive</option>
-                            </select>
-
-                        </div>
-
-                        <div class="border-t p-4 flex justify-end">
-                            <button class="bg-green-600 text-white px-6 py-2 rounded">
-                                Save Account
-                            </button>
-                        </div>
-
-                    </form>
-
-                </div>
-            </div>
-            <h2 class="text-3xl font-bold mb-6 text-center">Admin Dashboard</h2>
-
+        <main class="flex-1 p-6">
+            {{-- Unit accounts are managed on their own page (Admin → Unit accounts). --}}
             <!-- SUMMARY -->
-            <div class="grid grid-cols-4 gap-4 mb-6">
-                <div class="bg-blue-600 text-white p-4 rounded">Total<br>{{ $totalUsers }}</div>
-                <div class="bg-yellow-500 text-white p-4 rounded">Pending<br>{{ $pendingUsers->count() }}</div>
-                <div class="bg-green-600 text-white p-4 rounded">Approved<br>{{ $approvedUsers }}</div>
-                <div class="bg-red-600 text-white p-4 rounded">Rejected<br>{{ $rejectedUsers }}</div>
+            <div class="pcg-stats">
+                <div class="pcg-stat">
+                    <span class="pcg-stat__label">Registered personnel</span>
+                    <span class="pcg-stat__value">{{ $totalUsers }}</span>
+                    <span class="pcg-stat__hint">all accounts</span>
+                </div>
+                <div class="pcg-stat pcg-stat--warning">
+                    <span class="pcg-stat__label">Pending approval</span>
+                    <span class="pcg-stat__value">{{ $pendingUsers->count() }}</span>
+                    <span class="pcg-stat__hint">double-click a row below to approve or reject</span>
+                </div>
+                <div class="pcg-stat pcg-stat--success">
+                    <span class="pcg-stat__label">Approved</span>
+                    <span class="pcg-stat__value">{{ $approvedUsers }}</span>
+                    <span class="pcg-stat__hint">can sign in</span>
+                </div>
+                <div class="pcg-stat pcg-stat--danger">
+                    <span class="pcg-stat__label">Rejected</span>
+                    <span class="pcg-stat__value">{{ $rejectedUsers }}</span>
+                    <span class="pcg-stat__hint">cannot sign in</span>
+                </div>
             </div>
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
 
@@ -137,7 +72,10 @@
             <!-- TABLE -->
             <div class="bg-white p-6 rounded shadow">
 
-                <h3 class="mb-3 font-bold">PCG Personels</h3>
+                <h3 class="mb-1 font-bold">PCG Personnel</h3>
+                <p class="mb-3 text-sm text-gray-500">
+                    Double-click a row to see details. Pending registrations open the approve / reject dialog.
+                </p>
 
                 <table id="personnelTable" class="w-full">
                     <thead>
@@ -157,10 +95,10 @@
 
                                 <td>
                                     @if ($user->selfie_image)
-                                        <img src="{{ asset($user->selfie_image) }}"
+                                        <img src="{{ \App\Support\Uploads::url($user->selfie_image) }}"
                                             class="w-10 h-10 rounded object-cover">
                                     @else
-                                        <img src="{{ asset('selfies/no_profile.jpg') }}"
+                                        <img src="{{ asset('images/no-photo.svg') }}"
                                             class="w-10 h-10 rounded object-cover">
                                     @endif
                                 </td>
@@ -206,8 +144,8 @@
 
         </div>
     </div>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script>
+    <script src="{{ asset('vendor/chartjs/chart-4.4.4.umd.min.js') }}"></script>
+    <script nonce="{{ $cspNonce ?? '' }}">
         const courseLabels = @json($courseCounts->keys()->values());
         const courseData = @json($courseCounts->values());
 
@@ -266,7 +204,7 @@
             }
         });
     </script>
-    <script>
+    <script nonce="{{ $cspNonce ?? '' }}">
         @if (session('swal_success'))
             Swal.fire({
                 icon: 'success',
@@ -278,7 +216,17 @@
     </script>
 
     <!-- ================= SCRIPTS ================= -->
-    <script>
+    <script nonce="{{ $cspNonce ?? '' }}">
+        const FILES_URL = @json(\App\Support\Uploads::baseUrl());
+        const NO_PHOTO_URL = @json(asset('images/no-photo.svg'));
+
+        // Registration data is user-supplied: escape before inserting as HTML.
+        function escapeHtml(value) {
+            return String(value ?? '').replace(/[&<>"']/g, c => ({
+                '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+            })[c]);
+        }
+
         $(document).ready(function() {
 
             // ================= DATA TABLE =================
@@ -334,15 +282,15 @@
                 if (user.status === 'Pending') {
 
                     let photo = user.selfie_image ?
-                        '/' + user.selfie_image :
-                        '/selfies/no_profile.jpg';
+                        FILES_URL + user.selfie_image :
+                        NO_PHOTO_URL;
 
                     Swal.fire({
                         title: 'Approve this user?',
                         html: `
                         <div style="text-align:center">
 
-                            <img src="${photo}"
+                            <img src="${escapeHtml(photo)}"
                                 style="
                                     width:90px;
                                     height:90px;
@@ -357,69 +305,78 @@
                                 font-size:18px;
                                 font-weight:bold;
                             ">
-                                ${user.name}
+                                ${escapeHtml(user.name)}
                             </h3>
 
                             <p style="margin:2px 0;">
                                 <b>Serial:</b>
-                                ${user.serial_number ?? 'N/A'}
+                                ${escapeHtml(user.serial_number ?? 'N/A')}
                             </p>
 
                             <p style="margin:2px 0;">
                                 <b>Unit:</b>
-                                ${user.unit_assignment ?? 'N/A'}
+                                ${escapeHtml(user.unit_assignment ?? 'N/A')}
                             </p>
 
                             <p style="margin:2px 0;">
                                 <b>Email:</b>
-                                ${user.email ?? 'N/A'}
+                                ${escapeHtml(user.email ?? 'N/A')}
                             </p>
 
                         </div>
                     `,
                         icon: 'question',
                         showCancelButton: true,
+                        showDenyButton: true,
                         confirmButtonColor: '#16a34a',
-                        cancelButtonColor: '#d33',
-                        confirmButtonText: 'Approve'
+                        denyButtonColor: '#b42318',
+                        cancelButtonColor: '#6b7280',
+                        confirmButtonText: 'Approve',
+                        denyButtonText: 'Reject',
+                        cancelButtonText: 'Cancel'
                     }).then(function(result) {
 
-                        if (result.isConfirmed) {
-
-                            $.ajax({
-                                url: `/admin/approve/${user.id}`,
-                                type: 'POST',
-
-                                data: {
-                                    _token: '{{ csrf_token() }}'
-                                },
-
-                                success: function() {
-
-                                    Swal.fire({
-                                        icon: 'success',
-                                        title: 'Approved!',
-                                        text: 'User has been approved successfully.'
-                                    }).then(function() {
-                                        location.reload();
-                                    });
-
-                                },
-
-                                error: function(xhr) {
-
-                                    console.error(xhr);
-
-                                    Swal.fire({
-                                        icon: 'error',
-                                        title: 'Error',
-                                        text: 'Unable to approve the user.'
-                                    });
-
-                                }
-                            });
-
+                        if (!result.isConfirmed && !result.isDenied) {
+                            return;
                         }
+
+                        // Reject used to have no button at all (route existed, no UI).
+                        const action = result.isConfirmed ? 'approve' : 'reject';
+
+                        $.ajax({
+                            url: `/admin/${action}/${user.id}`,
+                            type: 'POST',
+
+                            data: {
+                                _token: '{{ csrf_token() }}'
+                            },
+
+                            success: function() {
+
+                                Swal.fire({
+                                    icon: 'success',
+                                    title: action === 'approve' ? 'Approved!' : 'Rejected',
+                                    text: action === 'approve'
+                                        ? 'User has been approved successfully.'
+                                        : 'User has been rejected and cannot sign in.'
+                                }).then(function() {
+                                    location.reload();
+                                });
+
+                            },
+
+                            error: function(xhr) {
+
+                                console.error(xhr);
+
+                                Swal.fire({
+                                    icon: 'error',
+                                    title: 'Error',
+                                    text: `Unable to ${action} the user.`
+                                });
+
+                            }
+                        });
 
                     });
 
@@ -432,8 +389,8 @@
                 $('#modalPhoto').attr(
                     'src',
                     user.selfie_image ?
-                    '/' + user.selfie_image :
-                    '/selfies/no_profile.jpg'
+                    FILES_URL + user.selfie_image :
+                    NO_PHOTO_URL
                 );
 
                 $('#modalName').text(user.name || 'N/A');
@@ -451,31 +408,6 @@
 
             $('.closeModal').click(function() {
                 $('#userModal').addClass('hidden');
-            });
-
-
-            // ================= OPEN UNIT MODAL =================
-
-            $('#openUnitModalBtn').click(function() {
-                $('#unitAccountModal').removeClass('hidden');
-            });
-
-
-            // ================= CLOSE UNIT MODAL =================
-
-            $('#closeUnitModal').click(function() {
-                $('#unitAccountModal').addClass('hidden');
-            });
-
-
-            // ================= CLOSE MODAL WHEN CLICKING OUTSIDE =================
-
-            $('#unitAccountModal').click(function(e) {
-
-                if (e.target === this) {
-                    $('#unitAccountModal').addClass('hidden');
-                }
-
             });
 
         });

@@ -5,7 +5,7 @@
 @section('styles')
 
 <link rel="stylesheet"
-    href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+    href="{{ asset('vendor/fontawesome/css/all.min.css') }}">
 
 @endsection
 
@@ -125,7 +125,7 @@
             {{-- FORM --}}
             <div class="p-6">
 
-                <form action="#"
+                <form action="{{ route('training-courses.students.store', $course) }}"
                     method="POST">
 
                     @csrf
@@ -152,8 +152,8 @@
                                 </label>
 
 
-                                <select name="user_id"
-                                    id="user_id"
+                                <select name="serial_number"
+                                    id="serial_number"
                                     required
                                     class="w-full border border-gray-300 rounded-lg px-4 py-3
                focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
@@ -167,7 +167,7 @@
 
                                     @foreach($personnel as $person)
 
-                                    <option value="{{ $person->id }}">
+                                    <option value="{{ $person->user_serial_number }}" @selected(old('serial_number') === $person->user_serial_number)>
 
                                         {{ $person->rank ?? '' }}
 
@@ -186,7 +186,7 @@
                                 </select>
 
 
-                                @error('user_id')
+                                @error('serial_number')
 
                                 <p class="text-red-600 text-sm mt-1">
 
@@ -336,7 +336,7 @@
                     {{-- UPLOAD CSV --}}
                     <button
                         type="button"
-                        onclick="document.getElementById('csvUploadModal').classList.remove('hidden')"
+                        data-on-click="pcg.show" data-args='["#csvUploadModal"]'
                         class="bg-green-600 hover:bg-green-700 text-white px-5 py-2.5 rounded-lg">
 
                         <i class="fas fa-file-import mr-2"></i>
@@ -367,7 +367,7 @@
 
                 <button
                     type="button"
-                    onclick="document.getElementById('csvUploadModal').classList.add('hidden')"
+                    data-on-click="pcg.hide" data-args='["#csvUploadModal"]'
                     class="text-gray-500 hover:text-red-500 text-2xl">
 
                     &times;
@@ -411,7 +411,7 @@
                     {{-- Cancel --}}
                     <button
                         type="button"
-                        onclick="document.getElementById('csvUploadModal').classList.add('hidden')"
+                        data-on-click="pcg.hide" data-args='["#csvUploadModal"]'
                         class="px-4 py-2 bg-gray-500 hover:bg-gray-600
                    text-white rounded-lg">
 

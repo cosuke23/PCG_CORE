@@ -10,10 +10,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script src="//unpkg.com/alpinejs" defer></script>
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    {{-- Alpine.js is loaded once by layouts/app (a second copy initialised the form twice) --}}
+    <script src="{{ asset('vendor/sweetalert2/sweetalert2-11.22.0.all.min.js') }}"></script>
     <title>SOI Form</title>
+    <link rel="stylesheet" href="{{ asset('css/tailwind.css') }}">
 </head>
 
 <body class="bg-gray-900 text-white">
@@ -22,7 +22,7 @@
 
         <form @submit.prevent="submitForm">
             <!-- ================= STEP 1 ================= -->
-            <div x-data="step1Form()" x-init="init()" x-show="step === 1" class="space-y-8">
+            <div x-show="step === 1" class="space-y-8">
                 <h2 class="text-xl font-bold text-white-800 border-b pb-2">Step <span x-text="step"></span></p>: Basic
                     Information</h2>
 
@@ -162,7 +162,7 @@
                                 of Birth</label>
                         </div>
                     </div>
-                    <p id="ageDisplay" class="text-xs font-semibold text-blue-600 mt-1 ml-1" x-text="age"></p>
+                    <p id="ageDisplay" class="text-xs font-semibold text-blue-600 mt-1 ml-1" x-text="basic.birthday ? 'Age: ' + calculatedAge : ''"></p>
                 </div>
             </div>
 
@@ -370,7 +370,7 @@
 
             <!-- ================= STEP 4 ================= -->
 
-            <div x-data="step4Form()" x-init="init()" x-show="step === 4" class="space-y-8">
+            <div x-show="step === 4" class="space-y-8">
                 <div class="border-b pb-2">
                     <h2 class="text-xl font-bold text-white-800">Step 4: E. EDUCATIONAL ATTAINMENT</h2>
                     <p class="text-sm text-gray-500 mt-1">Please provide details regarding your academic, vocational,
@@ -2021,7 +2021,7 @@
                 </div>
             </div>
         </form>
-        <script>
+        <script nonce="{{ $cspNonce ?? '' }}">
             function filterCourses(event) {
                 const input = event.target;
                 const filter = input.value.toLowerCase();
@@ -2034,7 +2034,7 @@
                 }
             }
         </script>
-        <script>
+        <script nonce="{{ $cspNonce ?? '' }}">
             function formData() {
                 return {
 

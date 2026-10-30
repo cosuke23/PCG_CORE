@@ -9,43 +9,21 @@ use Illuminate\Support\Facades\DB;
 
 class AdminController extends Controller
 {
-    // Static credentials
-    private $adminUsername = 'colminasjulius@gmail.com';
-    private $adminPassword = 'Juls@0730';
+    // Login lives in AdminLoginController. Access to every method below is
+    // enforced by the "admin.session" route middleware; the inline checks
+    // are kept as a second line of defence.
 
-    // Show login form
-    public function showLogin()
+    public function logout(Request $request)
     {
-        return view('admin.login');
-    }
+        // Legacy GET /admin/logout. Previously cleared the wrong session keys,
+        // which left the admin logged in.
+        \App\Support\AdminAudit::record('logout');
+        Session::forget(['admin_logged_in', 'admin_user_id', 'admin_email', 'admin_name', 'admin_role', 'admin_bootstrap', 'admin_2fa_user_id']);
+        $request->session()->regenerateToken();
 
-    // Handle login with static credentials
-    public function login(Request $request)
-    {
-        $request->validate([
-            'username' => 'required',
-            'password' => 'required',
-        ]);
-
-        if ($request->username === $this->adminUsername && $request->password === $this->adminPassword) {
-            // Save admin session
-            Session::put('is_admin', true);
-            Session::put('admin_name', 'Julius Colminas');
-
-            return redirect()->route('admin.dashboard')->with('success', 'Welcome, Admin!');
-        }
-
-        return back()->withErrors(['username' => 'Invalid admin credentials.']);
-    }
-
-    // Admin logout
-    public function logout()
-    {
-        Session::forget(['is_admin', 'admin_name']);
         return redirect()->route('admin.login')->with('success', 'Logged out successfully.');
     }
 
-    // Admin dashboard
     public function dashboard()
     {
         // Protect dashboard
@@ -67,8 +45,20 @@ class AdminController extends Controller
                 WHERE ra.serial_number = users.serial_number
             )');
             })
+            // Explicit columns: rows are embedded in the page as JSON, and
+            // users.* sent every password hash to the browser.
             ->select(
-                'users.*',
+                'users.id',
+                'users.name',
+                'users.email',
+                'users.rank',
+                'users.serial_number',
+                'users.selfie_image',
+                'users.status',
+                'users.mother_unit',
+                'users.sub_unit',
+                'users.unit_assignment',
+                'users.created_at',
                 'reinlist_academic.course',
                 'reinlist_academic.level',
                 'reinlist_academic.school'

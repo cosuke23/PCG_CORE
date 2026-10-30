@@ -4,18 +4,18 @@
 
 @section('styles')
 
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
-<link rel="stylesheet" href="https://cdn.datatables.net/2.3.2/css/dataTables.dataTables.min.css">
+<link rel="stylesheet" href="{{ asset('vendor/fontawesome/css/all.min.css') }}">
+<link rel="stylesheet" href="{{ asset('vendor/datatables/dataTables.dataTables-2.3.2.min.css') }}">
 
-<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+<script src="{{ asset('vendor/jquery/jquery-3.7.1.min.js') }}"></script>
 
-<script src="https://cdn.datatables.net/2.3.2/js/dataTables.min.js"></script>
+<script src="{{ asset('vendor/datatables/dataTables-2.3.2.min.js') }}"></script>
 
 @endsection
 
 @section('content')
 
-<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script src="{{ asset('vendor/sweetalert2/sweetalert2-11.22.0.all.min.js') }}"></script>
 
 <div class="flex min-h-screen bg-gray-100">
 
@@ -557,8 +557,8 @@
     </main>
 
 </div>
-<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-<script>
+<script src="{{ asset('vendor/sweetalert2/sweetalert2-11.22.0.all.min.js') }}"></script>
+<script nonce="{{ $cspNonce ?? '' }}">
 $(document).ready(function () {
 
     $('#osaertTraineesTable').DataTable({

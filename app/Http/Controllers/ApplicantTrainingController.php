@@ -69,6 +69,11 @@ class ApplicantTrainingController extends Controller
                 '%' . $equivalentRank . '%'
             );
 
+        // A rank with no equivalent used to match every track (LIKE '%%').
+        if ($equivalentRank === null) {
+            $query->whereRaw('1 = 0');
+        }
+
         if ($yearFilter === '1') {
 
             $query->where(

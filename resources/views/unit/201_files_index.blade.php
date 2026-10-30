@@ -4,7 +4,8 @@
 <head>
     <meta charset="UTF-8">
     <title>201 Files</title>
-    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="{{ asset('css/tailwind.css') }}">
+    <script src="{{ asset('js/pcg-ui.js') }}" defer></script>
 </head>
 
 <body class="bg-[#f5f5f7] min-h-screen overflow-hidden">
@@ -17,21 +18,10 @@
             <div>
 
                 <div class="flex justify-center py-8">
-                    <img src="{{ asset('logo.png') }}" class="w-24 h-24">
+                    <img src="{{ asset('images/brand/mepcom-logo.webp') }}" class="w-24 h-24">
                 </div>
 
-                <nav class="px-4 space-y-2">
-
-                    <a href="#" class="flex gap-3 px-4 py-3 rounded-xl hover:bg-gray-100">
-                        📊 Dashboard
-                    </a>
-
-                    <a href="{{ route('unit.201files') }}"
-                        class="flex gap-3 px-4 py-3 rounded-xl bg-indigo-100 text-indigo-600 font-semibold">
-                        📝 201 Files
-                    </a>
-
-                </nav>
+                @include('unit.partials.nav')
 
             </div>
 
@@ -45,6 +35,7 @@
 
         <!-- MAIN -->
         <main class="flex-1 overflow-y-auto p-10">
+            @include('unit.partials.flash')
 
             <h1 class="text-4xl font-bold mb-6">201 Files</h1>
 
@@ -66,7 +57,7 @@
 
                     <tbody>
                         @foreach ($personnel as $p)
-                            <tr onclick="openModal('{{ $p->serial_number }}')"
+                            <tr data-on-click="openModal" data-args='@json([$p->serial_number])'
                                 class="border-t hover:bg-indigo-50 cursor-pointer">
 
                                 <td class="p-4">
@@ -103,7 +94,7 @@
                     <p id="serial_number" class="text-gray-500"></p>
                 </div>
 
-                <button onclick="closeModal()">✕</button>
+                <button data-on-click="closeModal">✕</button>
 
             </div>
 
@@ -117,8 +108,14 @@
 
     </div>
 
-    <script>
-        const BASE_URL = "https://pcg-mepcom.com/public/";
+    <script nonce="{{ $cspNonce ?? '' }}">
+        // Escape server data before inserting it with innerHTML.
+        function escapeHtml(value) {
+            return String(value ?? '').replace(/[&<>"']/g, c => ({
+                '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+            })[c]);
+        }
+        const BASE_URL = @json(\App\Support\Uploads::baseUrl());
 
         // SEARCH
         document.getElementById('tableSearch').addEventListener('keyup', function() {
@@ -174,16 +171,16 @@
                             let isPdf = /\.pdf$/i.test(cleanPath);
 
                             if (isImg) {
-                                preview = `<img src="${url}" class="w-full max-h-[400px] object-contain">`;
+                                preview = `<img src="${escapeHtml(url)}" class="w-full max-h-[400px] object-contain">`;
                             } else if (isPdf) {
                                 preview = `
                             <iframe 
-                                src="${url}" 
+                                src="${escapeHtml(url)}" 
                                 class="w-full h-[500px] bg-white">
                             </iframe>`;
                             } else {
                                 preview = `
-                            <a href="${url}" target="_blank" class="text-indigo-600 font-semibold">
+                            <a href="${escapeHtml(url)}" target="_blank" class="text-indigo-600 font-semibold">
                                 Open File
                             </a>`;
                             }

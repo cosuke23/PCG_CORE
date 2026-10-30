@@ -7,6 +7,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use App\Models\UnitUser;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Storage;
 
 class UnitUserController extends Controller
 {
@@ -21,18 +22,45 @@ class UnitUserController extends Controller
     }
 
     // ================= LOGIN =================
-    public function loginM1(Request $request)
+    /**
+     * Verify email + password against unit_users. The login forms always
+     * asked for a password, but it was never checked before.
+     */
+    private function attemptUnitLogin(Request $request): ?UnitUser
     {
         $request->validate([
-            'email' => 'required|email',
+            'email'    => 'required|email',
+            'password' => 'required|string',
         ]);
 
         $user = UnitUser::where('email', $request->email)
             ->where('is_active', 1)
             ->first();
 
+        if (!$user || !$user->password || !Hash::check($request->password, $user->password)) {
+            Log::warning('Failed unit login', ['ip' => $request->ip()]);
+            return null;
+        }
+
+        $request->session()->regenerate();
+
+        return $user;
+    }
+
+    public function loginM1(Request $request)
+    {
+        $user = $this->attemptUnitLogin($request);
+
         if (!$user) {
-            return back()->with('error', 'Invalid email or inactive account.');
+            return back()
+                ->with('error', 'Invalid email, password, or inactive account.')
+                ->withInput($request->only('email'));
+        }
+
+        if ($user->role !== UnitUser::ROLE_M1) {
+            return back()
+                ->with('error', 'This account does not have M1 (all units) access. Use the unit login, or ask the administrator to grant M1 access.')
+                ->withInput($request->only('email'));
         }
 
         session([
@@ -48,16 +76,12 @@ class UnitUserController extends Controller
     // ================= LOGIN =================
     public function login(Request $request)
     {
-        $request->validate([
-            'email' => 'required|email',
-        ]);
-
-        $user = UnitUser::where('email', $request->email)
-            ->where('is_active', 1)
-            ->first();
+        $user = $this->attemptUnitLogin($request);
 
         if (!$user) {
-            return back()->with('error', 'Invalid email or inactive account.');
+            return back()
+                ->with('error', 'Invalid email, password, or inactive account.')
+                ->withInput($request->only('email'));
         }
 
         session([
@@ -160,6 +184,19 @@ class UnitUserController extends Controller
 
     public function store(Request $request)
     {
+        $request->validate([
+            'personnel_id'  => 'nullable|string|max:100',
+            'serial_number' => 'nullable|string|max:100',
+            'full_name'     => 'required|string|max:255',
+            'email'         => 'required|email|max:255|unique:unit_users,email',
+            'username'      => 'nullable|string|max:100',
+            'password'      => 'required|string|min:8',
+            'unit_name'     => 'nullable|required_without:role|string|max:255',
+            'role'          => 'nullable|string|max:255',
+            'unit_code'     => 'nullable|string|max:50',
+            'is_active'     => 'nullable|boolean',
+        ]);
+
         DB::table('unit_users')->insert([
             'user_id' => $request->personnel_id,
             'personnel_id' => $request->personnel_id,
@@ -168,11 +205,13 @@ class UnitUserController extends Controller
             'email' => $request->email,
             'username' => $request->username,
             'password' => Hash::make($request->password),
-            'role' => "unit_checker",
-            'unit_name' => $request->unit_name,
+            'role' => UnitUser::ROLE_UNIT,
+            // The admin form's "role" dropdown actually lists units
+            // (MEPLEF, NOCOP, ...); use it when the free-text unit is empty.
+            'unit_name' => $request->unit_name ?: $request->role,
             'unit_code' => $request->unit_code,
             'permissions' => $request->permissions,
-            'is_active' => $request->is_active,
+            'is_active' => $request->boolean('is_active', true),
             'created_at' => now(),
             'updated_at' => now(),
         ]);
@@ -184,7 +223,7 @@ class UnitUserController extends Controller
         Log::info('Disciplinary Upload START', [
             'serial_number' => $request->serial_number,
             'has_files' => $request->hasFile('disciplinary_files'),
-            'all' => $request->except(['disciplinary_files'])
+            'unit_user_id' => session('unit_user_id'),
         ]);
 
         $request->validate([
@@ -207,7 +246,7 @@ class UnitUserController extends Controller
 
                 if (!$file) return null;
 
-                $basePath = '/home/sghwkf6wslnz/public_html/pcg-mepcom.com/public/disciplinary_actions';
+                $basePath = config('pcg.upload_root') . '/disciplinary_actions';
 
                 $folder = trim($folder, '/');
                 $folderPath = $basePath . '/' . $folder;
@@ -216,10 +255,10 @@ class UnitUserController extends Controller
                 $folderPath = preg_replace('#/+#', '/', $folderPath);
 
                 if (!file_exists($folderPath)) {
-                    mkdir($folderPath, 0777, true);
+                    mkdir($folderPath, 0755, true);
                 }
 
-                $fileName = time() . '_' . uniqid() . '_' . $file->getClientOriginalName();
+                $fileName = time() . '_' . uniqid() . '_' . preg_replace('/[^A-Za-z0-9._-]/', '_', $file->getClientOriginalName());
 
                 $file->move($folderPath, $fileName);
 
@@ -270,7 +309,7 @@ class UnitUserController extends Controller
                 'file' => $e->getFile()
             ]);
 
-            return back()->with('error', 'Upload failed: ' . $e->getMessage());
+            return back()->with('error', 'Upload failed. Please try again.');
         }
     }
     public function deleteDisciplinary($id)
@@ -281,8 +320,13 @@ class UnitUserController extends Controller
 
         if ($doc) {
 
-            if ($doc->file_path && Storage::disk('public')->exists($doc->file_path)) {
+            // Files are written by storeDisciplinary() under
+            // <upload_root>/disciplinary_actions/<file_path>.
+            $fullPath = config('pcg.upload_root') . '/disciplinary_actions/' . $doc->file_path;
 
+            if ($doc->file_path && !str_contains($doc->file_path, '..') && is_file($fullPath)) {
+                unlink($fullPath);
+            } elseif ($doc->file_path && Storage::disk('public')->exists($doc->file_path)) {
                 Storage::disk('public')->delete($doc->file_path);
             }
 
@@ -316,11 +360,9 @@ class UnitUserController extends Controller
 
     public function show_201($id)
     {
-        \Log::info('ID value:', ['id' => $id]);
         $documents = DB::table('personnel_201_files')
             ->where('serial_number', $id)
             ->first();
-        \Log::info('documents value:', ['documents' => $documents]);
         $personnel = DB::table('reinlist_basic_info')
             ->where('serial_number', $id)
             ->first();
@@ -332,9 +374,10 @@ class UnitUserController extends Controller
     }
 
     // ================= LOGOUT =================
-    public function logout()
+    public function logout(Request $request)
     {
-        session()->flush();
+        session()->forget(['unit_user_id', 'unit_full_name', 'unit_email', 'unit_role', 'unit_name']);
+        $request->session()->regenerateToken();
         return redirect('/unit/login');
     }
 }

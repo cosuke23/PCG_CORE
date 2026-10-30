@@ -6,7 +6,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Document Checker</title>
 
-    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="{{ asset('css/tailwind.css') }}">
+    <script src="{{ asset('js/pcg-ui.js') }}" defer></script>
 </head>
 
 <body id="body" class="bg-[#f5f5f7] min-h-screen overflow-hidden transition-all duration-300">
@@ -21,7 +22,7 @@
                 <!-- LOGO -->
                 <div class="flex justify-center py-8">
 
-                    <img src="{{ asset('logo.png') }}" class="w-24 h-24 object-contain">
+                    <img src="{{ asset('images/brand/mepcom-logo.webp') }}" class="w-24 h-24 object-contain">
 
                 </div>
 
@@ -52,42 +53,7 @@
 
                 </div>
 
-                <!-- MENU -->
-                <nav class="px-4 space-y-2">
-
-                    <a href="#"
-                        class="flex items-center gap-3 px-4 py-3 rounded-xl text-gray-600 hover:bg-gray-100 transition">
-
-                        <span>📊</span>
-                        <span>Dashboard</span>
-
-                    </a>
-
-                    <a href="{{ route('unit.201files') }}"
-                        class="flex items-center gap-3 px-4 py-3 rounded-xl text-gray-600 hover:bg-gray-100 transition">
-
-                        <span>📝</span>
-                        <span>201 Files</span>
-
-                    </a>
-
-                    <a href="#"
-                        class="flex items-center gap-3 px-4 py-3 rounded-xl bg-indigo-100 text-indigo-600 font-semibold">
-
-                        <span>✔</span>
-                        <span>Verification</span>
-
-                    </a>
-
-                    <a href="#"
-                        class="flex items-center gap-3 px-4 py-3 rounded-xl text-gray-600 hover:bg-gray-100 transition">
-
-                        <span>⚙</span>
-                        <span>Settings</span>
-
-                    </a>
-
-                </nav>
+                @include('unit.partials.nav')
 
             </div>
 
@@ -96,7 +62,7 @@
 
                 <div class="bg-white rounded-3xl p-8 w-full max-w-md shadow-2xl relative">
 
-                    <button onclick="closeSerialModal()"
+                    <button data-on-click="closeSerialModal"
                         class="absolute top-4 right-4 text-gray-500 hover:text-red-500 text-xl">
 
                         ✕
@@ -130,7 +96,7 @@
                                     <input type="file" name="disciplinary_files[]" accept=".pdf,.jpg,.jpeg,.png"
                                         class="flex-1 border border-gray-300 rounded-xl p-3">
 
-                                    <button type="button" onclick="removeRow(this)"
+                                    <button type="button" data-on-click="removeRow" data-args='["$this"]'
                                         class="bg-red-500 hover:bg-red-600 text-white px-4 py-3 rounded-xl">
 
                                         ✕
@@ -141,7 +107,7 @@
 
                             </div>
 
-                            <button type="button" onclick="addRow()"
+                            <button type="button" data-on-click="addRow"
                                 class="mt-4 bg-indigo-500 hover:bg-indigo-600 text-white px-5 py-3 rounded-2xl">
 
                                 + Add File
@@ -161,9 +127,9 @@
                 </div>
 
             </div>
-            <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+            <script src="{{ asset('vendor/sweetalert2/sweetalert2-11.22.0.all.min.js') }}"></script>
             @if (session('success'))
-                <script>
+                <script nonce="{{ $cspNonce ?? '' }}">
                     Swal.fire({
                         icon: 'success',
                         title: 'Success',
@@ -172,7 +138,7 @@
                     });
                 </script>
             @endif
-            <script>
+            <script nonce="{{ $cspNonce ?? '' }}">
                 function addRow() {
 
                     let html = `
@@ -184,7 +150,7 @@
                 class="flex-1 border border-gray-300 rounded-xl p-3">
 
             <button type="button"
-                onclick="removeRow(this)"
+                data-on-click="removeRow" data-args='["$this"]'
                 class="bg-red-500 hover:bg-red-600 text-white px-4 py-3 rounded-xl">
 
                 ✕
@@ -203,7 +169,13 @@
                     btn.closest('.disciplinary-row').remove();
                 }
             </script>
-            <script>
+            <script nonce="{{ $cspNonce ?? '' }}">
+        // Escape server data before inserting it with innerHTML.
+        function escapeHtml(value) {
+            return String(value ?? '').replace(/[&<>"']/g, c => ({
+                '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+            })[c]);
+        }
                 document.getElementById('serialSearchForm')
                     .addEventListener('submit', async function(e) {
 
@@ -229,12 +201,12 @@
 
                         <div>
                             <span class="font-semibold">Full Name:</span>
-                            ${data.fullname}
+                            ${escapeHtml(data.fullname)}
                         </div>
 
                         <div>
                             <span class="font-semibold">Serial:</span>
-                            ${data.serial_number}
+                            ${escapeHtml(data.serial_number)}
                         </div>
 
                     </div>
@@ -288,6 +260,7 @@
 
         <!-- MAIN -->
         <main class="flex-1 overflow-y-auto p-10">
+            @include('unit.partials.flash')
 
             <!-- HEADER -->
             <div class="flex justify-between items-start mb-8">
@@ -311,7 +284,7 @@
                 </div>
 
                 <!-- MODE -->
-                <button onclick="toggleMode()" id="modeBtn"
+                <button data-on-click="toggleMode" id="modeBtn"
                     class="bg-white border border-gray-300 rounded-full px-5 py-3 flex items-center gap-3 shadow-sm hover:shadow-md transition">
 
                     <span id="modeText" class="text-sm font-semibold text-black">
@@ -414,7 +387,7 @@
                         <tbody>
 
                             @foreach ($documents as $doc)
-                                <tr ondblclick='openModal(@json($doc))'
+                                <tr data-on-dblclick="openModal" data-args='@json([$doc])'
                                     class="border-t border-gray-100 hover:bg-indigo-50 transition cursor-pointer">
 
                                     <!-- NAME -->
@@ -514,7 +487,7 @@
 
                 </div>
 
-                <button onclick="closeModal()"
+                <button data-on-click="closeModal"
                     class="w-12 h-12 rounded-full bg-gray-100 hover:bg-red-100 hover:text-red-500 transition">
 
                     ✕
@@ -537,7 +510,7 @@
                     <!-- CHECK ALL -->
                     <div class="bg-white border border-gray-200 rounded-2xl p-4 mb-6 flex items-center gap-3">
 
-                        <input type="checkbox" id="checkAll" onclick="toggleAll(this)" class="w-5 h-5">
+                        <input type="checkbox" id="checkAll" data-on-click="toggleAll" data-args='["$this"]' class="w-5 h-5">
 
                         <label for="checkAll" class="font-semibold text-black">
 
@@ -562,14 +535,14 @@
                     <!-- BUTTONS -->
                     <div class="flex flex-col md:flex-row gap-4 mt-8">
 
-                        <button type="button" onclick="submitDecision('approved')"
+                        <button type="button" data-on-click="submitDecision" data-args='["approved"]'
                             class="flex-1 bg-green-500 hover:bg-green-600 text-white py-4 rounded-2xl font-semibold text-lg">
 
                             ✔ ACCEPT
 
                         </button>
 
-                        <button type="button" onclick="submitDecision('rejected')"
+                        <button type="button" data-on-click="submitDecision" data-args='["rejected"]'
                             class="flex-1 bg-red-500 hover:bg-red-600 text-white py-4 rounded-2xl font-semibold text-lg">
 
                             ❌ REJECT
@@ -585,7 +558,7 @@
         </div>
 
     </div>
-    <script>
+    <script nonce="{{ $cspNonce ?? '' }}">
         document.getElementById('tableSearch').addEventListener('keyup', function() {
 
             let value = this.value.toLowerCase();
@@ -606,7 +579,7 @@
 
         });
     </script>
-    <script>
+    <script nonce="{{ $cspNonce ?? '' }}">
         let darkMode = false;
 
         function toggleMode() {
@@ -726,7 +699,13 @@
             }
         }
     </script>
-    <script>
+    <script nonce="{{ $cspNonce ?? '' }}">
+        // Escape server data before inserting it with innerHTML.
+        function escapeHtml(value) {
+            return String(value ?? '').replace(/[&<>"']/g, c => ({
+                '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+            })[c]);
+        }
         function openModal(doc) {
 
             const modal = document.getElementById('modal');
@@ -774,27 +753,27 @@
                     // IMPORTANT: DO NOT force "documents/"
                     // because your files use /photos/, /nbi/, etc.
 
-                    let url = "https://pcg-mepcom.com/public/documents_toupload/" + cleanPath;
+                    let url = @json(\App\Support\Uploads::url('documents_toupload/')) + cleanPath;
 
                     let isImg = /\.(jpg|jpeg|png|gif|webp)$/i.test(cleanPath);
                     let isPdf = /\.pdf$/i.test(cleanPath);
 
                     if (isImg) {
                         preview = `
-                    <img src="${url}"
+                    <img src="${escapeHtml(url)}"
                         style="width:100%; max-height:500px; object-fit:contain;"
-                        onerror="this.style.display='none'; this.nextElementSibling.style.display='block';"
+                        data-on-error="pcg.img-fallback"
                     >
                     <div style="display:none;color:red;">Image failed to load</div>
                 `;
                     } else if (isPdf) {
                         preview = `
-                    <iframe src="${url}"
+                    <iframe src="${escapeHtml(url)}"
                         style="width:100%; height:500px;"></iframe>
                 `;
                     } else {
                         preview = `
-                    <a href="${url}" target="_blank" class="text-indigo-500">
+                    <a href="${escapeHtml(url)}" target="_blank" class="text-indigo-500">
                         Open File
                     </a>
                 `;
@@ -839,7 +818,7 @@
             // LOCATION
             if (doc.latitude && doc.longitude) {
                 document.getElementById('coords').innerHTML =
-                    `📍 <a href="https://www.google.com/maps?q=${doc.latitude},${doc.longitude}" target="_blank" class="underline">Open in Google Maps</a>`;
+                    `📍 <a href="https://www.google.com/maps?q=${encodeURIComponent(doc.latitude)},${encodeURIComponent(doc.longitude)}" target="_blank" class="underline">Open in Google Maps</a>`;
             } else {
                 document.getElementById('coords').innerText = "No location available";
             }

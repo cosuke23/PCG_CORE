@@ -82,7 +82,7 @@
             <div class="max-w-7xl mx-auto overflow-hidden border border-gray-300 shadow-lg">
                 <img src="{{ asset('backgrounds/MEP 5.jpg') }}" alt="RADM SUPANGAN PCG Message"
                     class="w-full h-auto object-contain cursor-pointer hover:opacity-90 transition"
-                    onclick="openImageModal(this.src)">
+                    data-on-click="pcg.open-src">
             </div>
 
         </div>
@@ -285,7 +285,7 @@
         </div>
     </section>
 
-    <script>
+    <script nonce="{{ $cspNonce ?? '' }}">
         const video = document.getElementById('heroVideo');
         const overlay = document.getElementById('videoOverlay');
         const icon = document.getElementById('overlayIcon');
@@ -301,7 +301,7 @@
             overlay.style.display = 'none';
         });
     </script>
-    <script>
+    <script nonce="{{ $cspNonce ?? '' }}">
         function modalData() {
             return {
                 show: false,

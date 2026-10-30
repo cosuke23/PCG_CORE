@@ -36,6 +36,7 @@ class Kernel extends HttpKernel
             \Illuminate\View\Middleware\ShareErrorsFromSession::class,
             \App\Http\Middleware\VerifyCsrfToken::class,
             \Illuminate\Routing\Middleware\SubstituteBindings::class,
+            \App\Http\Middleware\SecurityHeaders::class,
         ],
 
         'api' => [
@@ -52,8 +53,15 @@ class Kernel extends HttpKernel
      *
      * @var array<string, class-string|string>
      */
-    protected $routeMiddleware = [
+    protected $middlewareAliases = [
         'auth' => \App\Http\Middleware\Authenticate::class,
+        'admin.session' => \App\Http\Middleware\EnsureAdminSession::class,
+        'admin.role' => \App\Http\Middleware\EnsureAdminRole::class,
+        'admin.orgwide' => \App\Http\Middleware\EnsureAdminOrgWide::class,
+        'admin.can' => \App\Http\Middleware\EnsureAdminCan::class,
+        'admin.audit' => \App\Http\Middleware\AuditAdminRequests::class,
+        'unit.session' => \App\Http\Middleware\EnsureUnitSession::class,
+        'unit.m1' => \App\Http\Middleware\EnsureUnitM1::class,
         'auth.basic' => \Illuminate\Auth\Middleware\AuthenticateWithBasicAuth::class,
         'auth.session' => \Illuminate\Session\Middleware\AuthenticateSession::class,
         'cache.headers' => \Illuminate\Http\Middleware\SetCacheHeaders::class,
@@ -63,5 +71,29 @@ class Kernel extends HttpKernel
         'signed' => \App\Http\Middleware\ValidateSignature::class,
         'throttle' => \Illuminate\Routing\Middleware\ThrottleRequests::class,
         'verified' => \Illuminate\Auth\Middleware\EnsureEmailIsVerified::class,
+    ];
+
+    /**
+     * Framework default order plus the session guards, which must run
+     * before route-model binding so anonymous requests never reach the
+     * database.
+     *
+     * @var string[]
+     */
+    protected $middlewarePriority = [
+        \Illuminate\Foundation\Http\Middleware\HandlePrecognitiveRequests::class,
+        \Illuminate\Cookie\Middleware\EncryptCookies::class,
+        \Illuminate\Session\Middleware\StartSession::class,
+        \Illuminate\View\Middleware\ShareErrorsFromSession::class,
+        \Illuminate\Contracts\Auth\Middleware\AuthenticatesRequests::class,
+        \App\Http\Middleware\EnsureAdminSession::class,
+        \App\Http\Middleware\EnsureAdminRole::class,
+        \App\Http\Middleware\EnsureUnitSession::class,
+        \App\Http\Middleware\EnsureUnitM1::class,
+        \Illuminate\Routing\Middleware\ThrottleRequests::class,
+        \Illuminate\Routing\Middleware\ThrottleRequestsWithRedis::class,
+        \Illuminate\Contracts\Session\Middleware\AuthenticatesSessions::class,
+        \Illuminate\Routing\Middleware\SubstituteBindings::class,
+        \Illuminate\Auth\Middleware\Authorize::class,
     ];
 }

@@ -5,20 +5,20 @@
 @section('styles')
 
 <link rel="stylesheet"
-    href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+    href="{{ asset('vendor/fontawesome/css/all.min.css') }}">
 
 <link rel="stylesheet"
-    href="https://cdn.datatables.net/2.3.2/css/dataTables.dataTables.min.css">
+    href="{{ asset('vendor/datatables/dataTables.dataTables-2.3.2.min.css') }}">
 
-<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+<script src="{{ asset('vendor/jquery/jquery-3.7.1.min.js') }}"></script>
 
-<script src="https://cdn.datatables.net/2.3.2/js/dataTables.min.js"></script>
+<script src="{{ asset('vendor/datatables/dataTables-2.3.2.min.js') }}"></script>
 
 @endsection
 
 @section('content')
 
-<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script src="{{ asset('vendor/sweetalert2/sweetalert2-11.22.0.all.min.js') }}"></script>
 
 <div class="flex min-h-screen bg-gray-100">
 
@@ -439,7 +439,7 @@
 
                                 <span class="font-medium text-gray-700">
 
-                                    {{ $student->personnel->personnel_id ?? 'N/A' }}
+                                    {{ $student->serial_number ?: 'N/A' }}
 
                                 </span>
 
@@ -449,7 +449,7 @@
 
                                 <div class="font-semibold text-gray-800">
 
-                                    {{ $student->personnel->name ?? 'N/A' }}
+                                    {{ $student->full_name ?: ($student->personnel->name ?? 'N/A') }}
 
                                 </div>
 
@@ -495,18 +495,9 @@
 
                                 <div class="flex items-center gap-1">
 
-                                    <a href="#"
-                                        class="bg-blue-500 hover:bg-blue-600 text-white px-3 py-2 rounded"
-                                        title="View Student">
 
 
-                                        <i class="fa-solid fa-eye"></i>
-
-
-                                    </a>
-
-
-                                    <form action="#"
+                                    <form action="{{ route('training-courses.students.destroy', [$course, $student]) }}"
                                         method="POST"
                                         class="remove-student-form">
 
@@ -560,7 +551,7 @@
 </div>
 
 
-<script>
+<script nonce="{{ $cspNonce ?? '' }}">
     $(document).ready(function() {
 
 

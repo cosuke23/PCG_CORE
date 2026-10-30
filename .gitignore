@@ -1,27 +1,48 @@
-﻿@'
+# Environment / secrets
 .env
 .env.*
 !.env.example
+*.sql
+!/database/audit/*.sql
+# Schema-only file for the local *_dev database (no data)
+!/database/dev/*.sql
+*.sql.gz
+/backups/
 
+# Dependencies and build output
 /vendor/
 /node_modules/
-/.phpunit.cache
-.phpunit.result.cache
-
-/storage/*.key
-/storage/logs/*
-/storage/framework/cache/*
-/storage/framework/sessions/*
-/storage/framework/views/*
-
 /public/build
 /public/hot
 /public/storage
+/.phpunit.cache
+.phpunit.result.cache
+
+# Laravel runtime files
+/storage/*.key
+/storage/logs/*
+!/storage/logs/.gitignore
+/storage/framework/cache/*
+!/storage/framework/cache/.gitignore
+/storage/framework/sessions/*
+!/storage/framework/sessions/.gitignore
+/storage/framework/views/*
+!/storage/framework/views/.gitignore
+/storage/framework/testing/
+/storage/app/*
+!/storage/app/.gitignore
+!/storage/app/public/
+/storage/app/public/*
+!/storage/app/public/.gitignore
 
 # Private personnel information - NEVER upload
 /public/201_files/
 /public/documents_toupload/
+/public/disciplinary_actions/
+/public/selfies/
+/public/profile_photos/
 /public/[[]cg_photos/
+/selfies/
 
 # Large media and archives
 /public/videos/
@@ -40,4 +61,4 @@
 error_log
 .DS_Store
 Thumbs.db
-'@ | Set-Content -Encoding UTF8 .gitignore
+desktop.ini

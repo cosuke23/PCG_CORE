@@ -11,7 +11,9 @@ class UnitDocumentController extends Controller
     public function review(Request $request)
     {
         Log::info('=== UNIT DOCUMENT REVIEW START ===', [
-            'request' => $request->all(),
+            'serial_number' => $request->serial_number,
+            'decision' => $request->decision,
+            'unit_user_id' => session('unit_user_id'),
         ]);
 
         $request->validate([
@@ -19,6 +21,18 @@ class UnitDocumentController extends Controller
             'decision'      => 'required|in:approved,rejected',
             'docs'          => 'nullable|array',
         ]);
+
+        // Unit checkers may only decide on personnel of their own unit
+        // (the unit dashboard lists users.mother_unit = their unit); M1
+        // checkers review all units.
+        if (session('unit_role') !== \App\Models\UnitUser::ROLE_M1) {
+            $inUnit = DB::table('users')
+                ->where('serial_number', $request->serial_number)
+                ->where('mother_unit', session('unit_name'))
+                ->exists();
+
+            abort_unless($inUnit, 403, 'This applicant is not in your unit.');
+        }
 
         try {
 

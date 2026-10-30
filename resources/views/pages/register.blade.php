@@ -3,17 +3,19 @@
 @section('title', 'Register')
 
 @section('content')
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="{{ asset('vendor/sweetalert2/sweetalert2-11.22.0.all.min.js') }}"></script>
 
     @php $isOfficer = $type === 'officer'; @endphp
-    <div x-data="{ open: true }" x-show="open"
+    {{-- Intro video. Closes itself if the video file is missing (it is not in git). --}}
+    <div x-data="{ open: true }" x-show="open" @keydown.escape.window="open = false"
+        role="dialog" aria-modal="true" aria-label="MEPCOM introduction video"
         class="fixed inset-0 z-[9999] flex items-center justify-center bg-black bg-opacity-50">
 
         <!-- Modal Container -->
         <div class="bg-white rounded-3xl shadow-2xl relative overflow-hidden inline-block z-[10000]">
 
             <!-- Close Button -->
-            <button @click="open = false"
+            <button @click="open = false" aria-label="Close video"
                 class="absolute top-3 right-3 text-gray-500 hover:text-gray-800 text-2xl font-bold z-20">
                 &times;
             </button>
@@ -21,7 +23,7 @@
             <!-- Video Content -->
             <video controls autoplay muted loop
                 class="block max-w-full max-h-[90vh] object-contain rounded-3xl shadow-inner">
-                <source src="{{ asset('backgrounds/mepcom 4.mp4') }}" type="video/mp4">
+                <source src="{{ asset('backgrounds/mepcom 4.mp4') }}" type="video/mp4" x-on:error="open = false">
                 Your browser does not support the video tag.
             </video>
 
@@ -243,7 +245,7 @@
 
 
     <!-- STEP FORM JS -->
-    <script>
+    <script nonce="{{ $cspNonce ?? '' }}">
         function stepForm() {
             return {
                 step: 0,
@@ -260,7 +262,7 @@
             }
         }
     </script>
-    <script>
+    <script nonce="{{ $cspNonce ?? '' }}">
         function unitDropdown() {
             return {
                 selectedCommand: '',
@@ -495,7 +497,7 @@
     </script>
 
     <!-- MAIN JS -->
-    <script>
+    <script nonce="{{ $cspNonce ?? '' }}">
         document.addEventListener("DOMContentLoaded", () => {
 
             // AGE
