@@ -1,0 +1,99 @@
+@extends('layouts.app')
+
+@section('content')
+<div class="min-h-screen bg-gradient-to-b from-blue-900 via-blue-800 to-blue-700 px-6 py-16">
+    <div class="max-w-5xl mx-auto bg-white/10 backdrop-blur-md rounded-3xl border border-white/20 shadow-2xl p-10">
+
+        <!-- Title -->
+        <h2 class="text-3xl font-bold text-white text-center mb-10">
+            Upload Required Documents
+        </h2>
+
+        <!-- Applicant Info -->
+        <div class="mb-10 text-center text-gray-200">
+            <p class="text-sm">Applicant Email</p>
+            <p class="font-semibold">{{ $user->email }}</p>
+        </div>
+
+        <!-- Upload Form -->
+        <form method="POST" action="{{ route('documents.store') }}" enctype="multipart/form-data" class="space-y-10">
+            @csrf
+
+            <!-- Two Column Grid -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+
+                @php
+                    $documents = [
+                        'medical_evaluation_report' => ['A', 'Medical/Dental Evaluation Report(Medical)'],
+                        'pft_ssc' => ['B', 'Physical Fitness Test(SSC)'],
+                        'certificate_recommendation_unit' => ['C', 'Certificate of Recommendation from Unit Commander(Mother Unit)'],
+                        'certificate_non_pending' => ['D', 'Certificate of Non-pending Case (CGIG-IAS)'],
+                        'unit_punishment_book' => ['E', 'Unit Punishment Book (Admin)'],
+                        'noper' => ['F', 'Non-Officer Performance Evaluation Report (NOPER) (ADMIN)'],
+                        'personal_history_statement' => ['G', 'Personal History Statement (PHS) (Reenlist)'],
+                        'statement_service_unit' => ['H', 'Statement of Service from Unit (Admin)'],
+                        'certificate_minimum_clothing' => ['I', 'Certificate of Minimum Clothing Requirement (Admin)'],
+                        'security_pledge' => ['J', 'Security Pledge (Reenlist)'],
+                        'designation_beneficiaries' => ['K', 'Designation of Beneficiaries (Reenlist)'],
+                        'psa' => ['L', 'PSA Birth Certificate (Reenlist)'],
+                    ];
+                @endphp
+
+                @foreach($documents as $name => $doc)
+                <div class="relative bg-white/20 backdrop-blur-md rounded-xl p-5 border border-white/30 shadow hover:shadow-lg transition">
+                    <!-- Badge -->
+                    <div class="absolute -top-3 -left-3 bg-blue-600 text-white font-bold rounded-full w-8 h-8 flex items-center justify-center shadow">
+                        {{ $doc[0] }}
+                    </div>
+
+                    <label class="block text-white font-semibold mb-2">{{ $doc[1] }}</label>
+                    <input type="file" name="{{ $name }}"
+                        class="file-input w-full text-sm text-gray-200 bg-white/10 border border-white/30 rounded-lg p-3 cursor-pointer"
+                        accept=".pdf,.jpg,.jpeg,.png,.doc,.docx">
+                    <p class="mt-1 text-xs text-gray-300 file-info">No file selected</p>
+                </div>
+                @endforeach
+
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="flex justify-between pt-6">
+                <a href="{{ route('profile') }}"
+                    class="bg-gray-500 hover:bg-gray-600 px-6 py-2 rounded-lg font-semibold text-white transition">
+                    ← Back to Profile
+                </a>
+
+                <button type="submit"
+                    class="bg-green-600 hover:bg-green-700 px-6 py-2 rounded-lg font-semibold text-white transition">
+                    Submit Documents
+                </button>
+            </div>
+
+            <!-- Notes -->
+            <div class="mt-8 text-sm text-gray-300">
+                <p>✔ Accepted formats: PDF, JPG, PNG, DOC, DOCX</p>
+                <p>✔ Maximum file size: 5MB per document</p>
+            </div>
+
+        </form>
+
+    </div>
+</div>
+
+@section('scripts')
+<script>
+    // Auto display selected file name and size
+    document.querySelectorAll('.file-input').forEach(input => {
+        input.addEventListener('change', function() {
+            const info = this.nextElementSibling;
+            if(this.files.length > 0){
+                const file = this.files[0];
+                const sizeMB = (file.size / 1024 / 1024).toFixed(2);
+                info.textContent = `${file.name} (${sizeMB} MB)`;
+            } else {
+                info.textContent = 'No file selected';
+            }
+        });
+    });
+</script>
+@endsection

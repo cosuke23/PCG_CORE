@@ -1,0 +1,43 @@
+﻿@'
+.env
+.env.*
+!.env.example
+
+/vendor/
+/node_modules/
+/.phpunit.cache
+.phpunit.result.cache
+
+/storage/*.key
+/storage/logs/*
+/storage/framework/cache/*
+/storage/framework/sessions/*
+/storage/framework/views/*
+
+/public/build
+/public/hot
+/public/storage
+
+# Private personnel information - NEVER upload
+/public/201_files/
+/public/documents_toupload/
+/public/[[]cg_photos/
+
+# Large media and archives
+/public/videos/
+/public/backgrounds/*.mp4
+/public/backgrounds/*.zip
+/public/backgrounds/*.docx
+/public/backgrounds/*SOI*.html
+/public/backgrounds/NEW-FORMAT-SOI*.html
+
+# Large face recognition model files
+/public/face-api-models/uncompressed/
+/public/face-api-models/proto/*.pbtxt
+
+# Temporary files and logs
+*.log
+error_log
+.DS_Store
+Thumbs.db
+'@ | Set-Content -Encoding UTF8 .gitignore

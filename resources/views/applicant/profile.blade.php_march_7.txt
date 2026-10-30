@@ -1,0 +1,1040 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="//unpkg.com/alpinejs" defer></script>
+
+    <title>SOI Form</title>
+</head>
+
+<body class="bg-gray-900 text-white">
+
+    <div x-data="formData()" class="max-w-6xl mx-auto p-6">
+
+        <form x-data="formData()" @submit.prevent="submitForm">
+            <!-- ================= STEP 1 ================= -->
+            <div x-show="step === 1" class="space-y-8">
+                <h2 class="text-xl font-bold text-white-800 border-b pb-2">Step 1: Basic Information</h2>
+
+                <div class="space-y-4">
+                    <h3 class="text-sm font-semibold text-blue-600 uppercase tracking-wider">A. Full Name</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                        <div class="relative">
+                            <input type="text" name="last_name" placeholder=" "
+                                class="peer w-full px-4 py-2.5 bg-white border border-gray-300 rounded-lg text-black focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition duration-200 shadow-sm">
+                            <label
+                                class="absolute left-3 -top-2.5 bg-white px-1 text-xs font-medium text-gray-500 transition-all peer-placeholder-shown:top-2.5 peer-placeholder-shown:text-base peer-placeholder-shown:text-gray-400 peer-focus:-top-2.5 peer-focus:text-xs peer-focus:text-blue-500">Last
+                                Name</label>
+                        </div>
+
+                        <div class="relative">
+                            <input type="text" name="first_name" placeholder=" "
+                                class="peer w-full px-4 py-2.5 bg-white border border-gray-300 rounded-lg text-black focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition duration-200 shadow-sm">
+                            <label
+                                class="absolute left-3 -top-2.5 bg-white px-1 text-xs font-medium text-gray-500 transition-all peer-placeholder-shown:top-2.5 peer-placeholder-shown:text-base peer-placeholder-shown:text-gray-400 peer-focus:-top-2.5 peer-focus:text-xs peer-focus:text-blue-500">First
+                                Name</label>
+                        </div>
+
+                        <div class="relative">
+                            <input type="text" name="middle_name" placeholder=" "
+                                class="peer w-full px-4 py-2.5 bg-white border border-gray-300 rounded-lg text-black focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition duration-200 shadow-sm">
+                            <label
+                                class="absolute left-3 -top-2.5 bg-white px-1 text-xs font-medium text-gray-500 transition-all peer-placeholder-shown:top-2.5 peer-placeholder-shown:text-base peer-placeholder-shown:text-gray-400 peer-focus:-top-2.5 peer-focus:text-xs peer-focus:text-blue-500">Middle
+                                Name</label>
+                        </div>
+
+                        <div class="relative">
+                            <input type="text" name="extension_name" placeholder=" "
+                                class="peer w-full px-4 py-2.5 bg-white border border-gray-300 rounded-lg text-black focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition duration-200 shadow-sm">
+                            <label
+                                class="absolute left-3 -top-2.5 bg-white px-1 text-xs font-medium text-gray-500 transition-all peer-placeholder-shown:top-2.5 peer-placeholder-shown:text-base peer-placeholder-shown:text-gray-400 peer-focus:-top-2.5 peer-focus:text-xs peer-focus:text-blue-500">Ext.
+                                (e.g., Jr.)</label>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="space-y-4">
+                    <h3 class="text-sm font-semibold text-blue-600 uppercase tracking-wider">B. Service Information</h3>
+                    <div class="grid md:grid-cols-3 gap-6">
+
+                        <!-- RANK -->
+                        <div class="relative">
+                            <select name="rank" required
+                                class="w-full px-4 py-3 bg-white/90 text-black border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-600 focus:border-transparent transition duration-200 appearance-none cursor-pointer">
+                                <option value="" disabled selected>Select Rank</option>
+
+                                @if ($user->registration_type === 'non_officer')
+                                    <option value="ASN">Apprentice Seaman (ASN)</option>
+                                    <option value="SN2">Seaman Second Class (SN2)</option>
+                                    <option value="SN1">Seaman First Class (SN1)</option>
+                                    <option value="ASW">Apprentice Seawoman (ASW)</option>
+                                    <option value="SW2">Seawoman Second Class (SW2)</option>
+                                    <option value="SW1">Seawoman First Class (SW1)</option>
+                                    <option value="PO3">Petty Officer Third Class (PO3)</option>
+                                    <option value="PO2">Petty Officer Second Class (PO2)</option>
+                                    <option value="PO1">Petty Officer First Class (PO1)</option>
+                                    <option value="CPO">Chief Petty Officer (CPO)</option>
+                                    <option value="SCPO">Senior Chief Petty Officer (SCPO)</option>
+                                    <option value="MCPO">Master Chief Petty Officer (MCPO)</option>
+                                    <option value="FMCPO">First Master Chief Petty Officer (FMCPO)</option>
+                                @elseif($user->registration_type === 'officer')
+                                    <option value="ENS">Ensign (ENS)</option>
+                                    <option value="LTJG">Lieutenant Junior Grade (LTJG)</option>
+                                    <option value="LT">Lieutenant (LT)</option>
+                                    <option value="LCDR">Lieutenant Commander (LCDR)</option>
+                                    <option value="CDR">Commander (CDR)</option>
+                                    <option value="CAPT">Captain (CAPT)</option>
+                                    <option value="RADM">Rear Admiral (RADM)</option>
+                                    <option value="VADM">Vice Admiral (VADM)</option>
+                                    <option value="ADM">Admiral (ADM)</option>
+                                @endif
+                            </select>
+
+                            <label class="absolute left-3 -top-2.5 bg-white px-1 text-xs font-medium text-blue-500">
+                                Current Rank
+                            </label>
+                        </div>
+
+                        <!-- SERIAL NUMBER -->
+                        <div class="relative">
+                            <input type="text" name="serial_number" placeholder=" "
+                                class="peer w-full px-4 py-2.5 bg-white border border-gray-300 rounded-lg text-black focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition duration-200 shadow-sm">
+
+                            <label
+                                class="absolute left-3 -top-2.5 bg-white px-1 text-xs font-medium text-gray-500 transition-all
+                   peer-placeholder-shown:top-2.5 peer-placeholder-shown:text-base
+                   peer-placeholder-shown:text-gray-400 peer-focus:-top-2.5
+                   peer-focus:text-xs peer-focus:text-blue-500">
+                                Serial Number
+                            </label>
+                        </div>
+
+                        <!-- CGOC / CGNOC CLASS -->
+                        <div class="relative">
+                            <input type="text" name="cgoc_class" placeholder=" "
+                                class="peer w-full px-4 py-2.5 bg-white border border-gray-300 rounded-lg text-black focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition duration-200 shadow-sm">
+
+                            <label
+                                class="absolute left-3 -top-2.5 bg-white px-1 text-xs font-medium text-gray-500 transition-all
+                   peer-placeholder-shown:top-2.5 peer-placeholder-shown:text-base
+                   peer-placeholder-shown:text-gray-400 peer-focus:-top-2.5
+                   peer-focus:text-xs peer-focus:text-blue-500">
+                                CGOC / CGNOC Class
+                            </label>
+                        </div>
+
+                    </div>
+                </div>
+
+                <div class="space-y-4">
+                    <h3 class="text-sm font-semibold text-blue-600 uppercase tracking-wider">C. Birth Date and Place
+                    </h3>
+                    <div class="grid md:grid-cols-2 gap-6">
+                        <div class="relative">
+                            <input type="date" id="birthday" name="birthday" onchange="calculateAge()"
+                                class="w-full px-4 py-2.5 bg-white border border-gray-300 rounded-lg text-black focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition duration-200 shadow-sm uppercase text-sm"
+                                required>
+                            <label
+                                class="absolute -top-2.5 left-3 bg-white px-1 text-xs font-medium text-gray-500">Birth
+                                Date</label>
+                        </div>
+
+                        <div class="relative">
+                            <input type="text" name="birth_place" placeholder="City, Province"
+                                class="w-full px-4 py-2.5 bg-white border border-gray-300 rounded-lg text-black placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition duration-200 shadow-sm"
+                                required>
+                            <label
+                                class="absolute -top-2.5 left-3 bg-white px-1 text-xs font-medium text-gray-500">Place
+                                of Birth</label>
+                        </div>
+                    </div>
+                    <p id="ageDisplay" class="text-xs font-semibold text-blue-600 mt-1 ml-1"></p>
+                </div>
+            </div>
+
+            <!-- ================= STEP 2 ================= -->
+            <div x-show="step === 2" class="space-y-8">
+                <h2 class="text-xl font-bold text-white-800 border-b pb-2">Step 2: D. PERSONAL INFORMATION</h2>
+
+                <div class="space-y-4">
+                    <h3 class="text-sm font-semibold text-blue-600 uppercase tracking-wider">Basic Details</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                        <div class="relative">
+                            <input type="text" name="nickname" placeholder=" "
+                                class="peer w-full px-4 py-2.5 bg-white border border-gray-300 rounded-lg text-black focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition duration-200 shadow-sm">
+                            <label
+                                class="absolute left-3 -top-2.5 bg-white px-1 text-xs font-medium text-gray-500 transition-all peer-placeholder-shown:top-2.5 peer-placeholder-shown:text-base peer-placeholder-shown:text-gray-400 peer-focus:-top-2.5 peer-focus:text-xs peer-focus:text-blue-500">Nickname</label>
+                        </div>
+
+                        <select name="sex"
+                            class="w-full px-4 py-2.5 bg-white border border-gray-300 rounded-lg text-black focus:outline-none focus:ring-2 focus:ring-blue-500 shadow-sm cursor-pointer">
+                            <option value="" disabled selected>Select Sex</option>
+                            <option>Male</option>
+                            <option>Female</option>
+                        </select>
+
+                        <select name="civil_status"
+                            class="w-full px-4 py-2.5 bg-white border border-gray-300 rounded-lg text-black focus:outline-none focus:ring-2 focus:ring-blue-500 shadow-sm cursor-pointer">
+                            <option value="" disabled selected>Civil Status</option>
+                            <option>Single</option>
+                            <option>Married</option>
+                            <option>Widowed</option>
+                        </select>
+
+                        <input type="text" name="citizenship" placeholder="Citizenship"
+                            class="w-full px-4 py-2.5 bg-white border border-gray-300 rounded-lg text-black placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 shadow-sm">
+                        <input type="text" name="religion" placeholder="Religion"
+                            class="w-full px-4 py-2.5 bg-white border border-gray-300 rounded-lg text-black placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 shadow-sm">
+                        <input type="text" name="blood_type" placeholder="Blood Type"
+                            class="w-full px-4 py-2.5 bg-white border border-gray-300 rounded-lg text-black placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 shadow-sm">
+                    </div>
+                </div>
+
+                <div class="space-y-4">
+                    <h3 class="text-sm font-semibold text-blue-600 uppercase tracking-wider">Physical Attributes</h3>
+                    <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+                        <input type="number" name="height" placeholder="Height (cm)"
+                            class="w-full px-4 py-2.5 bg-white border border-gray-300 rounded-lg text-black focus:outline-none focus:ring-2 focus:ring-blue-500 shadow-sm">
+                        <input type="number" name="weight" placeholder="Weight (kg)"
+                            class="w-full px-4 py-2.5 bg-white border border-gray-300 rounded-lg text-black focus:outline-none focus:ring-2 focus:ring-blue-500 shadow-sm">
+                        <input type="text" name="body_build" placeholder="Body Build"
+                            class="w-full px-4 py-2.5 bg-white border border-gray-300 rounded-lg text-black focus:outline-none focus:ring-2 focus:ring-blue-500 shadow-sm">
+                        <input type="text" name="hair_color" placeholder="Hair Color"
+                            class="w-full px-4 py-2.5 bg-white border border-gray-300 rounded-lg text-black focus:outline-none focus:ring-2 focus:ring-blue-500 shadow-sm">
+                        <input type="text" name="skin_color" placeholder="Skin Color"
+                            class="w-full px-4 py-2.5 bg-white border border-gray-300 rounded-lg text-black focus:outline-none focus:ring-2 focus:ring-blue-500 shadow-sm">
+                        <input type="text" name="eye_color" placeholder="Eye Color"
+                            class="w-full px-4 py-2.5 bg-white border border-gray-300 rounded-lg text-black focus:outline-none focus:ring-2 focus:ring-blue-500 shadow-sm">
+                    </div>
+                </div>
+
+                <div class="space-y-4">
+                    <h3 class="text-sm font-semibold text-blue-600 uppercase tracking-wider">Contact & Residence</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <input type="text" name="contact_number" placeholder="Contact Number"
+                            class="w-full px-4 py-2.5 bg-white border border-gray-300 rounded-lg text-black focus:outline-none focus:ring-2 focus:ring-blue-500 shadow-sm">
+                        <input type="email" name="email" value="{{ $user->email ?? '' }}" readonly
+                            class="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-lg text-gray-500 cursor-not-allowed shadow-none">
+
+                        <textarea name="home_address" placeholder="Home Address" rows="2"
+                            class="w-full px-4 py-2.5 bg-white border border-gray-300 rounded-lg text-black focus:outline-none focus:ring-2 focus:ring-blue-500 shadow-sm"></textarea>
+                        <textarea name="permanent_address" placeholder="Permanent Address" rows="2"
+                            class="w-full px-4 py-2.5 bg-white border border-gray-300 rounded-lg text-black focus:outline-none focus:ring-2 focus:ring-blue-500 shadow-sm"></textarea>
+                    </div>
+                </div>
+
+                <div class="space-y-4">
+                    <h3 class="text-sm font-semibold text-blue-600 uppercase tracking-wider">Government Identifiers
+                    </h3>
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                        <input type="text" name="tin" placeholder="TIN"
+                            class="w-full px-4 py-2.5 bg-white border border-gray-300 rounded-lg text-black focus:outline-none focus:ring-2 focus:ring-blue-500 shadow-sm">
+                        <input type="text" name="philhealth" placeholder="PhilHealth"
+                            class="w-full px-4 py-2.5 bg-white border border-gray-300 rounded-lg text-black focus:outline-none focus:ring-2 focus:ring-blue-500 shadow-sm">
+                        <input type="text" name="pagibig" placeholder="PAG-IBIG"
+                            class="w-full px-4 py-2.5 bg-white border border-gray-300 rounded-lg text-black focus:outline-none focus:ring-2 focus:ring-blue-500 shadow-sm">
+                        <input type="text" name="gsis" placeholder="GSIS"
+                            class="w-full px-4 py-2.5 bg-white border border-gray-300 rounded-lg text-black focus:outline-none focus:ring-2 focus:ring-blue-500 shadow-sm">
+                    </div>
+                </div>
+            </div>
+
+            <!-- ================= STEP 3 ================= -->
+            <div x-show="step === 3" class="space-y-6">
+                <div class="border-b pb-2">
+                    <h2 class="text-xl font-bold text-white-800">Step 3: Dependents</h2>
+                    <p class="text-sm text-gray-500 mt-1">
+                        Please list all legal dependents. Entry includes: Full Name, Relationship, and Date of Birth.
+                    </p>
+                </div>
+
+                <div class="space-y-4">
+                    <template x-for="(dep, index) in dependents" :key="index">
+                        <div
+                            class="relative p-5 bg-gray-50 border border-gray-200 rounded-xl shadow-sm transition-all animate-fadeIn">
+
+                            <button type="button" @click="dependents.splice(index, 1)"
+                                class="absolute -top-2 -right-2 bg-red-100 text-red-600 rounded-full p-1.5 hover:bg-red-200 transition-colors shadow-sm">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none"
+                                    viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M6 18L18 6M6 6l12 12" />
+                                </svg>
+                            </button>
+
+                            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                                <div class="relative">
+                                    <input type="text" x-model="dep.name" placeholder=" "
+                                        class="peer w-full px-4 py-2.5 bg-white border border-gray-300 rounded-lg text-black focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition duration-200 shadow-sm">
+                                    <label
+                                        class="absolute left-3 -top-2.5 bg-white px-1 text-xs font-medium text-gray-500 transition-all peer-placeholder-shown:top-2.5 peer-placeholder-shown:text-base peer-placeholder-shown:text-gray-400 peer-focus:-top-2.5 peer-focus:text-xs peer-focus:text-blue-500">Dependent
+                                        Name</label>
+                                </div>
+
+                                <div class="relative">
+                                    <select x-model="dep.relationship"
+                                        class="w-full px-4 py-2.5 bg-white border border-gray-300 rounded-lg text-black focus:outline-none focus:ring-2 focus:ring-blue-500 shadow-sm cursor-pointer appearance-none">
+                                        <option value="" disabled selected>Select Relationship</option>
+                                        <option>Spouse</option>
+                                        <option>Child</option>
+                                        <option>Parent</option>
+                                        <option>Sibling</option>
+                                    </select>
+                                    <label
+                                        class="absolute left-3 -top-2.5 bg-white px-1 text-xs font-medium text-blue-500">Relationship</label>
+                                </div>
+
+                                <div class="relative">
+                                    <input type="date" x-model="dep.bday"
+                                        class="w-full px-4 py-2.5 bg-white border border-gray-300 rounded-lg text-black focus:outline-none focus:ring-2 focus:ring-blue-500 shadow-sm uppercase text-sm">
+                                    <label
+                                        class="absolute left-3 -top-2.5 bg-white px-1 text-xs font-medium text-gray-500">Date
+                                        of Birth</label>
+                                </div>
+                            </div>
+                        </div>
+                    </template>
+                </div>
+
+                <div class="flex justify-center py-4">
+                    <button type="button" @click="addDependent"
+                        class="flex items-center gap-2 px-6 py-3 border-2 border-dashed border-blue-400 text-blue-600 font-semibold rounded-xl hover:bg-blue-50 hover:border-blue-500 transition-all duration-200">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20"
+                            fill="currentColor">
+                            <path fill-rule="evenodd"
+                                d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z"
+                                clip-rule="evenodd" />
+                        </svg>
+                        Add Dependent
+                    </button>
+                </div>
+            </div>
+
+            <!-- ================= STEP 4 ================= -->
+            <div x-show="step === 4" class="space-y-8">
+                <div class="border-b pb-2">
+                    <h2 class="text-xl font-bold text-white-800">Step 4: E. EDUCATIONAL ATTAINMENT</h2>
+                    <p class="text-sm text-gray-500 mt-1">Please provide details regarding your academic, vocational,
+                        and specialized training history.</p>
+                </div>
+
+                <div class="space-y-4">
+                    <div class="flex justify-between items-center">
+                        <h3 class="font-bold text-blue-600 uppercase tracking-wide text-sm">1. Civilian - Academic</h3>
+                        <button type="button" @click="addAcademic"
+                            class="text-xs bg-blue-50 text-blue-600 px-3 py-1.5 rounded-lg border border-blue-200 hover:bg-blue-100 transition-colors font-semibold">
+                            + Add Academic
+                        </button>
+                    </div>
+
+                    <div class="space-y-4">
+                        <template x-for="(edu, index) in academic" :key="index">
+                            <div
+                                class="relative p-5 bg-white border border-gray-200 rounded-xl shadow-sm space-y-4 animate-fadeIn">
+                                <button type="button" @click="academic.splice(index, 1)"
+                                    class="absolute top-3 right-3 text-gray-400 hover:text-red-500 transition-colors">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none"
+                                        viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                    </svg>
+                                </button>
+
+                                <div class="grid md:grid-cols-2 gap-4">
+                                    <input x-model="edu.course"
+                                        class="w-full px-4 py-2.5 bg-gray-50 border border-gray-300 rounded-lg text-black placeholder-gray-400 focus:ring-2 focus:ring-blue-500 outline-none"
+                                        placeholder="Course / Level (e.g. BS Marine Bio)">
+                                    <input x-model="edu.school"
+                                        class="w-full px-4 py-2.5 bg-gray-50 border border-gray-300 rounded-lg text-black placeholder-gray-400 focus:ring-2 focus:ring-blue-500 outline-none"
+                                        placeholder="School / Location">
+                                    <input x-model="edu.period"
+                                        class="w-full px-4 py-2.5 bg-gray-50 border border-gray-300 rounded-lg text-black placeholder-gray-400 focus:ring-2 focus:ring-blue-500 outline-none"
+                                        placeholder="Inclusive Years (From - To)">
+                                    <input x-model="edu.remarks"
+                                        class="w-full px-4 py-2.5 bg-gray-50 border border-gray-300 rounded-lg text-black placeholder-gray-400 focus:ring-2 focus:ring-blue-500 outline-none"
+                                        placeholder="Remarks (e.g. Graduated)">
+                                </div>
+                            </div>
+                        </template>
+                    </div>
+                </div>
+
+                <div class="space-y-4 pt-4 border-t border-gray-100">
+                    <div class="flex justify-between items-center">
+                        <h3 class="font-bold text-blue-600 uppercase tracking-wide text-sm">2. Vocational</h3>
+                        <button type="button" @click="addVocational"
+                            class="text-xs bg-blue-50 text-blue-600 px-3 py-1.5 rounded-lg border border-blue-200 hover:bg-blue-100 transition-colors font-semibold">
+                            + Add Vocational
+                        </button>
+                    </div>
+
+                    <div class="space-y-4">
+                        <template x-for="(voc, index) in vocational" :key="index">
+                            <div
+                                class="relative p-5 bg-white border border-gray-200 rounded-xl shadow-sm space-y-4 animate-fadeIn">
+                                <button type="button" @click="vocational.splice(index, 1)"
+                                    class="absolute top-3 right-3 text-gray-400 hover:text-red-500 transition-colors">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none"
+                                        viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                    </svg>
+                                </button>
+
+                                <div class="grid md:grid-cols-2 gap-4">
+                                    <input x-model="voc.course"
+                                        class="w-full px-4 py-2.5 bg-gray-50 border border-gray-300 rounded-lg text-black placeholder-gray-400 focus:ring-2 focus:ring-blue-500 outline-none"
+                                        placeholder="Vocational Course">
+                                    <input x-model="voc.authority"
+                                        class="w-full px-4 py-2.5 bg-gray-50 border border-gray-300 rounded-lg text-black placeholder-gray-400 focus:ring-2 focus:ring-blue-500 outline-none"
+                                        placeholder="Awarding Authority">
+                                    <input x-model="voc.school"
+                                        class="w-full px-4 py-2.5 bg-gray-50 border border-gray-300 rounded-lg text-black placeholder-gray-400 focus:ring-2 focus:ring-blue-500 outline-none"
+                                        placeholder="School">
+                                    <input x-model="voc.period"
+                                        class="w-full px-4 py-2.5 bg-gray-50 border border-gray-300 rounded-lg text-black placeholder-gray-400 focus:ring-2 focus:ring-blue-500 outline-none"
+                                        placeholder="Period">
+                                </div>
+                            </div>
+                        </template>
+                    </div>
+                </div>
+
+                <div class="space-y-4 pt-4 border-t border-gray-100">
+                    <div class="flex justify-between items-center">
+                        <h3 class="font-bold text-blue-600 uppercase tracking-wide text-sm">3. Trainings / Seminars
+                        </h3>
+                        <button type="button" @click="addTraining"
+                            class="text-xs bg-blue-50 text-blue-600 px-3 py-1.5 rounded-lg border border-blue-200 hover:bg-blue-100 transition-colors font-semibold">
+                            + Add Training
+                        </button>
+                    </div>
+
+                    <div class="space-y-4">
+                        <template x-for="(train, index) in trainings" :key="index">
+                            <div
+                                class="relative p-5 bg-white border border-gray-200 rounded-xl shadow-sm space-y-4 animate-fadeIn">
+                                <button type="button" @click="trainings.splice(index, 1)"
+                                    class="absolute top-3 right-3 text-gray-400 hover:text-red-500 transition-colors">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none"
+                                        viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                    </svg>
+                                </button>
+
+                                <div class="grid md:grid-cols-2 gap-4">
+                                    <input x-model="train.course"
+                                        class="w-full px-4 py-2.5 bg-gray-50 border border-gray-300 rounded-lg text-black placeholder-gray-400 focus:ring-2 focus:ring-blue-500 outline-none"
+                                        placeholder="Course Name">
+                                    <input x-model="train.school"
+                                        class="w-full px-4 py-2.5 bg-gray-50 border border-gray-300 rounded-lg text-black placeholder-gray-400 focus:ring-2 focus:ring-blue-500 outline-none"
+                                        placeholder="School / Provider">
+                                    <input x-model="train.period"
+                                        class="w-full px-4 py-2.5 bg-gray-50 border border-gray-300 rounded-lg text-black placeholder-gray-400 focus:ring-2 focus:ring-blue-500 outline-none"
+                                        placeholder="Period">
+                                    <input x-model="train.remarks"
+                                        class="w-full px-4 py-2.5 bg-gray-50 border border-gray-300 rounded-lg text-black placeholder-gray-400 focus:ring-2 focus:ring-blue-500 outline-none"
+                                        placeholder="Remarks">
+                                </div>
+                            </div>
+                        </template>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ================= STEP 5 ================= -->
+            <div x-show="step === 5" class="space-y-10">
+                <div class="space-y-4">
+                    <div class="border-b pb-2 flex justify-between items-end">
+                        <div>
+                            <h2 class="text-xl font-bold text-white-800">Step 5: F. Appointments & Promotions</h2>
+                            <p class="text-xs text-blue-600 font-medium flex items-center gap-1 mt-1">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="none"
+                                    viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M7 16V4m0 0L3 8m4-4l4 4m6 0v12m0 0l4-4m-4 4l-4-4" />
+                                </svg>
+                                Order: Present to Past
+                            </p>
+                        </div>
+                        <button type="button" @click="appointments.push({description:'', date:'', authority:''})"
+                            class="text-xs bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors shadow-sm font-semibold">
+                            + Add Appointment
+                        </button>
+                    </div>
+
+                    <div class="space-y-4">
+                        <template x-for="(a, i) in appointments" :key="i">
+                            <div
+                                class="relative p-5 bg-white border border-gray-200 rounded-xl shadow-sm space-y-4 animate-fadeIn">
+                                <button type="button" @click="appointments.splice(i, 1)"
+                                    class="absolute top-3 right-3 text-gray-400 hover:text-red-500 transition-colors">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none"
+                                        viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                    </svg>
+                                </button>
+
+                                <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                    <div class="md:col-span-2 lg:col-span-1">
+                                        <input x-model="a.description"
+                                            class="w-full px-4 py-2.5 bg-gray-50 border border-gray-300 rounded-lg text-black placeholder-gray-400 focus:ring-2 focus:ring-blue-500 outline-none"
+                                            placeholder="Description (e.g. Promotion to PO2)">
+                                    </div>
+                                    <input x-model="a.date" type="date"
+                                        class="w-full px-4 py-2.5 bg-gray-50 border border-gray-300 rounded-lg text-black focus:ring-2 focus:ring-blue-500 outline-none uppercase text-sm">
+                                    <input x-model="a.authority"
+                                        class="w-full px-4 py-2.5 bg-gray-50 border border-gray-300 rounded-lg text-black placeholder-gray-400 focus:ring-2 focus:ring-blue-500 outline-none"
+                                        placeholder="Authority/Orders">
+                                </div>
+                            </div>
+                        </template>
+                    </div>
+                </div>
+
+                <div class="space-y-4 pt-6 border-t border-gray-200">
+                    <div class="flex justify-between items-end">
+                        <div>
+                            <h2 class="text-xl font-bold text-white-800">G. Duty Assignments</h2>
+                            <p class="text-xs text-blue-600 font-medium flex items-center gap-1 mt-1">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="none"
+                                    viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M7 16V4m0 0L3 8m4-4l4 4m6 0v12m0 0l4-4m-4 4l-4-4" />
+                                </svg>
+                                Order: Present to Past
+                            </p>
+                        </div>
+                        <button type="button" @click="duties.push({unit:'', position:'', period:'', authority:''})"
+                            class="text-xs bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors shadow-sm font-semibold">
+                            + Add Assignment
+                        </button>
+                    </div>
+
+                    <div class="space-y-4">
+                        <template x-for="(d, i) in duties" :key="i">
+                            <div
+                                class="relative p-5 bg-white border border-gray-200 rounded-xl shadow-sm space-y-4 animate-fadeIn">
+                                <button type="button" @click="duties.splice(i, 1)"
+                                    class="absolute top-3 right-3 text-gray-400 hover:text-red-500 transition-colors">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none"
+                                        viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                    </svg>
+                                </button>
+
+                                <div class="grid md:grid-cols-2 gap-4">
+                                    <input x-model="d.unit"
+                                        class="w-full px-4 py-2.5 bg-gray-50 border border-gray-300 rounded-lg text-black placeholder-gray-400 focus:ring-2 focus:ring-blue-500 outline-none"
+                                        placeholder="Unit / Station">
+                                    <input x-model="d.position"
+                                        class="w-full px-4 py-2.5 bg-gray-50 border border-gray-300 rounded-lg text-black placeholder-gray-400 focus:ring-2 focus:ring-blue-500 outline-none"
+                                        placeholder="Position / Designation">
+                                    <input x-model="d.period"
+                                        class="w-full px-4 py-2.5 bg-gray-50 border border-gray-300 rounded-lg text-black placeholder-gray-400 focus:ring-2 focus:ring-blue-500 outline-none"
+                                        placeholder="Inclusive Period (e.g. 2022-Present)">
+                                    <input x-model="d.authority"
+                                        class="w-full px-4 py-2.5 bg-gray-50 border border-gray-300 rounded-lg text-black placeholder-gray-400 focus:ring-2 focus:ring-blue-500 outline-none"
+                                        placeholder="Authority">
+                                </div>
+                            </div>
+                        </template>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ================= STEP 6 ================= -->
+            <div x-show="step === 6" class="space-y-10">
+                <div class="space-y-6">
+                    <div class="border-b pb-2">
+                        <h2 class="text-xl font-bold text-white-800">Step 6: H. Awards and Recognitions</h2>
+                        <p class="text-sm text-gray-500 mt-1">Please categorize entries by service branch and type.</p>
+                    </div>
+
+                    <div class="space-y-6 p-6 bg-gray-50 rounded-2xl border border-gray-200">
+                        <h3 class="flex items-center gap-2 font-bold text-blue-700 uppercase tracking-tight">
+                            <span class="w-2 h-6 bg-blue-600 rounded-full"></span>
+                            1. Coast Guard
+                        </h3>
+
+                        <div class="grid grid-cols-1 gap-8">
+                            <div class="space-y-3">
+                                <div class="flex justify-between items-center">
+                                    <h4 class="text-sm font-semibold text-gray-700">a. Awards and Decorations</h4>
+                                    <button type="button" @click="addCgDecoration()"
+                                        class="text-xs text-blue-600 hover:underline font-bold">+ Add Award</button>
+                                </div>
+                                <template x-for="(a,i) in cgAwardsDecorations" :key="i">
+                                    <div class="flex gap-2 items-start mb-2 animate-fadeIn">
+                                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 flex-1">
+                                            <input x-model="a.type"
+                                                class="w-full px-4 py-2 bg-white border border-gray-300 rounded-lg text-sm text-black"
+                                                placeholder="Award Type">
+                                            <input x-model="a.authority"
+                                                class="w-full px-4 py-2 bg-white border border-gray-300 rounded-lg text-sm text-black"
+                                                placeholder="Authority">
+                                        </div>
+                                        <button type="button" @click="cgAwardsDecorations.splice(i, 1)"
+                                            class="p-2 text-red-500 hover:bg-red-50 rounded-lg transition-colors">
+                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none"
+                                                viewBox="0 0 24 24" stroke="currentColor">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                    d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-4v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                            </svg>
+                                        </button>
+                                    </div>
+                                </template>
+                            </div>
+
+                            <div class="space-y-3 border-t border-gray-200 pt-4">
+                                <div class="flex justify-between items-center">
+                                    <h4 class="text-sm font-semibold text-gray-700">b. Letters of Commendation</h4>
+                                    <button type="button" @click="addCgLetter()"
+                                        class="text-xs text-blue-600 hover:underline font-bold">+ Add Letter</button>
+                                </div>
+                                <template x-for="(a,i) in cgLetters" :key="i">
+                                    <div class="flex gap-2 items-start mb-2">
+                                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 flex-1">
+                                            <input x-model="a.type"
+                                                class="w-full px-4 py-2 bg-white border border-gray-300 rounded-lg text-sm text-black"
+                                                placeholder="Letter Type">
+                                            <input x-model="a.authority"
+                                                class="w-full px-4 py-2 bg-white border border-gray-300 rounded-lg text-sm text-black"
+                                                placeholder="Authority">
+                                        </div>
+                                        <button type="button" @click="cgLetters.splice(i, 1)"
+                                            class="p-2 text-red-500 hover:bg-red-50 rounded-lg">
+                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none"
+                                                viewBox="0 0 24 24" stroke="currentColor">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                    d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-4v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                            </svg>
+                                        </button>
+                                    </div>
+                                </template>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="space-y-6 p-6 bg-blue-50/50 rounded-2xl border border-blue-100">
+                        <h3 class="flex items-center gap-2 font-bold text-gray-700 uppercase tracking-tight">
+                            <span class="w-2 h-6 bg-gray-400 rounded-full"></span>
+                            2. Military (AFP)
+                        </h3>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div class="space-y-2">
+                                <div class="flex justify-between">
+                                    <label class="text-xs font-bold text-gray-500 uppercase">Awards</label>
+                                    <button type="button" @click="addMilitaryAward()"
+                                        class="text-xs text-blue-600">+ Add</button>
+                                </div>
+                                <template x-for="(a,i) in militaryAwards" :key="i">
+                                    <div class="flex gap-1 mb-1">
+                                        <input x-model="a.type"
+                                            class="flex-1 px-4 py-2 bg-white border border-gray-300 rounded-lg text-sm text-black"
+                                            placeholder="Award Name">
+                                        <button type="button" @click="militaryAwards.splice(i, 1)"
+                                            class="text-red-400 hover:text-red-600 px-1">✕</button>
+                                    </div>
+                                </template>
+                            </div>
+                            <div class="space-y-2">
+                                <div class="flex justify-between">
+                                    <label class="text-xs font-bold text-gray-500 uppercase">Letters</label>
+                                    <button type="button" @click="addMilitaryLetter()"
+                                        class="text-xs text-blue-600">+ Add</button>
+                                </div>
+                                <template x-for="(a,i) in militaryLetters" :key="i">
+                                    <div class="flex gap-1 mb-1">
+                                        <input x-model="a.type"
+                                            class="flex-1 px-4 py-2 bg-white border border-gray-300 rounded-lg text-sm text-black"
+                                            placeholder="Letter Type">
+                                        <button type="button" @click="militaryLetters.splice(i, 1)"
+                                            class="text-red-400 hover:text-red-600 px-1">✕</button>
+                                    </div>
+                                </template>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="space-y-6 border-t pt-8">
+                    <div class="flex justify-between items-center">
+                        <h2 class="text-xl font-bold text-white-800 italic">I. Career Management Profile</h2>
+                        <button type="button" @click="addCareer()"
+                            class="px-3 py-1 bg-gray-800 text-white text-xs rounded-lg hover:bg-black transition">+ Add
+                            Career Row</button>
+                    </div>
+
+                    <div class="grid grid-cols-1 gap-4">
+                        <template x-for="(c,i) in careers" :key="i">
+                            <div
+                                class="flex gap-2 items-center p-4 bg-gray-50 rounded-xl border border-dashed border-gray-300 relative">
+                                <div class="grid grid-cols-2 gap-4 flex-1">
+                                    <div class="relative">
+                                        <label
+                                            class="text-[10px] font-bold text-gray-400 uppercase absolute left-3 top-1">Student
+                                            Tour</label>
+                                        <input x-model="c.student"
+                                            class="w-full px-3 pt-5 pb-2 bg-transparent text-sm text-black outline-none"
+                                            placeholder="Yrs/Mos/Days">
+                                    </div>
+                                    <div class="relative">
+                                        <label
+                                            class="text-[10px] font-bold text-gray-400 uppercase absolute left-3 top-1">Sea
+                                            Duty</label>
+                                        <input x-model="c.sea"
+                                            class="w-full px-3 pt-5 pb-2 bg-transparent text-sm text-black outline-none"
+                                            placeholder="Yrs/Mos/Days">
+                                    </div>
+                                </div>
+                                <button type="button" x-show="careers.length > 1" @click="careers.splice(i, 1)"
+                                    class="text-red-500 hover:bg-red-100 p-2 rounded-full">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none"
+                                        viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-4v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                    </svg>
+                                </button>
+                            </div>
+                        </template>
+                    </div>
+                </div>
+            </div>
+            <!-- NAVIGATION -->
+            <div class="flex items-center justify-between mt-12 pt-6 border-t border-gray-200">
+
+                <div>
+                    <button type="button" x-show="step > 1" @click="step--"
+                        class="flex items-center gap-2 px-6 py-2.5 text-sm font-bold text-gray-600 bg-white border border-gray-300 rounded-xl hover:bg-gray-50 hover:text-gray-800 transition-all duration-200 shadow-sm">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24"
+                            stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M15 19l-7-7 7-7" />
+                        </svg>
+                        Back
+                    </button>
+                </div>
+
+                <div class="hidden md:block">
+                    <span class="text-xs font-bold uppercase tracking-widest text-gray-400">
+                        Progress: <span class="text-blue-600" x-text="step"></span> / 6
+                    </span>
+                </div>
+
+                <div>
+                    <button type="button" x-show="step < 6"
+                        @click="window.scrollTo({top: 0, behavior: 'smooth'}); step++"
+                        class="flex items-center gap-2 px-8 py-2.5 bg-blue-600 text-white text-sm font-bold rounded-xl hover:bg-blue-700 hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200 shadow-md">
+                        Next Step
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24"
+                            stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                        </svg>
+                    </button>
+
+                    <button type="submit" x-show="step === 6"
+                        class="flex items-center gap-2 px-10 py-2.5 bg-green-600 text-white text-sm font-bold rounded-xl hover:bg-green-700 hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200 shadow-md">
+                        Submit Application
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24"
+                            stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M5 13l4 4L19 7" />
+                        </svg>
+                    </button>
+                </div>
+            </div>
+        </form>
+        <script>
+            function formData() {
+                return {
+                    step: 1,
+
+                    // STEP 1: Basic Information
+                    basic: {
+                        last_name: '',
+                        first_name: '',
+                        middle_name: '',
+                        extension_name: '',
+                        rank: '',
+                        class: '',
+                        serial_number: '',
+                        birthday: '',
+                        birth_place: ''
+                    },
+
+                    // STEP 2: Personal Details
+                    personal: {
+                        nickname: '',
+                        sex: '',
+                        civil_status: '',
+                        citizenship: '',
+                        religion: '',
+                        blood_type: '',
+                        height: '',
+                        weight: '',
+                        body_build: '',
+                        hair_color: '',
+                        skin_color: '',
+                        eye_color: '',
+                        contact_number: '',
+                        email: '',
+                        home_address: '',
+                        permanent_address: '',
+                        tin: '',
+                        philhealth: '',
+                        pagibig: '',
+                        gsis: ''
+                    },
+
+                    // STEP 3 - 5: Arrays
+                    dependents: [{
+                        name: '',
+                        relationship: '',
+                        bday: ''
+                    }],
+                    academic: [{
+                        course: '',
+                        school: '',
+                        period: '',
+                        remarks: ''
+                    }],
+                    vocational: [{
+                        course: '',
+                        authority: '',
+                        school: '',
+                        period: ''
+                    }],
+                    trainings: [{
+                        course: '',
+                        school: '',
+                        period: '',
+                        remarks: ''
+                    }],
+                    appointments: [{
+                        description: '',
+                        date: '',
+                        authority: ''
+                    }],
+                    duties: [{
+                        unit: '',
+                        position: '',
+                        period: '',
+                        authority: ''
+                    }],
+
+                    // STEP 6: Awards & Career
+                    cgAwardsDecorations: [{
+                        type: '',
+                        authority: ''
+                    }],
+                    cgLetters: [{
+                        type: '',
+                        authority: ''
+                    }],
+                    cgCertificates: [{
+                        type: ''
+                    }],
+                    cgPlaques: [{
+                        type: ''
+                    }],
+                    militaryAwards: [{
+                        type: ''
+                    }],
+                    militaryLetters: [{
+                        type: ''
+                    }],
+                    careers: [{
+                        student: '',
+                        sea: ''
+                    }],
+
+                    organization: '',
+                    eligibility: '',
+                    retirement: '',
+
+                    // ================= GETTERS =================
+
+                    // Automatically calculates age based on basic.birthday
+                    get calculatedAge() {
+                        if (!this.basic.birthday) return 'N/A';
+                        let birth = new Date(this.basic.birthday);
+                        let today = new Date();
+                        let age = today.getFullYear() - birth.getFullYear();
+                        let m = today.getMonth() - birth.getMonth();
+                        if (m < 0 || (m === 0 && today.getDate() < birth.getDate())) age--;
+                        return age;
+                    },
+
+                    // ================= ADD METHODS =================
+
+                    addDependent() {
+                        this.dependents.push({
+                            name: '',
+                            relationship: '',
+                            bday: ''
+                        });
+                    },
+                    addAcademic() {
+                        this.academic.push({
+                            course: '',
+                            school: '',
+                            period: '',
+                            remarks: ''
+                        });
+                    },
+                    addVocational() {
+                        this.vocational.push({
+                            course: '',
+                            authority: '',
+                            school: '',
+                            period: ''
+                        });
+                    },
+                    addTraining() {
+                        this.trainings.push({
+                            course: '',
+                            school: '',
+                            period: '',
+                            remarks: ''
+                        });
+                    },
+                    addAppointment() {
+                        this.appointments.push({
+                            description: '',
+                            date: '',
+                            authority: ''
+                        });
+                    },
+                    addDuty() {
+                        this.duties.push({
+                            unit: '',
+                            position: '',
+                            period: '',
+                            authority: ''
+                        });
+                    },
+
+                    // Awards
+                    addCgDecoration() {
+                        this.cgAwardsDecorations.push({
+                            type: '',
+                            authority: ''
+                        });
+                    },
+                    addCgLetter() {
+                        this.cgLetters.push({
+                            type: '',
+                            authority: ''
+                        });
+                    },
+                    addCgCertificate() {
+                        this.cgCertificates.push({
+                            type: ''
+                        });
+                    },
+                    addCgPlaque() {
+                        this.cgPlaques.push({
+                            type: ''
+                        });
+                    },
+                    addMilitaryAward() {
+                        this.militaryAwards.push({
+                            type: ''
+                        });
+                    },
+                    addMilitaryLetter() {
+                        this.militaryLetters.push({
+                            type: ''
+                        });
+                    },
+
+                    addCareer() {
+                        this.careers.push({
+                            student: '',
+                            sea: ''
+                        });
+                    },
+
+                    // ================= REMOVE METHODS =================
+                    // These use .splice to remove the specific row by index (i)
+
+                    removeItem(array, index) {
+                        if (this[array].length > 1) {
+                            this[array].splice(index, 1);
+                        } else {
+                            alert("At least one entry is required.");
+                        }
+                    },
+
+                    // ================= SUBMISSION =================
+
+                    async submitForm() {
+                        let payload = {
+                            basic: this.basic,
+                            personal: this.personal,
+                            dependents: this.dependents,
+                            academic: this.academic,
+                            vocational: this.vocational,
+                            trainings: this.trainings,
+                            appointments: this.appointments,
+                            duties: this.duties,
+                            awards: {
+                                cgAwardsDecorations: this.cgAwardsDecorations,
+                                cgLetters: this.cgLetters,
+                                cgCertificates: this.cgCertificates,
+                                cgPlaques: this.cgPlaques,
+                                militaryAwards: this.militaryAwards,
+                                militaryLetters: this.militaryLetters
+                            },
+                            careers: this.careers,
+                            organization: this.organization,
+                            eligibility: this.eligibility,
+                            retirement: this.retirement
+                        };
+
+                        try {
+                            let res = await fetch('/reinlist/store', {
+                                method: 'POST',
+                                headers: {
+                                    'Content-Type': 'application/json',
+                                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+                                },
+                                body: JSON.stringify(payload)
+                            });
+
+                            if (res.ok) {
+                                alert('Application saved successfully!');
+                                // Optional: window.location.href = '/success-page';
+                            } else {
+                                const errorData = await res.json();
+                                console.error('Server Validation Errors:', errorData);
+                                alert('Failed to save. Please check for required fields.');
+                            }
+                        } catch (e) {
+                            console.error('Fetch Error:', e);
+                            alert('Connection error. Please try again later.');
+                        }
+                    }
+                }
+            }
+        </script>
+    </div>
+
+    <!-- STYLE -->
+    <style>
+        .input-modern {
+            @apply w-full rounded-lg p-3 bg-white/10 border border-white/20 text-white text-sm;
+        }
+    </style>
+
+</body>
+
+</html>

@@ -1,0 +1,409 @@
+@extends('layouts.app')
+
+@section('title', 'Register')
+
+@section('content')
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    @php $isOfficer = $type === 'officer'; @endphp
+    <div x-data="{ open: true }" x-show="open"
+        class="fixed inset-0 z-[9999] flex items-center justify-center bg-black bg-opacity-50">
+
+        <!-- Modal Container -->
+        <div class="bg-white rounded-3xl shadow-2xl relative overflow-hidden inline-block z-[10000]">
+
+            <!-- Close Button Top Right -->
+            <button @click="open = false"
+                class="absolute top-3 right-3 text-gray-500 hover:text-gray-800 text-2xl font-bold z-20">
+                &times;
+            </button>
+
+            <!-- Modal Content (Image) -->
+            <img src="{{ asset('backgrounds/MEPCOM 6.jpg') }}" alt="RADM SUPANGAN PCG Message"
+                class="block max-w-full max-h-[90vh] object-contain rounded-3xl shadow-inner">
+        </div>
+    </div>
+    <div
+        class="min-h-screen flex items-center justify-center p-6
+@if ($isOfficer) bg-gradient-to-br from-slate-900 via-blue-900 to-black @else bg-gray-100 @endif">
+
+        <!-- MAIN FORM CONTAINER -->
+        <div x-data="{ ...stepForm(), ...unitDropdown() }" class="w-full max-w-5xl">
+
+            <!-- HEADER -->
+            <div class="text-center mb-6 text-black">
+                <h1 class="text-3xl font-bold">Registration Portal</h1>
+                <p class="text-gray-300 text-sm">
+                    {{ $isOfficer ? 'Commissioned Officer' : 'Enlisted Personnel' }}
+                </p>
+            </div>
+
+            <!-- CARD -->
+            <div class="bg-white rounded-3xl shadow-2xl p-8">
+
+                <!-- STEPPER -->
+                <div class="flex justify-between mb-8">
+                    <template x-for="(label, index) in steps" :key="index">
+                        <div class="flex-1 text-center cursor-pointer" @click="goTo(index)">
+                            <div class="w-10 h-10 mx-auto rounded-full flex items-center justify-center font-bold transition"
+                                :class="step >= index ? 'bg-blue-600 text-white' : 'bg-gray-200 text-gray-500'">
+                                <span x-text="index + 1"></span>
+                            </div>
+                            <p class="text-xs mt-2" x-text="label"></p>
+                        </div>
+                    </template>
+                </div>
+
+                <form id="registerForm" method="POST" enctype="multipart/form-data"
+                    action="{{ route('register.submit') }}">
+                    @csrf
+                    <input type="hidden" name="registration_type" value="{{ request('type') }}">
+                    <!-- STEP 1: BASIC INFO -->
+                    <div x-show="step === 0" class="space-y-5">
+                        <h3 class="font-semibold text-lg">Basic Information</h3>
+
+                        <div class="grid grid-cols-2 gap-4">
+                            <select name="rank"
+                                style="width: 100%; padding: 0.5rem 1rem; border: 1px solid #ccc; border-radius: 0.5rem; outline: none; transition: 0.3s; font-size: 1rem;"
+                                onfocus="this.style.borderColor='#3b82f6'; this.style.boxShadow='0 0 0 2px rgba(59, 130, 246, 0.3)'"
+                                onblur="this.style.borderColor='#ccc'; this.style.boxShadow='none'">
+                                <option value="">Rank</option>
+                                @if (!$isOfficer)
+                                    <option>ASN</option>
+                                    <option>SN2</option>
+                                    <option>SN1</option>
+                                    <option>PO3</option>
+                                    <option>PO2</option>
+                                @else
+                                    <option>ENS</option>
+                                    <option>LTJG</option>
+                                    <option>LT</option>
+                                    <option>LCDR</option>
+                                    <option>CDR</option>
+                                @endif
+                            </select>
+
+                            <input type="text" name="serial_number" placeholder="Serial Number"
+                                style="width: 100%; padding: 0.5rem 1rem; border: 1px solid #ccc; border-radius: 0.5rem; outline: none; transition: 0.3s; font-size: 1rem;"
+                                onfocus="this.style.borderColor='#3b82f6'; this.style.boxShadow='0 0 0 2px rgba(59, 130, 246, 0.3)'"
+                                onblur="this.style.borderColor='#ccc'; this.style.boxShadow='none'">
+                        </div>
+
+                        <input type="text" name="name" placeholder="Full Name"
+                            style="width: 100%; padding: 0.5rem 1rem; border: 1px solid #ccc; border-radius: 0.5rem; outline: none; transition: 0.3s; font-size: 1rem;"
+                            onfocus="this.style.borderColor='#3b82f6'; this.style.boxShadow='0 0 0 2px rgba(59, 130, 246, 0.3)'"
+                            onblur="this.style.borderColor='#ccc'; this.style.boxShadow='none'">
+                        <input type="email" name="email" placeholder="Email"
+                            style="width: 100%; padding: 0.5rem 1rem; border: 1px solid #ccc; border-radius: 0.5rem; outline: none; transition: 0.3s; font-size: 1rem;"
+                            onfocus="this.style.borderColor='#3b82f6'; this.style.boxShadow='0 0 0 2px rgba(59, 130, 246, 0.3)'"
+                            onblur="this.style.borderColor='#ccc'; this.style.boxShadow='none'">
+                    </div>
+
+                    <!-- STEP 2: SERVICE DETAILS -->
+                    <div x-show="step === 1" class="space-y-5">
+                        <h3 class="font-semibold text-lg">Service Details</h3>
+
+                        <div class="grid grid-cols-3 gap-4">
+
+                            <!-- Date of Birth -->
+                            <div class="flex flex-col">
+                                <label for="dob" class="text-sm font-medium mb-1">Date of Birth</label>
+                                <input type="date" id="dob" name="dob"
+                                    style="width: 100%; padding: 0.5rem 1rem; border: 1px solid #ccc; border-radius: 0.5rem; outline: none; transition: 0.3s; font-size: 1rem;"
+                                    onfocus="this.style.borderColor='#3b82f6'; this.style.boxShadow='0 0 0 2px rgba(59, 130, 246, 0.3)'"
+                                    onblur="this.style.borderColor='#ccc'; this.style.boxShadow='none'">
+                            </div>
+
+                            <!-- Date of Appointment -->
+                            <div class="flex flex-col">
+                                <label for="date_of_appointment" class="text-sm font-medium mb-1">Date of
+                                    Appointment</label>
+                                <input type="date" id="date_of_appointment" name="date_of_appointment"
+                                    style="width: 100%; padding: 0.5rem 1rem; border: 1px solid #ccc; border-radius: 0.5rem; outline: none; transition: 0.3s; font-size: 1rem;"
+                                    onfocus="this.style.borderColor='#3b82f6'; this.style.boxShadow='0 0 0 2px rgba(59, 130, 246, 0.3)'"
+                                    onblur="this.style.borderColor='#ccc'; this.style.boxShadow='none'">
+                            </div>
+
+                            <!-- ETE -->
+                            <div class="flex flex-col">
+                                <label for="ete" class="text-sm font-medium mb-1">ETE</label>
+                                <input type="date" id="ete" name="ete" readonly
+                                    class="input-modern bg-gray-100">
+                            </div>
+
+                        </div>
+
+                        <p class="text-sm text-gray-500">Age: <span id="age"></span></p>
+                    </div>
+
+                    <!-- STEP 3: UNIT ASSIGNMENT -->
+                    <div x-show="step === 2" class="space-y-5">
+                        <h3 class="font-semibold text-lg">Unit Assignment</h3>
+
+                        <!-- FIX: 4 columns -->
+                        <div class="grid grid-cols-4 gap-3">
+
+                            <!-- MAIN -->
+                            <select name="main_unit" x-model="selectedMain" @change="updateCategories()"
+                                style="width: 100%; padding: 0.5rem 1rem; border: 1px solid #ccc; border-radius: 0.5rem; outline: none; transition: 0.3s; font-size: 1rem;"
+                                onfocus="this.style.borderColor='#3b82f6'; this.style.boxShadow='0 0 0 2px rgba(59, 130, 246, 0.3)'"
+                                onblur="this.style.borderColor='#ccc'; this.style.boxShadow='none'">
+                                <option value="">Command</option>
+                                <template x-for="unit in Object.keys(units)" :key="unit">
+                                    <option :value="unit" x-text="unit"></option>
+                                </template>
+                            </select>
+
+                            <!-- CATEGORY -->
+                            <select name="category" x-model="selectedCategory" @change="updateRegions()"
+                                style="width: 100%; padding: 0.5rem 1rem; border: 1px solid #ccc; border-radius: 0.5rem; outline: none; transition: 0.3s; font-size: 1rem;"
+                                onfocus="this.style.borderColor='#3b82f6'; this.style.boxShadow='0 0 0 2px rgba(59, 130, 246, 0.3)'"
+                                onblur="this.style.borderColor='#ccc'; this.style.boxShadow='none'">
+                                <option value="">Type</option>
+                                <template x-for="cat in categories" :key="cat">
+                                    <option :value="cat" x-text="cat"></option>
+                                </template>
+                            </select>
+
+                            <!-- FINAL -->
+                            <select name="unit_assignment" x-model="selectedFinal"
+                                style="width: 100%; padding: 0.5rem 1rem; border: 1px solid #ccc; border-radius: 0.5rem; outline: none; transition: 0.3s; font-size: 1rem;"
+                                onfocus="this.style.borderColor='#3b82f6'; this.style.boxShadow='0 0 0 2px rgba(59, 130, 246, 0.3)'"
+                                onblur="this.style.borderColor='#ccc'; this.style.boxShadow='none'">
+                                <option value="">Assignment</option>
+                                <template x-for="final in finals" :key="final">
+                                    <option :value="selectedMain + ' - ' + selectedCategory + ' - ' + final"
+                                        x-text="final">
+                                    </option>
+                                </template>
+                            </select>
+
+                            <!-- FIXED: UNIT NUMBER (same style) -->
+                            <select name="unit_number"
+                                style="width: 100%; padding: 0.5rem 1rem; border: 1px solid #ccc; border-radius: 0.5rem; outline: none; transition: 0.3s; font-size: 1rem;"
+                                onfocus="this.style.borderColor='#3b82f6'; this.style.boxShadow='0 0 0 2px rgba(59, 130, 246, 0.3)'"
+                                onblur="this.style.borderColor='#ccc'; this.style.boxShadow='none'">
+                                <option value="">Unit No.</option>
+                                <option value="Unit 1">Unit 1</option>
+                                <option value="Unit 2">Unit 2</option>
+                                <option value="Unit 3">Unit 3</option>
+                                <option value="Unit 4">Unit 4</option>
+                                <option value="Unit 5">Unit 5</option>
+                                <option value="Unit 6">Unit 6</option>
+                                <option value="Unit 7">Unit 7</option>
+                                <option value="Unit 8">Unit 8</option>
+                                <option value="Unit 9">Unit 9</option>
+                                <option value="Unit 10">Unit 10</option>
+                            </select>
+
+                        </div>
+                    </div>
+
+                    <!-- STEP 4: SECURITY -->
+                    <div x-show="step === 3" class="space-y-5">
+                        <h3 class="font-semibold text-lg">Security & Verification</h3>
+
+                        <div class="grid grid-cols-2 gap-4">
+                            <input type="password" name="password" placeholder="Password"
+                                style="width: 100%; padding: 0.5rem 1rem; border: 1px solid #ccc; border-radius: 0.5rem; outline: none; transition: 0.3s; font-size: 1rem;"
+                                onfocus="this.style.borderColor='#3b82f6'; this.style.boxShadow='0 0 0 2px rgba(59, 130, 246, 0.3)'"
+                                onblur="this.style.borderColor='#ccc'; this.style.boxShadow='none'">
+                            <input type="password" name="password_confirmation" placeholder="Confirm Password"
+                                style="width: 100%; padding: 0.5rem 1rem; border: 1px solid #ccc; border-radius: 0.5rem; outline: none; transition: 0.3s; font-size: 1rem;"
+                                onfocus="this.style.borderColor='#3b82f6'; this.style.boxShadow='0 0 0 2px rgba(59, 130, 246, 0.3)'"
+                                onblur="this.style.borderColor='#ccc'; this.style.boxShadow='none'">
+                        </div>
+
+                        <!-- CAMERA -->
+                        <div class="border rounded-xl p-4 bg-gray-50">
+                            <video id="video" autoplay playsinline class="w-full rounded-lg mb-2"></video>
+                            <canvas id="canvas" class="hidden"></canvas>
+
+                            <button type="button" id="captureBtn"
+                                class="w-full py-2 rounded-lg bg-green-600 text-white">
+                                Capture Selfie
+                            </button>
+
+                            <p id="cameraStatus" class="text-xs text-gray-500 mt-1"></p>
+
+                            <img id="selfiePreview" class="w-24 h-24 rounded-full mt-3 hidden">
+                            <input type="hidden" name="selfie_image" id="selfieImage">
+                        </div>
+                    </div>
+
+                    <!-- NAV -->
+                    <div class="flex justify-between mt-8">
+                        <button type="button" @click="prev()" x-show="step > 0"
+                            class="px-6 py-2 rounded-lg bg-gray-200">Back</button>
+
+                        <button type="button" @click="next()" x-show="step < 3"
+                            class="px-6 py-2 rounded-lg bg-blue-600 text-white">Next</button>
+
+                        <button type="submit" x-show="step === 3"
+                            class="px-6 py-2 rounded-lg bg-green-600 text-white">Submit</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+
+
+    <!-- STEP FORM JS -->
+    <script>
+        function stepForm() {
+            return {
+                step: 0,
+                steps: ['Basic', 'Service', 'Unit', 'Verify'],
+                next() {
+                    if (this.step < 3) this.step++;
+                },
+                prev() {
+                    if (this.step > 0) this.step--;
+                },
+                goTo(index) {
+                    this.step = index;
+                }
+            }
+        }
+    </script>
+
+    <!-- UNIT DROPDOWN JS -->
+    <script>
+        function unitDropdown() {
+            return {
+                selectedMain: '',
+                selectedCategory: '',
+                selectedRegion: '',
+                selectedFinal: '',
+                units: {
+                    "MEPCOM": {
+                        "MEPG Groups": [
+                            "MEPG NCR-CL", "MEPG NWLZN", "MEPG NELZN", "MEPG STL", "MEPG BCL", "MEPG PAL",
+                            "MEPG CV", "MEPG EV", "MEPG WV", "MEPG SV", "MEPG NM", "MEPG NEM", "MEPG SWM",
+                            "MEPG SM", "MEPG BARMM"
+                        ],
+                        "MSFIS": [
+                            "MSFIS NCR-CL", "MSFIS NWLZN", "MSFIS NELZN", "MSFIS STL", "MSFIS BCL", "MSFIS PAL",
+                            "MSFIS CV", "MSFIS EV", "MSFIS WV", "MSFIS SV", "MSFIS NM", "MSFIS NEM", "MSFIS SWM",
+                            "MSFIS SM", "MSFIS BARMM"
+                        ],
+                        "OSRU": [
+                            "OSRU NCR-CL", "OSRU NWLZN", "OSRU NELZN", "OSRU STL", "OSRU BCL", "OSRU PAL",
+                            "OSRU CV", "OSRU EV", "OSRU WV", "OSRU SV", "OSRU NM", "OSRU NEM", "OSRU SWM",
+                            "OSRU SM", "OSRU BARMM"
+                        ],
+                        "MEPG Units": [
+                            "VCA NCR-CL", "VCA NWLZN", "VCA NELZN", "VCA STL", "VCA BCL", "VCA PAL",
+                            "VCA CV", "VCA EV", "VCA WV", "VCA SV", "VCA NM", "VCA NEM", "VCA SWM",
+                            "VCA SM", "VCA BARMM",
+                            "MEPLEU NWLZN", "MEPLEU NELZN", "MEPLEU STL", "MEPLEU BCL", "MEPLEU PAL",
+                            "MEPLEU CV", "MEPLEU EV", "MEPLEU WV", "MEPLEU SV", "MEPLEU NM", "MEPLEU NEM",
+                            "MEPLEU SWM", "MEPLEU SM", "MEPLEU BARMM"
+                        ]
+                    },
+                    "HSS-MEPCOM": {
+                        "Command Group": [
+                            "Commander",
+                            "Deputy Commander",
+                            "Chief of MEP Staff",
+
+                            "NOCOP - National Operations Center for Oil Pollution",
+                            "MEPCPRD - Marine Environmental Protection Center for Policy, Research and Development",
+                            "MEP AcCeS - Marine Environmental Protection Accreditation and Certification Services",
+                            "MEPLEF - Marine Environmental Protection Law Enforcement Force",
+
+                            "MEPTDI - Marine Environment Protection Training and Doctrine Institute",
+                            "MSFIS - Marine Science Forensic and Investigation Service",
+                            "MEPG - Marine Environmental Protection Group",
+                            "VCA - Vessel and Company Accreditation"
+                        ],
+                        "Staff Offices": ["M-1 HRM", "M-2 Intelligence", "M-3 Operations", "M-4 Logistics", "M-5 Plans",
+                            "M-6 Comptrollership", "M-11 WCEIS", "M-12 Education"
+                        ]
+                    }
+                },
+                categories: [],
+                finals: [],
+                updateCategories() {
+                    this.selectedCategory = '';
+                    this.selectedFinal = '';
+                    this.categories = Object.keys(this.units[this.selectedMain] || {});
+                    this.finals = [];
+                },
+                updateRegions() {
+                    this.selectedFinal = '';
+                    const val = this.units[this.selectedMain][this.selectedCategory] || [];
+                    if (Array.isArray(val)) {
+                        this.finals = val;
+                    } else {
+                        this.finals = [];
+                    }
+                }
+            }
+        }
+    </script>
+
+    <!-- MAIN JS -->
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+
+            // AGE
+            const dob = document.getElementById('dob');
+            const ageSpan = document.getElementById('age');
+            dob.addEventListener('change', () => {
+                const b = new Date(dob.value);
+                const t = new Date();
+                let age = t.getFullYear() - b.getFullYear();
+                if (t < new Date(b.setFullYear(t.getFullYear()))) age--;
+                ageSpan.textContent = age;
+            });
+
+            // ETE
+            const doa = document.getElementById('date_of_appointment');
+            const ete = document.getElementById('ete');
+            doa.addEventListener('change', () => {
+                const d = new Date(doa.value);
+                d.setFullYear(d.getFullYear() + 3);
+                ete.value = d.toISOString().split('T')[0];
+            });
+
+            // CAMERA
+            const video = document.getElementById('video');
+            const canvas = document.getElementById('canvas');
+            const btn = document.getElementById('captureBtn');
+            const selfie = document.getElementById('selfieImage');
+            const preview = document.getElementById('selfiePreview');
+            const status = document.getElementById('cameraStatus');
+
+            navigator.mediaDevices.getUserMedia({
+                    video: true
+                })
+                .then(stream => {
+                    video.srcObject = stream;
+                    status.textContent = "Camera ready";
+                })
+                .catch(err => status.textContent = "Camera error: " + err.message);
+
+            btn.addEventListener('click', () => {
+                canvas.width = video.videoWidth;
+                canvas.height = video.videoHeight;
+                canvas.getContext('2d').drawImage(video, 0, 0);
+                const data = canvas.toDataURL('image/png');
+                selfie.value = data;
+                preview.src = data;
+                preview.classList.remove('hidden');
+                Swal.fire('Captured!', 'Selfie saved.', 'success');
+            });
+
+            // SUBMIT
+            document.getElementById('registerForm').addEventListener('submit', () => {
+                Swal.fire({
+                    title: 'Processing...',
+                    allowOutsideClick: false,
+                    didOpen: () => Swal.showLoading()
+                });
+            });
+
+        });
+    </script>
