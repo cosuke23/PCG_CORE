@@ -21,7 +21,7 @@ Status key
 
 | Feature | Route(s) | Status |
 |---------|----------|--------|
-| Login / logout | `/login`, `POST /logout` | **Verified** by tests (approved user logs in; pending/rejected/unknown refused). **Fixed** the rejected-user bypass |
+| Login / logout | `/login`, `POST /logout` | **Verified** by tests (approved user logs in; pending/rejected/unknown refused). **Fixed** the rejected-user bypass. Redesigned; the non-working "Forgot password" link (no reset flow exists) is replaced by an instruction to contact the administrator, and the Bootstrap register modal by two direct links |
 | Dashboard (rejected-document alerts, LMS class) | `/dashboard` | Works (code) · Blocked |
 | SOI profile, 6-step save | `/profile`, `/temp-save/step1…6` | Works (code) · Blocked. **Fixed** serial-number IDOR in step 1. Steps 3, 4 and 6 delete-then-insert without a transaction |
 | Legacy one-shot SOI save | `POST /reinlist/store` | Only called from commented-out JS. Now requires login and is restricted to your own serial |
@@ -49,7 +49,7 @@ Status key
 
 | Feature | Route(s) | Status |
 |---------|----------|--------|
-| Admin login / logout | `/admin/login`, `POST /admin/logout`, `GET /admin/logout` | **Verified** by tests. **Fixed**: hardcoded credentials; GET logout cleared the wrong session keys; sidebar logout links sent GET to a POST-only route (405) |
+| Admin login / logout | `/admin/login`, `POST /admin/logout`, `GET /admin/logout` | **Verified** by tests. **Fixed**: hardcoded credentials; GET logout cleared the wrong session keys; sidebar logout links sent GET to a POST-only route (405); login errors were never displayed; form was hidden behind a "click to access" animation |
 | User approval dashboard | `/admin/dashboard`, `POST /admin/approve/{id}`, `/admin/reject/{id}` | Works (code) · Blocked |
 | HR analytics | `/admin/hr-analytics` | Works (code) · Blocked |
 | Administrative / operational tracks | `/administrative-tracks`, `/operation-tracks` (CRUD) | Works (code) · Blocked |

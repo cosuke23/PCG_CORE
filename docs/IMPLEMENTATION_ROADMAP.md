@@ -43,10 +43,14 @@ Last updated: 2026-10-30 (branch `claude/cool-wozniak-rni95k`)
 - ⬜ Admin users in DB with roles; MFA (M6)
 
 ## Phase 5 — UI/UX
-- ⬜ Design tokens (navy / white / gold), typography and spacing scale as Tailwind config
-- ⬜ Vite build replacing CDN Tailwind/Alpine/jQuery copies; then CSP + SRI
-- ⬜ Shared Blade components: app shell (sidebar + top bar), page header, card, data table, form fields, alerts, empty states
-- ⬜ Redesign in this order: login pages (applicant/admin/unit) → admin dashboard & sidebar → unit dashboards → applicant dashboard/profile → LMS/OSAERT pages → public pages
+- ✅ Design system `public/css/pcg-ui.css` (navy / white / gold tokens, type and spacing scale, forms, buttons, alerts, badges, cards) — plain CSS, **no Node/build step, no CDN** (decision: keeps Windows setup simple and allows a strict CSP later)
+- ✅ `public/js/pcg-ui.js` (password toggle, double-submit guard), external file so CSP can forbid inline scripts
+- ✅ Web-sized brand images `public/images/brand/*.webp` (logos 20–30 KB instead of ~1 MB)
+- ✅ Sign-in shell `layouts/auth` + partials; redesigned **all four sign-in pages** (personnel, admin, unit, M1). Verified in Chromium at 1366×800 and 390×844: no console errors, no horizontal overflow, error states, password toggle
+- ⬜ App shell for signed-in areas (sidebar + top bar) replacing the 6 copied admin sidebars
+- ⬜ Shared table, form and empty-state components
+- ⬜ Redesign next: admin dashboard & sidebar → unit dashboards → applicant dashboard/profile → LMS/OSAERT pages → public pages (these need the real DB to verify)
+- ⬜ Remove CDN Tailwind/Bootstrap/jQuery page by page as pages migrate; then CSP + SRI
 - ⬜ Accessibility pass (labels, focus states, contrast, keyboard use of modals)
 - ⛔ Reference site comparison: allow `cgmeptdi.com` in the environment network settings
 
@@ -92,6 +96,8 @@ Last updated: 2026-10-30 (branch `claude/cool-wozniak-rni95k`)
 |------|------|--------|
 | 2026-10-30 | `php artisan test` (48) | **Passed** |
 | 2026-10-30 | `php artisan test` (50, + transaction rollback) | **Passed** |
+| 2026-10-30 | `php artisan test` (52, + sign-in pages) | **Passed** |
+| 2026-10-30 | Sign-in pages in Chromium, desktop + mobile: render, error states, password toggle, no overflow, no console errors | **Passed** |
 | 2026-10-30 | Public pages `/`, `/about`, `/contact`, `/institutes/meptdi`, `/login`, `/register?type=officer`, `/admin/login`, `/unit/login`, `/unit/loginM1` | **Passed** (200) |
 | 2026-10-30 | Protected pages redirect when logged out | **Passed** |
 | 2026-10-30 | `/osaert/verify` | **Blocked** — needs `osaert_trainees` (real DB) |

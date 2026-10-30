@@ -32,6 +32,7 @@ Environmental Protection Command (MEPCOM)** human-resources information system:
 | CSS | Tailwind via the **Play CDN** (`cdn.tailwindcss.com`) in 15 views, Bootstrap 5.3 in one view, large inline `<style>` blocks |
 | JS | Alpine.js (CDN, unpinned), jQuery 3.7, DataTables 2.3, SweetAlert2, Chart.js, Leaflet + geocoder, qrcode.js — all from CDNs |
 | Build | Vite 4 + `laravel-vite-plugin` configured, but **no view uses `@vite`** — the asset pipeline is unused |
+| UI system (new) | `public/css/pcg-ui.css` + `public/js/pcg-ui.js`, plain files with no build step; used by `layouts/auth` (all sign-in pages). Other pages still use CDN Tailwind until migrated |
 | Database | MySQL/MariaDB `pcg_core` via Eloquent and the query builder (`config/database.php`, default connection `mysql`) |
 | Sessions | file driver (`config/session.php`) |
 | Production host | cPanel shared hosting, `pcg-mepcom.com`, account path `/home/<account>/public_html/pcg-mepcom.com` (from hardcoded paths, now removed) |

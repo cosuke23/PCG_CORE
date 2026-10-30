@@ -52,7 +52,9 @@ class UnitUserController extends Controller
         $user = $this->attemptUnitLogin($request);
 
         if (!$user) {
-            return back()->with('error', 'Invalid email, password, or inactive account.');
+            return back()
+                ->with('error', 'Invalid email, password, or inactive account.')
+                ->withInput($request->only('email'));
         }
 
         session([
@@ -71,7 +73,9 @@ class UnitUserController extends Controller
         $user = $this->attemptUnitLogin($request);
 
         if (!$user) {
-            return back()->with('error', 'Invalid email, password, or inactive account.');
+            return back()
+                ->with('error', 'Invalid email, password, or inactive account.')
+                ->withInput($request->only('email'));
         }
 
         session([

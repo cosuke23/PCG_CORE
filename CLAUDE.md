@@ -40,6 +40,8 @@ Windows helpers: `scripts/windows/setup.ps1`, `start.ps1`, `tailscale-serve.ps1`
 - Escape output with `{{ }}`; no `{!! !!}` for user data; `@csrf` on all forms.
 - Don't log passwords, tokens, selfies, or full `$request->all()` (PII).
 - Status values are mixed-case in the DB (`Approved`/`approved`) — compare case-insensitively.
+- UI: new/redesigned pages use `public/css/pcg-ui.css` tokens and `.pcg-*` components plus `public/js/pcg-ui.js` (no CDN, no inline scripts, no build step). Sign-in pages extend `layouts/auth`. Don't add new CDN dependencies.
+- Insert server data into the DOM with `textContent`, or `escapeHtml()` when building HTML strings.
 
 ## Testing
 - Feature tests create only the tables they need on SQLite (see `tests/Feature/AuthenticationTest.php`).

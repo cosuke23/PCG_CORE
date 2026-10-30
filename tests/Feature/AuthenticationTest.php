@@ -203,4 +203,33 @@ class AuthenticationTest extends TestCase
             ])
             ->assertSessionHasErrors('soi');
     }
+
+    // ---------------- Sign-in pages ----------------
+
+    public function test_sign_in_pages_render_without_cdn_assets()
+    {
+        foreach (['/login', '/admin/login', '/unit/login', '/unit/loginM1'] as $uri) {
+            $this->get($uri)
+                ->assertOk()
+                ->assertSee('css/pcg-ui.css', false)
+                ->assertDontSee('cdn.tailwindcss.com', false);
+        }
+    }
+
+    public function test_sign_in_errors_are_shown_and_email_is_kept()
+    {
+        $this->from('/admin/login')
+            ->followingRedirects()
+            ->post('/admin/login', ['email' => 'admin@example.test', 'password' => 'wrong'])
+            ->assertSee('Invalid admin credentials')
+            ->assertSee('value="admin@example.test"', false);
+
+        $this->makeUnitUser('unit-password');
+
+        $this->from('/unit/login')
+            ->followingRedirects()
+            ->post('/unit/login', ['email' => 'unit@example.test', 'password' => 'wrong'])
+            ->assertSee('Invalid email, password, or inactive account.')
+            ->assertSee('value="unit@example.test"', false);
+    }
 }
