@@ -181,6 +181,7 @@ Route::prefix('admin/two-factor')->name('admin.two-factor.')->group(function () 
     Route::post('/setup', [AdminLoginController::class, 'confirmSetup'])->middleware('throttle:two-factor')->name('setup.confirm');
     Route::get('/challenge', [AdminLoginController::class, 'showChallenge'])->name('challenge');
     Route::post('/challenge', [AdminLoginController::class, 'verifyChallenge'])->middleware('throttle:two-factor')->name('challenge.verify');
+    Route::post('/challenge/resend', [AdminLoginController::class, 'resendCode'])->middleware('throttle:two-factor')->name('challenge.resend');
     Route::get('/recovery-codes', [AdminLoginController::class, 'showRecoveryCodes'])->name('recovery-codes');
 });
 

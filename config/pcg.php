@@ -17,6 +17,12 @@ return [
     'admin' => [
         'email' => env('ADMIN_EMAIL'),
         'password_hash' => env('ADMIN_PASSWORD_HASH'),
+
+        // Second sign-in step for admin accounts: 'email' = one-time code sent
+        // to the admin's email address (owner decision 2026-10-31); 'totp' =
+        // authenticator app. Email needs working MAIL_* settings in .env.
+        'two_factor' => env('PCG_ADMIN_2FA', 'email'),
+        'email_code_minutes' => (int) env('PCG_ADMIN_EMAIL_CODE_MINUTES', 10),
     ],
 
     // Folder that holds documents_toupload/, 201_files/ and

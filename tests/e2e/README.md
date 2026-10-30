@@ -22,7 +22,7 @@ node tests/e2e/flow-register.js         # self-registration with a fake camera
 node tests/e2e/flow-hrmis.js            # registration -> approval -> 201 upload/verify -> promotion -> reports, scope, auditor
 ```
 
-`.env` for the run: `APP_ENV=local`, `DB_DATABASE=pcg_core_dev`. The seeder
+`.env` for the run: `APP_ENV=local`, `DB_DATABASE=pcg_core_dev`, `PCG_ADMIN_2FA=totp` (the scripts compute authenticator codes). The seeder
 creates admin@ / hr@ / lms@demo.test (password `Admin@Demo12345`) with two-factor
 enrolled on a fixed dev-only key; `lib.js` computes the codes. Admin sign-in is
 limited to 5 attempts/min per email, so wait a minute between repeated runs.

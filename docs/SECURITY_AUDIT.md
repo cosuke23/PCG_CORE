@@ -35,6 +35,10 @@ defence-in-depth.
 - 201 documents stored outside `public/` (`PCG_DOCUMENT_ROOT`), random names, PDF/JPG/PNG only, size limit, checksum, served with `nosniff` and `no-store`; every upload/download/verification logged; medical category restricted.
 - CSV exports neutralise spreadsheet formulas; report views and exports are audited.
 
+## 0c. Admin two-factor by email (owner decision 2026-10-31)
+
+`PCG_ADMIN_2FA=email` (default): after the password, a 6-digit one-time code is emailed to the admin. Only an HMAC of the code is kept (session), it expires after `PCG_ADMIN_EMAIL_CODE_MINUTES` (10), works once, is discarded after 5 wrong tries, resend at most once a minute, attempts rate-limited and audited. Existing recovery codes still work. Security depends on the admins' mailboxes: use official accounts with their own 2FA. `MAIL_MAILER=log` writes codes into `storage/logs/laravel.log` (local testing only). `PCG_ADMIN_2FA=totp` restores the authenticator-app flow.
+
 ## 1. Findings and status
 
 ### Critical

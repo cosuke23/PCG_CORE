@@ -25,6 +25,7 @@ class AdminAccountsTest extends TestCase
         $this->withoutMiddleware(\App\Http\Middleware\VerifyCsrfToken::class);
 
         config([
+            'pcg.admin.two_factor' => 'totp', // authenticator-app flow; email codes: EmailTwoFactorTest
             'pcg.admin.email' => 'setup@example.test',
             'pcg.admin.password_hash' => Hash::make('setup-password-123'),
         ]);
