@@ -110,7 +110,7 @@ class FileAccessTest extends TestCase
     public function test_admin_and_m1_can_open_any_file()
     {
         // Admins and M1 checkers; own-unit checkers are covered in UnitAccessTest.
-        foreach ([['admin_logged_in' => true], ['unit_user_id' => 1, 'unit_role' => \App\Models\UnitUser::ROLE_M1]] as $session) {
+        foreach ([['admin_logged_in' => true, 'admin_role' => 'super_admin'], ['unit_user_id' => 1, 'unit_role' => \App\Models\UnitUser::ROLE_M1]] as $session) {
             $this->withSession($session);
             $this->get('/files/documents_toupload/documents/1_nbi.pdf')->assertOk();
             $this->get('/files/disciplinary_actions/disciplinary_actions/1_case.pdf')->assertOk();
@@ -121,7 +121,7 @@ class FileAccessTest extends TestCase
 
     public function test_paths_outside_the_upload_areas_are_rejected()
     {
-        $this->withSession(['admin_logged_in' => true]);
+        $this->withSession(['admin_logged_in' => true, 'admin_role' => 'super_admin']);
 
         $this->get('/files/secret.txt')->assertNotFound();
         $this->get('/files/documents_toupload/../secret.txt')->assertNotFound();

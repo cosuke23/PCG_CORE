@@ -118,7 +118,7 @@ class UnitAccessTest extends TestCase
 
     public function test_admin_can_grant_and_remove_m1_access()
     {
-        $this->withSession(['admin_logged_in' => true]);
+        $this->withSession(['admin_logged_in' => true, 'admin_role' => 'super_admin']);
 
         $this->post('/admin/unit-users/1/role', ['role' => UnitUser::ROLE_M1])->assertRedirect();
         $this->assertSame(UnitUser::ROLE_M1, DB::table('unit_users')->where('id', 1)->value('role'));

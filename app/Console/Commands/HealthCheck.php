@@ -24,8 +24,8 @@ class HealthCheck extends Command
         $this->check('PHP 8.2 or newer', version_compare(PHP_VERSION, '8.2.0', '>='));
         $this->check('APP_KEY is set', (bool) config('app.key'));
         $this->check('APP_DEBUG is off', !config('app.debug'), 'warn');
-        $this->check('ADMIN_EMAIL and ADMIN_PASSWORD_HASH are set',
-            config('pcg.admin.email') && str_starts_with((string) config('pcg.admin.password_hash'), '$2y$'));
+        $this->check('ADMIN_EMAIL and ADMIN_PASSWORD_HASH are set (setup admin, only until an admin account exists)',
+            config('pcg.admin.email') && str_starts_with((string) config('pcg.admin.password_hash'), '$2y$'), 'warn');
 
         foreach (['pdo_mysql', 'mbstring', 'openssl', 'fileinfo', 'gd'] as $ext) {
             $this->check("PHP extension $ext", extension_loaded($ext), $ext === 'gd' ? 'warn' : 'fail');
@@ -48,6 +48,11 @@ class HealthCheck extends Command
             foreach (['users', 'unit_users', 'personnel_data', 'reinlist_basic_info', 'training_courses', 'osaert_trainees'] as $table) {
                 $this->check("Table $table exists", Schema::hasTable($table));
             }
+
+            $hasAdmins = Schema::hasTable('admin_users') && DB::table('admin_users')->where('is_active', 1)->exists();
+            $this->check(Schema::hasTable('admin_users')
+                ? 'Admin accounts exist (2FA); .env setup admin disabled'
+                : 'admin_users table exists (back up, then: php artisan migrate)', $hasAdmins, 'warn');
 
             if (Schema::hasTable('unit_users') && Schema::hasColumn('unit_users', 'password')) {
                 $missing = DB::table('unit_users')->where('is_active', 1)

@@ -22,6 +22,10 @@ class DevSeed extends Command
 
     public const PASSWORD = 'Demo@12345';
 
+    // Development only: fixed authenticator secret so scripts can compute codes.
+    public const ADMIN_TOTP_SECRET = 'JBSWY3DPEHPK3PXPJBSWY3DPEHPK3PXP';
+    public const ADMIN_PASSWORD = 'Admin@Demo12345';
+
     public function handle()
     {
         $database = (string) DB::connection()->getDatabaseName();
@@ -70,6 +74,17 @@ class DevSeed extends Command
                     'updated_at' => $now,
                 ]);
                 $users[] = ['id' => $id, 'serial' => $serial, 'name' => "$fn {$last[$i]}", 'first' => $fn, 'last' => $last[$i], 'rank' => $ranks[$i % count($ranks)], 'unit' => $unit];
+            }
+
+            // ---------------- admin accounts (2FA enrolled with the dev secret) ----------------
+            if (\Illuminate\Support\Facades\Schema::hasTable('admin_users')) {
+                foreach ([['admin@demo.test', 'Sample Super Admin', 'super_admin'], ['hr@demo.test', 'Sample HR Admin', 'hr_admin'], ['lms@demo.test', 'Sample LMS Admin', 'lms_admin']] as [$email, $name, $role]) {
+                    $admin = \App\Models\AdminUser::create(['name' => $name, 'email' => $email, 'password' => Hash::make(self::ADMIN_PASSWORD), 'role' => $role, 'is_active' => true]);
+                    $admin->two_factor_secret = self::ADMIN_TOTP_SECRET;
+                    $admin->two_factor_confirmed_at = $now;
+                    $admin->regenerateRecoveryCodes();
+                    $admin->save();
+                }
             }
 
             // ---------------- unit checkers ----------------
@@ -210,7 +225,7 @@ class DevSeed extends Command
         $this->line('  personnel   member@demo.test   (/login)');
         $this->line('  unit        unit@demo.test     (/unit/login)');
         $this->line('  M1          m1@demo.test       (/unit/loginM1)');
-        $this->line('  admin       ADMIN_EMAIL from .env (/admin/login)');
+        $this->line('  admins      admin@ / hr@ / lms@demo.test, password ' . self::ADMIN_PASSWORD . ', authenticator key ' . self::ADMIN_TOTP_SECRET);
 
         return 0;
     }

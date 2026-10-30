@@ -50,6 +50,14 @@
         });
     }
 
+    // QR code for authenticator setup (qrcode.js is loaded by that page only).
+    window.addEventListener('load', function () {
+        document.querySelectorAll('[data-pcg-qr]').forEach(function (el) {
+            if (typeof window.QRCode === 'undefined') return;
+            new window.QRCode(el, { text: el.getAttribute('data-pcg-qr'), width: 196, height: 196, correctLevel: window.QRCode.CorrectLevel.M });
+        });
+    });
+
     // Restore the button when the page is shown again from the back/forward cache.
     window.addEventListener('pageshow', function () {
         document.querySelectorAll('form[data-pcg-busy] [type="submit"][aria-busy="true"]').forEach(function (submit) {

@@ -112,7 +112,7 @@ class AuthenticationTest extends TestCase
 
     public function test_legacy_get_logout_ends_admin_session()
     {
-        $this->withSession(['admin_logged_in' => true])
+        $this->withSession(['admin_logged_in' => true, 'admin_role' => 'super_admin'])
             ->get('/admin/logout')
             ->assertRedirect(route('admin.login'));
 

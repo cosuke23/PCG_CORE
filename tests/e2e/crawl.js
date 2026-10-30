@@ -11,7 +11,8 @@ const roles = {
   member: { login: ['/login', 'member@demo.test', 'Demo@12345'], pages: ['/dashboard', '/profile', '/upload-documents', '/documents/upload', '/upload-201', '/face-verify', '/applicant/1/face-verify', '/generate-soi', '/applicant/administrative-training', '/applicant/operational-training', '/files/documents_toupload/documents/demo_DEMO-0001_nbi_clearance.pdf', '/files/201_files/soi/demo_DEMO-0001_soi.pdf'] },
   unit: { login: ['/unit/login', 'unit@demo.test', 'Demo@12345'], pages: ['/unit/dashboard', '/files/documents_toupload/documents/demo_DEMO-0001_nbi_clearance.pdf'] },
   m1: { login: ['/unit/loginM1', 'm1@demo.test', 'Demo@12345'], pages: ['/unit/dashboardM1', '/unit/search-serial/DEMO-0001', '/unit/201-files', '/unit/201-files/DEMO-0001', '/files/disciplinary_actions/disciplinary_actions/demo_case.pdf'] },
-  admin: { login: ['/admin/login', 'admin@demo.test', 'Admin@Demo123'], pages: ['/admin/dashboard', '/admin/unit-users', '/admin/hr-analytics', '/administrative-tracks', '/personnel-administrative-training', '/operation-tracks', '/personnel/operational-training', '/admin/training-applications', '/admin/training-courses', '/admin/training-courses/create', '/admin/training-courses/1/edit', '/training-courses/1/students', '/training-courses/1/students/create', '/training-courses/1/students/csv-template', '/admin/osaert', '/admin/osaert/template', '/admin/osaert/certificates'] },
+  admin: { adminLogin: 'admin@demo.test', pages: ['/admin/dashboard', '/admin/unit-users', '/admin/hr-analytics', '/administrative-tracks', '/personnel-administrative-training', '/operation-tracks', '/personnel/operational-training', '/admin/training-applications', '/admin/training-courses', '/admin/training-courses/create', '/admin/training-courses/1/edit', '/training-courses/1/students', '/training-courses/1/students/create', '/training-courses/1/students/csv-template', '/admin/osaert', '/admin/osaert/template', '/admin/osaert/certificates', '/admin/accounts', '/admin/accounts/audit-log'] },
+  lmsadmin: { adminLogin: 'lms@demo.test', pages: ['/admin/training-courses', '/admin/osaert', '/admin/training-applications'] },
 };
 const only = process.env.ROLES ? process.env.ROLES.split(',') : null;
 (async () => {
@@ -24,6 +25,10 @@ const only = process.env.ROLES ? process.env.ROLES.split(',') : null;
     let jsErrors = [];
     page.on('pageerror', e => jsErrors.push(e.message.split('\n')[0]));
     page.on('console', m => { if (m.type() === 'error') jsErrors.push(m.text().split('\n')[0]); });
+    if (cfg.adminLogin) {
+      await require('./lib').adminLogin(page, BASE, cfg.adminLogin);
+      console.log(`[${role}] login -> ${page.url().replace(BASE, '')}`);
+    }
     if (cfg.login) {
       await page.goto(BASE + cfg.login[0]);
       await page.fill('#email', cfg.login[1]); await page.fill('#password', cfg.login[2]);

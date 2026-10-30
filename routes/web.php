@@ -177,83 +177,116 @@ Route::post('/admin/logout', [AdminLoginController::class, 'logout'])->name('adm
 // Sidebar links use GET
 Route::get('/admin/logout', [AdminController::class, 'logout'])->name('admin.logout.legacy');
 
-Route::middleware(['admin.session'])->group(function () {
+// Two-factor sign-in (after the password, before the admin session exists)
+Route::prefix('admin/two-factor')->name('admin.two-factor.')->group(function () {
+    Route::get('/setup', [AdminLoginController::class, 'showSetup'])->name('setup');
+    Route::post('/setup', [AdminLoginController::class, 'confirmSetup'])->middleware('throttle:10,1')->name('setup.confirm');
+    Route::get('/challenge', [AdminLoginController::class, 'showChallenge'])->name('challenge');
+    Route::post('/challenge', [AdminLoginController::class, 'verifyChallenge'])->middleware('throttle:5,1')->name('challenge.verify');
+    Route::get('/recovery-codes', [AdminLoginController::class, 'showRecoveryCodes'])->name('recovery-codes');
+});
 
-    Route::get('/admin/dashboard', [AdminController::class, 'dashboard'])->name('admin.dashboard');
-    Route::post('/admin/approve/{id}', [AdminController::class, 'approve']);
-    Route::post('/admin/reject/{id}', [AdminController::class, 'reject']);
+/*
+| Roles (admin_users.role): super_admin = everything; hr_admin = registrations,
+| HR analytics, unit accounts, training, messages; lms_admin = training
+| tracks, applications, courses, students, OSAERT. Every state-changing
+| request is written to admin_audit_logs (admin.audit).
+*/
+Route::middleware(['admin.session', 'admin.audit'])->group(function () {
 
-    Route::get('/admin/hr-analytics', [HRAnalyticsController::class, 'index'])
-        ->name('admin.hr-analytics');
+    // ---- super admin + HR admin ----
+    Route::middleware('admin.role:super_admin,hr_admin')->group(function () {
+        Route::get('/admin/dashboard', [AdminController::class, 'dashboard'])->name('admin.dashboard');
+        Route::post('/admin/approve/{id}', [AdminController::class, 'approve']);
+        Route::post('/admin/reject/{id}', [AdminController::class, 'reject']);
 
-    // Unit checker accounts
-    Route::post('/unit-users/store', [UnitUserController::class, 'store'])
-        ->name('unit-users.store');
-    Route::get('/admin/unit-users', [\App\Http\Controllers\UnitAccountController::class, 'index'])
-        ->name('admin.unit-users.index');
-    Route::post('/admin/unit-users/{id}/password', [\App\Http\Controllers\UnitAccountController::class, 'updatePassword'])
-        ->whereNumber('id')->name('admin.unit-users.password');
-    Route::post('/admin/unit-users/{id}/role', [\App\Http\Controllers\UnitAccountController::class, 'updateRole'])
-        ->whereNumber('id')->name('admin.unit-users.role');
-    Route::post('/admin/unit-users/{id}/status', [\App\Http\Controllers\UnitAccountController::class, 'updateStatus'])
-        ->whereNumber('id')->name('admin.unit-users.status');
+        Route::get('/admin/hr-analytics', [HRAnalyticsController::class, 'index'])
+            ->name('admin.hr-analytics');
 
-    // Training tracks
-    Route::get('/administrative-tracks', [AdministrativeTrackController::class, 'index'])
-        ->name('administrative.tracks');
-    Route::get('/personnel-administrative-training', [PersonnelAdministrativeTrainingController::class, 'index'])
-        ->name('personnel.administrative.training');
+        // Unit checker accounts
+        Route::post('/unit-users/store', [UnitUserController::class, 'store'])
+            ->name('unit-users.store');
+        Route::get('/admin/unit-users', [\App\Http\Controllers\UnitAccountController::class, 'index'])
+            ->name('admin.unit-users.index');
+        Route::post('/admin/unit-users/{id}/password', [\App\Http\Controllers\UnitAccountController::class, 'updatePassword'])
+            ->whereNumber('id')->name('admin.unit-users.password');
+        Route::post('/admin/unit-users/{id}/role', [\App\Http\Controllers\UnitAccountController::class, 'updateRole'])
+            ->whereNumber('id')->name('admin.unit-users.role');
+        Route::post('/admin/unit-users/{id}/status', [\App\Http\Controllers\UnitAccountController::class, 'updateStatus'])
+            ->whereNumber('id')->name('admin.unit-users.status');
+    });
 
-    Route::prefix('operation-tracks')
-        ->name('operation_tracks.')
-        ->group(function () {
-            Route::get('/', [OperationTrackController::class, 'index'])->name('index');
-            Route::post('/', [OperationTrackController::class, 'store'])->name('store');
-            Route::put('/{operationTrack}', [OperationTrackController::class, 'update'])->name('update');
-            Route::delete('/{operationTrack}', [OperationTrackController::class, 'destroy'])->name('destroy');
-        });
+    // ---- all admin roles: training tracks and applications ----
+    Route::middleware('admin.role:super_admin,hr_admin,lms_admin')->group(function () {
+        Route::get('/administrative-tracks', [AdministrativeTrackController::class, 'index'])
+            ->name('administrative.tracks');
+        Route::get('/personnel-administrative-training', [PersonnelAdministrativeTrainingController::class, 'index'])
+            ->name('personnel.administrative.training');
 
-    Route::get('/personnel/operational-training', [PersonnelOperationalTrainingController::class, 'index'])
-        ->name('personnel.operational.training');
+        Route::prefix('operation-tracks')
+            ->name('operation_tracks.')
+            ->group(function () {
+                Route::get('/', [OperationTrackController::class, 'index'])->name('index');
+                Route::post('/', [OperationTrackController::class, 'store'])->name('store');
+                Route::put('/{operationTrack}', [OperationTrackController::class, 'update'])->name('update');
+                Route::delete('/{operationTrack}', [OperationTrackController::class, 'destroy'])->name('destroy');
+            });
 
-    // Training applications
-    Route::prefix('admin/training-applications')
-        ->name('admin.training-applications.')
-        ->group(function () {
-            Route::get('/', [TrainingApplicationController::class, 'index'])->name('index');
-            Route::patch('/{application}/status', [TrainingApplicationController::class, 'updateStatus'])
-                ->name('status');
-        });
+        Route::get('/personnel/operational-training', [PersonnelOperationalTrainingController::class, 'index'])
+            ->name('personnel.operational.training');
 
-    // MEPTDI LMS: courses and enrolled students
-    Route::prefix('admin')
-        ->name('admin.')
-        ->group(function () {
-            Route::resource('training-courses', TrainingCourseController::class)->except(['show']);
-        });
+        Route::prefix('admin/training-applications')
+            ->name('admin.training-applications.')
+            ->group(function () {
+                Route::get('/', [TrainingApplicationController::class, 'index'])->name('index');
+                Route::patch('/{application}/status', [TrainingApplicationController::class, 'updateStatus'])
+                    ->name('status');
+            });
+    });
 
-    Route::prefix('training-courses/{course}/students')
-        ->name('training-courses.students.')
-        ->group(function () {
-            Route::get('/', [CourseStudentController::class, 'index'])->name('index');
-            Route::get('/create', [CourseStudentController::class, 'create'])->name('create');
-            Route::post('/', [CourseStudentController::class, 'store'])->name('store');
-            Route::get('/csv-template', [CourseStudentController::class, 'downloadTemplate'])->name('csv-template');
-            Route::delete('/{student}', [CourseStudentController::class, 'destroy'])->name('destroy');
-        });
+    // ---- super admin + LMS admin: MEPTDI LMS and OSAERT ----
+    Route::middleware('admin.role:super_admin,lms_admin')->group(function () {
+        Route::prefix('admin')
+            ->name('admin.')
+            ->group(function () {
+                Route::resource('training-courses', TrainingCourseController::class)->except(['show']);
+            });
 
-    Route::post('/training-courses/{course}/students/import-csv', [CourseStudentController::class, 'importCsv'])
-        ->name('import-csv');
+        Route::prefix('training-courses/{course}/students')
+            ->name('training-courses.students.')
+            ->group(function () {
+                Route::get('/', [CourseStudentController::class, 'index'])->name('index');
+                Route::get('/create', [CourseStudentController::class, 'create'])->name('create');
+                Route::post('/', [CourseStudentController::class, 'store'])->name('store');
+                Route::get('/csv-template', [CourseStudentController::class, 'downloadTemplate'])->name('csv-template');
+                Route::delete('/{student}', [CourseStudentController::class, 'destroy'])->name('destroy');
+            });
 
-    // OSAERT enrollment and CSV import
-    Route::prefix('admin/osaert')
-        ->name('admin.osaert.')
-        ->controller(OsaertController::class)
+        Route::post('/training-courses/{course}/students/import-csv', [CourseStudentController::class, 'importCsv'])
+            ->name('import-csv');
+
+        Route::prefix('admin/osaert')
+            ->name('admin.osaert.')
+            ->controller(OsaertController::class)
+            ->group(function () {
+                Route::get('/', 'index')->name('index');
+                Route::get('/template', 'template')->name('template');
+                Route::post('/bulk-upload', 'bulkUpload')->name('bulk-upload');
+                Route::get('/certificates', 'certificates')->name('certificates');
+            });
+    });
+
+    // ---- super admin only: administrator accounts and audit log ----
+    Route::middleware('admin.role:super_admin')->prefix('admin/accounts')->name('admin.accounts.')
+        ->controller(\App\Http\Controllers\AdminAccountController::class)
         ->group(function () {
             Route::get('/', 'index')->name('index');
-            Route::get('/template', 'template')->name('template');
-            Route::post('/bulk-upload', 'bulkUpload')->name('bulk-upload');
-            Route::get('/certificates', 'certificates')->name('certificates');
+            Route::post('/', 'store')->name('store');
+            Route::post('/{admin}/role', 'updateRole')->name('role');
+            Route::post('/{admin}/status', 'updateStatus')->name('status');
+            Route::post('/{admin}/password', 'resetPassword')->name('password');
+            Route::post('/{admin}/two-factor/reset', 'resetTwoFactor')->name('two-factor.reset');
+            Route::get('/audit-log', 'auditLog')->name('audit');
         });
 });
 

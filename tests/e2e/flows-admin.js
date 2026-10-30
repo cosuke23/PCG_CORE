@@ -16,9 +16,7 @@ const check = (name, ok, detail = '') => { results.push([ok ? 'PASS' : 'FAIL', n
   page.on('pageerror', e => jsErrors.push(e.message.split('\n')[0]));
   page.on('dialog', d => d.accept());
 
-  await page.goto(BASE + '/admin/login');
-  await page.fill('#email', 'admin@demo.test'); await page.fill('#password', 'Admin@Demo123');
-  await Promise.all([page.waitForNavigation(), page.click('button[type=submit]')]);
+  await require('./lib').adminLogin(page, BASE);
 
   // 1-2. Approve and reject pending registrations (double-click row -> dialog)
   const pending = sql("select id,email from users where status='Pending' order by id limit 2").split('\n').map(l => l.split('\t'));
@@ -118,6 +116,38 @@ const check = (name, ok, detail = '') => { results.push([ok ? 'PASS' : 'FAIL', n
     await Promise.all([page.waitForNavigation(), form.locator('button[type=submit]').click()]);
   } else { await page.waitForNavigation({ timeout: 5000 }).catch(() => {}); }
   check('Update training application status', sql(`select status from training_applications where id=${appId}`) === 'Approved');
+
+  // 8. Admin accounts: create an HR admin, who must enrol two-factor sign-in
+  await page.goto(BASE + '/admin/accounts');
+  await page.fill('#name', 'Flow HR Admin'); await page.fill('#email', 'flow.hr@demo.test');
+  await page.check('input[name=role][value=hr_admin]'); await page.fill('#password', 'FlowAdminPass123');
+  await Promise.all([page.waitForNavigation(), page.click('button:has-text("Create account")')]);
+  check('Create admin account', sql("select role from admin_users where email='flow.hr@demo.test'") === 'hr_admin');
+
+  const ctx2 = await browser.newContext({ viewport: { width: 1366, height: 900 } });
+  const p2 = await ctx2.newPage();
+  p2.on('pageerror', e => jsErrors.push(e.message.split('\n')[0]));
+  await p2.goto(BASE + '/admin/login');
+  await p2.fill('#email', 'flow.hr@demo.test'); await p2.fill('#password', 'FlowAdminPass123');
+  await Promise.all([p2.waitForNavigation(), p2.click('button[type=submit]')]);
+  check('New admin is sent to two-factor setup', p2.url().endsWith('/admin/two-factor/setup'));
+  await p2.waitForTimeout(500);
+  check('QR code rendered for authenticator app', (await p2.locator('[data-pcg-qr] canvas, [data-pcg-qr] img').count()) > 0);
+  const key = (await p2.textContent('.pcg-code')).replace(/\s+/g, '');
+  await p2.fill('#code', require('./lib').totp(key));
+  await Promise.all([p2.waitForNavigation(), p2.click('button[type=submit]')]);
+  check('Recovery codes shown after enrolment', (await p2.locator('.pcg-codes li').count()) === 8);
+  await Promise.all([p2.waitForNavigation(), p2.click('a:has-text("continue")')]);
+  check('HR admin lands on dashboard; no LMS/admin-account menu', p2.url().endsWith('/admin/dashboard')
+    && (await p2.locator('.pcg-nav a:has-text("Training courses")').count()) === 0
+    && (await p2.locator('.pcg-nav a:has-text("Admin accounts")').count()) === 0);
+  const r = await p2.goto(BASE + '/admin/osaert');
+  check('HR admin cannot open OSAERT (403)', r.status() === 403);
+  await ctx2.close();
+
+  await page.goto(BASE + '/admin/accounts/audit-log');
+  const audit = await page.content();
+  check('Audit log shows approvals and account changes', audit.includes('admin.accounts.store') && /approve/.test(audit));
 
   check('No JavaScript errors during admin flows', jsErrors.length === 0, jsErrors.slice(0, 3).join(' | '));
   await browser.close();

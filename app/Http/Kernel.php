@@ -56,6 +56,8 @@ class Kernel extends HttpKernel
     protected $middlewareAliases = [
         'auth' => \App\Http\Middleware\Authenticate::class,
         'admin.session' => \App\Http\Middleware\EnsureAdminSession::class,
+        'admin.role' => \App\Http\Middleware\EnsureAdminRole::class,
+        'admin.audit' => \App\Http\Middleware\AuditAdminRequests::class,
         'unit.session' => \App\Http\Middleware\EnsureUnitSession::class,
         'unit.m1' => \App\Http\Middleware\EnsureUnitM1::class,
         'auth.basic' => \Illuminate\Auth\Middleware\AuthenticateWithBasicAuth::class,
@@ -83,6 +85,7 @@ class Kernel extends HttpKernel
         \Illuminate\View\Middleware\ShareErrorsFromSession::class,
         \Illuminate\Contracts\Auth\Middleware\AuthenticatesRequests::class,
         \App\Http\Middleware\EnsureAdminSession::class,
+        \App\Http\Middleware\EnsureAdminRole::class,
         \App\Http\Middleware\EnsureUnitSession::class,
         \App\Http\Middleware\EnsureUnitM1::class,
         \Illuminate\Routing\Middleware\ThrottleRequests::class,

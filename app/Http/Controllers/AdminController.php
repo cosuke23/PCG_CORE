@@ -17,7 +17,8 @@ class AdminController extends Controller
     {
         // Legacy GET /admin/logout. Previously cleared the wrong session keys,
         // which left the admin logged in.
-        Session::forget(['admin_logged_in', 'admin_email']);
+        \App\Support\AdminAudit::record('logout');
+        Session::forget(['admin_logged_in', 'admin_user_id', 'admin_email', 'admin_name', 'admin_role', 'admin_bootstrap', 'admin_2fa_user_id']);
         $request->session()->regenerateToken();
 
         return redirect()->route('admin.login')->with('success', 'Logged out successfully.');
