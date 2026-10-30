@@ -82,6 +82,26 @@ tailscale serve reset          # removes all Serve config
 # or: scripts\windows\tailscale-serve.ps1 off
 ```
 
+## 4b. Public access with Funnel (owner's decision, 2026-10-30)
+
+Funnel puts the app on the public internet (sign-in and registration pages
+reachable by anyone). The owner chose this so other PCs/devices can use it.
+
+```powershell
+git pull                                   # server.php blocks direct upload downloads
+scripts\windows\tailscale-funnel.ps1 on    # backs up .env, sets APP_URL etc., starts the server, checks, enables Funnel
+scripts\windows\tailscale-funnel.ps1 status
+scripts\windows\tailscale-funnel.ps1 off   # removes only this app's Funnel entry
+```
+
+Uses https port 443, or 8443 when 443 is already used by another Funnel/Serve
+(`-HttpsPort 10000` to choose). Refuses to start Funnel if any upload folder
+is directly downloadable. Prerequisites in the Tailscale admin console:
+MagicDNS, HTTPS certificates, and the `funnel` node attribute for this PC.
+Before going public: own admin account with 2FA (`pcg:create-admin`), then
+clear `ADMIN_EMAIL`/`ADMIN_PASSWORD_HASH`; rotate the leaked admin password.
+`php artisan serve` handles one request at a time: use Apache for many users.
+
 ## 5. Restrict who can reach it (tailnet policy)
 
 In the admin console → *Access controls*, grant access to the PC's HTTPS port

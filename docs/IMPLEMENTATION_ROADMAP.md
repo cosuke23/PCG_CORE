@@ -80,6 +80,9 @@ Last updated: 2026-10-30 · branch `claude/cool-wozniak-rni95k`
 - ✅ Guide, helper script, trusted-proxy support (simulated)
 - 👤 Run and validate (action list 6)
 
+- ✅ Funnel (public) helper `scripts/windows/tailscale-funnel.ps1` + `server.php` upload block under `artisan serve` (owner chose public access 2026-10-30)
+- 👤 Run `tailscale-funnel.ps1 on` on the PC (script not executed here: no Windows/PowerShell)
+
 ## Phase 11 — Documentation ✅ (living)
 
 ## Test results log
