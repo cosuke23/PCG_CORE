@@ -245,7 +245,7 @@ class AdminLoginController extends Controller
         }
 
         // command/unit-scoped HR admins work in the scoped personnel module
-        return session('admin_org_unit_id') ? 'admin.personnel.index' : 'admin.dashboard';
+        return session('admin_org_unit_id') ? 'admin.hrmis.index' : 'admin.dashboard';
     }
 
     public function logout(Request $request)

@@ -60,7 +60,7 @@ admin_users + admin_scopes (role x org_unit subtree)
 | 1 | Organisation hierarchy: table, admin tree, add/edit/move, activate/deactivate, audit, tests | **Done** |
 | 2 | Personnel master (`personnel`, `ranks`), `pcg:personnel-sync` (dry run → apply, skips missing/shared serials) | **Done** |
 | 3 | Assignments and transfers (effective-dated, history kept, no overlaps), personnel lists per unit | **Done**. Mapping legacy `mother_unit` to subordinate units waits on D4 |
-| 4 | Organisation scope on HR admin accounts + isolation tests | **Done** (scope on `admin_users.org_unit_id`). Finer roles (reviewer/approver/auditor) and a scoped dashboard: next |
+| 4 | Organisation scope on HR admin accounts + isolation tests | **Done** (scope on `admin_users.org_unit_id`). Scoped HRMIS overview **done** (`/admin/hrmis`). Finer roles (reviewer/approver/auditor): next |
 | 5 | Registration workflow (draft/return/approve, history, duplicates) | Needs D6 (approval chain) |
 | 6 | 201 file repository (categories, versions, verification, download audit) | Private storage tool done (`pcg:move-uploads`); repository next |
 | 7 | Rank reference (done, 20 ranks, no civilians) + promotion history | Promotion history next |

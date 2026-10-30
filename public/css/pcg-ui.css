@@ -1307,3 +1307,24 @@ textarea.pcg-input {
 .pcg a.pcg-btn--primary:hover { color: var(--pcg-white); text-decoration: none; }
 .pcg a.pcg-btn--secondary,
 .pcg a.pcg-btn--ghost { text-decoration: none; }
+
+/* ------------------------------------------------- HRMIS overview */
+.pcg-grid--even { grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); }
+.pcg a.pcg-stat--link { color: inherit; text-decoration: none; }
+.pcg a.pcg-stat--link:hover { border-color: var(--pcg-gray-300, #d1d5db); box-shadow: var(--pcg-shadow-md, var(--pcg-shadow-sm)); }
+.pcg-bars th[scope="row"] { font-weight: 600; width: 30%; overflow-wrap: anywhere; }
+.pcg-bars__plot { width: 55%; min-width: 96px; }
+.pcg-bars__plot-head { width: 55%; }
+.pcg-bars__bar {
+    display: block;
+    height: 10px;
+    background: var(--pcg-navy-700);
+    border-radius: 0 4px 4px 0;   /* rounded data end, square at the baseline */
+}
+.pcg-bars tr:hover .pcg-bars__bar { background: var(--pcg-navy-900); }
+.pcg-bars__num { text-align: right; white-space: nowrap; font-variant-numeric: tabular-nums; }
+.pcg-bars__pct { display: inline; margin-left: var(--pcg-space-1); }
+@media (max-width: 640px) {
+    .pcg-bars th, .pcg-bars td { padding-left: var(--pcg-space-2); padding-right: var(--pcg-space-2); }
+    .pcg-bars__pct { display: none; }
+}

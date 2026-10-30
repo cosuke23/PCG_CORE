@@ -87,7 +87,8 @@ Last updated: 2026-10-30 · branch `claude/cool-wozniak-rni95k`
 - ✅ Checkpoint 1: organisational hierarchy (`org_units`, Admin → Organization; tree, add/edit/move, activate/deactivate, cycle and duplicate-code checks, audited; 7 tests; browser-checked desktop + mobile)
 - ✅ Checkpoints 2–4: personnel master, ranks, effective-dated assignments/transfers, `pcg:personnel-sync`, command-scoped HR admins with isolation tests
 - ✅ D7 tool: `pcg:move-uploads` (copy + verify, never deletes)
-- ⬜ Next: scoped dashboard, reviewer/approver/auditor roles, registration workflow, 201 repository, promotion history
+- ✅ HRMIS overview (`/admin/hrmis`): personnel, officer/non-officer, 30-day movements, records needing attention, by unit and by rank, recent movements — all from the personnel master, limited to the admin's scope; landing page for command-scoped admins
+- ⬜ Next: reviewer/approver/auditor roles, registration workflow, 201 repository, promotion history
 - 👤 On the PC: `git pull`, back up, `php artisan migrate`, `php artisan pcg:personnel-sync` (dry run) and send the output
 
 ## Phase 11 — Documentation ✅ (living)
@@ -113,5 +114,6 @@ Last updated: 2026-10-30 · branch `claude/cool-wozniak-rni95k`
 | 2026-10-31 | Organisation module: `php artisan test` | **Passed** — 102 tests (7 new); MariaDB migrate OK; browser add-unit + confirm dialog, 0 JS/CSP errors |
 | 2026-10-31 | Personnel master + scope: `php artisan test` | **Passed** — 119 tests (MEPCOM-vs-MSSC isolation, transfers keep history, duplicates, sync dry-run/apply, move-uploads) |
 | 2026-10-31 | Browser: super admin creates MSSC person + transfer; MEPCOM-scoped admin sees 6/7, dashboard 403; crawl + all flows | **Passed** — crawl 51 ok (map tiles need internet), flows 25 + 16 + 2 |
+| 2026-10-31 | HRMIS overview: `php artisan test` | **Passed** — 122 tests (scoped figures, org-wide figures, empty state); browser desktop + 390 px, 0 JS/CSP errors, no horizontal scroll |
 | — | Real `pcg_core` data | **Blocked** — needs access on your PC |
 | — | Windows scripts, Tailscale | **Not tested** — no Windows/Tailscale in this environment |

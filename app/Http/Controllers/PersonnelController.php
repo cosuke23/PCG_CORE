@@ -30,6 +30,7 @@ class PersonnelController extends Controller
             'classification' => ['nullable', Rule::in(array_keys(Rank::CLASSIFICATIONS))],
             'status' => ['nullable', Rule::in(array_keys(Personnel::STATUSES))],
             'unassigned' => 'nullable|boolean',
+            'incomplete' => 'nullable|boolean',
         ]);
 
         $query = $this->scope->personnelQuery()->with(['rank', 'currentAssignment.orgUnit']);
@@ -47,6 +48,9 @@ class PersonnelController extends Controller
         }
         if (!empty($filters['status'])) {
             $query->where('service_status', $filters['status']);
+        }
+        if (!empty($filters['incomplete'])) {
+            $query->where(fn ($w) => $w->whereNull('rank_id')->orWhereNull('date_of_birth')->orWhereNull('date_entered_service'));
         }
         if (!empty($filters['unassigned']) && $this->scope->isOrgWide()) {
             $query->whereDoesntHave('currentAssignment');

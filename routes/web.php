@@ -221,6 +221,10 @@ Route::middleware(['admin.session', 'admin.audit'])->group(function () {
 
     // ---- super admin + HR admin, organisation-scoped modules (App\Services\OrgScope) ----
     Route::middleware('admin.role:super_admin,hr_admin')->group(function () {
+        // HRMIS overview (figures limited to the admin's scope)
+        Route::get('/admin/hrmis', [\App\Http\Controllers\HrmisDashboardController::class, 'index'])
+            ->name('admin.hrmis.index');
+
         // Organizational structure (view; changes are super admin only, below)
         Route::get('/admin/organization', [\App\Http\Controllers\OrganizationController::class, 'index'])
             ->name('admin.organization.index');

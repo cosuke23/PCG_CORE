@@ -67,6 +67,7 @@ Status key: **Verified** = passed the browser checks on the dev database ·
 | Admin accounts (super admin) | `/admin/accounts` | **New.** Create, change role, reset password / 2FA, activate/deactivate; safeguards for the last super admin. Verified |
 | Audit log (super admin) | `/admin/accounts/audit-log` | **New.** Sign-ins, failures, every admin change. Verified |
 | Organization (super admin edits, HR admin views) | `/admin/organization` | **New.** Database-driven PCG hierarchy (HQ → command → office → unit → section), effective dates, activate/deactivate (never delete), audited. Seeded: NHQ-PCG, MSSC, MEPCOM, MARSLEC. Verified |
+| HRMIS overview (super/HR admin, scoped) | `/admin/hrmis` | **New.** Figures from the personnel master only, limited to the admin's command/unit; links to filtered lists. Verified |
 | Personnel master (super/HR admin, scoped) | `/admin/personnel` | **New.** One record per serial number; list with search/filters, profile, add (duplicate checks), assign/transfer with history; limited to the admin's command/unit. Verified |
 | Admin access scope | `/admin/accounts` | **New.** HR admins can be limited to one command/unit (e.g. MEPCOM). Verified |
 | Messages (super/HR admin) | `/admin/messages` | **New.** Contact-form inbox. Verified |

@@ -47,6 +47,7 @@
                     @if ($orgWide)
                     @include('layouts.partials.nav-link', ['href' => route('admin.dashboard'), 'icon' => 'gauge-high', 'label' => 'Dashboard', 'active' => request()->routeIs('admin.dashboard')])
                     @endif
+                    @include('layouts.partials.nav-link', ['href' => route('admin.hrmis.index'), 'icon' => 'chart-column', 'label' => 'HRMIS overview', 'active' => request()->routeIs('admin.hrmis.*')])
                     @include('layouts.partials.nav-link', ['href' => route('admin.personnel.index'), 'icon' => 'id-card', 'label' => 'Personnel', 'active' => request()->routeIs('admin.personnel.*')])
                     @include('layouts.partials.nav-link', ['href' => route('admin.organization.index'), 'icon' => 'sitemap', 'label' => 'Organization', 'active' => request()->routeIs('admin.organization.*')])
                     @if ($orgWide)

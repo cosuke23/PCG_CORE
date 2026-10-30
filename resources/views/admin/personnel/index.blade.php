@@ -60,9 +60,11 @@
                             @endforeach
                         </select>
                     </div>
-                    @if (!empty($filters['unassigned']))
-                        <input type="hidden" name="unassigned" value="1">
-                    @endif
+                    @foreach (['unassigned', 'incomplete'] as $flag)
+                        @if (!empty($filters[$flag]))
+                            <input type="hidden" name="{{ $flag }}" value="1">
+                        @endif
+                    @endforeach
                     <div class="pcg-filters__actions">
                         <button type="submit" class="pcg-btn pcg-btn--secondary">Filter</button>
                         <a class="pcg-btn pcg-btn--ghost" href="{{ route('admin.personnel.index') }}">Reset</a>
@@ -73,7 +75,7 @@
 
         <section class="pcg-card pcg-mt" aria-labelledby="list-heading">
             <div class="pcg-card__header">
-                <h3 id="list-heading">{{ $personnel->total() }} {{ \Illuminate\Support\Str::plural('record', $personnel->total()) }}{{ !empty($filters['unassigned']) ? ' without assignment' : '' }}</h3>
+                <h3 id="list-heading">{{ $personnel->total() }} {{ \Illuminate\Support\Str::plural('record', $personnel->total()) }}{{ !empty($filters['unassigned']) ? ' without assignment' : '' }}{{ !empty($filters['incomplete']) ? ' needing attention (missing rank, birth date or service entry date)' : '' }}</h3>
             </div>
             @if ($personnel->isEmpty())
                 <p class="pcg-empty">No personnel match. @if (!$scopeUnit) Existing registrations are copied in with <code>php artisan pcg:personnel-sync</code>. @endif</p>
