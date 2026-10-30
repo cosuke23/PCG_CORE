@@ -118,5 +118,6 @@ Last updated: 2026-10-30 · branch `claude/cool-wozniak-rni95k`
 | 2026-10-31 | HRMIS overview: `php artisan test` | **Passed** — 122 tests (scoped figures, org-wide figures, empty state); browser desktop + 390 px, 0 JS/CSP errors, no horizontal scroll |
 | 2026-10-31 | HRMIS records modules: `php artisan test` | **Passed** — 144 tests (workflow, no self-approval, scope isolation, private/versioned/restricted documents, promotions, controlled edit, reports + CSV) |
 | 2026-10-31 | Browser: `flow-hrmis.js` (4 roles), crawl 76 pages × 7 roles, flows-admin/users/register | **Passed** — 18/18, 76 ok (map tiles need internet), 25 + 16 + 2 |
+| 2026-10-31 | MEPCOM unit import + sync mapping | **Passed** — 148 tests; dev MariaDB: 140 units imported, re-run creates nothing |
 | — | Real `pcg_core` data | **Blocked** — needs access on your PC |
 | — | Windows scripts, Tailscale | **Not tested** — no Windows/Tailscale in this environment |

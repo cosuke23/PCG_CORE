@@ -36,7 +36,7 @@ class PersonnelTest extends TestCase
                 $t->id(); $t->string('name'); $t->string('email'); $t->string('password');
                 $t->string('rank')->nullable(); $t->string('serial_number')->nullable(); $t->string('registration_type')->nullable();
                 $t->date('date_of_birth')->nullable(); $t->date('date_of_appointment')->nullable();
-                $t->string('mother_unit')->nullable(); $t->string('status')->nullable(); $t->timestamps();
+                $t->string('mother_unit')->nullable(); $t->string('sub_unit')->nullable(); $t->string('unit_assignment')->nullable(); $t->string('status')->nullable(); $t->timestamps();
             });
         }
 
