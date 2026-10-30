@@ -13,7 +13,8 @@ php artisan pcg:check         # read-only env/DB/folder health check
 php artisan pcg:hash-password # bcrypt hash for ADMIN_PASSWORD_HASH
 php artisan pcg:dev-seed      # sample data; refuses unless APP_ENV=local and DB name ends in _dev
 php artisan pcg:create-admin  # create an admin account (2FA set up at first sign-in)
-php artisan pcg:personnel-sync [--apply] [--assign-to=MEPCOM]  # copy approved registrations into the personnel master (dry run by default)
+php artisan pcg:personnel-sync [--apply] [--assign-to=MEPCOM] [--map-units=database/data/mepcom_units.json]  # copy approved registrations into the personnel master (dry run by default)
+php artisan pcg:import-org-units database/data/mepcom_units.json [--apply]  # insert-only unit import (dry run by default)
 php artisan pcg:move-uploads [--apply]  # copy uploads out of public/ into private storage (never deletes)
 php artisan migrate           # additive pcg migrations only (back up first)
 npm run build:css             # only after adding a Tailwind class not used anywhere yet

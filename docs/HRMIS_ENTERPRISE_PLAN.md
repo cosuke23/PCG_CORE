@@ -87,7 +87,7 @@ admin_users + admin_scopes (role x org_unit subtree)
 | D1 | Canonical copy: `C:\Users\HRPC\Desktop\PCG_HRMIS` (this repository). |
 | D2 | Not answered explicitly; proceeded with the recommendation (new `personnel` table, `users` stays the login). Additive only. |
 | D3 | The serial number is the unique identifier (`personnel.serial_number` UNIQUE; compared trimmed and case-insensitively). |
-| D4 | MSSC and MARSLEC unit lists: on standby. MEPCOM list import: not answered, not imported. |
+| D4 | MSSC and MARSLEC unit lists: on standby. MEPCOM list import **approved**: `database/data/mepcom_units.json` (140 units, review list `docs/MEPCOM_UNITS_PROPOSED.md`), imported with `pcg:import-org-units`. |
 | D5 | Approved. Implemented: HR admins can be limited to a command/unit; super and LMS admins stay organisation-wide. |
 | D6 | Approved: single approval, no self-approval, until the official chain is provided. |
 | D7 | Approved. `php artisan pcg:move-uploads` copies (never moves or deletes) the files; the owner switches `PCG_UPLOAD_ROOT` after checking. |
@@ -124,6 +124,6 @@ All roles except super_admin and lms_admin can be limited to a command/unit. The
 - Official approval chain per command (currently: one approval, any approver in scope, never the author).
 - Who may transfer between commands (currently organisation-wide admins only).
 - Which roles may see restricted (medical) documents.
-- Official MEPCOM, MSSC and MARSLEC subordinate unit lists (D4); other commands parked (D9).
+- MEPCOM units imported from the registration list: confirm the interpretation in `docs/MEPCOM_UNITS_PROPOSED.md`. MSSC and MARSLEC lists pending (D4); other commands parked (D9).
 - Educational background is still kept in the personnel self-service SOI (`reinlist_academic`); it is not yet shown in the HR profile.
 - Running against the real `pcg_core` data (only possible on the owner's PC).

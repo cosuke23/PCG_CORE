@@ -24,7 +24,8 @@ class PersonnelSync extends Command
         {--apply : Write the records (without it nothing is changed)}
         {--include-pending : Also copy registrations that are not approved yet}
         {--assign-to= : Org unit code for an initial assignment of the copied records, e.g. MEPCOM}
-        {--start-date= : Start date of that initial assignment (default: today)}';
+        {--start-date= : Start date of that initial assignment (default: today)}
+        {--map-units= : Unit file (e.g. database/data/mepcom_units.json): place each person at the unit they chose when registering, if it exists; otherwise at --assign-to}';
 
     protected $description = 'Copy approved registrations into the personnel master (dry run unless --apply)';
 
@@ -49,7 +50,14 @@ class PersonnelSync extends Command
             return self::FAILURE;
         }
 
-        $users = DB::table('users')->get(['id', 'name', 'email', 'rank', 'serial_number', 'registration_type', 'date_of_birth', 'date_of_appointment', 'status', 'mother_unit']);
+        $unitMap = $this->option('map-units') ? $this->loadUnitMap($this->option('map-units')) : null;
+        if ($this->option('map-units') && !$unit) {
+            $this->error('--map-units needs --assign-to (the fallback unit, e.g. MEPCOM).');
+
+            return self::FAILURE;
+        }
+
+        $users = DB::table('users')->get(['id', 'name', 'email', 'rank', 'serial_number', 'registration_type', 'date_of_birth', 'date_of_appointment', 'status', 'mother_unit', 'sub_unit', 'unit_assignment']);
         $ranks = Rank::all()->keyBy(fn ($r) => strtoupper($r->code));
 
         $byStatus = $users->groupBy(fn ($u) => strtolower(trim((string) $u->status)) ?: '(empty)')->map->count();
@@ -84,7 +92,8 @@ class PersonnelSync extends Command
             if ($rank && in_array($u->registration_type, ['officer', 'non_officer'], true) && $u->registration_type !== $rank->classification) {
                 $classMismatch++;
             }
-            $toCreate->push([$u, $serial, $rank]);
+            $target = $unit ? ($unitMap ? ($this->registeredUnit($u, $unitMap) ?? $unit) : $unit) : null;
+            $toCreate->push([$u, $serial, $rank, $target]);
         }
 
         $this->newLine();
@@ -98,6 +107,7 @@ class PersonnelSync extends Command
             ['Registration type differs from rank (rank used)', $classMismatch],
             ['Would create', $toCreate->count()],
             ['Initial assignment', $unit ? "{$unit->code} from {$startDate}" : 'none (records stay unassigned)'],
+            ['  placed at the unit chosen at registration', $unitMap ? $toCreate->filter(fn ($r) => $r[3] && $r[3]->id !== $unit->id)->count() : '-'],
         ]);
 
         if ($duplicates->isNotEmpty()) {
@@ -117,8 +127,8 @@ class PersonnelSync extends Command
             return self::SUCCESS;
         }
 
-        DB::transaction(function () use ($toCreate, $unit, $startDate) {
-            foreach ($toCreate as [$u, $serial, $rank]) {
+        DB::transaction(function () use ($toCreate, $startDate) {
+            foreach ($toCreate as [$u, $serial, $rank, $target]) {
                 // a recognised rank decides; otherwise the registration type
                 $classification = $rank?->classification
                     ?? (in_array($u->registration_type, ['officer', 'non_officer'], true) ? $u->registration_type : null);
@@ -136,13 +146,13 @@ class PersonnelSync extends Command
                     'source' => 'legacy_users',
                 ]);
 
-                if ($unit) {
+                if ($target) {
                     PersonnelAssignment::create([
                         'personnel_id' => $person->id,
-                        'org_unit_id' => $unit->id,
+                        'org_unit_id' => $target->id,
                         'start_date' => $startDate,
                         'remarks' => 'Initial placement when copied from the registration' .
-                            ($u->mother_unit ? ' (registered unit: ' . mb_substr($u->mother_unit, 0, 200) . ')' : ''),
+                            ($u->unit_assignment || $u->sub_unit ? ' (registered: ' . mb_substr(trim($u->sub_unit . ' / ' . $u->unit_assignment, ' /'), 0, 200) . ')' : ''),
                     ]);
                 }
             }
@@ -151,5 +161,47 @@ class PersonnelSync extends Command
         $this->info("Created {$toCreate->count()} personnel records.");
 
         return self::SUCCESS;
+    }
+
+    /**
+     * Lookup built from the reviewed unit file: unit code => [source text => org unit code].
+     * Registration stores sub_unit = "<unit name> (<CODE>)" and
+     * unit_assignment = "<sub level> - <entry>".
+     */
+    private function loadUnitMap(string $file): array
+    {
+        $path = is_file($file) ? $file : base_path($file);
+        $data = json_decode((string) @file_get_contents($path), true);
+        $map = [];
+        $collect = function (array $nodes, string $unitCode) use (&$collect, &$map) {
+            foreach ($nodes as $n) {
+                if (!empty($n['source'])) {
+                    $map[$unitCode][mb_strtolower(trim($n['source']))] = $n['code'];
+                }
+                // headquarters / group levels are chosen as the "sub level" in the form
+                $map[$unitCode][mb_strtolower(trim($n['code']))] = $n['code'];
+                $map[$unitCode][mb_strtolower(str_replace(['MEP Group ', 'Headquarters, '], ['MEPGroup ', 'H'], $n['name']))] = $n['code'];
+                $collect($n['children'] ?? [], $unitCode);
+            }
+        };
+        foreach ($data['units'] ?? [] as $unit) {
+            $map[$unit['code']]['@unit'] = $unit['code'];
+            $collect($unit['children'] ?? [], $unit['code']);
+        }
+
+        return $map;
+    }
+
+    private function registeredUnit(object $u, array $map): ?OrgUnit
+    {
+        if (!preg_match('/\(([^)]+)\)\s*$/', (string) $u->sub_unit, $m) || !isset($map[$m[1]])) {
+            return null;
+        }
+        $lookup = $map[$m[1]];
+        [$sub, $entry] = array_pad(array_map('trim', explode(' - ', (string) $u->unit_assignment, 2)), 2, '');
+
+        $code = $lookup[mb_strtolower($entry)] ?? $lookup[mb_strtolower($sub)] ?? $lookup['@unit'];
+
+        return OrgUnit::where('code', $code)->where('is_active', true)->first();
     }
 }

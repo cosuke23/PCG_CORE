@@ -1,0 +1,1126 @@
+{
+  "parent": "MEPCOM",
+  "note": "Proposed MEPCOM subordinate units derived from the unit list in resources/views/pages/register.blade.php (\"based on your CSV\"). Grouping labels of that list (e.g. \"Operational Support Unit\", \"MEPLEU\", \"OSRU\") are not separate units. Review, then import with php artisan pcg:import-org-units (dry run first).",
+  "units": [
+    {
+      "code": "MEPLEF",
+      "name": "Marine Environmental Protection Law Enforcement Force",
+      "type": "unit",
+      "description": "Operational support unit of MEPCOM. Imported from the MEPCOM unit list in the registration form (owner-approved 2026-10-31). Verify against the official organisation order.",
+      "children": [
+        {
+          "code": "HMEPLEF",
+          "name": "Headquarters, MEPLEF",
+          "type": "office",
+          "description": "Imported from the MEPCOM unit list in the registration form (owner-approved 2026-10-31). Verify against the official organisation order.",
+          "children": [
+            {
+              "code": "MEPLEF O/C",
+              "name": "Office of the Commander, MEPLEF",
+              "type": "section",
+              "description": "Imported from the MEPCOM unit list in the registration form (owner-approved 2026-10-31). Verify against the official organisation order.",
+              "source": "O/C, MEPLEF",
+              "children": []
+            },
+            {
+              "code": "MEPLEF O/DC",
+              "name": "Office of the Deputy Commander, MEPLEF",
+              "type": "section",
+              "description": "Imported from the MEPCOM unit list in the registration form (owner-approved 2026-10-31). Verify against the official organisation order.",
+              "source": "O/DC, MEPLEF",
+              "children": []
+            },
+            {
+              "code": "MEPLEF O/CS",
+              "name": "Office of the Chief of Staff, MEPLEF",
+              "type": "section",
+              "description": "Imported from the MEPCOM unit list in the registration form (owner-approved 2026-10-31). Verify against the official organisation order.",
+              "source": "O/CS, MEPLEF",
+              "children": []
+            },
+            {
+              "code": "MEPLEF LEF-1",
+              "name": "LEF-1",
+              "type": "section",
+              "description": "Imported from the MEPCOM unit list in the registration form (owner-approved 2026-10-31). Verify against the official organisation order.",
+              "source": "LEF-1",
+              "children": []
+            },
+            {
+              "code": "MEPLEF LEF-2",
+              "name": "LEF-2",
+              "type": "section",
+              "description": "Imported from the MEPCOM unit list in the registration form (owner-approved 2026-10-31). Verify against the official organisation order.",
+              "source": "LEF-2",
+              "children": []
+            },
+            {
+              "code": "MEPLEF LEF-3",
+              "name": "LEF-3",
+              "type": "section",
+              "description": "Imported from the MEPCOM unit list in the registration form (owner-approved 2026-10-31). Verify against the official organisation order.",
+              "source": "LEF-3",
+              "children": []
+            },
+            {
+              "code": "MEPLEF LEF-4",
+              "name": "LEF-4",
+              "type": "section",
+              "description": "Imported from the MEPCOM unit list in the registration form (owner-approved 2026-10-31). Verify against the official organisation order.",
+              "source": "LEF-4",
+              "children": []
+            },
+            {
+              "code": "MEPLEF LEF-5",
+              "name": "LEF-5",
+              "type": "section",
+              "description": "Imported from the MEPCOM unit list in the registration form (owner-approved 2026-10-31). Verify against the official organisation order.",
+              "source": "LEF-5",
+              "children": []
+            },
+            {
+              "code": "MEPLEF LEF-6",
+              "name": "LEF-6",
+              "type": "section",
+              "description": "Imported from the MEPCOM unit list in the registration form (owner-approved 2026-10-31). Verify against the official organisation order.",
+              "source": "LEF-6",
+              "children": []
+            },
+            {
+              "code": "MEPLEF LEF-11",
+              "name": "LEF-11",
+              "type": "section",
+              "description": "Imported from the MEPCOM unit list in the registration form (owner-approved 2026-10-31). Verify against the official organisation order.",
+              "source": "LEF-11",
+              "children": []
+            },
+            {
+              "code": "MEPLEF LEF-12",
+              "name": "LEF-12",
+              "type": "section",
+              "description": "Imported from the MEPCOM unit list in the registration form (owner-approved 2026-10-31). Verify against the official organisation order.",
+              "source": "LEF-12",
+              "children": []
+            }
+          ]
+        },
+        {
+          "code": "MEPLEF MICD",
+          "name": "MEP Inspection and Compliance Division",
+          "type": "office",
+          "description": "Imported from the MEPCOM unit list in the registration form (owner-approved 2026-10-31). Verify against the official organisation order.",
+          "source": "MEP INSPECTION AND COMPLIANCE DIVISION",
+          "children": []
+        },
+        {
+          "code": "MEPLEF MEICTSD",
+          "name": "MEP Enforcement Information & Communications Technology System Division",
+          "type": "office",
+          "description": "Imported from the MEPCOM unit list in the registration form (owner-approved 2026-10-31). Verify against the official organisation order.",
+          "source": "MEP ENFORCEMENT INFORMATION & COMMUNICATIONS TECHNOLOGY SYSTEM DIVISION",
+          "children": []
+        },
+        {
+          "code": "MEPLEF APAD",
+          "name": "Adjudication and Prosecution Assistance Division",
+          "type": "office",
+          "description": "Imported from the MEPCOM unit list in the registration form (owner-approved 2026-10-31). Verify against the official organisation order.",
+          "source": "ADJUDICATION AND PROSECUTION ASSISTANCE DIVISION",
+          "children": []
+        },
+        {
+          "code": "MEPLEF CEOD",
+          "name": "Community Engagement Outreach Division",
+          "type": "office",
+          "description": "Imported from the MEPCOM unit list in the registration form (owner-approved 2026-10-31). Verify against the official organisation order.",
+          "source": "COMMUNITY ENGAGEMENT OUTREACH DIVISION",
+          "children": []
+        },
+        {
+          "code": "MEPLEF HSG",
+          "name": "Headquarters Support Group",
+          "type": "office",
+          "description": "Imported from the MEPCOM unit list in the registration form (owner-approved 2026-10-31). Verify against the official organisation order.",
+          "source": "HEADQUARTERS SUPPORT GROUP",
+          "children": []
+        },
+        {
+          "code": "MEPLEF MPO",
+          "name": "MEPLEF Procurement Office",
+          "type": "office",
+          "description": "Imported from the MEPCOM unit list in the registration form (owner-approved 2026-10-31). Verify against the official organisation order.",
+          "source": "MEPLEF PROCUREMENT OFFICE",
+          "children": []
+        },
+        {
+          "code": "MEPLEU NCR-CL",
+          "name": "MEPLEU NCR-CL",
+          "type": "unit",
+          "description": "Imported from the MEPCOM unit list in the registration form (owner-approved 2026-10-31). Verify against the official organisation order.",
+          "source": "MEPLEU NCR-CL",
+          "children": []
+        },
+        {
+          "code": "MEPLEU NWLZN",
+          "name": "MEPLEU NWLZN",
+          "type": "unit",
+          "description": "Imported from the MEPCOM unit list in the registration form (owner-approved 2026-10-31). Verify against the official organisation order.",
+          "source": "MEPLEU NWLZN",
+          "children": []
+        },
+        {
+          "code": "MEPLEU NELZN",
+          "name": "MEPLEU NELZN",
+          "type": "unit",
+          "description": "Imported from the MEPCOM unit list in the registration form (owner-approved 2026-10-31). Verify against the official organisation order.",
+          "source": "MEPLEU NELZN",
+          "children": []
+        },
+        {
+          "code": "MEPLEU STL",
+          "name": "MEPLEU STL",
+          "type": "unit",
+          "description": "Imported from the MEPCOM unit list in the registration form (owner-approved 2026-10-31). Verify against the official organisation order.",
+          "source": "MEPLEU STL",
+          "children": []
+        },
+        {
+          "code": "MEPLEU BCL",
+          "name": "MEPLEU BCL",
+          "type": "unit",
+          "description": "Imported from the MEPCOM unit list in the registration form (owner-approved 2026-10-31). Verify against the official organisation order.",
+          "source": "MEPLEU BCL",
+          "children": []
+        },
+        {
+          "code": "MEPLEU PAL",
+          "name": "MEPLEU PAL",
+          "type": "unit",
+          "description": "Imported from the MEPCOM unit list in the registration form (owner-approved 2026-10-31). Verify against the official organisation order.",
+          "source": "MEPLEU PAL",
+          "children": []
+        },
+        {
+          "code": "MEPLEU KIG",
+          "name": "MEPLEU KIG",
+          "type": "unit",
+          "description": "Imported from the MEPCOM unit list in the registration form (owner-approved 2026-10-31). Verify against the official organisation order.",
+          "source": "MEPLEU KIG",
+          "children": []
+        },
+        {
+          "code": "MEPLEU CV",
+          "name": "MEPLEU CV",
+          "type": "unit",
+          "description": "Imported from the MEPCOM unit list in the registration form (owner-approved 2026-10-31). Verify against the official organisation order.",
+          "source": "MEPLEU CV",
+          "children": []
+        },
+        {
+          "code": "MEPLEU EV",
+          "name": "MEPLEU EV",
+          "type": "unit",
+          "description": "Imported from the MEPCOM unit list in the registration form (owner-approved 2026-10-31). Verify against the official organisation order.",
+          "source": "MEPLEU EV",
+          "children": []
+        },
+        {
+          "code": "MEPLEU WV",
+          "name": "MEPLEU WV",
+          "type": "unit",
+          "description": "Imported from the MEPCOM unit list in the registration form (owner-approved 2026-10-31). Verify against the official organisation order.",
+          "source": "MEPLEU WV",
+          "children": []
+        },
+        {
+          "code": "MEPLEU SV",
+          "name": "MEPLEU SV",
+          "type": "unit",
+          "description": "Imported from the MEPCOM unit list in the registration form (owner-approved 2026-10-31). Verify against the official organisation order.",
+          "source": "MEPLEU SV",
+          "children": []
+        },
+        {
+          "code": "MEPLEU NM",
+          "name": "MEPLEU NM",
+          "type": "unit",
+          "description": "Imported from the MEPCOM unit list in the registration form (owner-approved 2026-10-31). Verify against the official organisation order.",
+          "source": "MEPLEU NM",
+          "children": []
+        },
+        {
+          "code": "MEPLEU NEM",
+          "name": "MEPLEU NEM",
+          "type": "unit",
+          "description": "Imported from the MEPCOM unit list in the registration form (owner-approved 2026-10-31). Verify against the official organisation order.",
+          "source": "MEPLEU NEM",
+          "children": []
+        },
+        {
+          "code": "MEPLEU SWM",
+          "name": "MEPLEU SWM",
+          "type": "unit",
+          "description": "Imported from the MEPCOM unit list in the registration form (owner-approved 2026-10-31). Verify against the official organisation order.",
+          "source": "MEPLEU SWM",
+          "children": []
+        },
+        {
+          "code": "MEPLEU SM",
+          "name": "MEPLEU SM",
+          "type": "unit",
+          "description": "Imported from the MEPCOM unit list in the registration form (owner-approved 2026-10-31). Verify against the official organisation order.",
+          "source": "MEPLEU SM",
+          "children": []
+        },
+        {
+          "code": "MEPLEU BARMM",
+          "name": "MEPLEU BARMM",
+          "type": "unit",
+          "description": "Imported from the MEPCOM unit list in the registration form (owner-approved 2026-10-31). Verify against the official organisation order.",
+          "source": "MEPLEU BARMM",
+          "children": []
+        }
+      ]
+    },
+    {
+      "code": "NOCOP",
+      "name": "National Operations Center for Oil Pollution",
+      "type": "unit",
+      "description": "Operational support unit of MEPCOM. Imported from the MEPCOM unit list in the registration form (owner-approved 2026-10-31). Verify against the official organisation order.",
+      "children": [
+        {
+          "code": "HNOCOP",
+          "name": "Headquarters, NOCOP",
+          "type": "office",
+          "description": "Imported from the MEPCOM unit list in the registration form (owner-approved 2026-10-31). Verify against the official organisation order.",
+          "children": [
+            {
+              "code": "NOCOP O/D",
+              "name": "Office of the Director, NOCOP",
+              "type": "section",
+              "description": "Imported from the MEPCOM unit list in the registration form (owner-approved 2026-10-31). Verify against the official organisation order.",
+              "source": "O/D, NOCOP",
+              "children": []
+            },
+            {
+              "code": "NOCOP O/DD",
+              "name": "Office of the Deputy Director, NOCOP",
+              "type": "section",
+              "description": "Imported from the MEPCOM unit list in the registration form (owner-approved 2026-10-31). Verify against the official organisation order.",
+              "source": "O/DD, NOCOP",
+              "children": []
+            },
+            {
+              "code": "NOCOP O/CS",
+              "name": "Office of the Chief of Staff, NOCOP",
+              "type": "section",
+              "description": "Imported from the MEPCOM unit list in the registration form (owner-approved 2026-10-31). Verify against the official organisation order.",
+              "source": "O/CS, NOCOP",
+              "children": []
+            },
+            {
+              "code": "NOCOP N-1",
+              "name": "N-1, Adjutant",
+              "type": "section",
+              "description": "Imported from the MEPCOM unit list in the registration form (owner-approved 2026-10-31). Verify against the official organisation order.",
+              "source": "N-1, Adjutant",
+              "children": []
+            },
+            {
+              "code": "NOCOP N-2",
+              "name": "N-2",
+              "type": "section",
+              "description": "Imported from the MEPCOM unit list in the registration form (owner-approved 2026-10-31). Verify against the official organisation order.",
+              "source": "N-2",
+              "children": []
+            },
+            {
+              "code": "NOCOP N-3",
+              "name": "N-3",
+              "type": "section",
+              "description": "Imported from the MEPCOM unit list in the registration form (owner-approved 2026-10-31). Verify against the official organisation order.",
+              "source": "N-3",
+              "children": []
+            },
+            {
+              "code": "NOCOP N-4",
+              "name": "N-4",
+              "type": "section",
+              "description": "Imported from the MEPCOM unit list in the registration form (owner-approved 2026-10-31). Verify against the official organisation order.",
+              "source": "N-4",
+              "children": []
+            },
+            {
+              "code": "NOCOP N-5",
+              "name": "N-5",
+              "type": "section",
+              "description": "Imported from the MEPCOM unit list in the registration form (owner-approved 2026-10-31). Verify against the official organisation order.",
+              "source": "N-5",
+              "children": []
+            },
+            {
+              "code": "NOCOP N-6",
+              "name": "N-6",
+              "type": "section",
+              "description": "Imported from the MEPCOM unit list in the registration form (owner-approved 2026-10-31). Verify against the official organisation order.",
+              "source": "N-6",
+              "children": []
+            },
+            {
+              "code": "NOCOP N-11",
+              "name": "N-11",
+              "type": "section",
+              "description": "Imported from the MEPCOM unit list in the registration form (owner-approved 2026-10-31). Verify against the official organisation order.",
+              "source": "N-11",
+              "children": []
+            },
+            {
+              "code": "NOCOP N-12",
+              "name": "N-12",
+              "type": "section",
+              "description": "Imported from the MEPCOM unit list in the registration form (owner-approved 2026-10-31). Verify against the official organisation order.",
+              "source": "N-12",
+              "children": []
+            }
+          ]
+        },
+        {
+          "code": "NOCOP MPRRAC",
+          "name": "Marine Pollution Response Risk Assessment Center",
+          "type": "office",
+          "description": "Imported from the MEPCOM unit list in the registration form (owner-approved 2026-10-31). Verify against the official organisation order.",
+          "source": "Marine Pollution Response Risk Assessment Center",
+          "children": []
+        },
+        {
+          "code": "NOCOP NOPRC",
+          "name": "National Oil Pollution Response Center",
+          "type": "office",
+          "description": "Imported from the MEPCOM unit list in the registration form (owner-approved 2026-10-31). Verify against the official organisation order.",
+          "source": "National Oil Pollution Response Center",
+          "children": []
+        },
+        {
+          "code": "NOCOP MPRC",
+          "name": "Marine Pollutant Response Center",
+          "type": "office",
+          "description": "Imported from the MEPCOM unit list in the registration form (owner-approved 2026-10-31). Verify against the official organisation order.",
+          "source": "Marine Pollutant Response Center",
+          "children": []
+        },
+        {
+          "code": "NOCOP MCC",
+          "name": "MARPOL Coordinating Center",
+          "type": "office",
+          "description": "Imported from the MEPCOM unit list in the registration form (owner-approved 2026-10-31). Verify against the official organisation order.",
+          "source": "MARPOL Coordinating Center",
+          "children": []
+        },
+        {
+          "code": "NOCOP NCC",
+          "name": "NOCOP Communications Center",
+          "type": "office",
+          "description": "Imported from the MEPCOM unit list in the registration form (owner-approved 2026-10-31). Verify against the official organisation order.",
+          "source": "NOCOP Communications Center",
+          "children": []
+        },
+        {
+          "code": "NOCOP BHSG",
+          "name": "BICIO Headquarters Support Group",
+          "type": "office",
+          "description": "Imported from the MEPCOM unit list in the registration form (owner-approved 2026-10-31). Verify against the official organisation order.",
+          "source": "BICIO Headquarters Support Group",
+          "children": []
+        },
+        {
+          "code": "NOCOP NPO",
+          "name": "NOCOP Procurement Office",
+          "type": "office",
+          "description": "Imported from the MEPCOM unit list in the registration form (owner-approved 2026-10-31). Verify against the official organisation order.",
+          "source": "NOCOP Procurement Office",
+          "children": []
+        },
+        {
+          "code": "OSRU NCR-CL",
+          "name": "OSRU NCR-CL",
+          "type": "unit",
+          "description": "Imported from the MEPCOM unit list in the registration form (owner-approved 2026-10-31). Verify against the official organisation order.",
+          "source": "OSRU NCR-CL",
+          "children": []
+        },
+        {
+          "code": "OSRU NWLZN",
+          "name": "OSRU NWLZN",
+          "type": "unit",
+          "description": "Imported from the MEPCOM unit list in the registration form (owner-approved 2026-10-31). Verify against the official organisation order.",
+          "source": "OSRU NWLZN",
+          "children": []
+        },
+        {
+          "code": "OSRU NELZN",
+          "name": "OSRU NELZN",
+          "type": "unit",
+          "description": "Imported from the MEPCOM unit list in the registration form (owner-approved 2026-10-31). Verify against the official organisation order.",
+          "source": "OSRU NELZN",
+          "children": []
+        },
+        {
+          "code": "OSRU STL",
+          "name": "OSRU STL",
+          "type": "unit",
+          "description": "Imported from the MEPCOM unit list in the registration form (owner-approved 2026-10-31). Verify against the official organisation order.",
+          "source": "OSRU STL",
+          "children": []
+        },
+        {
+          "code": "OSRU BCL",
+          "name": "OSRU BCL",
+          "type": "unit",
+          "description": "Imported from the MEPCOM unit list in the registration form (owner-approved 2026-10-31). Verify against the official organisation order.",
+          "source": "OSRU BCL",
+          "children": []
+        },
+        {
+          "code": "OSRU PAL",
+          "name": "OSRU PAL",
+          "type": "unit",
+          "description": "Imported from the MEPCOM unit list in the registration form (owner-approved 2026-10-31). Verify against the official organisation order.",
+          "source": "OSRU PAL",
+          "children": []
+        },
+        {
+          "code": "OSRU KIG",
+          "name": "OSRU KIG",
+          "type": "unit",
+          "description": "Imported from the MEPCOM unit list in the registration form (owner-approved 2026-10-31). Verify against the official organisation order.",
+          "source": "OSRU KIG",
+          "children": []
+        },
+        {
+          "code": "OSRU CV",
+          "name": "OSRU CV",
+          "type": "unit",
+          "description": "Imported from the MEPCOM unit list in the registration form (owner-approved 2026-10-31). Verify against the official organisation order.",
+          "source": "OSRU CV",
+          "children": []
+        },
+        {
+          "code": "OSRU EV",
+          "name": "OSRU EV",
+          "type": "unit",
+          "description": "Imported from the MEPCOM unit list in the registration form (owner-approved 2026-10-31). Verify against the official organisation order.",
+          "source": "OSRU EV",
+          "children": []
+        },
+        {
+          "code": "OSRU WV",
+          "name": "OSRU WV",
+          "type": "unit",
+          "description": "Imported from the MEPCOM unit list in the registration form (owner-approved 2026-10-31). Verify against the official organisation order.",
+          "source": "OSRU WV",
+          "children": []
+        },
+        {
+          "code": "OSRU SV",
+          "name": "OSRU SV",
+          "type": "unit",
+          "description": "Imported from the MEPCOM unit list in the registration form (owner-approved 2026-10-31). Verify against the official organisation order.",
+          "source": "OSRU SV",
+          "children": []
+        },
+        {
+          "code": "OSRU NM",
+          "name": "OSRU NM",
+          "type": "unit",
+          "description": "Imported from the MEPCOM unit list in the registration form (owner-approved 2026-10-31). Verify against the official organisation order.",
+          "source": "OSRU NM",
+          "children": []
+        },
+        {
+          "code": "OSRU NEM",
+          "name": "OSRU NEM",
+          "type": "unit",
+          "description": "Imported from the MEPCOM unit list in the registration form (owner-approved 2026-10-31). Verify against the official organisation order.",
+          "source": "OSRU NEM",
+          "children": []
+        },
+        {
+          "code": "OSRU SWM",
+          "name": "OSRU SWM",
+          "type": "unit",
+          "description": "Imported from the MEPCOM unit list in the registration form (owner-approved 2026-10-31). Verify against the official organisation order.",
+          "source": "OSRU SWM",
+          "children": []
+        },
+        {
+          "code": "OSRU SM",
+          "name": "OSRU SM",
+          "type": "unit",
+          "description": "Imported from the MEPCOM unit list in the registration form (owner-approved 2026-10-31). Verify against the official organisation order.",
+          "source": "OSRU SM",
+          "children": []
+        },
+        {
+          "code": "OSRU BARMM",
+          "name": "OSRU BARMM",
+          "type": "unit",
+          "description": "Imported from the MEPCOM unit list in the registration form (owner-approved 2026-10-31). Verify against the official organisation order.",
+          "source": "OSRU BARMM",
+          "children": []
+        }
+      ]
+    },
+    {
+      "code": "MSFIS",
+      "name": "Marine Science Forensic Investigation Service",
+      "type": "unit",
+      "description": "Operational support unit of MEPCOM. Imported from the MEPCOM unit list in the registration form (owner-approved 2026-10-31). Verify against the official organisation order.",
+      "children": [
+        {
+          "code": "HMSFIS",
+          "name": "Headquarters, MSFIS",
+          "type": "office",
+          "description": "Imported from the MEPCOM unit list in the registration form (owner-approved 2026-10-31). Verify against the official organisation order.",
+          "children": [
+            {
+              "code": "MSFIS O/C",
+              "name": "Office of the Commander, MSFIS",
+              "type": "section",
+              "description": "Imported from the MEPCOM unit list in the registration form (owner-approved 2026-10-31). Verify against the official organisation order.",
+              "source": "O/C, MSFIS",
+              "children": []
+            },
+            {
+              "code": "MSFIS O/DC",
+              "name": "Office of the Deputy Commander, MSFIS",
+              "type": "section",
+              "description": "Imported from the MEPCOM unit list in the registration form (owner-approved 2026-10-31). Verify against the official organisation order.",
+              "source": "O/DC, MSFIS",
+              "children": []
+            },
+            {
+              "code": "MSFIS O/CS",
+              "name": "Office of the Chief of Staff, MSFIS",
+              "type": "section",
+              "description": "Imported from the MEPCOM unit list in the registration form (owner-approved 2026-10-31). Verify against the official organisation order.",
+              "source": "O/CS, MSFIS",
+              "children": []
+            },
+            {
+              "code": "MSFIS S-1",
+              "name": "S-1",
+              "type": "section",
+              "description": "Imported from the MEPCOM unit list in the registration form (owner-approved 2026-10-31). Verify against the official organisation order.",
+              "source": "S-1",
+              "children": []
+            },
+            {
+              "code": "MSFIS S-2",
+              "name": "S-2",
+              "type": "section",
+              "description": "Imported from the MEPCOM unit list in the registration form (owner-approved 2026-10-31). Verify against the official organisation order.",
+              "source": "S-2",
+              "children": []
+            },
+            {
+              "code": "MSFIS S-3",
+              "name": "S-3",
+              "type": "section",
+              "description": "Imported from the MEPCOM unit list in the registration form (owner-approved 2026-10-31). Verify against the official organisation order.",
+              "source": "S-3",
+              "children": []
+            },
+            {
+              "code": "MSFIS S-4",
+              "name": "S-4",
+              "type": "section",
+              "description": "Imported from the MEPCOM unit list in the registration form (owner-approved 2026-10-31). Verify against the official organisation order.",
+              "source": "S-4",
+              "children": []
+            },
+            {
+              "code": "MSFIS S-5",
+              "name": "S-5",
+              "type": "section",
+              "description": "Imported from the MEPCOM unit list in the registration form (owner-approved 2026-10-31). Verify against the official organisation order.",
+              "source": "S-5",
+              "children": []
+            },
+            {
+              "code": "MSFIS S-6",
+              "name": "S-6",
+              "type": "section",
+              "description": "Imported from the MEPCOM unit list in the registration form (owner-approved 2026-10-31). Verify against the official organisation order.",
+              "source": "S-6",
+              "children": []
+            },
+            {
+              "code": "MSFIS S-11",
+              "name": "S-11",
+              "type": "section",
+              "description": "Imported from the MEPCOM unit list in the registration form (owner-approved 2026-10-31). Verify against the official organisation order.",
+              "source": "S-11",
+              "children": []
+            },
+            {
+              "code": "MSFIS S-12",
+              "name": "S-12",
+              "type": "section",
+              "description": "Imported from the MEPCOM unit list in the registration form (owner-approved 2026-10-31). Verify against the official organisation order.",
+              "source": "S-12",
+              "children": []
+            }
+          ]
+        },
+        {
+          "code": "MSFIS FSD",
+          "name": "Field Scientific Division",
+          "type": "office",
+          "description": "Imported from the MEPCOM unit list in the registration form (owner-approved 2026-10-31). Verify against the official organisation order.",
+          "source": "Field Scientific Division",
+          "children": []
+        },
+        {
+          "code": "MSFIS MSUID",
+          "name": "Marine Science Underwater Investigation Division",
+          "type": "office",
+          "description": "Imported from the MEPCOM unit list in the registration form (owner-approved 2026-10-31). Verify against the official organisation order.",
+          "source": "Marine Science Underwater Investigation Division",
+          "children": []
+        },
+        {
+          "code": "MSFIS MLC",
+          "name": "MSFIS Laboratory Center",
+          "type": "office",
+          "description": "Imported from the MEPCOM unit list in the registration form (owner-approved 2026-10-31). Verify against the official organisation order.",
+          "source": "MSFIS Laboratory Center",
+          "children": []
+        },
+        {
+          "code": "MSFIS MSC",
+          "name": "Marine Science Custody, Receiving and Releasing Division",
+          "type": "office",
+          "description": "Imported from the MEPCOM unit list in the registration form (owner-approved 2026-10-31). Verify against the official organisation order.",
+          "source": "Marine Science Custody, Receiving and Releasing Division",
+          "children": []
+        },
+        {
+          "code": "MSFIS FID",
+          "name": "Forensic and Investigation Division",
+          "type": "office",
+          "description": "Imported from the MEPCOM unit list in the registration form (owner-approved 2026-10-31). Verify against the official organisation order.",
+          "source": "Forensic and Investigation Division",
+          "children": []
+        },
+        {
+          "code": "MSFIS RDD",
+          "name": "Research and Development Division",
+          "type": "office",
+          "description": "Imported from the MEPCOM unit list in the registration form (owner-approved 2026-10-31). Verify against the official organisation order.",
+          "source": "Research and Development Division",
+          "children": []
+        },
+        {
+          "code": "MSFIS MSHSG",
+          "name": "MSFI Service Headquarter Support Group",
+          "type": "office",
+          "description": "Imported from the MEPCOM unit list in the registration form (owner-approved 2026-10-31). Verify against the official organisation order.",
+          "source": "MSFI Service Headquarter Support Group",
+          "children": []
+        },
+        {
+          "code": "MSFIS MPO",
+          "name": "MSFIS Procurement Office",
+          "type": "office",
+          "description": "Imported from the MEPCOM unit list in the registration form (owner-approved 2026-10-31). Verify against the official organisation order.",
+          "source": "MSFIS Procurement Office",
+          "children": []
+        },
+        {
+          "code": "MSFIU NCR-CL",
+          "name": "MSFIU NCR-CL",
+          "type": "unit",
+          "description": "Imported from the MEPCOM unit list in the registration form (owner-approved 2026-10-31). Verify against the official organisation order.",
+          "source": "MSFIU NCR-CL",
+          "children": []
+        },
+        {
+          "code": "MSFIU NWLZN",
+          "name": "MSFIU NWLZN",
+          "type": "unit",
+          "description": "Imported from the MEPCOM unit list in the registration form (owner-approved 2026-10-31). Verify against the official organisation order.",
+          "source": "MSFIU NWLZN",
+          "children": []
+        },
+        {
+          "code": "MSFIU NELZN",
+          "name": "MSFIU NELZN",
+          "type": "unit",
+          "description": "Imported from the MEPCOM unit list in the registration form (owner-approved 2026-10-31). Verify against the official organisation order.",
+          "source": "MSFIU NELZN",
+          "children": []
+        },
+        {
+          "code": "MSFIU STL",
+          "name": "MSFIU STL",
+          "type": "unit",
+          "description": "Imported from the MEPCOM unit list in the registration form (owner-approved 2026-10-31). Verify against the official organisation order.",
+          "source": "MSFIU STL",
+          "children": []
+        },
+        {
+          "code": "MSFIU BCL",
+          "name": "MSFIU BCL",
+          "type": "unit",
+          "description": "Imported from the MEPCOM unit list in the registration form (owner-approved 2026-10-31). Verify against the official organisation order.",
+          "source": "MSFIU BCL",
+          "children": []
+        },
+        {
+          "code": "MSFIU PAL",
+          "name": "MSFIU PAL",
+          "type": "unit",
+          "description": "Imported from the MEPCOM unit list in the registration form (owner-approved 2026-10-31). Verify against the official organisation order.",
+          "source": "MSFIU PAL",
+          "children": []
+        },
+        {
+          "code": "MSFIU KIG",
+          "name": "MSFIU KIG",
+          "type": "unit",
+          "description": "Imported from the MEPCOM unit list in the registration form (owner-approved 2026-10-31). Verify against the official organisation order.",
+          "source": "MSFIU KIG",
+          "children": []
+        },
+        {
+          "code": "MSFIU CV",
+          "name": "MSFIU CV",
+          "type": "unit",
+          "description": "Imported from the MEPCOM unit list in the registration form (owner-approved 2026-10-31). Verify against the official organisation order.",
+          "source": "MSFIU CV",
+          "children": []
+        },
+        {
+          "code": "MSFIU EV",
+          "name": "MSFIU EV",
+          "type": "unit",
+          "description": "Imported from the MEPCOM unit list in the registration form (owner-approved 2026-10-31). Verify against the official organisation order.",
+          "source": "MSFIU EV",
+          "children": []
+        },
+        {
+          "code": "MSFIU WV",
+          "name": "MSFIU WV",
+          "type": "unit",
+          "description": "Imported from the MEPCOM unit list in the registration form (owner-approved 2026-10-31). Verify against the official organisation order.",
+          "source": "MSFIU WV",
+          "children": []
+        },
+        {
+          "code": "MSFIU SV",
+          "name": "MSFIU SV",
+          "type": "unit",
+          "description": "Imported from the MEPCOM unit list in the registration form (owner-approved 2026-10-31). Verify against the official organisation order.",
+          "source": "MSFIU SV",
+          "children": []
+        },
+        {
+          "code": "MSFIU NM",
+          "name": "MSFIU NM",
+          "type": "unit",
+          "description": "Imported from the MEPCOM unit list in the registration form (owner-approved 2026-10-31). Verify against the official organisation order.",
+          "source": "MSFIU NM",
+          "children": []
+        },
+        {
+          "code": "MSFIU NEM",
+          "name": "MSFIU NEM",
+          "type": "unit",
+          "description": "Imported from the MEPCOM unit list in the registration form (owner-approved 2026-10-31). Verify against the official organisation order.",
+          "source": "MSFIU NEM",
+          "children": []
+        },
+        {
+          "code": "MSFIU SWM",
+          "name": "MSFIU SWM",
+          "type": "unit",
+          "description": "Imported from the MEPCOM unit list in the registration form (owner-approved 2026-10-31). Verify against the official organisation order.",
+          "source": "MSFIU SWM",
+          "children": []
+        },
+        {
+          "code": "MSFIU SM",
+          "name": "MSFIU SM",
+          "type": "unit",
+          "description": "Imported from the MEPCOM unit list in the registration form (owner-approved 2026-10-31). Verify against the official organisation order.",
+          "source": "MSFIU SM",
+          "children": []
+        },
+        {
+          "code": "MSFIU BARMM",
+          "name": "MSFIU BARMM",
+          "type": "unit",
+          "description": "Imported from the MEPCOM unit list in the registration form (owner-approved 2026-10-31). Verify against the official organisation order.",
+          "source": "MSFIU BARMM",
+          "children": []
+        }
+      ]
+    },
+    {
+      "code": "MEPRCGS",
+      "name": "Marine Environmental Protection Regulatory Compliance and Governance Service",
+      "type": "unit",
+      "description": "Administrative support unit of MEPCOM. Imported from the MEPCOM unit list in the registration form (owner-approved 2026-10-31). Verify against the official organisation order.",
+      "children": [
+        {
+          "code": "MEPRCGS O/D",
+          "name": "Office of the Director, MEP RCGS",
+          "type": "section",
+          "description": "Imported from the MEPCOM unit list in the registration form (owner-approved 2026-10-31). Verify against the official organisation order.",
+          "source": "O/D, MEP RCGS",
+          "children": []
+        },
+        {
+          "code": "MEPRCGS O/DD",
+          "name": "Office of the Deputy Director, MEP RCGS",
+          "type": "section",
+          "description": "Imported from the MEPCOM unit list in the registration form (owner-approved 2026-10-31). Verify against the official organisation order.",
+          "source": "O/DD, MEP RCGS",
+          "children": []
+        },
+        {
+          "code": "MEPRCGS ARMB",
+          "name": "Administrative and Resource Management Branch",
+          "type": "office",
+          "description": "Imported from the MEPCOM unit list in the registration form (owner-approved 2026-10-31). Verify against the official organisation order.",
+          "source": "Administrative and Resource Management Branch",
+          "children": []
+        },
+        {
+          "code": "MEPRCGS CCBED",
+          "name": "Climate Change and Blue Economy Division",
+          "type": "office",
+          "description": "Imported from the MEPCOM unit list in the registration form (owner-approved 2026-10-31). Verify against the official organisation order.",
+          "source": "Climate Change and Blue Economy Division",
+          "children": []
+        },
+        {
+          "code": "MEPRCGS RCD",
+          "name": "Regulatory Compliance Division",
+          "type": "office",
+          "description": "Imported from the MEPCOM unit list in the registration form (owner-approved 2026-10-31). Verify against the official organisation order.",
+          "source": "Regulatory Compliance Division",
+          "children": []
+        },
+        {
+          "code": "MEPRCGS GMD",
+          "name": "Governance & Management Division",
+          "type": "office",
+          "description": "Imported from the MEPCOM unit list in the registration form (owner-approved 2026-10-31). Verify against the official organisation order.",
+          "source": "Governance & Management Division",
+          "children": []
+        }
+      ]
+    },
+    {
+      "code": "MEPTDI",
+      "name": "Marine Environmental Protection Training and Doctrine Institute",
+      "type": "unit",
+      "description": "Administrative support unit of MEPCOM. Imported from the MEPCOM unit list in the registration form (owner-approved 2026-10-31). Verify against the official organisation order.",
+      "children": [
+        {
+          "code": "MEPTDI O/S",
+          "name": "Office of the Superintendent, MEPTDI",
+          "type": "section",
+          "description": "Imported from the MEPCOM unit list in the registration form (owner-approved 2026-10-31). Verify against the official organisation order.",
+          "source": "O/S, MEPTDI",
+          "children": []
+        },
+        {
+          "code": "MEPTDI O/AS",
+          "name": "Office of the Assistant Superintendent, MEPTDI",
+          "type": "section",
+          "description": "Imported from the MEPCOM unit list in the registration form (owner-approved 2026-10-31). Verify against the official organisation order.",
+          "source": "O/AS, MEPTDI",
+          "children": []
+        },
+        {
+          "code": "MEPTDI ARMD",
+          "name": "Administrative and Resource Management Division",
+          "type": "office",
+          "description": "Imported from the MEPCOM unit list in the registration form (owner-approved 2026-10-31). Verify against the official organisation order.",
+          "source": "Administrative and Resource Management Division",
+          "children": []
+        },
+        {
+          "code": "MEPTDI RDDD",
+          "name": "Research and Doctrine Development Division",
+          "type": "office",
+          "description": "Imported from the MEPCOM unit list in the registration form (owner-approved 2026-10-31). Verify against the official organisation order.",
+          "source": "Research and Doctrine Development Division",
+          "children": []
+        },
+        {
+          "code": "MEPTDI STD",
+          "name": "Special Training Division",
+          "type": "office",
+          "description": "Imported from the MEPCOM unit list in the registration form (owner-approved 2026-10-31). Verify against the official organisation order.",
+          "source": "Special Training Division",
+          "children": []
+        },
+        {
+          "code": "MEPTDI ICTD",
+          "name": "Information and Communications Technology Division",
+          "type": "office",
+          "description": "Imported from the MEPCOM unit list in the registration form (owner-approved 2026-10-31). Verify against the official organisation order.",
+          "source": "Information and Communications Technology Division",
+          "children": []
+        }
+      ]
+    },
+    {
+      "code": "MEPG",
+      "name": "Marine Environmental Protection Group",
+      "type": "unit",
+      "description": "Operating unit of MEPCOM. Imported from the MEPCOM unit list in the registration form (owner-approved 2026-10-31). Verify against the official organisation order.",
+      "children": [
+        {
+          "code": "MEPG NCRCL",
+          "name": "MEP Group NCRCL",
+          "type": "unit",
+          "description": "Imported from the MEPCOM unit list in the registration form (owner-approved 2026-10-31). Verify against the official organisation order.",
+          "children": [
+            {
+              "code": "HMEPG NCRCL",
+              "name": "Headquarters, MEP Group NCRCL",
+              "type": "office",
+              "description": "Imported from the MEPCOM unit list in the registration form (owner-approved 2026-10-31). Verify against the official organisation order.",
+              "source": "HMEPG NCR CL",
+              "children": []
+            },
+            {
+              "code": "MEPUnit Manila",
+              "name": "MEPUnit Manila",
+              "type": "unit",
+              "description": "Imported from the MEPCOM unit list in the registration form (owner-approved 2026-10-31). Verify against the official organisation order.",
+              "source": "MEPUnit Manila",
+              "children": []
+            },
+            {
+              "code": "MEPUnit Cavite",
+              "name": "MEPUnit Cavite",
+              "type": "unit",
+              "description": "Imported from the MEPCOM unit list in the registration form (owner-approved 2026-10-31). Verify against the official organisation order.",
+              "source": "MEPUnit Cavite",
+              "children": []
+            },
+            {
+              "code": "MEPUnit Bataan",
+              "name": "MEPUnit Bataan",
+              "type": "unit",
+              "description": "Imported from the MEPCOM unit list in the registration form (owner-approved 2026-10-31). Verify against the official organisation order.",
+              "source": "MEPUnit Bataan",
+              "children": []
+            },
+            {
+              "code": "MEPUnit Zambales",
+              "name": "MEPUnit Zambales",
+              "type": "unit",
+              "description": "Imported from the MEPCOM unit list in the registration form (owner-approved 2026-10-31). Verify against the official organisation order.",
+              "source": "MEPUnit Zambales",
+              "children": []
+            },
+            {
+              "code": "MEPUnit Laguna",
+              "name": "MEPUnit Laguna",
+              "type": "unit",
+              "description": "Imported from the MEPCOM unit list in the registration form (owner-approved 2026-10-31). Verify against the official organisation order.",
+              "source": "MEPUnit Laguna",
+              "children": []
+            },
+            {
+              "code": "MEPUnit Rizal",
+              "name": "MEPUnit Rizal",
+              "type": "unit",
+              "description": "Imported from the MEPCOM unit list in the registration form (owner-approved 2026-10-31). Verify against the official organisation order.",
+              "source": "MEPUnit Rizal",
+              "children": []
+            },
+            {
+              "code": "MEPUnit Malacanang",
+              "name": "MEPUnit Malacañang",
+              "type": "unit",
+              "description": "Imported from the MEPCOM unit list in the registration form (owner-approved 2026-10-31). Verify against the official organisation order.",
+              "source": "MEPUnit Malacañang",
+              "children": []
+            },
+            {
+              "code": "MEPUnit Pampanga",
+              "name": "MEPUnit Pampanga",
+              "type": "unit",
+              "description": "Imported from the MEPCOM unit list in the registration form (owner-approved 2026-10-31). Verify against the official organisation order.",
+              "source": "MEPUnit Pampanga",
+              "children": []
+            }
+          ]
+        },
+        {
+          "code": "MEPG NELZN",
+          "name": "MEP Group NELZN",
+          "type": "unit",
+          "description": "Imported from the MEPCOM unit list in the registration form (owner-approved 2026-10-31). Verify against the official organisation order.",
+          "children": [
+            {
+              "code": "HMEPG NELZN",
+              "name": "Headquarters, MEP Group NELZN",
+              "type": "office",
+              "description": "Imported from the MEPCOM unit list in the registration form (owner-approved 2026-10-31). Verify against the official organisation order.",
+              "source": "HMEPGroup NELZN",
+              "children": []
+            },
+            {
+              "code": "MEPUnit Cagayan",
+              "name": "MEPUnit Cagayan",
+              "type": "unit",
+              "description": "Imported from the MEPCOM unit list in the registration form (owner-approved 2026-10-31). Verify against the official organisation order.",
+              "source": "MEPUnit Cagayan",
+              "children": []
+            },
+            {
+              "code": "MEPUnit Calayan",
+              "name": "MEPUnit Calayan",
+              "type": "unit",
+              "description": "Imported from the MEPCOM unit list in the registration form (owner-approved 2026-10-31). Verify against the official organisation order.",
+              "source": "MEPUnit Calayan",
+              "children": []
+            },
+            {
+              "code": "MEPUnit Aurora",
+              "name": "MEPUnit Aurora",
+              "type": "unit",
+              "description": "Imported from the MEPCOM unit list in the registration form (owner-approved 2026-10-31). Verify against the official organisation order.",
+              "source": "MEPUnit Aurora",
+              "children": []
+            },
+            {
+              "code": "MEPUnit Batanes",
+              "name": "MEPUnit Batanes",
+              "type": "unit",
+              "description": "Imported from the MEPCOM unit list in the registration form (owner-approved 2026-10-31). Verify against the official organisation order.",
+              "source": "MEPUnit Batanes",
+              "children": []
+            },
+            {
+              "code": "MEPUnit Isabela",
+              "name": "MEPUnit Isabela",
+              "type": "unit",
+              "description": "Imported from the MEPCOM unit list in the registration form (owner-approved 2026-10-31). Verify against the official organisation order.",
+              "source": "MEPUnit Isabela",
+              "children": []
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
