@@ -163,14 +163,15 @@ class DevSeed extends Command
             foreach (['administrative_tracks', 'operation_tracks'] as $t => $table) {
                 foreach ($courses as $c => $course) {
                     DB::table($table)->insert([
-                        'no' => $c + 1, 'division_unit' => $units[$c], 'rank' => $ranks[$c + 2], 'year_in_grade' => (string) (2 + $c),
+                        // Tracks use equivalent ranks (ApplicantTrainingController::getEquivalentRank).
+                        'no' => $c + 1, 'division_unit' => $units[$c], 'rank' => ['E-3', 'E-6', 'O-1'][$c], 'year_in_grade' => '1',
                         'course_training' => ($t ? 'Operational: ' : 'Administrative: ') . $course, 'provider' => 'MEPTDI',
                         'status' => 'Active', 'remarks' => 'Sample', 'created_at' => $now, 'updated_at' => $now,
                     ]);
                 }
             }
-            foreach ($ranks as $rank) {
-                DB::table('rank_equivalencies')->insert(['user_rank' => $rank, 'track_rank' => $rank, 'created_at' => $now, 'updated_at' => $now]);
+            foreach (['SN2' => 'E-2', 'SN1' => 'E-3', 'PO3' => 'E-4', 'PO2' => 'E-5', 'PO1' => 'E-6', 'ENS' => 'O-1', 'LTJG' => 'O-2'] as $rank => $trackRank) {
+                DB::table('rank_equivalencies')->insert(['user_rank' => $rank, 'track_rank' => $trackRank, 'created_at' => $now, 'updated_at' => $now]);
             }
             DB::table('training_applications')->insert([
                 ['serial_number' => $member['serial'], 'training_type' => 'ACT', 'track_id' => 1, 'course_training' => 'Administrative: ' . $courses[0],

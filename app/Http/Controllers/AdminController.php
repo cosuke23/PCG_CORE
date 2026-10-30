@@ -44,8 +44,20 @@ class AdminController extends Controller
                 WHERE ra.serial_number = users.serial_number
             )');
             })
+            // Explicit columns: rows are embedded in the page as JSON, and
+            // users.* sent every password hash to the browser.
             ->select(
-                'users.*',
+                'users.id',
+                'users.name',
+                'users.email',
+                'users.rank',
+                'users.serial_number',
+                'users.selfie_image',
+                'users.status',
+                'users.mother_unit',
+                'users.sub_unit',
+                'users.unit_assignment',
+                'users.created_at',
                 'reinlist_academic.course',
                 'reinlist_academic.level',
                 'reinlist_academic.school'

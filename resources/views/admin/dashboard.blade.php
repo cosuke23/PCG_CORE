@@ -58,7 +58,10 @@
             <!-- TABLE -->
             <div class="bg-white p-6 rounded shadow">
 
-                <h3 class="mb-3 font-bold">PCG Personels</h3>
+                <h3 class="mb-1 font-bold">PCG Personnel</h3>
+                <p class="mb-3 text-sm text-gray-500">
+                    Double-click a row to see details. Pending registrations open the approve / reject dialog.
+                </p>
 
                 <table id="personnelTable" class="w-full">
                     <thead>
