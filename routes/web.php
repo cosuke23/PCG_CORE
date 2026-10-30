@@ -51,7 +51,7 @@ use App\Http\Controllers\OsaertController;
 |
 | Removed in the security hardening (they pointed at missing controller
 | methods and always returned HTTP 500):
-|   /services, /decision/submit, /meptdi-lms
+|   /services, /decision/submit, /meptdi-lms, GET /applicant/training/apply
 |
 */
 
@@ -71,10 +71,14 @@ Route::get('/institutes/meptdi', function () {
 })->name('meptdi');
 
 // Public OSAERT certificate verification
-Route::get('/osaert/verify', [OsaertController::class, 'verify'])
-    ->name('osaert.verify');
-Route::get('/osaert/verify/{trainee}', [OsaertController::class, 'verifyCertificate'])
-    ->name('osaert.verify.certificate');
+// Public OSAERT certificate verification (QR codes on printed certificates
+// link to /osaert/verify/{id}). Throttled to slow down enumeration.
+Route::middleware('throttle:60,1')->group(function () {
+    Route::get('/osaert/verify', [OsaertController::class, 'verify'])
+        ->name('osaert.verify');
+    Route::get('/osaert/verify/{trainee}', [OsaertController::class, 'verifyCertificate'])
+        ->name('osaert.verify.certificate');
+});
 
 
 // Uploaded personnel files. FileController checks the viewer: admins and
@@ -153,8 +157,7 @@ Route::middleware(['auth'])->group(function () {
         ->name('applicant.administrative.training');
     Route::get('/applicant/operational-training', [ApplicantTrainingController::class, 'operational'])
         ->name('applicant.operational.training');
-    Route::get('/applicant/training/apply', [ApplicantTrainingController::class, 'apply'])
-        ->name('applicant.training.apply');
+    // GET /applicant/training/apply removed: unlinked, and its view never existed.
     Route::post('/applicant/training/apply', [ApplicantTrainingController::class, 'store'])
         ->name('applicant.training.store');
 });

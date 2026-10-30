@@ -390,11 +390,7 @@
         });
 
 
-        {
-            {
-                --Delete Confirmation--
-            }
-        }
+        // Delete confirmation
         $('.delete-course-form').on('submit', function(e) {
 
             e.preventDefault();

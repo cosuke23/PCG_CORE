@@ -348,10 +348,7 @@
     @forelse($trainees as $trainee)
 
         @php
-            $year = substr(trim((string) $trainee->date_ended), -4);
-
-            $certificateNumber = 'OSAERT-' . $year . '-' .
-                str_pad($trainee->id, 6, '0', STR_PAD_LEFT);
+            $certificateNumber = $trainee->certificate_number;
 
             $verificationUrl = url('/osaert/verify/' . $trainee->id);
         @endphp

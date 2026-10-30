@@ -23,7 +23,7 @@
             <!-- Video Content -->
             <video controls autoplay muted loop
                 class="block max-w-full max-h-[90vh] object-contain rounded-3xl shadow-inner">
-                <source src="{{ asset('backgrounds/mepcom 4.mp4') }}" type="video/mp4" @error="open = false">
+                <source src="{{ asset('backgrounds/mepcom 4.mp4') }}" type="video/mp4" x-on:error="open = false">
                 Your browser does not support the video tag.
             </video>
 

@@ -6,7 +6,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Upload 201 Files</title>
 
-    @vite(['resources/css/app.css', 'resources/js/app.js'])
+    {{-- Was @vite(...), which needs an npm build that was never deployed (HTTP 500). --}}
+    <link rel="stylesheet" href="{{ asset('css/tailwind.css') }}">
 
     <style>
         body {

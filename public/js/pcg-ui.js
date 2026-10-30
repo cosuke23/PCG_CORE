@@ -31,6 +31,25 @@
         });
     });
 
+    // App shell: open/close the sidebar on small screens.
+    var shell = document.querySelector('.pcg-console');
+    if (shell) {
+        var toggle = shell.querySelector('[data-pcg-nav-toggle]');
+        var setOpen = function (open) {
+            shell.setAttribute('data-nav-open', open ? 'true' : 'false');
+            if (toggle) toggle.setAttribute('aria-expanded', open ? 'true' : 'false');
+        };
+        if (toggle) toggle.addEventListener('click', function () {
+            setOpen(shell.getAttribute('data-nav-open') !== 'true');
+        });
+        shell.querySelectorAll('[data-pcg-nav-close]').forEach(function (el) {
+            el.addEventListener('click', function () { setOpen(false); });
+        });
+        document.addEventListener('keydown', function (e) {
+            if (e.key === 'Escape') setOpen(false);
+        });
+    }
+
     // Restore the button when the page is shown again from the back/forward cache.
     window.addEventListener('pageshow', function () {
         document.querySelectorAll('form[data-pcg-busy] [type="submit"][aria-busy="true"]').forEach(function (submit) {

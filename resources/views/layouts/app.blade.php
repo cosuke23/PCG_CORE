@@ -86,18 +86,7 @@
             box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
         }
     </style>
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    colors: {
-                        pcgblue: '#0033A0',
-                        mepcomGold: '#FFD700',
-                    }
-                }
-            }
-        };
-    </script>
+    {{-- Tailwind theme colours (pcgblue, mepcomGold) live in tailwind.config.js --}}
     <link rel="stylesheet" href="{{ asset('css/tailwind.css') }}">
 </head>
 

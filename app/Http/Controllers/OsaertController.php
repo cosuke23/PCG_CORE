@@ -18,17 +18,11 @@ class OsaertController extends Controller
         $query = OsaertTrainee::query();
 
         if ($startedYear) {
-            $query->whereRaw(
-                'RIGHT(date_attended, 4) = ?',
-                [$startedYear]
-            );
+            $query->whereYearOf('date_attended', $startedYear);
         }
 
         if ($endedYear) {
-            $query->whereRaw(
-                'RIGHT(date_ended, 4) = ?',
-                [$endedYear]
-            );
+            $query->whereYearOf('date_ended', $endedYear);
         }
 
         $trainees = $query
@@ -49,14 +43,14 @@ class OsaertController extends Controller
 
         $startedYears = OsaertTrainee::whereNotNull('date_attended')
             ->where('date_attended', '!=', '')
-            ->selectRaw('RIGHT(date_attended, 4) as year')
+            ->selectRaw(OsaertTrainee::yearSql('date_attended') . ' as year')
             ->distinct()
             ->orderByDesc('year')
             ->pluck('year');
 
         $endedYears = OsaertTrainee::whereNotNull('date_ended')
             ->where('date_ended', '!=', '')
-            ->selectRaw('RIGHT(date_ended, 4) as year')
+            ->selectRaw(OsaertTrainee::yearSql('date_ended') . ' as year')
             ->distinct()
             ->orderByDesc('year')
             ->pluck('year');
@@ -242,69 +236,35 @@ class OsaertController extends Controller
         );
     }
 
+    /**
+     * Public certificate lookup by certificate number (OSAERT-YYYY-NNNNNN).
+     * It does not list trainees: names are only shown for a valid number.
+     */
     public function verify(Request $request)
     {
-        $startedYear = $request->get('started');
-        $endedYear = $request->get('ended');
+        $number = strtoupper(trim((string) $request->query('certificate', '')));
 
-        $query = OsaertTrainee::query();
-
-        if ($startedYear) {
-            $query->whereYear('date_attended', $startedYear);
+        if ($number === '') {
+            return view('osaert.verify', ['number' => '', 'notFound' => false]);
         }
 
-        if ($endedYear) {
-            $query->whereYear('date_ended', $endedYear);
+        if (preg_match('/^OSAERT-[0-9-]+-(\d{1,6})$/', $number, $m)) {
+            $trainee = OsaertTrainee::find((int) $m[1]);
+
+            if ($trainee && $trainee->isCompleted()
+                && in_array($number, [$trainee->certificate_number, $trainee->legacy_certificate_number], true)) {
+                return redirect()->route('osaert.verify.certificate', $trainee);
+            }
         }
 
-        $trainees = $query
-            ->orderBy('name')
-            ->get();
-
-        return view('osaert.verify', compact(
-            'trainees',
-            'startedYear',
-            'endedYear'
-        ));
+        return view('osaert.verify', ['number' => $number, 'notFound' => true]);
     }
-    public function certificates(Request $request)
-    {
-        $startedYear = $request->get('started_year');
-        $endedYear = $request->get('ended_year');
 
-        $query = OsaertTrainee::query();
-
-        if ($startedYear) {
-            $query->whereRaw(
-                'RIGHT(date_attended, 4) = ?',
-                [$startedYear]
-            );
-        }
-
-        if ($endedYear) {
-            $query->whereRaw(
-                'RIGHT(date_ended, 4) = ?',
-                [$endedYear]
-            );
-        }
-
-        $trainees = $query
-            ->whereNotNull('date_ended')
-            ->where('date_ended', '!=', '')
-            ->orderBy('name')
-            ->get();
-
-        return view(
-            'admin.osaert.certificates',
-            compact(
-                'trainees',
-                'startedYear',
-                'endedYear'
-            )
-        );
-    }
     public function verifyCertificate(OsaertTrainee $trainee)
     {
+        // Certificates are only issued on completion.
+        abort_unless($trainee->isCompleted(), 404);
+
         return view(
             'admin.osaert.verify-certificate',
             compact('trainee')

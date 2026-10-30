@@ -621,3 +621,278 @@
         grid-template-columns: 1fr;
     }
 }
+
+/* ============================================================ app shell
+ * layouts/console: sidebar + top bar for signed-in areas (admin, unit).
+ * Page content inside .pcg-console__content may still use Tailwind
+ * utilities (public/css/tailwind.css) until each page is migrated.
+ */
+.pcg-console {
+    display: flex;
+    min-height: 100vh;
+}
+
+.pcg-sidebar {
+    position: sticky;
+    top: 0;
+    flex: 0 0 264px;
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    overflow-y: auto;
+    color: rgba(255, 255, 255, 0.86);
+    background: linear-gradient(180deg, var(--pcg-navy-950), var(--pcg-navy-900) 40%, var(--pcg-navy-800));
+    border-right: 3px solid var(--pcg-gold-500);
+    z-index: 40;
+}
+
+.pcg-sidebar__brand {
+    display: flex;
+    align-items: center;
+    gap: var(--pcg-space-3);
+    padding: var(--pcg-space-5) var(--pcg-space-5) var(--pcg-space-4);
+    color: var(--pcg-white);
+    text-decoration: none;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.pcg-sidebar__brand img {
+    width: 40px;
+    height: 40px;
+    object-fit: contain;
+}
+
+.pcg-sidebar__brand strong {
+    display: block;
+    font-size: var(--pcg-text-base);
+    line-height: 1.2;
+}
+
+.pcg-sidebar__brand span {
+    display: block;
+    color: var(--pcg-gold-400);
+    font-size: 0.6875rem;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+}
+
+.pcg-nav {
+    flex: 1;
+    padding: var(--pcg-space-3) var(--pcg-space-3) var(--pcg-space-6);
+}
+
+.pcg-nav__section {
+    margin: var(--pcg-space-5) var(--pcg-space-3) var(--pcg-space-2);
+    color: rgba(255, 255, 255, 0.5);
+    font-size: 0.6875rem;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+}
+
+.pcg-nav__link {
+    display: flex;
+    align-items: center;
+    gap: var(--pcg-space-3);
+    margin: 2px 0;
+    padding: var(--pcg-space-2) var(--pcg-space-3);
+    color: rgba(255, 255, 255, 0.82);
+    font-size: var(--pcg-text-sm);
+    font-weight: 500;
+    text-decoration: none;
+    border-left: 3px solid transparent;
+    border-radius: 0 var(--pcg-radius-sm) var(--pcg-radius-sm) 0;
+    transition: background-color var(--pcg-transition), color var(--pcg-transition);
+}
+
+.pcg .pcg-nav__link {
+    color: rgba(255, 255, 255, 0.82);
+}
+
+.pcg-nav__link i {
+    width: 18px;
+    text-align: center;
+    color: rgba(255, 255, 255, 0.55);
+}
+
+.pcg .pcg-nav__link:hover {
+    color: var(--pcg-white);
+    background: rgba(255, 255, 255, 0.07);
+}
+
+.pcg .pcg-nav__link[aria-current="page"] {
+    color: var(--pcg-white);
+    background: rgba(201, 162, 39, 0.14);
+    border-left-color: var(--pcg-gold-500);
+}
+
+.pcg-nav__link[aria-current="page"] i {
+    color: var(--pcg-gold-400);
+}
+
+.pcg-console__main {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+}
+
+.pcg-topbar {
+    position: sticky;
+    top: 0;
+    z-index: 30;
+    display: flex;
+    align-items: center;
+    gap: var(--pcg-space-4);
+    min-height: 64px;
+    padding: var(--pcg-space-3) var(--pcg-space-6);
+    background: rgba(255, 255, 255, 0.96);
+    border-bottom: 1px solid var(--pcg-gray-200);
+    box-shadow: var(--pcg-shadow-sm);
+    backdrop-filter: blur(6px);
+}
+
+.pcg-topbar__title {
+    flex: 1;
+    min-width: 0;
+    margin: 0;
+    font-size: var(--pcg-text-lg);
+    font-weight: 700;
+    color: var(--pcg-navy-900);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.pcg-topbar__user {
+    display: flex;
+    align-items: center;
+    gap: var(--pcg-space-3);
+    font-size: var(--pcg-text-sm);
+    color: var(--pcg-gray-600);
+}
+
+.pcg-topbar__user strong {
+    color: var(--pcg-gray-900);
+    font-weight: 600;
+}
+
+.pcg-topbar__menu {
+    display: none;
+}
+
+.pcg-btn--sm {
+    min-height: 36px;
+    padding: var(--pcg-space-1) var(--pcg-space-3);
+    font-size: var(--pcg-text-xs);
+}
+
+.pcg-console__content {
+    flex: 1;
+    min-width: 0;
+    padding: var(--pcg-space-6);
+}
+
+.pcg-console__flash {
+    padding: var(--pcg-space-4) var(--pcg-space-6) 0;
+}
+
+.pcg-console__flash .pcg-alert {
+    margin-bottom: 0;
+}
+
+.pcg-console__flash .pcg-alert + .pcg-alert {
+    margin-top: var(--pcg-space-3);
+}
+
+.pcg-backdrop {
+    display: none;
+}
+
+@media (max-width: 1024px) {
+    .pcg-sidebar {
+        position: fixed;
+        left: 0;
+        top: 0;
+        transform: translateX(-100%);
+        transition: transform 200ms ease;
+        box-shadow: var(--pcg-shadow-lg);
+    }
+
+    .pcg-console[data-nav-open="true"] .pcg-sidebar {
+        transform: none;
+    }
+
+    .pcg-console[data-nav-open="true"] .pcg-backdrop {
+        display: block;
+        position: fixed;
+        inset: 0;
+        z-index: 35;
+        background: rgba(5, 15, 38, 0.5);
+    }
+
+    .pcg-topbar {
+        padding: var(--pcg-space-2) var(--pcg-space-4);
+    }
+
+    .pcg-topbar__menu {
+        display: inline-flex;
+    }
+
+    .pcg-topbar__user span {
+        display: none;
+    }
+
+    .pcg-console__content {
+        padding: var(--pcg-space-4);
+    }
+
+    .pcg-console__flash {
+        padding: var(--pcg-space-4) var(--pcg-space-4) 0;
+    }
+}
+
+/* ------------------------------------------------------- print */
+@media print {
+    .pcg-sidebar,
+    .pcg-topbar,
+    .pcg-backdrop {
+        display: none !important;
+    }
+
+    .pcg-console__content {
+        padding: 0;
+    }
+}
+
+/* ------------------------------------------------- description list */
+.pcg-dl {
+    margin: 0 0 var(--pcg-space-4);
+    border: 1px solid var(--pcg-gray-200);
+    border-radius: var(--pcg-radius);
+    overflow: hidden;
+}
+
+.pcg-dl > div {
+    display: grid;
+    grid-template-columns: minmax(0, 2fr) minmax(0, 3fr);
+    gap: var(--pcg-space-3);
+    padding: var(--pcg-space-3) var(--pcg-space-4);
+}
+
+.pcg-dl > div + div {
+    border-top: 1px solid var(--pcg-gray-200);
+}
+
+.pcg-dl dt {
+    color: var(--pcg-text-muted);
+    font-size: var(--pcg-text-sm);
+    font-weight: 600;
+}
+
+.pcg-dl dd {
+    margin: 0;
+    font-size: var(--pcg-text-sm);
+    color: var(--pcg-text);
+}

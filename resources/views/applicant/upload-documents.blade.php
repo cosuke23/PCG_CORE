@@ -412,12 +412,7 @@
                     let userLat = pos.coords.latitude;
                     let userLng = pos.coords.longitude;
 
-                    userMarker = L.marker([userLat, userLng], {
-                            icon: L.icon({
-                                iconUrl: "https://maps.google.com/mapfiles/ms/icons/blue-dot.png",
-                                iconSize: [32, 32]
-                            })
-                        }).addTo(map)
+                    userMarker = L.marker([userLat, userLng]).addTo(map)
                         .bindPopup("📍 Your Current Location")
                         .openPopup();
 
