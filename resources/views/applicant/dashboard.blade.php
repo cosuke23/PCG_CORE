@@ -343,6 +343,12 @@
 
 <!-- ================= JS ================= -->
 <script>
+        // Escape server data before inserting it with innerHTML.
+        function escapeHtml(value) {
+            return String(value ?? '').replace(/[&<>"']/g, c => ({
+                '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+            })[c]);
+        }
     const rejectedDocs = @json($rejectedDocs ?? []);
 
     function openRejectedModal() {
@@ -356,10 +362,10 @@
                 html += `
                     <div class="p-3 bg-red-900/30 border border-red-500/30 rounded-lg">
                         <p class="font-semibold text-red-300">
-                            ${doc.doc_type}
+                            ${escapeHtml(doc.doc_type)}
                         </p>
                         <p class="text-sm text-gray-300 mt-1">
-                            ${doc.comment ?? 'No comment provided'}
+                            ${escapeHtml(doc.comment ?? 'No comment provided')}
                         </p>
                     </div>
                 `;

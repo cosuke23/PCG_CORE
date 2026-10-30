@@ -210,7 +210,7 @@ class UnitUserController extends Controller
         Log::info('Disciplinary Upload START', [
             'serial_number' => $request->serial_number,
             'has_files' => $request->hasFile('disciplinary_files'),
-            'all' => $request->except(['disciplinary_files'])
+            'unit_user_id' => session('unit_user_id'),
         ]);
 
         $request->validate([

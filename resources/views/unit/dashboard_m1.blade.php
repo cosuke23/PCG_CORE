@@ -204,6 +204,12 @@
                 }
             </script>
             <script>
+        // Escape server data before inserting it with innerHTML.
+        function escapeHtml(value) {
+            return String(value ?? '').replace(/[&<>"']/g, c => ({
+                '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+            })[c]);
+        }
                 document.getElementById('serialSearchForm')
                     .addEventListener('submit', async function(e) {
 
@@ -229,12 +235,12 @@
 
                         <div>
                             <span class="font-semibold">Full Name:</span>
-                            ${data.fullname}
+                            ${escapeHtml(data.fullname)}
                         </div>
 
                         <div>
                             <span class="font-semibold">Serial:</span>
-                            ${data.serial_number}
+                            ${escapeHtml(data.serial_number)}
                         </div>
 
                     </div>
@@ -727,6 +733,12 @@
         }
     </script>
     <script>
+        // Escape server data before inserting it with innerHTML.
+        function escapeHtml(value) {
+            return String(value ?? '').replace(/[&<>"']/g, c => ({
+                '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+            })[c]);
+        }
         function openModal(doc) {
 
             const modal = document.getElementById('modal');
@@ -781,7 +793,7 @@
 
                     if (isImg) {
                         preview = `
-                    <img src="${url}"
+                    <img src="${escapeHtml(url)}"
                         style="width:100%; max-height:500px; object-fit:contain;"
                         onerror="this.style.display='none'; this.nextElementSibling.style.display='block';"
                     >
@@ -789,12 +801,12 @@
                 `;
                     } else if (isPdf) {
                         preview = `
-                    <iframe src="${url}"
+                    <iframe src="${escapeHtml(url)}"
                         style="width:100%; height:500px;"></iframe>
                 `;
                     } else {
                         preview = `
-                    <a href="${url}" target="_blank" class="text-indigo-500">
+                    <a href="${escapeHtml(url)}" target="_blank" class="text-indigo-500">
                         Open File
                     </a>
                 `;
@@ -839,7 +851,7 @@
             // LOCATION
             if (doc.latitude && doc.longitude) {
                 document.getElementById('coords').innerHTML =
-                    `📍 <a href="https://www.google.com/maps?q=${doc.latitude},${doc.longitude}" target="_blank" class="underline">Open in Google Maps</a>`;
+                    `📍 <a href="https://www.google.com/maps?q=${encodeURIComponent(doc.latitude)},${encodeURIComponent(doc.longitude)}" target="_blank" class="underline">Open in Google Maps</a>`;
             } else {
                 document.getElementById('coords').innerText = "No location available";
             }

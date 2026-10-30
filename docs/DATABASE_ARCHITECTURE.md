@@ -55,9 +55,8 @@ There are no foreign keys in the code's assumptions; relationships are implicit.
 `reinlist_disciplinary_actions` (`serial_number`, `file_path`)
 
 **Write pattern:** the save steps *delete all rows for the serial number, then
-re-insert* (`TempRegistrationController`, `ReenlistController`). Some steps run
-inside a transaction, but not all. Without a transaction, a failure between the
-delete and the insert loses that person's records.
+re-insert* (`TempRegistrationController`, `ReenlistController`). All of them now
+run inside a transaction, so a failed insert rolls back the delete.
 
 ### Documents and review
 
@@ -87,7 +86,7 @@ delete and the insert loses that person's records.
    This caused the rejected-user login bypass (now fixed in code). Normalising the
    stored values is a data change and needs approval.
 3. **Dates as strings** in `osaert_trainees`, which forces `RIGHT(col, 4)` scans.
-4. **Delete-and-reinsert** of child tables on every save (above).
+4. **Delete-and-reinsert** of child tables on every save (now transactional; still rewrites IDs on every save).
 5. **Likely missing indexes** on `serial_number` / `personnel_id` in the reinlist
    and document tables *(verify with query 7)*. Every profile page load runs about
    20 `WHERE serial_number = ?` lookups.

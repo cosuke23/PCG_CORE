@@ -17,7 +17,7 @@ class TempRegistrationController extends Controller
     public function saveStep1(Request $request)
     {
         // Log the incoming request
-        Log::info('Temp Save Step 1 Request: ' . json_encode($request->all()));
+        Log::info('Temp Save Step 1 Request', ['user_id' => $request->user()->id]);
 
         // The serial number always comes from the logged-in account. It used to
         // come from the request, which let any user overwrite another
@@ -39,7 +39,6 @@ class TempRegistrationController extends Controller
             ]);
 
             // Log the validated data
-            Log::info('Temp Save Step 1 Validated Data: ' . json_encode($validated));
 
             // Current timestamp
             $now = Carbon::now();
@@ -138,12 +137,7 @@ class TempRegistrationController extends Controller
                 }
             }
 
-            Log::info('📏 Body Measurements Received', [
-                'head_size' => $request->head_size,
-                'foot_size' => $request->foot_size,
-                'waist_size' => $request->waist_size,
-                'distinct_features' => $request->distinct_features,
-            ]);
+            Log::info('📏 Body Measurements Received', ['user_id' => $request->user()->id]);
             // ✅ GET personnel_id from session
             $step1 = session('step1');
 
@@ -261,7 +255,7 @@ class TempRegistrationController extends Controller
         $serialNumber = DB::table('users')->where('id', $userId)->value('serial_number');
 
         // Log incoming request
-        \Log::info("Step 3 Save Request | user_id: {$userId}", $request->all());
+        \Log::info("Step 3 Save Request | user_id: {$userId}");
 
         // Validate dependents
         $validator = Validator::make($request->all(), [
@@ -295,6 +289,10 @@ class TempRegistrationController extends Controller
         }
 
         try {
+            // Delete + re-insert must succeed or fail together, otherwise a
+            // failed insert leaves the member with no dependents on record.
+            DB::beginTransaction();
+
             // Delete old dependents first
             \Log::info("Deleting old dependents | personnel_id: {$personalInfo->personnel_id}");
             DB::table('reinlist_dependents')->where('serial_number', $personalInfo->serial_number)->delete();
@@ -318,13 +316,16 @@ class TempRegistrationController extends Controller
                 DB::table('reinlist_dependents')->insert($insertData);
             }
 
-            \Log::info("Dependents saved successfully | personnel_id: {$personalInfo->personnel_id}", $dependents);
+            DB::commit();
+
+            \Log::info("Dependents saved successfully | personnel_id: {$personalInfo->personnel_id} | count: " . count($dependents));
 
             return response()->json([
                 'status' => 'success',
                 'message' => 'Dependents saved successfully!'
             ]);
         } catch (\Exception $e) {
+            DB::rollBack();
             \Log::error("Step 3 Save Error | personnel_id: {$personalInfo->personnel_id} | {$e->getMessage()}");
 
             return response()->json([
@@ -338,7 +339,6 @@ class TempRegistrationController extends Controller
         $userId = $request->user()->id;
 
         \Log::info("Step 4 Save Request START | user_id: {$userId}");
-        \Log::debug("Step 4 Payload", $request->all());
 
         // ================= GET SERIAL =================
         $serialNumber = DB::table('users')->where('id', $userId)->value('serial_number');
@@ -378,9 +378,10 @@ class TempRegistrationController extends Controller
             ], 404);
         }
 
-        \Log::info("Personal info found", (array) $personalInfo);
+        \Log::info("Personal info found | personnel_id: {$personalInfo->personnel_id}");
 
         try {
+            DB::beginTransaction();
 
             // ================= DELETE OLD =================
             \Log::info("Deleting old academic records | serial_number: {$personalInfo->serial_number}");
@@ -506,6 +507,8 @@ class TempRegistrationController extends Controller
                 \Log::info("Inserted training records successfully");
             }
 
+            DB::commit();
+
             \Log::info("Step 4 SUCCESS | personnel_id: {$personalInfo->personnel_id}");
 
             return response()->json([
@@ -513,6 +516,7 @@ class TempRegistrationController extends Controller
                 'message' => 'Step 4 saved successfully!'
             ]);
         } catch (\Exception $e) {
+            DB::rollBack();
             \Log::error("Step 4 ERROR | personnel_id: {$personalInfo->personnel_id} | " . $e->getMessage());
             \Log::error($e->getTraceAsString());
 
@@ -529,7 +533,6 @@ class TempRegistrationController extends Controller
             $userId = $request->user()->id;
 
             \Log::info("Step 4 Save Request START | user_id: {$userId}");
-            \Log::debug("Step 4 Payload", $request->all());
 
             // ================= GET SERIAL =================
             $serialNumber = DB::table('users')->where('id', $userId)->value('serial_number');
@@ -656,7 +659,6 @@ class TempRegistrationController extends Controller
             $userId = $request->user()->id;
 
             \Log::info("Step 6 Save Request START | user_id: {$userId}");
-            \Log::debug("Step 6 Payload", $request->all());
 
             // ================= GET SERIAL =================
             $serialNumber = DB::table('users')
@@ -664,8 +666,10 @@ class TempRegistrationController extends Controller
                 ->value('serial_number');
 
             // =================================================
-            // DELETE OLD DATA
+            // DELETE OLD DATA (re-inserted below in one transaction)
             // =================================================
+            DB::beginTransaction();
+
             DB::table('reinlist_awards')->where('applicant_id', $userId)->delete();
             DB::table('reinlist_careers')->where('applicant_id', $userId)->delete();
             DB::table('reinlist_cg_awards_decorations')->where('applicant_id', $userId)->delete();
@@ -834,12 +838,10 @@ class TempRegistrationController extends Controller
 
                 \Log::info('CG Appreciations Payload Received', [
                     'count' => count($validated['cgAppreciations']),
-                    'data' => $validated['cgAppreciations']
                 ]);
 
                 foreach ($validated['cgAppreciations'] as $index => $item) {
 
-                    \Log::debug("CG Appreciations Item #{$index}", $item);
 
                     if (!empty($item['type']) || !empty($item['authority'])) {
                         $cgAppreciations[] = [
@@ -855,7 +857,6 @@ class TempRegistrationController extends Controller
 
                 \Log::info('CG Appreciations Prepared for Insert', [
                     'count' => count($cgAppreciations),
-                    'data' => $cgAppreciations
                 ]);
 
                 if (!empty($cgAppreciations)) {
@@ -876,12 +877,10 @@ class TempRegistrationController extends Controller
 
                 \Log::info('CG Plaques Payload Received', [
                     'count' => count($validated['cgPlaques']),
-                    'data' => $validated['cgPlaques']
                 ]);
 
                 foreach ($validated['cgPlaques'] as $index => $item) {
 
-                    \Log::debug("CG Plaques Item #{$index}", $item);
 
                     if (!empty($item['type']) || !empty($item['authority'])) {
                         $cgPlaques[] = [
@@ -897,7 +896,6 @@ class TempRegistrationController extends Controller
 
                 \Log::info('CG Plaques Prepared for Insert', [
                     'count' => count($cgPlaques),
-                    'data' => $cgPlaques
                 ]);
 
                 if (!empty($cgPlaques)) {
@@ -918,12 +916,10 @@ class TempRegistrationController extends Controller
 
                 \Log::info('Other Letters Payload Received', [
                     'count' => count($validated['otherLetters']),
-                    'data' => $validated['otherLetters']
                 ]);
 
                 foreach ($validated['otherLetters'] as $index => $item) {
 
-                    \Log::debug("Other Letters Item #{$index}", $item);
 
                     if (!empty($item['type']) || !empty($item['authority'])) {
                         $cgPlaques[] = [
@@ -939,7 +935,6 @@ class TempRegistrationController extends Controller
 
                 \Log::info('Other Letters Prepared for Insert', [
                     'count' => count($cgPlaques),
-                    'data' => $cgPlaques
                 ]);
 
                 if (!empty($cgPlaques)) {
@@ -959,12 +954,10 @@ class TempRegistrationController extends Controller
 
                 \Log::info('Other Appreciations Payload Received', [
                     'count' => count($validated['otherAppreciations']),
-                    'data' => $validated['otherAppreciations']
                 ]);
 
                 foreach ($validated['otherAppreciations'] as $index => $item) {
 
-                    \Log::debug("Other Appreciations Item #{$index}", $item);
 
                     if (!empty($item['type']) || !empty($item['authority'])) {
                         $cgAppreciations[] = [
@@ -980,7 +973,6 @@ class TempRegistrationController extends Controller
 
                 \Log::info('Other Appreciations Prepared for Insert', [
                     'count' => count($cgAppreciations),
-                    'data' => $cgAppreciations
                 ]);
 
                 if (!empty($cgAppreciations)) {
@@ -1000,12 +992,10 @@ class TempRegistrationController extends Controller
 
                 \Log::info('Other Plaques Payload Received', [
                     'count' => count($validated['otherPlaques']),
-                    'data' => $validated['otherPlaques']
                 ]);
 
                 foreach ($validated['otherPlaques'] as $index => $item) {
 
-                    \Log::debug("Other Plaques Item #{$index}", $item);
 
                     if (!empty($item['type']) || !empty($item['authority'])) {
                         $cgOtherPlaques[] = [
@@ -1021,7 +1011,6 @@ class TempRegistrationController extends Controller
 
                 \Log::info('Other Plaques Prepared for Insert', [
                     'count' => count($cgOtherPlaques),
-                    'data' => $cgOtherPlaques
                 ]);
 
                 if (!empty($cgOtherPlaques)) {
@@ -1035,6 +1024,8 @@ class TempRegistrationController extends Controller
             // =========================
             // SESSION BACKUP
             // =========================
+            DB::commit();
+
             session(['step6' => $validated]);
 
             return response()->json([
@@ -1042,6 +1033,8 @@ class TempRegistrationController extends Controller
                 'message' => 'Step 6 data saved successfully.'
             ]);
         } catch (\Exception $e) {
+            // No-op if the error happened before the transaction started.
+            DB::rollBack();
 
             \Log::error('Step 6 Save Error', [
                 'message' => $e->getMessage()

@@ -51,7 +51,7 @@ defence-in-depth.
 | H5 | No login rate limiting | routes | **Fixed** — `throttle` on all login/registration POSTs. |
 | H6 | Session fixation: admin and unit logins did not regenerate the session | controllers | **Fixed**. |
 | H7 | Outdated, end-of-life framework: Laravel 9.52 (security support ended Feb 2024). `composer audit` reports 50 advisories in 14 packages, including 1 critical and 1 high in `laravel/framework`, plus `symfony/http-foundation`, `league/commonmark`, `guzzlehttp/guzzle`. | `composer.lock` | **Open** — roadmap Phase 4b (upgrade to a supported Laravel; needs regression testing against the real DB). |
-| H8 | Extensive PII logging: full request payloads (addresses, government IDs, dependents) logged by `ReenlistController`, `TempRegistrationController`, `UnitDocumentController`, `UnitUserController::storeDisciplinary` | `Log::info(... $request->all())` | **Partially fixed** (Reenlist, Register). Remainder open. |
+| H8 | Extensive PII logging: full request payloads (addresses, government IDs, dependents) logged by `ReenlistController`, `TempRegistrationController`, `UnitDocumentController`, `UnitUserController::storeDisciplinary` | `Log::info(... $request->all())` | **Fixed** — payload dumps removed from Register, Reenlist, profile save steps 1–6, unit review and disciplinary upload; logs keep IDs and counts only. (CSV-import logs still record trainee names supplied by the admin.) |
 | H9 | Unit checkers can see/act on any unit's personnel: `dashboardM1`, `index_201`, `show_201`, `searchSerial`, review/disciplinary endpoints are not scoped by `unit_name` / role | `UnitUserController` | **Open** — needs your rule for which unit roles may see which units. |
 | H10 | `/unit-users/store` lets the admin create unit accounts, but no admin UI calls it; previously it was public and unvalidated | `UnitUserController::store` | **Fixed** (admin-only + validation). |
 
@@ -67,7 +67,7 @@ defence-in-depth.
 | M6 | No MFA for admin | Open — recommend TOTP once admin moves to a real user table. |
 | M7 | `.gitignore` was a PowerShell script fragment; `storage/` missing from the repo | Fixed. |
 | M8 | `spatie/laravel-ignition` exposes `/_ignition/*` when `APP_DEBUG=true` | Keep `APP_DEBUG=false` outside development; install with `composer install --no-dev` on servers. |
-| L1 | DOM `innerHTML` built from server data in `unit/dashboard_m1.blade.php` (serial search result) | Open — values come from the DB; escape in Phase 5. |
+| L1 | DOM `innerHTML` built from server data: rejection comments shown to applicants (stored XSS), names, file URLs in unit dashboards and 201 files | **Fixed** — `escapeHtml()` applied in `applicant/dashboard`, `unit/dashboard`, `unit/dashboard_m1`, `unit/201_files_index`. |
 | L2 | Blade output is escaped with `{{ }}` throughout; no `{!! !!}` with user data found | OK. |
 | L3 | CSRF: all POST forms include `@csrf`; `VerifyCsrfToken` has no exclusions | OK. |
 | L4 | SQL: queries use the query builder / bindings; the `whereRaw` calls use `?` placeholders | OK — no SQL injection found. |
@@ -90,7 +90,9 @@ defence-in-depth.
 - [ ] **Owner:** verify production document root (A4)
 - [ ] Move personnel documents to private storage + authorised download route (C7)
 - [ ] Scope unit-checker data access by unit/role (H9)
-- [ ] Remove remaining PII from logs (H8)
+- [x] Remove PII from logs (H8)
+- [x] Escape server data in `innerHTML` (L1)
+- [x] Transactions around profile delete-and-reinsert saves
 - [ ] Upgrade Laravel / dependencies (H7)
 - [ ] Self-host front-end assets, add CSP and SRI (M2)
 - [ ] Admin accounts in the database with roles + MFA (M6)

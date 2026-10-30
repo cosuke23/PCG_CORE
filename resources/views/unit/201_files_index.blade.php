@@ -118,6 +118,12 @@
     </div>
 
     <script>
+        // Escape server data before inserting it with innerHTML.
+        function escapeHtml(value) {
+            return String(value ?? '').replace(/[&<>"']/g, c => ({
+                '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+            })[c]);
+        }
         const BASE_URL = @json(\App\Support\Uploads::baseUrl());
 
         // SEARCH
@@ -174,16 +180,16 @@
                             let isPdf = /\.pdf$/i.test(cleanPath);
 
                             if (isImg) {
-                                preview = `<img src="${url}" class="w-full max-h-[400px] object-contain">`;
+                                preview = `<img src="${escapeHtml(url)}" class="w-full max-h-[400px] object-contain">`;
                             } else if (isPdf) {
                                 preview = `
                             <iframe 
-                                src="${url}" 
+                                src="${escapeHtml(url)}" 
                                 class="w-full h-[500px] bg-white">
                             </iframe>`;
                             } else {
                                 preview = `
-                            <a href="${url}" target="_blank" class="text-indigo-600 font-semibold">
+                            <a href="${escapeHtml(url)}" target="_blank" class="text-indigo-600 font-semibold">
                                 Open File
                             </a>`;
                             }

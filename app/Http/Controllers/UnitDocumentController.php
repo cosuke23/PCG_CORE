@@ -11,7 +11,9 @@ class UnitDocumentController extends Controller
     public function review(Request $request)
     {
         Log::info('=== UNIT DOCUMENT REVIEW START ===', [
-            'request' => $request->all(),
+            'serial_number' => $request->serial_number,
+            'decision' => $request->decision,
+            'unit_user_id' => session('unit_user_id'),
         ]);
 
         $request->validate([

@@ -529,6 +529,12 @@
         }
     </script>
     <script>
+        // Escape server data before inserting it with innerHTML.
+        function escapeHtml(value) {
+            return String(value ?? '').replace(/[&<>"']/g, c => ({
+                '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+            })[c]);
+        }
         function openModal(doc) {
 
             const modal = document.getElementById('modal');
@@ -583,21 +589,21 @@
                     if (isImg) {
 
                         preview = `
-                            <img src="${url}"
+                            <img src="${escapeHtml(url)}"
                                 class="w-full h-[500px] object-cover">
                         `;
 
                     } else if (isPdf) {
 
                         preview = `
-                            <iframe src="${url}"
+                            <iframe src="${escapeHtml(url)}"
                                 class="w-full h-[500px]"></iframe>
                         `;
 
                     } else {
 
                         preview = `
-                            <a href="${url}"
+                            <a href="${escapeHtml(url)}"
                                 target="_blank"
                                 class="text-indigo-500">
                                 Open File
@@ -646,7 +652,7 @@
                 document.getElementById('coords').innerHTML =
                     `
                     📍
-                    <a href="https://www.google.com/maps?q=${doc.latitude},${doc.longitude}"
+                    <a href="https://www.google.com/maps?q=${encodeURIComponent(doc.latitude)},${encodeURIComponent(doc.longitude)}"
                         target="_blank"
                         class="underline">
 

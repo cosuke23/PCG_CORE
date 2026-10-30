@@ -37,7 +37,8 @@ Last updated: 2026-10-30 (branch `claude/cool-wozniak-rni95k`)
 ### Phase 4b — remaining security work
 - ⬜ Move personnel documents to private storage + authorised download route (C7) — 🔒 moves existing files
 - ⬜ Scope unit checkers to their unit / role (H9) — needs your access rules
-- ⬜ Remove PII from remaining logs (H8)
+- ✅ Remove PII from logs (H8)
+- ✅ Escape server data inserted with `innerHTML` (stored XSS via rejection comments)
 - ⬜ Upgrade Laravel 9 → supported version + dependencies (H7)
 - ⬜ Admin users in DB with roles; MFA (M6)
 
@@ -58,7 +59,7 @@ Last updated: 2026-10-30 (branch `claude/cool-wozniak-rni95k`)
 - ⬜ "Add student" forms with `action="#"` — verify against intended flow
 - ⬜ UI to create unit-checker accounts (`/unit-users/store` exists, no form)
 - ⬜ Face verification: finish or remove (no link, wrong validation table)
-- ⬜ Wrap SOI steps 3/4/6 delete-and-reinsert in transactions
+- ✅ Wrap SOI steps 3/4/6 delete-and-reinsert in transactions (test proves old rows survive a failed insert)
 - ⬜ Remove dead controllers and backup views (after your confirmation)
 
 ## Phase 7 — Database validation ⛔ (needs DB access/output)
@@ -90,6 +91,7 @@ Last updated: 2026-10-30 (branch `claude/cool-wozniak-rni95k`)
 | Date | Item | Result |
 |------|------|--------|
 | 2026-10-30 | `php artisan test` (48) | **Passed** |
+| 2026-10-30 | `php artisan test` (50, + transaction rollback) | **Passed** |
 | 2026-10-30 | Public pages `/`, `/about`, `/contact`, `/institutes/meptdi`, `/login`, `/register?type=officer`, `/admin/login`, `/unit/login`, `/unit/loginM1` | **Passed** (200) |
 | 2026-10-30 | Protected pages redirect when logged out | **Passed** |
 | 2026-10-30 | `/osaert/verify` | **Blocked** — needs `osaert_trainees` (real DB) |
