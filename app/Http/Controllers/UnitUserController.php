@@ -57,6 +57,12 @@ class UnitUserController extends Controller
                 ->withInput($request->only('email'));
         }
 
+        if ($user->role !== UnitUser::ROLE_M1) {
+            return back()
+                ->with('error', 'This account does not have M1 (all units) access. Use the unit login, or ask the administrator to grant M1 access.')
+                ->withInput($request->only('email'));
+        }
+
         session([
             'unit_user_id'   => $user->id,
             'unit_full_name' => $user->full_name,
@@ -199,7 +205,7 @@ class UnitUserController extends Controller
             'email' => $request->email,
             'username' => $request->username,
             'password' => Hash::make($request->password),
-            'role' => "unit_checker",
+            'role' => UnitUser::ROLE_UNIT,
             // The admin form's "role" dropdown actually lists units
             // (MEPLEF, NOCOP, ...); use it when the free-text unit is empty.
             'unit_name' => $request->unit_name ?: $request->role,

@@ -22,6 +22,18 @@ class UnitDocumentController extends Controller
             'docs'          => 'nullable|array',
         ]);
 
+        // Unit checkers may only decide on personnel of their own unit
+        // (the unit dashboard lists users.mother_unit = their unit); M1
+        // checkers review all units.
+        if (session('unit_role') !== \App\Models\UnitUser::ROLE_M1) {
+            $inUnit = DB::table('users')
+                ->where('serial_number', $request->serial_number)
+                ->where('mother_unit', session('unit_name'))
+                ->exists();
+
+            abort_unless($inUnit, 403, 'This applicant is not in your unit.');
+        }
+
         try {
 
             $serial   = $request->serial_number;

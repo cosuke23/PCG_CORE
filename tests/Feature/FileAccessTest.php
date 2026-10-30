@@ -107,9 +107,10 @@ class FileAccessTest extends TestCase
             ->get('/files/disciplinary_actions/disciplinary_actions/1_case.pdf')->assertNotFound();
     }
 
-    public function test_staff_can_open_any_file()
+    public function test_admin_and_m1_can_open_any_file()
     {
-        foreach ([['admin_logged_in' => true], ['unit_user_id' => 1]] as $session) {
+        // Admins and M1 checkers; own-unit checkers are covered in UnitAccessTest.
+        foreach ([['admin_logged_in' => true], ['unit_user_id' => 1, 'unit_role' => \App\Models\UnitUser::ROLE_M1]] as $session) {
             $this->withSession($session);
             $this->get('/files/documents_toupload/documents/1_nbi.pdf')->assertOk();
             $this->get('/files/disciplinary_actions/disciplinary_actions/1_case.pdf')->assertOk();

@@ -17,21 +17,10 @@
             <div>
 
                 <div class="flex justify-center py-8">
-                    <img src="{{ asset('logo.png') }}" class="w-24 h-24">
+                    <img src="{{ asset('images/brand/mepcom-logo.webp') }}" class="w-24 h-24">
                 </div>
 
-                <nav class="px-4 space-y-2">
-
-                    <a href="#" class="flex gap-3 px-4 py-3 rounded-xl hover:bg-gray-100">
-                        📊 Dashboard
-                    </a>
-
-                    <a href="{{ route('unit.201files') }}"
-                        class="flex gap-3 px-4 py-3 rounded-xl bg-indigo-100 text-indigo-600 font-semibold">
-                        📝 201 Files
-                    </a>
-
-                </nav>
+                @include('unit.partials.nav')
 
             </div>
 
@@ -45,6 +34,7 @@
 
         <!-- MAIN -->
         <main class="flex-1 overflow-y-auto p-10">
+            @include('unit.partials.flash')
 
             <h1 class="text-4xl font-bold mb-6">201 Files</h1>
 

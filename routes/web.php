@@ -193,6 +193,8 @@ Route::middleware(['admin.session'])->group(function () {
         ->name('admin.unit-users.index');
     Route::post('/admin/unit-users/{id}/password', [\App\Http\Controllers\UnitAccountController::class, 'updatePassword'])
         ->whereNumber('id')->name('admin.unit-users.password');
+    Route::post('/admin/unit-users/{id}/role', [\App\Http\Controllers\UnitAccountController::class, 'updateRole'])
+        ->whereNumber('id')->name('admin.unit-users.role');
     Route::post('/admin/unit-users/{id}/status', [\App\Http\Controllers\UnitAccountController::class, 'updateStatus'])
         ->whereNumber('id')->name('admin.unit-users.status');
 
@@ -270,25 +272,30 @@ Route::get('/unit/logout', [UnitUserController::class, 'logout']);
 
 Route::middleware(['unit.session'])->group(function () {
 
-    Route::get('/unit/dashboard', [UnitUserController::class, 'dashboard']);
-    Route::get('/unit/dashboardM1', [UnitUserController::class, 'dashboardM1']);
-
-    Route::get('/unit/search-serial/{serial}', [UnitUserController::class, 'searchSerial']);
+    Route::get('/unit/dashboard', [UnitUserController::class, 'dashboard'])->name('unit.dashboard');
 
     // Document review (approve / reject per document). The forms post to
     // /unit/documents/review, which used to point at an empty controller.
+    // Unit checkers may only review their own unit (checked in the controller).
     Route::post('/unit/documents/review', [UnitDocumentController::class, 'review'])
         ->name('unit.documents.review');
     Route::post('/unit/documents/review-final', [UnitDocumentController::class, 'review'])
         ->name('unit.documents.review.final');
 
-    Route::post('/unit/disciplinary/store', [UnitUserController::class, 'storeDisciplinary'])
-        ->name('disciplinary.store');
-    Route::delete('/unit/disciplinary/delete/{id}', [UnitUserController::class, 'deleteDisciplinary'])
-        ->name('disciplinary.delete');
+    // M1 checkers only (all units)
+    Route::middleware(['unit.m1'])->group(function () {
+        Route::get('/unit/dashboardM1', [UnitUserController::class, 'dashboardM1'])->name('unit.dashboard.m1');
 
-    Route::prefix('unit')->group(function () {
-        Route::get('/201-files', [UnitUserController::class, 'index_201'])->name('unit.201files');
-        Route::get('/201-files/{id}', [UnitUserController::class, 'show_201'])->name('unit.201files.show');
+        Route::get('/unit/search-serial/{serial}', [UnitUserController::class, 'searchSerial']);
+
+        Route::post('/unit/disciplinary/store', [UnitUserController::class, 'storeDisciplinary'])
+            ->name('disciplinary.store');
+        Route::delete('/unit/disciplinary/delete/{id}', [UnitUserController::class, 'deleteDisciplinary'])
+            ->name('disciplinary.delete');
+
+        Route::prefix('unit')->group(function () {
+            Route::get('/201-files', [UnitUserController::class, 'index_201'])->name('unit.201files');
+            Route::get('/201-files/{id}', [UnitUserController::class, 'show_201'])->name('unit.201files.show');
+        });
     });
 });

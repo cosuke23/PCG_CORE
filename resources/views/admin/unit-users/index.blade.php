@@ -7,7 +7,8 @@
         <div class="pcg-page__header">
             <div>
                 <h2>Unit checker accounts</h2>
-                <p>Accounts that sign in at <code>/unit/login</code> (own unit) or <code>/unit/loginM1</code> (all units) to review documents.</p>
+                <p>Own-unit checkers sign in at <code>/unit/login</code> and review their unit's documents.
+                    M1 checkers sign in at <code>/unit/loginM1</code> and also see all units, 201 files and disciplinary records.</p>
             </div>
         </div>
 
@@ -33,6 +34,7 @@
                                 <tr>
                                     <th scope="col">Name</th>
                                     <th scope="col">Unit</th>
+                                    <th scope="col">Access</th>
                                     <th scope="col">Status</th>
                                     <th scope="col">Actions</th>
                                 </tr>
@@ -48,6 +50,14 @@
                                             {{ $account->unit_name ?: '—' }}
                                             @if ($account->unit_code && $account->unit_code !== $account->unit_name)
                                                 <span class="pcg-table__muted">{{ $account->unit_code }}</span>
+                                            @endif
+                                        </td>
+                                        <td>
+                                            @php $isM1 = $account->role === \App\Models\UnitUser::ROLE_M1; @endphp
+                                            @if ($isM1)
+                                                <span class="pcg-badge pcg-badge--info">M1 · all units</span>
+                                            @else
+                                                <span class="pcg-badge">Own unit</span>
                                             @endif
                                         </td>
                                         <td>
@@ -67,6 +77,13 @@
                                                     <input class="pcg-input" type="password" id="pw-{{ $account->id }}" name="password"
                                                         minlength="8" required autocomplete="new-password" placeholder="New password">
                                                     <button type="submit" class="pcg-btn pcg-btn--secondary pcg-btn--sm">Set password</button>
+                                                </form>
+                                                <form method="POST" action="{{ route('admin.unit-users.role', $account->id) }}">
+                                                    @csrf
+                                                    <input type="hidden" name="role" value="{{ $isM1 ? \App\Models\UnitUser::ROLE_UNIT : \App\Models\UnitUser::ROLE_M1 }}">
+                                                    <button type="submit" class="pcg-btn pcg-btn--secondary pcg-btn--sm">
+                                                        {{ $isM1 ? 'Remove M1 access' : 'Grant M1 access' }}
+                                                    </button>
                                                 </form>
                                                 <form method="POST" action="{{ route('admin.unit-users.status', $account->id) }}">
                                                     @csrf

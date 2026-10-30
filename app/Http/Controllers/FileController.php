@@ -9,6 +9,9 @@ use Illuminate\Support\Facades\DB;
 /**
  * Serves uploaded personnel files after an access check.
  *
+ * Access: admins and M1 checkers see all files; own-unit checkers see the
+ * required documents of their unit's personnel; personnel see their own.
+ *
  * Files used to be linked directly (public/documents_toupload/..., etc.), so
  * anyone with the URL could download clearances and 201 files. Links now
  * point to /files/{path}; direct access is blocked in public/.htaccess.
@@ -54,9 +57,17 @@ class FileController extends Controller
             abort(404);
         }
 
-        $isStaff = $request->session()->get('admin_logged_in') || $request->session()->has('unit_user_id');
+        $session = $request->session();
+        $isAdmin = (bool) $session->get('admin_logged_in');
+        $isM1 = $session->has('unit_user_id') && $session->get('unit_role') === \App\Models\UnitUser::ROLE_M1;
+        $isUnit = $session->has('unit_user_id') && !$isM1;
 
-        if (!$isStaff) {
+        if ($isUnit && !$isAdmin) {
+            // Own-unit checkers: only the required documents of their unit's personnel.
+            if ($area !== 'documents_toupload' || !$this->inUnit($session->get('unit_name'), $relative)) {
+                abort(404);
+            }
+        } elseif (!$isAdmin && !$isM1) {
             if (!Auth::check()) {
                 return redirect()->guest(route('login'));
             }
@@ -79,6 +90,19 @@ class FileController extends Controller
             'Cache-Control' => 'private, no-store',
             'X-Content-Type-Options' => 'nosniff',
         ]);
+    }
+
+    private function inUnit(?string $unit, string $relative): bool
+    {
+        return DB::table('personnel_data as pd')
+            ->join('users as u', 'u.serial_number', '=', 'pd.serial_number')
+            ->where('u.mother_unit', $unit)
+            ->where(function ($q) use ($relative) {
+                foreach (self::DOCUMENT_COLUMNS as $column) {
+                    $q->orWhere('pd.' . $column, $relative);
+                }
+            })
+            ->exists();
     }
 
     private function ownedBy($user, string $area, string $relative, string $path): bool

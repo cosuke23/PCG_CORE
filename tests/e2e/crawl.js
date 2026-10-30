@@ -9,8 +9,8 @@ const shots = process.argv[3] === 'shots';
 const roles = {
   guest: { pages: ['/', '/about', '/contact', '/institutes/meptdi', '/login', '/register?type=officer', '/register?type=non_officer', '/admin/login', '/unit/login', '/unit/loginM1', '/osaert/verify', '/osaert/verify/1', '/osaert/verify?certificate=OSAERT-2025-000001'] },
   member: { login: ['/login', 'member@demo.test', 'Demo@12345'], pages: ['/dashboard', '/profile', '/upload-documents', '/documents/upload', '/upload-201', '/face-verify', '/applicant/1/face-verify', '/generate-soi', '/applicant/administrative-training', '/applicant/operational-training', '/files/documents_toupload/documents/demo_DEMO-0001_nbi_clearance.pdf', '/files/201_files/soi/demo_DEMO-0001_soi.pdf'] },
-  unit: { login: ['/unit/login', 'unit@demo.test', 'Demo@12345'], pages: ['/unit/dashboard', '/unit/search-serial/DEMO-0001', '/unit/201-files', '/unit/201-files/DEMO-0001', '/files/disciplinary_actions/disciplinary_actions/demo_case.pdf'] },
-  m1: { login: ['/unit/loginM1', 'm1@demo.test', 'Demo@12345'], pages: ['/unit/dashboardM1', '/unit/201-files'] },
+  unit: { login: ['/unit/login', 'unit@demo.test', 'Demo@12345'], pages: ['/unit/dashboard', '/files/documents_toupload/documents/demo_DEMO-0001_nbi_clearance.pdf'] },
+  m1: { login: ['/unit/loginM1', 'm1@demo.test', 'Demo@12345'], pages: ['/unit/dashboardM1', '/unit/search-serial/DEMO-0001', '/unit/201-files', '/unit/201-files/DEMO-0001', '/files/disciplinary_actions/disciplinary_actions/demo_case.pdf'] },
   admin: { login: ['/admin/login', 'admin@demo.test', 'Admin@Demo123'], pages: ['/admin/dashboard', '/admin/unit-users', '/admin/hr-analytics', '/administrative-tracks', '/personnel-administrative-training', '/operation-tracks', '/personnel/operational-training', '/admin/training-applications', '/admin/training-courses', '/admin/training-courses/create', '/admin/training-courses/1/edit', '/training-courses/1/students', '/training-courses/1/students/create', '/training-courses/1/students/csv-template', '/admin/osaert', '/admin/osaert/template', '/admin/osaert/certificates'] },
 };
 const only = process.env.ROLES ? process.env.ROLES.split(',') : null;

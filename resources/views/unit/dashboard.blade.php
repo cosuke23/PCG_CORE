@@ -22,47 +22,12 @@
                 <!-- LOGO -->
                 <div class="flex justify-center py-8">
 
-                    <img src="{{ asset('logo.png') }}"
+                    <img src="{{ asset('images/brand/mepcom-logo.webp') }}"
                         class="w-24 h-24 object-contain">
 
                 </div>
 
-                <!-- MENU -->
-                <nav class="px-4 space-y-2">
-
-                    <a href="#"
-                        class="flex items-center gap-3 px-4 py-3 rounded-xl text-gray-600 hover:bg-gray-100 transition">
-
-                        <span>📊</span>
-                        <span>Dashboard</span>
-
-                    </a>
-
-                    <a href="#"
-                        class="flex items-center gap-3 px-4 py-3 rounded-xl text-gray-600 hover:bg-gray-100 transition">
-
-                        <span>📝</span>
-                        <span>Enlistment</span>
-
-                    </a>
-
-                    <a href="#"
-                        class="flex items-center gap-3 px-4 py-3 rounded-xl bg-indigo-100 text-indigo-600 font-semibold">
-
-                        <span>✔</span>
-                        <span>Verification</span>
-
-                    </a>
-
-                    <a href="#"
-                        class="flex items-center gap-3 px-4 py-3 rounded-xl text-gray-600 hover:bg-gray-100 transition">
-
-                        <span>⚙</span>
-                        <span>Settings</span>
-
-                    </a>
-
-                </nav>
+                @include('unit.partials.nav')
 
             </div>
 
@@ -82,6 +47,7 @@
 
         <!-- MAIN -->
         <main class="flex-1 overflow-y-auto p-10">
+            @include('unit.partials.flash')
 
             <!-- HEADER -->
             <div class="flex justify-between items-start mb-8">
