@@ -64,6 +64,7 @@ Last updated: 2026-10-30 · branch `claude/cool-wozniak-rni95k`
 - ✅ Dev database: `schema_inferred.sql` + `php artisan pcg:dev-seed` (refuses anything but `*_dev`)
 - ⛔ Real schema comparison (needs your `inspect_schema.sql` output)
 - ✅ Lookup indexes migration (approved; tested add / re-run / rollback)
+- ✅ Missing training/LMS tables migration (`000005`): the owner's local `pcg_core` had none of the 7 training tables; creates only missing ones, empty (tested add / re-run / rollback keeps data, MariaDB)
 - 🔒 Normalise status casing; OSAERT dates → DATE
 
 ## Phase 8 — Testing ✅
@@ -97,5 +98,6 @@ Last updated: 2026-10-30 · branch `claude/cool-wozniak-rni95k`
 | 2026-10-30 | `config:cache`, `route:cache`, `view:cache` | **Passed** |
 | 2026-10-30 | Apache 2.4 virtual host as documented (`public/` docroot, `AllowOverride All`, `Require local`): crawl + all flows | **Passed** — same results as `artisan serve` |
 | 2026-10-30 | Apache: direct requests to `documents_toupload/`, `201_files/`, `selfies/` | **Passed** — 403; `/files/...` requires sign-in; `/.env` 404 |
+| 2026-10-30 | Training tables migration on a schema copy missing 6 of 7 tables | **Passed** — creates the 6, leaves the existing one, re-run no-op, rollback keeps a table with data |
 | — | Real `pcg_core` data | **Blocked** — needs access on your PC |
 | — | Windows scripts, Tailscale | **Not tested** — no Windows/Tailscale in this environment |

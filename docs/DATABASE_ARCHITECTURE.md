@@ -107,6 +107,7 @@ run inside a transaction, so a failed insert rolls back the delete.
 | `2026_10_30_000002_create_admin_audit_logs_table` | `admin_audit_logs` (who, action, route, result, IP, details) | drops the table |
 | `2026_10_30_000003_add_lookup_indexes` | indexes on `serial_number`, `personnel_id`, `applicant_id`, `course_id`, etc. — only where missing, skipping TEXT columns | drops only `pcg_idx_*` indexes it created |
 | `2026_10_30_000004_create_contact_messages_table` | `contact_messages` | drops the table |
+| `2026_10_30_000005_create_missing_training_tables` | `administrative_tracks`, `operation_tracks`, `rank_equivalencies`, `training_applications`, `training_courses`, `course_students`, `osaert_trainees` — **only those missing** (some `pcg_core` copies have none of them); existing tables untouched | drops only tables it created (comment `pcg:000005`) and only while empty |
 
 Procedure on your PC:
 
