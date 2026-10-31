@@ -1,7 +1,8 @@
 /*
  * Landing page motion (resources/views/pages/home.blade.php):
  * - the fixed boat backdrop darkens gradually as the page scrolls (--lp-dim);
- * - the header turns solid once the hero has scrolled away;
+ * - the pinned hero banner fades back as the first card covers it (--lp-hero-p);
+ * - the header turns solid once the hero has been covered;
  * - [data-reveal] blocks fade up as they enter the viewport.
  * Without JavaScript the page is fully readable (nothing is hidden).
  * "Reduce motion" users get no reveal animation.
@@ -12,6 +13,7 @@
     var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     var header = document.querySelector('.lp-top');
     var hero = document.querySelector('.lp-hero');
+    var firstCard = document.querySelector('.lp-band');
 
     root.classList.add('lp-js');
 
@@ -21,9 +23,14 @@
         var y = window.scrollY || window.pageYOffset;
         var vh = window.innerHeight || 800;
         root.style.setProperty('--lp-dim', Math.min(y / (vh * 1.6), 1) * 0.55);
+        // pinned banner recedes while the first card covers it
+        if (hero && !reduce) {
+            root.style.setProperty('--lp-hero-p', Math.min(y / Math.max(hero.offsetHeight, 1), 1).toFixed(3));
+        }
         if (header) {
-            var limit = hero ? hero.offsetTop + hero.offsetHeight - header.offsetHeight - 40 : 80;
-            header.classList.toggle('is-solid', y > limit);
+            // the hero is pinned (sticky), so measure the first card that covers it
+            var solid = firstCard ? firstCard.getBoundingClientRect().top <= header.offsetHeight + 8 : y > 80;
+            header.classList.toggle('is-solid', solid);
         }
         ticking = false;
     }

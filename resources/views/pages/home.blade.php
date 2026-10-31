@@ -93,12 +93,6 @@
             <p class="lp-wrap lp-band__credit">Photo: Philippine Coast Guard, MEPCOM</p>
         </section>
 
-        {{-- ===================================================== window: the boat shows through --}}
-        <section class="lp-window" aria-label="Our purpose">
-            <div class="lp-wrap">
-                <p class="lp-window__text" data-reveal>Every member of the Command.<br><span>One accurate record.</span></p>
-            </div>
-        </section>
 
         {{-- ===================================================== services --}}
         <section class="lp-section" id="services" aria-labelledby="services-title">
@@ -159,12 +153,6 @@
             </div>
         </section>
 
-        {{-- ===================================================== window 2 --}}
-        <section class="lp-window lp-window--short" aria-label="Our mission">
-            <div class="lp-wrap">
-                <p class="lp-window__text" data-reveal>Preventing, controlling and mitigating marine pollution<br><span>across Philippine waters.</span></p>
-            </div>
-        </section>
 
         {{-- ===================================================== about --}}
         <section class="lp-section lp-about" id="about" aria-labelledby="about-title">
