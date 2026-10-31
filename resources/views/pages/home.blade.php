@@ -23,7 +23,11 @@
     <header class="lp-top">
         <div class="lp-wrap lp-top__in">
             <a class="lp-brand" href="{{ route('home') }}">
-                <img src="{{ asset('images/brand/pcg-logo.webp') }}" alt="" width="40" height="40">
+                <span class="lp-brand__logos">
+                    <img class="lp-brand__bp" src="{{ asset('images/brand/bagong-pilipinas.webp') }}" alt="Bagong Pilipinas" width="44" height="41">
+                    <img src="{{ asset('images/brand/pcg-logo.webp') }}" alt="Philippine Coast Guard" width="40" height="40">
+                    <img src="{{ asset('images/brand/mepcom-logo.webp') }}" alt="Marine Environmental Protection Command" width="40" height="40">
+                </span>
                 <span>
                     <strong>MEPCOM HRMIS</strong>
                     <span>Philippine Coast Guard · Personnel gateway</span>
@@ -132,7 +136,7 @@
                         <a class="lp-link" href="{{ url('/unit/login') }}">Unit sign in</a>
                     </article>
                     <article class="lp-mini">
-                        <span class="lp-mini__icon"><i class="fa-solid fa-graduation-cap" aria-hidden="true"></i></span>
+                        <img class="lp-mini__seal" src="{{ asset('images/brand/meptdi-logo.webp') }}" alt="MEPTDI seal" width="44" height="44" loading="lazy">
                         <h3>MEPTDI</h3>
                         <p>Marine Environmental Protection Training and Doctrine Institute courses and programs.</p>
                         <a class="lp-link" href="{{ route('meptdi') }}">Visit MEPTDI</a>
@@ -191,7 +195,7 @@
                     <li><strong>NOCOP</strong><span>National Operations Center for Oil Pollution</span><small>Operational support</small></li>
                     <li><strong>MSFIS</strong><span>Marine Science Forensic Investigation Service</span><small>Operational support</small></li>
                     <li><strong>MEPRCGS</strong><span>Marine Environmental Protection Regulatory Compliance and Governance Service</span><small>Administrative support</small></li>
-                    <li><strong>MEPTDI</strong><span>Marine Environmental Protection Training and Doctrine Institute</span><small>Administrative support</small></li>
+                    <li class="lp-units__with-seal"><img src="{{ asset('images/brand/meptdi-logo.webp') }}" alt="" width="56" height="56" loading="lazy"><strong>MEPTDI</strong><span>Marine Environmental Protection Training and Doctrine Institute</span><small>Administrative support</small></li>
                     <li><strong>MEPG</strong><span>Marine Environmental Protection Group</span><small>Operating unit</small></li>
                 </ul>
             </div>
@@ -216,6 +220,8 @@
                 <div class="lp-foot__logos">
                     <img src="{{ asset('images/brand/pcg-logo.webp') }}" alt="Philippine Coast Guard" loading="lazy">
                     <img src="{{ asset('images/brand/mepcom-logo.webp') }}" alt="MEPCOM" loading="lazy">
+                    <img src="{{ asset('images/brand/meptdi-logo.webp') }}" alt="MEPTDI" loading="lazy">
+                    <img src="{{ asset('images/brand/bagong-pilipinas.webp') }}" alt="Bagong Pilipinas" loading="lazy">
                 </div>
                 <p>Marine Environmental Protection Command<br>Philippine Coast Guard</p>
             </div>
