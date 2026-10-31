@@ -51,7 +51,7 @@ Last updated: 2026-10-30 · branch `claude/cool-wozniak-rni95k`
 - ⬜ Restyle page content of legacy admin/unit/applicant pages with pcg-ui components (works today with compiled Tailwind)
 - ✅ Personnel app shell + redesigned personnel dashboard; admin dashboard summary
 - ⬜ Move remaining personnel pages (SOI form, uploads, training) into the personnel shell
-- ⛔ Comparison with cgmeptdi.com (network)
+- ✅ Landing page redesigned in the cgmeptdi.com style (maroon/gold/cream/navy, serif headings) from the owner's screenshot; self-hosted font and images
 
 ## Phase 6 — Functional fixes ✅
 - ✅ Unit review route; admin Reject button; add/remove student; student list; OSAERT verify page, certificate page, year filters and numbers; `/upload-201` 500; training-courses JS error; SOI undefined components; logout bugs; disciplinary delete; dead routes and links

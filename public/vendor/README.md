@@ -18,6 +18,7 @@ licence header.
 | bootstrap | bootstrap | 5.3.1 | MIT |
 | qrcodejs | qrcodejs | 1.0.0 | MIT |
 | inter | @fontsource/inter (latin 400/600/700/800) | 5.1.1 | SIL OFL 1.1 |
+| source-serif-4 | @fontsource/source-serif-4 (latin 600/700, landing page headings) | 5.1.0 | SIL OFL 1.1 |
 
 To update one: `npm install <package>@<version>` in a scratch folder, copy the
 same dist file over the old one, rename it with the new version, and update
