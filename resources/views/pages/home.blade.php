@@ -189,7 +189,7 @@
             <div class="lp-wrap">
                 <p class="lp-eyebrow lp-eyebrow--dark">Our units</p>
                 <h2 id="units-title" data-reveal>One Command, many missions.</h2>
-                <p class="lp-lead">MEPCOM's units cover law enforcement, oil-pollution response, marine science, regulation, training and field operations.</p>
+                <p class="lp-lead">MEPCOM's units cover law enforcement, oil-pollution response, marine science, regulation, training, field operations, accreditation and certification, headquarters support and procurement.</p>
                 <ul class="lp-units" data-reveal>
                     <li><strong>MEPLEF</strong><span>Marine Environmental Protection Law Enforcement Force</span><small>Operational support</small></li>
                     <li><strong>NOCOP</strong><span>National Operations Center for Oil Pollution</span><small>Operational support</small></li>
@@ -197,6 +197,9 @@
                     <li><strong>MEPRCGS</strong><span>Marine Environmental Protection Regulatory Compliance and Governance Service</span><small>Administrative support</small></li>
                     <li class="lp-units__with-seal"><img src="{{ asset('images/brand/meptdi-logo.webp') }}" alt="" width="56" height="56" loading="lazy"><strong>MEPTDI</strong><span>Marine Environmental Protection Training and Doctrine Institute</span><small>Administrative support</small></li>
                     <li><strong>MEPG</strong><span>Marine Environmental Protection Group</span><small>Operating unit</small></li>
+                    <li><strong>MEP AcCeS</strong><span>Marine Environmental Protection Accreditation Certification Services</span><small>Support unit</small></li>
+                    <li><strong>HSS</strong><span>Headquarters Support Service</span><small>Support unit</small></li>
+                    <li><strong>MEPROC</strong><span>Marine Environmental Protection Procurement Unit</span><small>Support unit</small></li>
                 </ul>
             </div>
         </section>
