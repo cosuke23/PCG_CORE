@@ -9,9 +9,15 @@
     <link rel="stylesheet" href="{{ asset('vendor/inter/inter.css') }}">
     <link rel="stylesheet" href="{{ asset('vendor/fontawesome/css/all.min.css') }}">
     <link rel="stylesheet" href="{{ asset('css/landing.css') }}">
+    <script src="{{ asset('js/landing.js') }}" defer></script>
 </head>
 <body class="lp">
     <a class="lp-skip" href="#main">Skip to content</a>
+
+    {{-- Fixed backdrop: the boat stays put while the page scrolls over it --}}
+    <div class="lp-backdrop" aria-hidden="true">
+        <img src="{{ asset('images/landing/hero.webp') }}" alt="" fetchpriority="high">
+    </div>
 
     {{-- ===================================================== header --}}
     <header class="lp-top">
@@ -55,7 +61,6 @@
     <main id="main">
         {{-- ===================================================== hero --}}
         <section class="lp-hero" aria-labelledby="hero-title">
-            <img class="lp-hero__img" src="{{ asset('images/landing/hero.webp') }}" alt="" fetchpriority="high">
             <div class="lp-wrap lp-hero__in">
                 <div class="lp-hero__seal">
                     <img src="{{ asset('images/brand/pcg-logo.webp') }}" alt="Philippine Coast Guard seal">
@@ -64,6 +69,7 @@
                 <div>
                     <h1 id="hero-title">MEPCOM AHEAD</h1>
                     <p class="lp-hero__quote">“Steering the Nation Toward Sustainable Seas”</p>
+                    <a class="lp-hero__scroll" href="#band-title"><span>Scroll to explore</span></a>
                 </div>
             </div>
         </section>
@@ -73,7 +79,7 @@
             <div class="lp-wrap lp-band__in">
                 <div>
                     <p class="lp-eyebrow">Philippine Coast Guard · MEPCOM</p>
-                    <h2 id="band-title">Protecting Our Seas. <em>Serving Our Nation.</em></h2>
+                    <h2 id="band-title" data-reveal>Protecting Our Seas. <em>Serving Our Nation.</em></h2>
                 </div>
                 <div>
                     <p><strong>MEPCOM HRMIS</strong> is the personnel information system of the Marine Environmental Protection Command:
@@ -87,15 +93,22 @@
             <p class="lp-wrap lp-band__credit">Photo: Philippine Coast Guard, MEPCOM</p>
         </section>
 
+        {{-- ===================================================== window: the boat shows through --}}
+        <section class="lp-window" aria-label="Our purpose">
+            <div class="lp-wrap">
+                <p class="lp-window__text" data-reveal>Every member of the Command.<br><span>One accurate record.</span></p>
+            </div>
+        </section>
+
         {{-- ===================================================== services --}}
         <section class="lp-section" id="services" aria-labelledby="services-title">
             <div class="lp-wrap">
                 <p class="lp-eyebrow lp-eyebrow--dark">Digital services</p>
-                <h2 id="services-title">Find the right service, sooner.</h2>
+                <h2 id="services-title" data-reveal>Find the right service, sooner.</h2>
                 <p class="lp-lead">What MEPCOM personnel and units use most, gathered in one place. Access to personnel records always requires signing in.</p>
 
                 <div class="lp-feature">
-                    <article class="lp-card lp-card--navy">
+                    <article class="lp-card lp-card--navy" data-reveal>
                         <div class="lp-card__kicker"><span class="lp-card__icon"><i class="fa-solid fa-id-card" aria-hidden="true"></i></span> Personnel portal</div>
                         <h3>Your service record, online</h3>
                         <p>Update your Statement of Information, upload required documents and 201 files, follow your document review and apply for training tracks.</p>
@@ -105,7 +118,7 @@
                         <a class="lp-btn lp-btn--gold" href="{{ route('login') }}">Sign in to the portal</a>
                     </article>
 
-                    <article class="lp-card" id="join">
+                    <article class="lp-card" id="join" data-reveal>
                         <div class="lp-card__kicker"><span class="lp-card__icon"><i class="fa-solid fa-user-plus" aria-hidden="true"></i></span> Join the system</div>
                         <h3>New personnel registration</h3>
                         <p>Officers and non-officers of MEPCOM register once. MEPCOM HR reviews every registration before access is granted.</p>
@@ -117,7 +130,7 @@
                     </article>
                 </div>
 
-                <div class="lp-grid4">
+                <div class="lp-grid4" data-reveal>
                     <article class="lp-mini">
                         <span class="lp-mini__icon"><i class="fa-solid fa-user-shield" aria-hidden="true"></i></span>
                         <h3>Unit document checkers</h3>
@@ -146,22 +159,29 @@
             </div>
         </section>
 
+        {{-- ===================================================== window 2 --}}
+        <section class="lp-window lp-window--short" aria-label="Our mission">
+            <div class="lp-wrap">
+                <p class="lp-window__text" data-reveal>Preventing, controlling and mitigating marine pollution<br><span>across Philippine waters.</span></p>
+            </div>
+        </section>
+
         {{-- ===================================================== about --}}
         <section class="lp-section lp-about" id="about" aria-labelledby="about-title">
             <div class="lp-wrap lp-about__in">
-                <figure class="lp-about__photo">
+                <figure class="lp-about__photo" data-reveal>
                     <img src="{{ asset('images/landing/personnel.webp') }}" alt="MEPCOM personnel in uniform" loading="lazy">
                 </figure>
                 <div>
                     <p class="lp-eyebrow">About MEPCOM</p>
-                    <h2 id="about-title">Guardians of the Philippine marine environment.</h2>
+                    <h2 id="about-title" data-reveal>Guardians of the Philippine marine environment.</h2>
                     <p>The Marine Environmental Protection Command is the specialised command of the Philippine Coast Guard responsible for
                         preventing, controlling and mitigating marine pollution within the maritime jurisdiction of the Philippines.</p>
                     <p>MEPCOM HRMIS keeps one accurate record for every member of the Command, so that the people who protect our seas are
                         supported by reliable personnel information.</p>
 
                     <h3>MEPCOM AHEAD</h3>
-                    <ol class="lp-ahead">
+                    <ol class="lp-ahead" data-reveal>
                         <li><b>A</b> Accountable governance and leadership</li>
                         <li><b>H</b> Highest standard of PCG core values</li>
                         <li><b>E</b> Efficient and sound resource management</li>
@@ -176,9 +196,9 @@
         <section class="lp-section" id="units" aria-labelledby="units-title">
             <div class="lp-wrap">
                 <p class="lp-eyebrow lp-eyebrow--dark">Our units</p>
-                <h2 id="units-title">One Command, many missions.</h2>
+                <h2 id="units-title" data-reveal>One Command, many missions.</h2>
                 <p class="lp-lead">MEPCOM's units cover law enforcement, oil-pollution response, marine science, regulation, training and field operations.</p>
-                <ul class="lp-units">
+                <ul class="lp-units" data-reveal>
                     <li><strong>MEPLEF</strong><span>Marine Environmental Protection Law Enforcement Force</span><small>Operational support</small></li>
                     <li><strong>NOCOP</strong><span>National Operations Center for Oil Pollution</span><small>Operational support</small></li>
                     <li><strong>MSFIS</strong><span>Marine Science Forensic Investigation Service</span><small>Operational support</small></li>
