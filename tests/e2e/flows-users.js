@@ -81,7 +81,7 @@ async function step(name, fn) {
     await Promise.all([me.waitForNavigation({ timeout: 15000 }), me.locator('#uploadForm [type=submit]').last().click()]);
     await me.click('.swal2-confirm').catch(() => {});
     const v = sql("select ombudsman_clearance from personnel_data pd join users u on u.id=pd.personnel_id where u.email='member@demo.test'");
-    check('Personnel uploads a required document', /^documents\/\d+_sample\.pdf$/.test(v), v);
+    check('Personnel uploads a required document', /^documents\/\d+_[0-9a-f]{16}_sample\.pdf$/.test(v), v);
     check('Upload success message shown', (await me.content()).includes('Documents uploaded successfully'));
     const res = await me.request.get(BASE + '/files/documents_toupload/' + v);
     check('Personnel can open own uploaded file', res.status() === 200);

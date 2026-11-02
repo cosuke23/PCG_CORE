@@ -77,7 +77,7 @@ class ApplicantDocumentController extends Controller
                 }
 
                 // filename
-                $fileName = time() . '_' . preg_replace('/[^A-Za-z0-9._-]/', '_', $file->getClientOriginalName());
+                $fileName = time() . '_' . bin2hex(random_bytes(8)) . '_' . preg_replace('/[^A-Za-z0-9._-]/', '_', $file->getClientOriginalName()); // random part: names cannot be guessed
 
                 // move file
                 $file->move($pathFolder, $fileName);
@@ -297,7 +297,7 @@ class ApplicantDocumentController extends Controller
             }
 
             // safe filename
-            $fileName = time() . '_' . preg_replace('/[^A-Za-z0-9._-]/', '_', $file->getClientOriginalName());
+            $fileName = time() . '_' . bin2hex(random_bytes(8)) . '_' . preg_replace('/[^A-Za-z0-9._-]/', '_', $file->getClientOriginalName()); // random part: names cannot be guessed
 
             // move file
             $file->move($pathFolder, $fileName);

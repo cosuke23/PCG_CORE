@@ -44,8 +44,9 @@ class RegisterController extends Controller
 
             // ✅ EMAIL CHECK FIRST (POPUP FRIENDLY)
             if (User::where('email', $request->email)->exists()) {
+                // never flash the password or the selfie into the session
                 return back()
-                    ->withInput()
+                    ->withInput($request->except(['password', 'password_confirmation', 'selfie_image']))
                     ->with('email_exists', 'Email already exists.');
             }
 
@@ -67,7 +68,8 @@ class RegisterController extends Controller
                 'unit'                => 'nullable|string|max:255',
                 'sub_unit'            => 'nullable|string|max:255',
 
-                'selfie_image'        => 'required|string',
+                // camera capture as a data URL; about 4 MB of image at most
+                'selfie_image'        => 'required|string|max:5600000',
             ]);
 
             // One account per serial number: every record is joined on it, so
@@ -105,11 +107,16 @@ class RegisterController extends Controller
             // Only accept real PNG/JPEG data (the camera capture sends PNG).
             $imageInfo = $image !== false ? @getimagesizefromstring($image) : false;
 
-            if (!$imageInfo || !in_array($imageInfo[2], [IMAGETYPE_PNG, IMAGETYPE_JPEG], true)) {
+            if (!$imageInfo || !in_array($imageInfo[2], [IMAGETYPE_PNG, IMAGETYPE_JPEG], true)
+                || $imageInfo[0] < 64 || $imageInfo[1] < 64 || $imageInfo[0] > 4096 || $imageInfo[1] > 4096) {
                 return back()
                     ->withErrors(['selfie_image' => 'Please capture a valid selfie photo.'])
                     ->withInput($request->except(['password', 'password_confirmation', 'selfie_image']));
             }
+
+            // Re-encode: only the picture itself is stored (no extra bytes or
+            // embedded data), scaled down to at most 1280 px.
+            $image = self::reencodeSelfie($image) ?? $image;
 
             // Production (cPanel) sets PCG_SELFIE_DIR to the old fixed path.
             $folderPath = config('pcg.selfie_dir');
@@ -177,5 +184,33 @@ class RegisterController extends Controller
                 ->withErrors(['error' => 'Registration failed. Please try again.'])
                 ->withInput($request->except(['password', 'password_confirmation', 'selfie_image']));
         }
+    }
+
+    /** PNG of the selfie scaled to at most 1280 px, or null when GD is not available. */
+    private static function reencodeSelfie(string $bytes): ?string
+    {
+        if (!function_exists('imagecreatefromstring')) {
+            return null;
+        }
+        $src = @imagecreatefromstring($bytes);
+        if ($src === false) {
+            return null;
+        }
+        $w = imagesx($src);
+        $h = imagesy($src);
+        $scale = min(1, 1280 / max($w, $h));
+        if ($scale < 1) {
+            $dst = imagescale($src, max(1, (int) round($w * $scale)), max(1, (int) round($h * $scale)));
+            imagedestroy($src);
+            $src = $dst ?: null;
+            if (!$src) {
+                return null;
+            }
+        }
+        ob_start();
+        imagepng($src, null, 6);
+        imagedestroy($src);
+
+        return ob_get_clean() ?: null;
     }
 }

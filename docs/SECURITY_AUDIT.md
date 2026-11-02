@@ -1,6 +1,6 @@
 # Security Audit — PCG_CORE (MEPCOM HRMIS)
 
-Audit date: 2026-10-30 · Baseline commit: `83459a9` ("first commit") · Branch: `claude/cool-wozniak-rni95k` · Last updated: 2026-11-02 (review after public deployment, §0d)
+Audit date: 2026-10-30 · Baseline commit: `83459a9` ("first commit") · Branch: `claude/cool-wozniak-rni95k` · Last updated: 2026-11-02 (full re-run before publication, §0e)
 
 Scope: source code in this repository. The live `pcg_core` database and the
 production server (`pcg-mepcom.com`) were **not** accessed; findings about them
@@ -54,12 +54,35 @@ The site is public at `https://mepcom-hrmis.tail7d94c9.ts.net` (Tailscale Funnel
 | N7 | Low | An open `.env` setup-admin session survived after real accounts existed. | **Fixed**: such sessions end on the next request. |
 | N8 | Low | The production template defaulted to `MAIL_MAILER=log` (codes never delivered, or written to the log). | **Fixed**: template defaults to SMTP; in production, codes are refused with the log/array mailers. |
 | N9 | Low | `/reinlist/store` wrote any posted column into the user's personal-info row. | **Fixed**: allow-list of personal fields. |
-| N10 | Low | Email codes can be guessed slowly once a password is known (5 tries per code, 5 per minute, no daily cap). | Open (optional): lock after ~20 failed codes per day. |
+| N10 | Low | Email codes can be guessed slowly once a password is known (5 tries per code, 5 per minute, no daily cap). | **Fixed** (P5, §0e): 30 codes per day per admin. |
 | N11 | Low | Registration says when an email or serial is already registered (account enumeration). | Accepted: applicants need that message. |
 | N12 | Low | `/osaert/verify/{id}` uses sequential ids, so trainee names and companies can be listed (60/min). | Open: changing it would break printed QR codes; use a random token for new certificates. |
-| N13 | Low | Any Host header is accepted (nginx `server_name _`, `TrustHosts` off). No current impact (emails contain no links). | Open: set the Funnel host when links are added to emails. |
+| N13 | Low | Any Host header is accepted (nginx `server_name _`, `TrustHosts` off). No current impact (emails contain no links). | **Fixed** (P11, §0e). |
 
 Checked and fine: route groups and `admin.can`/`OrgScope` on every HRMIS query; CSRF on all forms; file path checks (`..`, NUL, `realpath`); upload content checks; no raw SQL with user input; CSV formula neutralising; `APP_DEBUG=false`, secure HttpOnly cookies, HSTS, CSP without external origins; nginx blocks dotfiles, old upload folders and every `.php` except `index.php`.
+
+## 0e. Full re-run before full publication (2026-11-02)
+
+Second independent review of everything reachable from the internet, plus a sweep of the repository and `public/`.
+
+| # | Sev. | Finding | Status |
+|---|------|---------|--------|
+| P1 | High | Registration accepted selfies of any size (a real PNG header plus padding); anyone could fill the disk and the Pending queue. | **Fixed**: data URL max ~4 MB, dimensions 64–4096 px, image re-encoded to a clean PNG ≤1280 px (padding and embedded data dropped); `register` limiter 5/min and 20/hour per IP; nginx refuses bodies over 8 MB on `/register.submit`. |
+| P2 | High | A failed "email exists" registration flashed the plaintext password and the selfie into the session file. | **Fixed**: password, confirmation and selfie are never flashed. |
+| P3 | Medium | Any admin role (including `lms_admin`) could open every legacy personnel file through `/files`; names were guessable (`time()_name`). | **Fixed**: admins need `documents.view`; medical, disciplinary, legal and financial files need `documents.restricted`; selfies stay open to admins. New uploads get a random part in the name. Test in `FileAccessTest`. |
+| P4 | Medium | A Pending account reserved a serial, so anyone could block a real member by registering their serial first. | **Fixed**: only an Approved account reserves a serial; approval is refused while another approved account holds it. |
+| P5 | Medium | Per-account sign-in limits were keyed by IP, so one account could be tried from many addresses; email codes had no daily cap (N10). | **Fixed**: 30 tries per hour per account across all IPs (applicant, unit, admin); sign-in codes 5/min and 30/day per admin. |
+| P6 | Low | Sign-in timing revealed which admin and unit emails exist. | **Fixed**: one bcrypt check either way (`TimingSafe`). |
+| P7 | Low | `/files/...png|jpg` never reached the app on nginx (static rule), so photos and image 201 files failed. | **Fixed**: `location ^~ /files/` always goes to the app. |
+| P8 | Low | The deploy script and docs in the public repository named the server's SSH address. | **Fixed**: `deploy.ps1` reads `-Server`, `MEPCOM_DEPLOY_SERVER` or the git-ignored `deploy/target.local`; docs use placeholders. The address remains in older git history: keep SSH key-only. |
+| P9 | Low | `'unsafe-eval'` in the CSP on every page. | **Fixed**: only on pages that load Alpine.js. |
+| P10 | Low | Admin sessions had no maximum length. | **Fixed**: 12 hours after sign-in (`PCG_ADMIN_MAX_SESSION_HOURS`). |
+| P11 | Low | Any Host header was accepted (N13). | **Fixed**: production answers only for APP_URL's host, 127.0.0.1 and localhost (`TrustHosts`, extra names in `PCG_TRUSTED_HOSTS`); others get 400. |
+| P12 | Low | 255 MB of unused images, raw unit logos and location data were downloadable from `public/`; old view backups sat in `resources/views`. | **Fixed**: moved to `resources/archive/` (kept, not served); `robots.txt` lets search engines index only the public pages. |
+
+Server side (nginx site and PHP pool of this app only, applied with `deploy/update-web-config.sh`): per-visitor rate limit (8 requests/s, burst 40) and 30 connections; slow-client timeouts; only GET/HEAD/POST; source, backup, log and archive file types never served; small body limits on sign-in and contact forms; HSTS, nosniff and Referrer-Policy on every response including static files; PHP shell functions disabled for web requests.
+
+Still open (owner decision): N12 (OSAERT verify links use sequential ids; changing them breaks printed QR codes); 2FA for M1 checker accounts; a database UNIQUE index on `users.serial_number` after a duplicate clean-up; Hermes-wide SSH hardening (key-only login, fail2ban), which affects the other apps and is the server owner's call.
 
 ## 1. Findings and status
 

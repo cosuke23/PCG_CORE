@@ -37,7 +37,10 @@ class UnitUserController extends Controller
             ->where('is_active', 1)
             ->first();
 
-        if (!$user || !$user->password || !Hash::check($request->password, $user->password)) {
+        // one bcrypt check either way: unknown emails are not revealed by timing
+        $passwordOk = Hash::check((string) $request->password, $user->password ?? \App\Support\TimingSafe::dummyHash());
+
+        if (!$user || !$user->password || !$passwordOk) {
             Log::warning('Failed unit login', ['ip' => $request->ip()]);
             return null;
         }
@@ -261,7 +264,7 @@ class UnitUserController extends Controller
                     mkdir($folderPath, 0755, true);
                 }
 
-                $fileName = time() . '_' . uniqid() . '_' . preg_replace('/[^A-Za-z0-9._-]/', '_', $file->getClientOriginalName());
+                $fileName = time() . '_' . bin2hex(random_bytes(8)) . '_' . preg_replace('/[^A-Za-z0-9._-]/', '_', $file->getClientOriginalName());
 
                 $file->move($folderPath, $fileName);
 

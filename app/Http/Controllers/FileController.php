@@ -63,6 +63,11 @@ class FileController extends Controller
         }
         // command/unit-scoped admins have no file access until the scoped 201 module exists
         $isAdmin = (bool) $session->get('admin_logged_in') && !$session->get('admin_org_unit_id');
+        if ($isAdmin && !$this->adminMayOpen($session->get('admin_role'), $area, $relative)) {
+            // e.g. the LMS admin has no business with clearances, and only roles
+            // with documents.restricted may open medical or disciplinary files
+            abort(404);
+        }
         $isM1 = $session->has('unit_user_id') && $session->get('unit_role') === \App\Models\UnitUser::ROLE_M1;
         $isUnit = $session->has('unit_user_id') && !$isM1;
 
@@ -94,6 +99,32 @@ class FileController extends Controller
             'Cache-Control' => 'private, no-store',
             'X-Content-Type-Options' => 'nosniff',
         ]);
+    }
+
+    /**
+     * Admin roles follow the HRMIS document rules (AdminPermissions): selfies
+     * for every admin (lists show them), personnel documents need
+     * documents.view, and medical / disciplinary / legal / financial files
+     * also need documents.restricted.
+     */
+    private function adminMayOpen(?string $role, string $area, string $relative): bool
+    {
+        if ($area === 'selfies') {
+            return true;
+        }
+        if (!\App\Support\AdminPermissions::allows($role, 'documents.view')) {
+            return false;
+        }
+
+        $restricted = $area === 'disciplinary_actions'
+            || ($area === 'documents_toupload' && DB::table('personnel_data')->where('medical_clearance', $relative)->exists())
+            || ($area === '201_files' && DB::table('personnel_201_files')->where(function ($q) use ($relative) {
+                foreach (['disciplinary', 'legal', 'financial'] as $column) {
+                    $q->orWhere($column, '201_files/' . $relative)->orWhere($column, $relative);
+                }
+            })->exists());
+
+        return !$restricted || \App\Support\AdminPermissions::allows($role, 'documents.restricted');
     }
 
     private function inUnit(?string $unit, string $relative): bool

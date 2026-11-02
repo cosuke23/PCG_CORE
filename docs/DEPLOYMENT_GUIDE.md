@@ -164,10 +164,10 @@ are encrypted and access-controlled. Test a restore into a scratch database.
 ```bash
 # on the old PC (PowerShell): database backup + uploads
 C:\xampp\mysql\bin\mysqldump.exe -u root -p --single-transaction --routines --result-file="$env:USERPROFILE\Documents\pcg_core.sql" pcg_core
-scp -P 400 "$env:USERPROFILE\Documents\pcg_core.sql" coastguard-admin@<server>:~/
+scp -P <ssh-port> "$env:USERPROFILE\Documents\pcg_core.sql" coastguard-admin@<server>:~/
 
 # on the server
-ssh -p 400 <user>@<ubuntu-server>
+ssh -p <ssh-port> <user>@<ubuntu-server>
 sudo tailscale up                 # once, sign in to the same tailnet
 git clone https://github.com/cosuke23/PCG_CORE.git ~/PCG_CORE
 sudo SQL_DUMP=~/pcg_core.sql APP_KEY='<APP_KEY from the old .env>' bash ~/PCG_CORE/scripts/linux/install-server.sh

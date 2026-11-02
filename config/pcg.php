@@ -23,6 +23,8 @@ return [
         // authenticator app. Email needs working MAIL_* settings in .env.
         'two_factor' => env('PCG_ADMIN_2FA', 'email'),
         'email_code_minutes' => (int) env('PCG_ADMIN_EMAIL_CODE_MINUTES', 10),
+        // An admin session ends this many hours after sign-in, busy or not.
+        'max_session_hours' => (int) env('PCG_ADMIN_MAX_SESSION_HOURS', 12),
     ],
 
     // Folder that holds documents_toupload/, 201_files/ and
@@ -45,6 +47,10 @@ return [
 
     // Reverse proxies to trust (comma-separated). Tailscale Serve: 127.0.0.1
     'trusted_proxies' => env('TRUSTED_PROXIES'),
+
+    // Extra host names the app answers to besides APP_URL's host, 127.0.0.1 and
+    // localhost (comma-separated, exact). Production only (TrustHosts).
+    'trusted_hosts' => env('PCG_TRUSTED_HOSTS', ''),
 
     // Content-Security-Policy: enforce (default) | report | off
     'csp' => env('PCG_CSP', 'enforce'),

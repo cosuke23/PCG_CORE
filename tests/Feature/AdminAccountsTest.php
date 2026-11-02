@@ -79,6 +79,14 @@ class AdminAccountsTest extends TestCase
         $this->assertNull(session('admin_logged_in'));
     }
 
+    public function test_admin_session_ends_twelve_hours_after_sign_in()
+    {
+        $this->withSession(['admin_logged_in' => true, 'admin_role' => 'super_admin', 'admin_since' => time() - 13 * 3600])
+            ->get('/admin/accounts')
+            ->assertRedirect(route('admin.login'));
+        $this->assertNull(session('admin_logged_in'));
+    }
+
     public function test_new_account_must_enrol_two_factor_before_access()
     {
         $this->admin(AdminUser::ROLE_HR, false);

@@ -55,9 +55,11 @@ class User extends Authenticatable
         'email_verified_at' => 'datetime',
     ];
     /**
-     * Does another account already use this serial number? Case and
-     * surrounding spaces are ignored; rejected accounts (which cannot sign
-     * in) do not count; $exceptId skips the account being checked.
+     * Does another APPROVED account already use this serial number? Case and
+     * surrounding spaces are ignored. Pending and rejected accounts do not
+     * reserve a serial (otherwise anyone could block a real member by
+     * registering their serial first); approval is refused while another
+     * approved account holds it. $exceptId skips the account being checked.
      */
     public static function serialTaken(string $serial, ?int $exceptId = null): bool
     {
@@ -68,7 +70,7 @@ class User extends Authenticatable
 
         return static::query()
             ->whereRaw('UPPER(TRIM(serial_number)) = ?', [$serial])
-            ->whereRaw("LOWER(COALESCE(status, '')) <> 'rejected'")
+            ->whereRaw("LOWER(COALESCE(status, '')) = 'approved'")
             ->when($exceptId, fn ($q) => $q->where('id', '!=', $exceptId))
             ->exists();
     }

@@ -22,6 +22,18 @@ class EnsureAdminSession
                 ->withErrors(['email' => 'Please login as admin.']);
         }
 
+        // Absolute limit: an admin session ends 12 hours after sign-in even if it
+        // is kept busy (idle sessions already end after SESSION_LIFETIME).
+        $since = (int) $request->session()->get('admin_since', 0);
+        if ($since === 0) {
+            $request->session()->put('admin_since', time());
+        } elseif (time() - $since > (int) config('pcg.admin.max_session_hours', 12) * 3600) {
+            $request->session()->forget(['admin_logged_in', 'admin_user_id', 'admin_email', 'admin_name', 'admin_role', 'admin_org_unit_id', 'admin_bootstrap', 'admin_since']);
+            $request->session()->migrate(true);
+
+            return redirect()->route('admin.login')->withErrors(['email' => 'Your admin session has ended. Please sign in again.']);
+        }
+
         // Database accounts: re-read role, scope and status on every request so
         // a change by a super admin (or a deactivation) applies immediately.
         if ($id = $request->session()->get('admin_user_id')) {

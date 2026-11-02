@@ -17,7 +17,7 @@ $publicPath = getcwd();
 
 $uri = urldecode(parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH) ?? '');
 
-$staticRoots = ['css', 'js', 'vendor', 'images', 'backgrounds', 'ph_json', 'storage', 'favicon.ico', 'robots.txt'];
+$staticRoots = ['css', 'js', 'vendor', 'images', 'backgrounds', 'storage', 'favicon.ico', 'robots.txt'];
 
 $segments = preg_split('#[/\\\\]+#', trim($uri, "/\\"));
 $isStatic = $uri !== '/'

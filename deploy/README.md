@@ -37,8 +37,8 @@ scripts refuse to overwrite any file without that line.
 
 1. **Copy the kit to the server** (PowerShell, in the PCG_CORE folder):
 
-       scp -P 400 -r deploy coastguard-admin@112.199.83.96:mepcom-hrmis-deploy
-       ssh -p 400 coastguard-admin@112.199.83.96 "sed -i 's/\r$//' ~/mepcom-hrmis-deploy/*.sh"
+       scp -P <ssh-port> -r deploy <user>@<server>:mepcom-hrmis-deploy
+       ssh -p <ssh-port> <user>@<server> "sed -i 's/\r$//' ~/mepcom-hrmis-deploy/*.sh"
 
 2. **Preflight, read-only** (on the server). Fix anything it reports; nothing is changed.
 
@@ -54,7 +54,7 @@ scripts refuse to overwrite any file without that line.
 4. **Optional: bring your data** (dump made on the PC with
    `mysqldump.exe -u root -p --single-transaction --routines --result-file=pcg_core.sql pcg_core`):
 
-       scp -P 400 pcg_core.sql coastguard-admin@112.199.83.96:~/
+       scp -P <ssh-port> pcg_core.sql <user>@<server>:~/
        sudo bash ~/mepcom-hrmis-deploy/import-database.sh ~/pcg_core.sql
 
    Uploaded files: copy the PC's `documents_toupload`, `201_files`,
@@ -71,7 +71,24 @@ scripts refuse to overwrite any file without that line.
 
        sudo bash ~/mepcom-hrmis-deploy/verify.sh
 
+## Security updates of the web server settings
+
+When the kit's nginx site or PHP pool changes (for example the rate limits and
+blocked file types of 2026-11-02), apply only those two files, on the server:
+
+    sudo bash ~/mepcom-hrmis-deploy/update-web-config.sh
+    sudo bash ~/mepcom-hrmis-deploy/verify.sh
+
+Each file is tested first; if a test fails the previous file is put back and
+nothing is reloaded. Copies of the previous files are kept in
+`/root/mepcom-hrmis-webconfig-<time>/`.
+
 ## Updates and rollback (from the PC)
+
+The first run asks for the server's SSH login (`user@host`) and port and saves
+them in `deploy\target.local`, which git ignores, so the address is not
+published with the repository. You can also pass `-Server user@host -Port <n>`.
+
 
     powershell -ExecutionPolicy Bypass -File deploy\deploy.ps1            # code only
     powershell -ExecutionPolicy Bypass -File deploy\deploy.ps1 -Migrate   # with migrations (backup first)
@@ -104,4 +121,5 @@ before removing either (`DROP DATABASE` is never run by these scripts).
 | `release.sh` | server, deploy account | `/srv/mepcom-hrmis/releases`, `current` |
 | `backup.sh` | server, deploy account / cron | `/srv/mepcom-hrmis/backups` |
 | `verify.sh` | server, sudo | nothing |
+| `update-web-config.sh` | server, sudo | this app's nginx site and PHP pool only |
 | `deploy.ps1` | the PC | pushes and calls `release.sh` |
