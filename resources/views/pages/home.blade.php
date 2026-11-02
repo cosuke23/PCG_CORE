@@ -197,9 +197,9 @@
                     <li><strong>MEPRCGS</strong><span>Marine Environmental Protection Regulatory Compliance and Governance Service</span><small>Administrative support</small></li>
                     <li class="lp-units__with-seal"><img src="{{ asset('images/brand/meptdi-logo.webp') }}" alt="" width="56" height="56" loading="lazy"><strong>MEPTDI</strong><span>Marine Environmental Protection Training and Doctrine Institute</span><small>Administrative support</small></li>
                     <li><strong>MEPG</strong><span>Marine Environmental Protection Group</span><small>Operating unit</small></li>
-                    <li><strong>MEP AcCeS</strong><span>Marine Environmental Protection Accreditation Certification Services</span><small>Support unit</small></li>
-                    <li><strong>HSS</strong><span>Headquarters Support Service</span><small>Support unit</small></li>
-                    <li><strong>MEPROC</strong><span>Marine Environmental Protection Procurement Unit</span><small>Support unit</small></li>
+                    <li class="lp-units__with-seal"><img src="{{ asset('images/brand/mepacces-logo.webp') }}" alt="" width="56" height="56" loading="lazy"><strong>MEP AcCeS</strong><span>Marine Environmental Protection Accreditation Certification Services</span><small>Support unit</small></li>
+                    <li class="lp-units__with-seal"><img src="{{ asset('images/brand/hss-logo.webp') }}" alt="" width="56" height="56" loading="lazy"><strong>HSS</strong><span>Headquarters Support Service</span><small>Support unit</small></li>
+                    <li class="lp-units__with-seal"><img src="{{ asset('images/brand/meproc-logo.webp') }}" alt="" width="56" height="56" loading="lazy"><strong>MEPROC</strong><span>Marine Environmental Protection Procurement Unit</span><small>Support unit</small></li>
                 </ul>
             </div>
         </section>
