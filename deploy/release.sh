@@ -8,6 +8,7 @@
 # Roll back by hand:  bash ~/mepcom-hrmis-deploy/release.sh --rollback
 set -Eeuo pipefail
 umask 007   # group (mepcom) must read the code and write caches
+export PATH=/usr/local/bin:$PATH   # composer lives in /usr/local/bin
 HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 . "$HERE/config.sh"
 [[ -f "$BASE/shared/PORT" ]] && PORT="$(cat "$BASE/shared/PORT")"

@@ -7,6 +7,7 @@
 # /var/tmp/mepcom-hrmis-snapshots (states of the other apps, used by verify.sh).
 # Exit code 0 = safe to run server-setup.sh with these names and this port.
 set -Euo pipefail
+export PATH=/usr/local/sbin:/usr/local/bin:$PATH   # sudo drops /usr/local/bin; composer lives there
 HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 . "$HERE/config.sh"; . "$HERE/lib.sh"
 [[ -f "$BASE/shared/PORT" ]] && PORT="$(cat "$BASE/shared/PORT")"   # a previous setup chose the port
