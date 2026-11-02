@@ -25,4 +25,4 @@ SNAP_DIR=/var/tmp/mepcom-hrmis-snapshots
 MARKER="managed-by: mepcom-hrmis deploy kit"   # on the first line of every file we install
 
 # PHP extensions PCG_CORE needs (checked, never installed by this kit).
-REQUIRED_EXT=(pdo_mysql mbstring openssl fileinfo gd intl zip sodium curl xml tokenizer ctype)
+REQUIRED_EXT=(pdo_mysql mbstring openssl fileinfo gd intl zip curl xml tokenizer ctype)
