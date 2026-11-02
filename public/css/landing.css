@@ -191,7 +191,22 @@ main > section:not(.lp-hero) { position: relative; z-index: 1; }
 .lp-about__main { position: relative; display: block; }
 .lp-about__main::before { content: ""; position: absolute; left: -12px; bottom: -12px; width: 45%; height: 45%; border-left: 3px solid var(--lp-gold); border-bottom: 3px solid var(--lp-gold); pointer-events: none; }
 .lp-about__photo--pair img { display: block; width: 100%; height: auto; aspect-ratio: 4 / 3; object-fit: cover; object-position: 50% 45%; border-radius: 6px; }
-.lp-about__photo--pair .lp-about__inset { position: relative; width: 52%; margin: -18% -16px 0 auto; border: 4px solid rgb(27, 31, 66); border-radius: 8px; box-shadow: 0 18px 40px rgba(0, 0, 0, .45); }
+.lp-about__photo--pair .lp-about__inset { position: relative; display: block; width: 52%; margin: -18% -16px 0 auto; border: 4px solid rgb(27, 31, 66); border-radius: 8px; box-shadow: 0 18px 40px rgba(0, 0, 0, .45); }
+
+/* Photos you can open: a little wider on hover, full screen on click. */
+.lp-zoom { display: block; width: 100%; padding: 0; border: 0; background: none; cursor: zoom-in; border-radius: 6px; transition: transform .35s cubic-bezier(.2, .7, .2, 1), box-shadow .35s ease; }
+.lp-about__photo--pair .lp-zoom.lp-about__inset { width: 52%; z-index: 3; }   /* always above the team photo */
+.lp-zoom:focus-visible { outline: 3px solid var(--lp-gold); outline-offset: 4px; }
+@media (hover: hover) {
+    .lp-zoom:hover, .lp-zoom:focus-visible { position: relative; z-index: 2; transform: scale(1.08); box-shadow: 0 26px 60px rgba(0, 0, 0, .55); }
+    .lp-about__inset.lp-zoom:hover, .lp-about__inset.lp-zoom:focus-visible { z-index: 4; transform: scale(1.22); transform-origin: 100% 100%; }
+}
+.lp-lightbox { position: fixed; inset: 0; z-index: 1000; display: grid; place-items: center; padding: 24px; background: rgba(8, 10, 28, .92); cursor: zoom-out; opacity: 0; transition: opacity .2s ease; }
+.lp-lightbox.is-open { opacity: 1; }
+.lp-lightbox img { max-width: calc(100vw - 48px); max-height: calc(100vh - 48px); max-height: calc(100dvh - 48px); width: auto; height: auto; object-fit: contain; border-radius: 6px; box-shadow: 0 30px 80px rgba(0, 0, 0, .6); }
+.lp-lightbox__close { position: absolute; top: 14px; right: 14px; width: 44px; height: 44px; border: 0; border-radius: 50%; background: rgba(255, 255, 255, .14); color: #fff; font-size: 26px; line-height: 1; cursor: pointer; }
+.lp-lightbox__close:hover, .lp-lightbox__close:focus-visible { background: rgba(255, 255, 255, .28); outline: none; }
+html.lp-lightbox-open { overflow: hidden; }
 .lp-about__photo::before { content: ""; position: absolute; left: -12px; bottom: -12px; width: 45%; height: 45%; border-left: 3px solid var(--lp-gold); border-bottom: 3px solid var(--lp-gold); }
 .lp-about h2 { color: var(--lp-white); }
 .lp-about p { color: rgba(255, 255, 255, .82); font-size: 15px; }
@@ -260,7 +275,7 @@ main > section:not(.lp-hero) { position: relative; z-index: 1; }
     .lp-backdrop img { object-position: 58% 78%; }
     .lp-grid4, .lp-units, .lp-foot__in { grid-template-columns: 1fr; }
     .lp-about__photo--pair { padding-right: 8px; }
-    .lp-about__photo--pair .lp-about__inset { width: 58%; margin-right: -8px; }
+    .lp-about__photo--pair .lp-about__inset, .lp-about__photo--pair .lp-zoom.lp-about__inset { width: 58%; margin-right: -8px; }
     .lp-ahead li { font-size: 14px; }
     .lp-mini + .lp-mini { border-left: 0; border-top: 1px solid var(--lp-line); }
     .lp-section { padding-block: 52px; }

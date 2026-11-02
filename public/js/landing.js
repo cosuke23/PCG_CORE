@@ -40,6 +40,43 @@
     window.addEventListener('resize', onScroll);
     onScroll();
 
+    // ---- photos: click (or Enter) opens the picture full screen;
+    //      click anywhere, the close button or Escape closes it.
+    document.querySelectorAll('[data-lp-zoom]').forEach(function (button) {
+        button.addEventListener('click', function () {
+            var source = button.querySelector('img');
+            if (!source) { return; }
+            var box = document.createElement('div');
+            box.className = 'lp-lightbox';
+            box.setAttribute('role', 'dialog');
+            box.setAttribute('aria-modal', 'true');
+            box.setAttribute('aria-label', source.alt || 'Photo');
+            var img = document.createElement('img');
+            img.src = source.currentSrc || source.src;
+            img.alt = source.alt;
+            var close = document.createElement('button');
+            close.type = 'button';
+            close.className = 'lp-lightbox__close';
+            close.setAttribute('aria-label', 'Close');
+            close.textContent = '\u00d7';
+            box.appendChild(img);
+            box.appendChild(close);
+            document.body.appendChild(box);
+            root.classList.add('lp-lightbox-open');
+            var shut = function () {
+                document.removeEventListener('keydown', onKey);
+                root.classList.remove('lp-lightbox-open');
+                box.remove();
+                button.focus();
+            };
+            var onKey = function (e) { if (e.key === 'Escape') { shut(); } };
+            box.addEventListener('click', shut);
+            document.addEventListener('keydown', onKey);
+            requestAnimationFrame(function () { box.classList.add('is-open'); });
+            close.focus();
+        });
+    });
+
     // ---- reveal on scroll
     var items = Array.prototype.slice.call(document.querySelectorAll('[data-reveal]'));
     if (reduce || !('IntersectionObserver' in window)) {

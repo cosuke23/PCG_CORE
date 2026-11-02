@@ -162,8 +162,8 @@
         <section class="lp-section lp-about" id="about" aria-labelledby="about-title">
             <div class="lp-wrap lp-about__in">
                 <figure class="lp-about__photo lp-about__photo--pair" data-reveal>
-                    <span class="lp-about__main"><img src="{{ asset('images/landing/about-team.webp') }}" alt="MEPCOM personnel in uniform, group photo" width="1400" height="1050" loading="lazy"></span>
-                    <img class="lp-about__inset" src="{{ asset('images/landing/about-training.webp') }}" alt="MEPCOM personnel at computers during a training session" width="1000" height="750" loading="lazy">
+                    <span class="lp-about__main"><button type="button" class="lp-zoom" data-lp-zoom aria-label="View photo full screen: MEPCOM personnel, group photo"><img src="{{ asset('images/landing/about-team.webp') }}" alt="MEPCOM personnel in uniform, group photo" width="1400" height="1050" loading="lazy"></button></span>
+                    <button type="button" class="lp-zoom lp-about__inset" data-lp-zoom aria-label="View photo full screen: training session"><img src="{{ asset('images/landing/about-training.webp') }}" alt="MEPCOM personnel at computers during a training session" width="1000" height="750" loading="lazy"></button>
                 </figure>
                 <div>
                     <p class="lp-eyebrow">About MEPCOM</p>
