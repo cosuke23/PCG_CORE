@@ -20,7 +20,7 @@ php artisan pcg:import-org-units database/data/mepcom_units.json --apply
 
 Insert-only: existing units are never changed, moved or deleted, and running it again creates nothing new.
 
-## Proposed tree (140 units under MEPCOM)
+## Proposed tree (143 units under MEPCOM)
 
 - `MEPLEF` — Marine Environmental Protection Law Enforcement Force *(unit)*
   - `HMEPLEF` — Headquarters, MEPLEF *(office)*
@@ -162,3 +162,6 @@ Insert-only: existing units are never changed, moved or deleted, and running it 
     - `MEPUnit Aurora` — MEPUnit Aurora *(unit)*
     - `MEPUnit Batanes` — MEPUnit Batanes *(unit)*
     - `MEPUnit Isabela` — MEPUnit Isabela *(unit)*
+- `MEP AcCeS` — Marine Environmental Protection Accreditation Certification Services *(unit)* — added 2026-11-02
+- `HSS` — Headquarters Support Service *(unit)* — added 2026-11-02
+- `MEPROC` — Marine Environmental Protection Procurement Unit *(unit)* — added 2026-11-02
