@@ -2,6 +2,12 @@
 # MEPCOM HRMIS. Reachable only from this machine (127.0.0.1); the HTTPS entry
 # point is its own Tailscale node (tailscaled-mepcom), which proxies here.
 # Its own file and port: no other site in conf.d is touched.
+
+# Per-visitor limits (zone names are unique to this app, so other sites are
+# unaffected). The client address is the real one (set_real_ip_from below).
+limit_req_zone  $binary_remote_addr zone=mepcom_hrmis_app:10m rate=8r/s;
+limit_conn_zone $binary_remote_addr zone=mepcom_hrmis_conn:10m;
+
 server {
     listen 127.0.0.1:@PORT@;
     server_name _;
@@ -12,6 +18,19 @@ server {
     # documents form: several files of up to 10 MB in one request
     client_max_body_size 120m;
     server_tokens off;
+    autoindex off;
+
+    # Slow or stalled clients are dropped instead of holding a worker.
+    client_header_timeout 15s;
+    client_body_timeout 60s;
+    send_timeout 60s;
+    keepalive_timeout 30s;
+    limit_conn mepcom_hrmis_conn 30;
+    limit_req_status 429;
+    limit_conn_status 429;
+
+    # Only the methods the app uses (forms send PUT/PATCH/DELETE as POST).
+    if ($request_method !~ ^(GET|HEAD|POST)$) { return 405; }
 
     # Only the local Tailscale proxy connects here, so its forwarded client IP
     # is trusted (sign-in throttling and the audit log use it).
@@ -19,22 +38,41 @@ server {
     real_ip_header X-Forwarded-For;
     real_ip_recursive on;
 
-    # The application sends its own CSP and security headers.
+    # The application sends its own CSP and security headers on pages; these
+    # cover static files too.
     add_header Strict-Transport-Security "max-age=31536000" always;
+    add_header X-Content-Type-Options "nosniff" always;
+    add_header Referrer-Policy "strict-origin-when-cross-origin" always;
 
     # Legacy upload folders must never be served directly (files go through
     # the access-checked /files route); dotfiles neither.
     location ~* ^/(documents_toupload|201_files|disciplinary_actions|selfies)(/|$) { return 404; }
     location ~ /\.(?!well-known) { deny all; }
+    # Never serve source, backups, dumps, logs or archives, even if one lands in public/.
+    location ~* \.(sql|bak|old|orig|swp|log|sh|ini|env|conf|yml|yaml|json|lock|md|zip|tar|gz|tgz|7z|rar|phar|txt|html?)$ { return 404; }
 
     location / {
         try_files $uri $uri/ /index.php?$query_string;
     }
 
+    # Access-checked personnel files (/files/..., any extension) always go to
+    # the app; ^~ stops the static-file and blocked-extension rules below.
+    location ^~ /files/ {
+        rewrite ^ /index.php last;
+    }
+
+    # Small bodies where no large upload belongs (a selfie is about 1-4 MB):
+    # oversized requests are refused here with 413 before PHP sees them.
+    location = /register.submit { client_max_body_size 8m; rewrite ^ /index.php last; }
+    location ~ ^/(login|admin/login|admin/two-factor|unit/login|unit/loginM1|contact) { client_max_body_size 64k; try_files $uri /index.php?$query_string; }
+
     location = /favicon.ico { access_log off; log_not_found off; }
     location = /robots.txt  { access_log off; log_not_found off; }
 
     location = /index.php {
+        # Every page request counts against the per-visitor rate; short bursts
+        # (a page with several requests, quick clicks) pass straight through.
+        limit_req zone=mepcom_hrmis_app burst=40 nodelay;
         fastcgi_pass unix:/run/php-fpm/mepcom-hrmis.sock;
         include fastcgi_params;
         fastcgi_param SCRIPT_FILENAME $realpath_root$fastcgi_script_name;
@@ -43,6 +81,10 @@ server {
         fastcgi_param HTTPS on;
         fastcgi_param HTTP_PROXY "";
         fastcgi_hide_header X-Powered-By;
+        # nginx sends these for every response (above); avoid duplicates
+        fastcgi_hide_header Strict-Transport-Security;
+        fastcgi_hide_header X-Content-Type-Options;
+        fastcgi_hide_header Referrer-Policy;
         fastcgi_read_timeout 120s;
     }
 

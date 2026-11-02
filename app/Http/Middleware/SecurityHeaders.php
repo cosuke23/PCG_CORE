@@ -40,17 +40,23 @@ class SecurityHeaders
         $mode = config('pcg.csp', 'enforce');
         if ($mode !== 'off') {
             $header = $mode === 'report' ? 'Content-Security-Policy-Report-Only' : 'Content-Security-Policy';
-            $response->headers->set($header, $this->policy($nonce));
+            // 'unsafe-eval' only where Alpine.js is loaded (it needs it);
+            // every other page gets the strict policy.
+            $content = method_exists($response, 'getContent') ? $response->getContent() : false;
+            $needsEval = is_string($content) && str_contains($content, 'vendor/alpinejs');
+            $response->headers->set($header, $this->policy($nonce, $needsEval));
         }
 
         return $response;
     }
 
-    private function policy(string $nonce): string
+    private function policy(string $nonce, bool $allowEval = true): string
     {
+        $eval = $allowEval ? " 'unsafe-eval'" : '';
+
         return implode('; ', [
             "default-src 'self'",
-            "script-src 'self' 'nonce-$nonce' 'unsafe-eval'",
+            "script-src 'self' 'nonce-$nonce'$eval",
             "style-src 'self' 'unsafe-inline'",
             "img-src 'self' data: blob: https://*.tile.openstreetmap.org",
             "font-src 'self' data:",

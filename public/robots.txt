@@ -1,2 +1,7 @@
+# MEPCOM HRMIS: only the public information pages may be indexed.
 User-agent: *
-Disallow:
+Allow: /$
+Allow: /about
+Allow: /contact
+Allow: /institutes/
+Disallow: /

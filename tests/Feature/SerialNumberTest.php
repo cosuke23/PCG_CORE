@@ -35,6 +35,8 @@ class SerialNumberTest extends TestCase
         $this->assertTrue(User::serialTaken('SN-100'));
         $this->assertTrue(User::serialTaken('  sn-100'));
         $this->assertFalse(User::serialTaken('SN-200'), 'a rejected account does not block the serial');
+        $this->assertFalse(User::serialTaken('SN-100', DB::table('users')->where('email', 'owner@x.test')->value('id')),
+            'a pending account (the impostor) does not reserve the serial');
         $this->assertFalse(User::serialTaken('SN-300'));
         $this->assertFalse(User::serialTaken(''));
     }
@@ -50,6 +52,13 @@ class SerialNumberTest extends TestCase
         ])->assertSessionHasErrors('serial_number');
 
         $this->assertSame(0, DB::table('users')->where('email', 'new@x.test')->count());
+    }
+
+    public function test_a_pending_account_does_not_block_the_real_member()
+    {
+        DB::table('users')->insert(['name' => 'Squatter', 'email' => 'sq@x.test', 'password' => 'x', 'serial_number' => 'SN-500', 'status' => 'Pending']);
+
+        $this->assertFalse(User::serialTaken('SN-500'));
     }
 
     public function test_a_second_account_for_a_serial_is_not_approved()

@@ -55,7 +55,11 @@ class AdminLoginController extends Controller
     {
         $admin = AdminUser::where('email', strtolower($request->email))->first();
 
-        if (!$admin || !$admin->is_active || !Hash::check($request->password, $admin->password)) {
+        // Always run one bcrypt check, so the answer takes as long for an
+        // unknown email as for a wrong password (no account discovery by timing).
+        $passwordOk = Hash::check((string) $request->password, $admin->password ?? \App\Support\TimingSafe::dummyHash());
+
+        if (!$admin || !$admin->is_active || !$passwordOk) {
             AdminAudit::record('login.failed', $request->email, [], null, $request->email);
             Log::warning('Failed admin login', ['ip' => $request->ip()]);
 
@@ -102,6 +106,7 @@ class AdminLoginController extends Controller
 
             session([
                 'admin_logged_in' => true,
+                'admin_since' => time(),
                 'admin_user_id'   => null,
                 'admin_email'     => $adminEmail,
                 'admin_name'      => 'Setup administrator',
@@ -293,6 +298,7 @@ class AdminLoginController extends Controller
 
         session([
             'admin_logged_in' => true,
+            'admin_since' => time(),
             'admin_user_id'   => $admin->id,
             'admin_email'     => $admin->email,
             'admin_name'      => $admin->name,
@@ -318,7 +324,7 @@ class AdminLoginController extends Controller
     public function logout(Request $request)
     {
         AdminAudit::record('logout');
-        session()->forget(['admin_logged_in', 'admin_user_id', 'admin_email', 'admin_name', 'admin_role', 'admin_org_unit_id', 'admin_bootstrap', 'admin_2fa_user_id']);
+        session()->forget(['admin_logged_in', 'admin_user_id', 'admin_email', 'admin_name', 'admin_role', 'admin_org_unit_id', 'admin_bootstrap', 'admin_2fa_user_id', 'admin_since']);
         $request->session()->migrate(true);
         $request->session()->regenerateToken();
 

@@ -26,12 +26,32 @@ param(
     [switch]$Rollback,
     # Do not run the PHP tests first.
     [switch]$SkipTests,
-    # SSH login on Hermes (an account that ran server-setup.sh as DEPLOY_USER).
-    [string]$Server = 'coastguard-admin@112.199.83.96',
-    [int]$Port = 400
+    # SSH login on Hermes, e.g. user@host. Not stored in git: taken from
+    # -Server/-Port, else $env:MEPCOM_DEPLOY_SERVER / $env:MEPCOM_DEPLOY_PORT,
+    # else deploy\target.local (asked once and saved there; git ignores it).
+    [string]$Server = '',
+    [int]$Port = 0
 )
 
 $ErrorActionPreference = 'Stop'
+
+# ---- where to deploy (kept out of the public repository)
+$TargetFile = Join-Path $PSScriptRoot 'target.local'
+if (-not $Server -and $env:MEPCOM_DEPLOY_SERVER) { $Server = $env:MEPCOM_DEPLOY_SERVER }
+if (-not $Port -and $env:MEPCOM_DEPLOY_PORT) { $Port = [int]$env:MEPCOM_DEPLOY_PORT }
+if ((-not $Server -or -not $Port) -and (Test-Path $TargetFile)) {
+    $saved = @(Get-Content $TargetFile | Where-Object { $_.Trim() -and -not $_.Trim().StartsWith('#') })
+    if (-not $Server -and $saved.Count -ge 1) { $Server = $saved[0].Trim() }
+    if (-not $Port -and $saved.Count -ge 2) { $Port = [int]$saved[1].Trim() }
+}
+if (-not $Server) {
+    $Server = (Read-Host 'SSH login for the server (user@host)').Trim()
+    $p = (Read-Host 'SSH port (Enter for 22)').Trim()
+    $Port = if ($p) { [int]$p } else { 22 }
+    Set-Content -Path $TargetFile -Value @('# deploy target (not in git)', $Server, $Port)
+    Write-Host "Saved to $TargetFile (ignored by git)."
+}
+if (-not $Port) { $Port = 22 }
 
 $Root = Split-Path -Parent $PSScriptRoot
 $Ssh = @('-o', 'BatchMode=yes', '-p', "$Port", $Server)

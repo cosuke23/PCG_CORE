@@ -123,5 +123,6 @@ Last updated: 2026-10-30 · branch `claude/cool-wozniak-rni95k`
 | 2026-11-02 | Kit on Hermes (Rocky 9.8, PHP 8.3.36): preflight, setup, data import, `deploy.ps1 -Migrate`, Funnel at `mepcom-hrmis.tail7d94c9.ts.net`, `verify.sh` | **Passed** — other apps identical before/after; `/`, `/login`, `/admin/login` 200; `/.env` 403; upload folders 404 |
 | 2026-11-02 | Security review after going public (N1–N9 fixed, see SECURITY_AUDIT §0d): `php artisan test` | **Passed** — 163 tests, 746 assertions; `composer audit` no advisories |
 | 2026-11-02 | `tests/e2e/responsive.js`: 54 pages × 7 sizes (320–1920 px) | **Passed** — no sideways scrolling except the fixed-size A4 SOI form; no iOS-zoom fields; remaining findings are 20 px text links |
+| 2026-11-02 | Full security re-run before publication (SECURITY_AUDIT §0e, P1–P12): `php artisan test` | **Passed** — 166 tests; nginx + PHP-FPM config with a no-dev build: pages 200, `/files` reaches the app, blocked files 403/404, PUT/TRACE 405, 413 on oversized bodies, 429 under burst, foreign Host 400 |
 | — | Real `pcg_core` data | **Blocked** — needs access on your PC |
 | — | Windows scripts, Tailscale | **Not tested** — no Windows/Tailscale in this environment |
