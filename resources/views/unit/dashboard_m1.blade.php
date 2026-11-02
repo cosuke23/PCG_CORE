@@ -247,12 +247,10 @@
             <!-- LOGOUT -->
             <div class="p-4">
 
-                <a href="/unit/logout"
-                    class="block w-full bg-red-500 hover:bg-red-600 text-white text-center py-4 rounded-2xl font-semibold transition">
-
-                    Logout
-
-                </a>
+                <form method="POST" action="{{ route('unit.logout') }}">
+                    @csrf
+                    <button type="submit" class="block w-full bg-red-500 hover:bg-red-600 text-white text-center py-4 rounded-2xl font-semibold transition">Logout</button>
+                </form>
 
             </div>
 
@@ -718,16 +716,16 @@
             document.getElementById('input_serial').value = doc.serial_number;
 
             const docs = [
-                ['SOI', doc.soi],
-                ['NBI Clearance', doc.nbi_clearance],
-                ['Ombudsman Clearance', doc.ombudsman_clearance],
-                ['Sandiganbayan Clearance', doc.sandiganbayan_clearance],
-                ['OFR', doc.ofr],
-                ['Whole Body Picture', doc.whole_body_picture],
-                ['2x2 Photo', doc.photo_2x2],
-                ['Medical Clearance', doc.medical_clearance],
-                ['PFT Clearance', doc.pft_clearance],
-                ['Residential Sketch', doc.residential_sketch],
+                ['SOI', doc.soi, 'soi'],
+                ['NBI Clearance', doc.nbi_clearance, 'nbi_clearance'],
+                ['Ombudsman Clearance', doc.ombudsman_clearance, 'ombudsman_clearance'],
+                ['Sandiganbayan Clearance', doc.sandiganbayan_clearance, 'sandiganbayan_clearance'],
+                ['OFR', doc.ofr, 'ofr'],
+                ['Whole Body Picture', doc.whole_body_picture, 'whole_body_picture'],
+                ['2x2 Photo', doc.photo_2x2, 'photo_2x2'],
+                ['Medical Clearance', doc.medical_clearance, 'medical_clearance'],
+                ['PFT Clearance', doc.pft_clearance, 'pft_clearance'],
+                ['Residential Sketch', doc.residential_sketch, 'residential_sketch'],
             ];
 
             let html = '';
@@ -787,7 +785,7 @@
 
                     <input type="checkbox"
                         class="doc-check w-5 h-5"
-                        name="docs[${i}][checked]">
+                        name="docs[${d[2]}][checked]">
 
                     <h3 class="font-bold text-lg">
                         ${label}
@@ -802,7 +800,7 @@
                 <div class="mt-4">
 
                     <textarea
-                        name="docs[${i}][comment]"
+                        name="docs[${d[2]}][comment]"
                         placeholder="Write comment..."
                         rows="3"
                         class="w-full border rounded-2xl p-3"></textarea>

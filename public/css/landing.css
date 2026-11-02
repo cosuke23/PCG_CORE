@@ -174,7 +174,7 @@ main > section:not(.lp-hero) { position: relative; z-index: 1; }
 .lp-mini__seal { width: 44px; height: 44px; object-fit: contain; margin: -6px 0 6px; }
 .lp-mini h3 { margin: 0 0 6px; font-size: 14px; font-weight: 700; }
 .lp-mini p { margin: 0 0 16px; font-size: 13px; color: var(--lp-muted); flex: 1; }
-.lp-link { align-self: flex-start; font-size: 13px; font-weight: 700; color: var(--lp-maroon-700); text-decoration: none; }
+.lp-link { align-self: flex-start; font-size: 13px; font-weight: 700; color: var(--lp-maroon-700); text-decoration: none; display: inline-block; padding: 4px 0; min-height: 24px; }
 .lp-link::after { content: " \2192"; }
 .lp-link:hover { text-decoration: underline; }
 .lp-pill { align-self: flex-start; padding: 3px 9px; border: 1px solid var(--lp-maroon-700); border-radius: 999px; font-size: 10px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--lp-maroon-700); text-decoration: none; }

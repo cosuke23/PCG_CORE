@@ -70,6 +70,16 @@ class RegisterController extends Controller
                 'selfie_image'        => 'required|string',
             ]);
 
+            // One account per serial number: every record is joined on it, so
+            // a second account with someone else's serial would see and
+            // overwrite that person's files (case and spaces ignored).
+            $validated['serial_number'] = trim($validated['serial_number']);
+            if (User::serialTaken($validated['serial_number'])) {
+                return back()
+                    ->withErrors(['serial_number' => 'This serial number is already registered. Sign in with that account, or ask your unit M1 for help.'])
+                    ->withInput($request->except(['password', 'password_confirmation', 'selfie_image']));
+            }
+
             // ✅ AUTO ETE
             if (empty($validated['ete'])) {
                 $validated['ete'] = \Carbon\Carbon::parse($validated['date_of_appointment'])

@@ -35,12 +35,10 @@
             <!-- LOGOUT -->
             <div class="p-4">
 
-                <a href="/unit/logout"
-                    class="block w-full bg-red-500 hover:bg-red-600 text-white text-center py-4 rounded-2xl font-semibold transition">
-
-                    Logout
-
-                </a>
+                <form method="POST" action="{{ route('unit.logout') }}">
+                    @csrf
+                    <button type="submit" class="block w-full bg-red-500 hover:bg-red-600 text-white text-center py-4 rounded-2xl font-semibold transition">Logout</button>
+                </form>
 
             </div>
 
@@ -518,11 +516,11 @@
                 doc.serial_number;
 
             const docs = [
-                ['SOI', doc.soi],
-                ['NBI Clearance', doc.nbi_clearance],
-                ['Medical', doc.medical_clearance],
-                ['PFT', doc.pft_clearance],
-                ['2x2 Photo', doc.photo_2x2],
+                ['SOI', doc.soi, 'soi'],
+                ['NBI Clearance', doc.nbi_clearance, 'nbi_clearance'],
+                ['Medical', doc.medical_clearance, 'medical_clearance'],
+                ['PFT', doc.pft_clearance, 'pft_clearance'],
+                ['2x2 Photo', doc.photo_2x2, 'photo_2x2'],
             ];
 
             let html = '';
@@ -586,7 +584,7 @@
 
                             <input type="checkbox"
                                 class="doc-check w-5 h-5"
-                                name="docs[${i}][checked]">
+                                name="docs[${d[2]}][checked]">
 
                             <h3 class="font-bold text-lg text-black">
                                 ${label}
@@ -601,7 +599,7 @@
                         <div class="mt-4">
 
                             <textarea
-                                name="docs[${i}][comment]"
+                                name="docs[${d[2]}][comment]"
                                 placeholder="Write comment..."
                                 rows="3"
                                 class="w-full border border-gray-300 rounded-2xl p-4 outline-none focus:ring-2 focus:ring-indigo-300"></textarea>

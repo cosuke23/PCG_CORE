@@ -13,7 +13,6 @@
 
 <div class="flex min-h-screen bg-gray-100">
 
-    ```
     {{-- SIDEBAR --}}
     @include('admin.partials.lms-menu')
 

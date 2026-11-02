@@ -110,13 +110,18 @@ class AuthenticationTest extends TestCase
         $this->assertNull(session('admin_logged_in'));
     }
 
-    public function test_legacy_get_logout_ends_admin_session()
+    public function test_logout_is_post_only()
     {
+        // A link or image on another site (GET) cannot sign anyone out.
         $this->withSession(['admin_logged_in' => true, 'admin_role' => 'super_admin'])
             ->get('/admin/logout')
-            ->assertRedirect(route('admin.login'));
+            ->assertStatus(405);
+        $this->assertTrue((bool) session('admin_logged_in'));
 
+        $this->post('/admin/logout')->assertRedirect(route('admin.login'));
         $this->assertNull(session('admin_logged_in'));
+
+        $this->get('/unit/logout')->assertStatus(405);
     }
 
     // ---------------- Applicant ----------------

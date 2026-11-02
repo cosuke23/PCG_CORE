@@ -28,6 +28,12 @@
             print-color-adjust: exact !important;
         }
 
+        /* Screen preview on smaller screens: scale the A4 page down (print is unchanged). */
+        @media screen and (max-width: 1200px) { .certificate { zoom: 0.8; } }
+        @media screen and (max-width: 960px) { .certificate { zoom: 0.6; } }
+        @media screen and (max-width: 720px) { .certificate { zoom: 0.4; } }
+        @media screen and (max-width: 480px) { .certificate { zoom: 0.27; } }
+
         .certificate {
             width: 297mm;
             height: 210mm;

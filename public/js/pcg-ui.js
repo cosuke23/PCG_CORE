@@ -3,6 +3,7 @@
  *
  *  - <button data-pcg-toggle-password="inputId">  show / hide a password field
  *  - <form data-pcg-busy>                          disable submit while sending
+ *  - wide <table>s get a horizontal scroll box on small screens
  */
 (function () {
     'use strict';
@@ -87,6 +88,21 @@
         }
     };
 
+    // Only plain global functions defined by our own page scripts may be
+    // called. Built-in browser functions (eval, setTimeout, fetch, open, ...)
+    // are refused, so injected markup cannot turn data-on-* into code.
+    function isPageFunction(name) {
+        if (typeof name !== 'string' || !/^[A-Za-z_$][\w$]*$/.test(name)) return false;
+        if (!Object.prototype.hasOwnProperty.call(window, name)) return false;
+        var fn = window[name];
+        if (typeof fn !== 'function') return false;
+        try {
+            return Function.prototype.toString.call(fn).indexOf('[native code]') === -1;
+        } catch (err) {
+            return false;
+        }
+    }
+
     ['click', 'dblclick', 'change', 'error'].forEach(function (type) {
         document.addEventListener(type, function (e) {
             var attr = 'data-on-' + type;
@@ -99,7 +115,7 @@
             if (el.hasAttribute('data-prevent')) e.preventDefault();
             if (builtins[name]) {
                 builtins[name].apply(el, [el].concat(args));
-            } else if (typeof window[name] === 'function') {
+            } else if (isPageFunction(name)) {
                 window[name].apply(el, args);
             }
         }, true); // capture: "error" does not bubble
@@ -114,6 +130,23 @@
             e.stopImmediatePropagation();
         }
     }, true);
+
+    // Small screens: wide tables scroll inside their own box instead of
+    // pushing the whole page sideways. Runs after page scripts (DataTables)
+    // have built their tables. Opt out with data-pcg-no-wrap on an ancestor.
+    window.addEventListener('load', function () {
+        document.querySelectorAll('table').forEach(function (table) {
+            if (table.closest('.pcg-table-wrap, [data-pcg-no-wrap]')) return;
+            for (var p = table.parentElement; p && p !== document.body; p = p.parentElement) {
+                var ox = window.getComputedStyle(p).overflowX;
+                if (ox === 'auto' || ox === 'scroll') return;
+            }
+            var wrap = document.createElement('div');
+            wrap.className = 'pcg-table-wrap';
+            table.parentNode.insertBefore(wrap, table);
+            wrap.appendChild(table);
+        });
+    });
 
     // Restore the button when the page is shown again from the back/forward cache.
     window.addEventListener('pageshow', function () {

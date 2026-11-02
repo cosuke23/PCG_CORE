@@ -121,5 +121,7 @@ Last updated: 2026-10-30 · branch `claude/cool-wozniak-rni95k`
 | 2026-10-31 | MEPCOM unit import + sync mapping | **Passed** — 148 tests; dev MariaDB: 140 units imported, re-run creates nothing |
 | 2026-11-02 | Hermes deploy kit (`deploy/`): bash -n + shellcheck, `nginx -t`, `php-fpm -t`, systemd unit verify; release build + migrate, probes (`/`, `/login`, `/admin/login` 200; `/.env` 403; upload folders 404), second release, broken release switched back automatically, `--rollback`, backup, UTF-16 dump import into an empty DB only | **Passed** (Debian sandbox) |
 | 2026-11-02 | Kit on Hermes (Rocky 9.8, PHP 8.3.36): preflight, setup, data import, `deploy.ps1 -Migrate`, Funnel at `mepcom-hrmis.tail7d94c9.ts.net`, `verify.sh` | **Passed** — other apps identical before/after; `/`, `/login`, `/admin/login` 200; `/.env` 403; upload folders 404 |
+| 2026-11-02 | Security review after going public (N1–N9 fixed, see SECURITY_AUDIT §0d): `php artisan test` | **Passed** — 163 tests, 746 assertions; `composer audit` no advisories |
+| 2026-11-02 | `tests/e2e/responsive.js`: 54 pages × 7 sizes (320–1920 px) | **Passed** — no sideways scrolling except the fixed-size A4 SOI form; no iOS-zoom fields; remaining findings are 20 px text links |
 | — | Real `pcg_core` data | **Blocked** — needs access on your PC |
 | — | Windows scripts, Tailscale | **Not tested** — no Windows/Tailscale in this environment |

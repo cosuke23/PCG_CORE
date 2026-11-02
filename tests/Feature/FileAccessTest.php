@@ -55,6 +55,11 @@ class FileAccessTest extends TestCase
                 $table->string($c)->nullable();
             }
         });
+        Schema::create('unit_users', function (Blueprint $t) {
+            $t->id(); $t->string('full_name')->nullable(); $t->string('email'); $t->string('password')->nullable();
+            $t->string('role')->nullable(); $t->string('unit_name')->nullable(); $t->boolean('is_active')->default(true); $t->timestamps();
+        });
+        DB::table('unit_users')->insert(['id' => 1, 'full_name' => 'M1', 'email' => 'm1@example.test', 'role' => \App\Models\UnitUser::ROLE_M1, 'unit_name' => 'HQ', 'is_active' => true]);
         Schema::create('personnel_201_files', function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger('personnel_id');
@@ -117,6 +122,25 @@ class FileAccessTest extends TestCase
             $this->get('/files/selfies/abc.png')->assertOk();
             $this->flushSession();
         }
+    }
+
+    public function test_deactivated_m1_checker_loses_file_access_at_once()
+    {
+        DB::table('unit_users')->where('id', 1)->update(['is_active' => false]);
+
+        $this->withSession(['unit_user_id' => 1, 'unit_role' => \App\Models\UnitUser::ROLE_M1])
+            ->get('/files/disciplinary_actions/disciplinary_actions/1_case.pdf')
+            ->assertRedirect(route('login'));
+        $this->assertNull(session('unit_user_id'));
+    }
+
+    public function test_removed_m1_role_applies_at_once()
+    {
+        DB::table('unit_users')->where('id', 1)->update(['role' => \App\Models\UnitUser::ROLE_UNIT]);
+
+        $this->withSession(['unit_user_id' => 1, 'unit_role' => \App\Models\UnitUser::ROLE_M1])
+            ->get('/files/disciplinary_actions/disciplinary_actions/1_case.pdf')
+            ->assertNotFound();
     }
 
     public function test_paths_outside_the_upload_areas_are_rejected()

@@ -96,6 +96,13 @@ class AdminController extends Controller
         }
 
         $user = User::findOrFail($id);
+
+        // Never approve a second account for a serial number that already has one.
+        if (User::serialTaken((string) $user->serial_number, $user->id)) {
+            return back()->with('error', 'Not approved: serial number ' . $user->serial_number
+                . ' already belongs to another account. Reject this registration or correct the serial first.');
+        }
+
         $user->status = 'Approved';
         $user->save();
 

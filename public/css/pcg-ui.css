@@ -99,7 +99,8 @@
     -webkit-font-smoothing: antialiased;
 }
 
-.pcg a {
+/* Links that set their own Tailwind colour (text-white on a blue button, ...) keep it. */
+.pcg a:not([class*="text-"]) {
     color: var(--pcg-link);
 }
 
@@ -1361,3 +1362,52 @@ textarea.pcg-input {
     .pcg-table th, .pcg-table td { padding: 4px 6px; font-size: 10pt; }
     body { background: #fff; }
 }
+
+/* ------------------------------------------------- small screens (phones, tablets)
+ * Grid and flex children may shrink below their content width, so a wide
+ * table scrolls inside its box (.pcg-table-wrap, added by pcg-ui.js to
+ * legacy tables too) instead of pushing the page sideways.
+ */
+.pcg-grid > *,
+.pcg-stack > *,
+.pcg-card,
+.pcg-console__content > *,
+.pcg-console__content .flex > main,
+.pcg-console__content .flex > .flex-1 { min-width: 0; }
+.pcg-table-wrap { position: relative; max-width: 100%; -webkit-overflow-scrolling: touch; }  /* relative: hidden labels inside stay clipped */
+.pcg-stack { grid-template-columns: minmax(0, 1fr); }
+
+@media (max-width: 1024px) {
+    .pcg-grid { grid-template-columns: minmax(0, 1fr); }
+    .pcg-stats { grid-template-columns: repeat(auto-fit, minmax(min(100%, 160px), 1fr)); }
+    /* Legacy pages: header rows (title + buttons) wrap instead of overflowing. */
+    .pcg-console__content .flex.justify-between { flex-wrap: wrap; gap: var(--pcg-space-3); }
+    .pcg-card__header { overflow-wrap: anywhere; }
+}
+
+@media (max-width: 640px) {
+    /* The shell already pads the content; drop the legacy pages' own p-6/p-10. */
+    .pcg-console__content > .p-10,
+    .pcg-console__content > .p-8,
+    .pcg-console__content > .p-6,
+    .pcg-console__content > main.p-10,
+    .pcg-console__content > main.p-6,
+    .pcg-console__content > .flex > main.p-10,
+    .pcg-console__content > .flex > main.p-6 { padding: 0; }
+    .pcg-console__content > .flex.min-h-screen { min-height: 0; }
+    .pcg-console__content .text-3xl { font-size: 1.5rem; line-height: 2rem; }
+    .pcg-console__content > .pcg-page { padding: 0; }
+}
+
+/* Phones: fields at 16px so iOS Safari does not zoom in when they get focus
+ * (!important: also overrides compact .pcg-input--sm and page styles). */
+@media (max-width: 767px) {
+    input:not([type="checkbox"]):not([type="radio"]):not([type="file"]):not([type="hidden"]),
+    select,
+    textarea { font-size: max(16px, 1em) !important; }
+    /* Comfortable tap targets for the sign-in pages' top links (WCAG 2.2: 24px). */
+    .pcg-auth__topbar a { display: inline-block; padding-top: 4px; padding-bottom: 4px; }
+}
+
+/* Very wide fixed-size content (certificates, print layouts) scrolls in its box. */
+.pcg-scroll-x { max-width: 100%; overflow-x: auto; }

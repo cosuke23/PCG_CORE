@@ -98,6 +98,40 @@ class UnitAccessTest extends TestCase
         $this->assertSame('approved', DB::table('personnel_data')->where('serial_number', 'SN-A')->value('status'));
     }
 
+    public function test_a_second_account_with_someones_serial_gives_no_access()
+    {
+        // SN-B belongs to account 2 (NOCOP). An impostor registers SN-B in MEPLEF.
+        DB::table('personnel_data')->where('serial_number', 'SN-B')->update(['personnel_id' => 2]);
+        DB::table('users')->insert(['name' => 'Impostor', 'email' => 'i@x.test', 'password' => 'x', 'serial_number' => 'SN-B', 'mother_unit' => 'MEPLEF']);
+
+        $this->withSession($this->unit);
+        $this->post('/unit/documents/review', ['serial_number' => 'SN-B', 'decision' => 'approved'])->assertForbidden();
+        $this->assertSame('Pending', DB::table('personnel_data')->where('serial_number', 'SN-B')->value('status'));
+        $this->get('/files/documents_toupload/documents/b.pdf')->assertNotFound();
+    }
+
+    public function test_rejecting_a_document_clears_that_document_only()
+    {
+        Schema::create('rejected_documents', function (Blueprint $t) {
+            $t->id(); $t->string('serial_number'); $t->string('doc_type'); $t->string('file_path')->nullable();
+            $t->text('comment')->nullable(); $t->string('status')->nullable(); $t->timestamps();
+        });
+        DB::table('personnel_data')->where('serial_number', 'SN-A')->update([
+            'medical_clearance' => 'documents/a-med.pdf', 'ombudsman_clearance' => 'documents/a-omb.pdf',
+        ]);
+
+        $this->withSession($this->unit)->post('/unit/documents/review', [
+            'serial_number' => 'SN-A',
+            'decision' => 'rejected',
+            'docs' => ['medical_clearance' => ['checked' => '1', 'comment' => 'Expired']],
+        ])->assertRedirect();
+
+        $row = DB::table('personnel_data')->where('serial_number', 'SN-A')->first();
+        $this->assertNull($row->medical_clearance);
+        $this->assertSame('documents/a-omb.pdf', $row->ombudsman_clearance);
+        $this->assertSame('Medical', DB::table('rejected_documents')->value('doc_type'));
+    }
+
     public function test_m1_checker_can_review_any_unit()
     {
         $this->withSession($this->m1)

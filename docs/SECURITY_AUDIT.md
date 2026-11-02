@@ -1,6 +1,6 @@
 # Security Audit — PCG_CORE (MEPCOM HRMIS)
 
-Audit date: 2026-10-30 · Baseline commit: `83459a9` ("first commit") · Branch: `claude/cool-wozniak-rni95k` · Last updated: 2026-10-30 (Laravel 12 upgrade, M1 separation, file access control)
+Audit date: 2026-10-30 · Baseline commit: `83459a9` ("first commit") · Branch: `claude/cool-wozniak-rni95k` · Last updated: 2026-11-02 (review after public deployment, §0d)
 
 Scope: source code in this repository. The live `pcg_core` database and the
 production server (`pcg-mepcom.com`) were **not** accessed; findings about them
@@ -38,6 +38,28 @@ defence-in-depth.
 ## 0c. Admin two-factor by email (owner decision 2026-10-31)
 
 `PCG_ADMIN_2FA=email` (default): after the password, a 6-digit one-time code is emailed to the admin. Only an HMAC of the code is kept (session), it expires after `PCG_ADMIN_EMAIL_CODE_MINUTES` (10), works once, is discarded after 5 wrong tries, resend at most once a minute, attempts rate-limited and audited. Existing recovery codes still work. Security depends on the admins' mailboxes: use official accounts with their own 2FA. `MAIL_MAILER=log` writes codes into `storage/logs/laravel.log` (local testing only). `PCG_ADMIN_2FA=totp` restores the authenticator-app flow.
+
+## 0d. Review after going public on Hermes (2026-11-02)
+
+The site is public at `https://mepcom-hrmis.tail7d94c9.ts.net` (Tailscale Funnel → nginx 127.0.0.1:8010 → own PHP-FPM pool). Code review of every route group, access rule, upload path, query and template, plus `composer audit` (no advisories). The live site itself could not be probed from the review environment.
+
+| # | Severity | Finding | Status |
+|---|----------|---------|--------|
+| N1 | High | Serial numbers were not unique: anyone could register with another person's serial and, once in a unit, that unit's checker (or, if approved, the impostor) could see and change the victim's documents. | **Fixed**: registration and approval refuse a serial that another (non-rejected) account uses (`User::serialTaken`); unit dashboard, review and `/files` match the account that owns each record (`personnel_data.personnel_id`). Tests: `SerialNumberTest`, `UnitAccessTest`. A database UNIQUE index needs a duplicate clean-up first and the owner's approval (open). |
+| N2 | Medium | Stored XSS: an admin-entered training-track status was inserted as HTML, and `data-on-*` could call any global function, including `eval`. | **Fixed**: status escaped; `pcg-ui.js` calls only page-defined functions (never built-ins such as `eval`, `setTimeout`, `fetch`). |
+| N3 | Medium | Unit checker sessions were never re-checked: a deactivated checker or removed M1 role kept access until the session expired. | **Fixed**: `UnitUser::refreshSession` re-reads the account on every request (`unit.session`, `/files`). Tests in `FileAccessTest`. |
+| N4 | Medium | Rejecting a document on the unit dashboards could clear a different document (form positions did not match the server's list). | **Fixed**: forms post the document's column key (`docs[medical_clearance]`). Test in `UnitAccessTest`; browser flow updated. |
+| N5 | Medium | Unit checker decisions and disciplinary deletions left no trail in production (`LOG_LEVEL=warning`). | **Fixed**: always-on `audit` log channel (`storage/logs/audit-*.log`, 400 days): who, which serial, which decision, IP. |
+| N6 | Low | Sign-out worked over GET (another site could sign users out); admin sign-out kept the session id. | **Fixed**: `/admin/logout` and `/unit/logout` are POST only; session id renewed. |
+| N7 | Low | An open `.env` setup-admin session survived after real accounts existed. | **Fixed**: such sessions end on the next request. |
+| N8 | Low | The production template defaulted to `MAIL_MAILER=log` (codes never delivered, or written to the log). | **Fixed**: template defaults to SMTP; in production, codes are refused with the log/array mailers. |
+| N9 | Low | `/reinlist/store` wrote any posted column into the user's personal-info row. | **Fixed**: allow-list of personal fields. |
+| N10 | Low | Email codes can be guessed slowly once a password is known (5 tries per code, 5 per minute, no daily cap). | Open (optional): lock after ~20 failed codes per day. |
+| N11 | Low | Registration says when an email or serial is already registered (account enumeration). | Accepted: applicants need that message. |
+| N12 | Low | `/osaert/verify/{id}` uses sequential ids, so trainee names and companies can be listed (60/min). | Open: changing it would break printed QR codes; use a random token for new certificates. |
+| N13 | Low | Any Host header is accepted (nginx `server_name _`, `TrustHosts` off). No current impact (emails contain no links). | Open: set the Funnel host when links are added to emails. |
+
+Checked and fine: route groups and `admin.can`/`OrgScope` on every HRMIS query; CSRF on all forms; file path checks (`..`, NUL, `realpath`); upload content checks; no raw SQL with user input; CSV formula neutralising; `APP_DEBUG=false`, secure HttpOnly cookies, HSTS, CSP without external origins; nginx blocks dotfiles, old upload folders and every `.php` except `index.php`.
 
 ## 1. Findings and status
 

@@ -171,9 +171,8 @@ Route::get('/admin/login', [AdminLoginController::class, 'showLogin'])->name('ad
 Route::post('/admin/login', [AdminLoginController::class, 'login'])
     ->middleware('throttle:admin-login')
     ->name('admin.login.submit');
+// Sign-out is POST only (with the CSRF token), so another site cannot sign people out.
 Route::post('/admin/logout', [AdminLoginController::class, 'logout'])->name('admin.logout');
-// Sidebar links use GET
-Route::get('/admin/logout', [AdminController::class, 'logout'])->name('admin.logout.legacy');
 
 // Two-factor sign-in (after the password, before the admin session exists)
 Route::prefix('admin/two-factor')->name('admin.two-factor.')->group(function () {
@@ -373,7 +372,7 @@ Route::get('/unit/login', [UnitUserController::class, 'loginForm']);
 Route::post('/unit/login', [UnitUserController::class, 'login'])->middleware('throttle:unit-login');
 Route::get('/unit/loginM1', [UnitUserController::class, 'loginFormM1']);
 Route::post('/unit/loginM1', [UnitUserController::class, 'loginM1'])->middleware('throttle:unit-login');
-Route::get('/unit/logout', [UnitUserController::class, 'logout']);
+Route::post('/unit/logout', [UnitUserController::class, 'logout'])->name('unit.logout');
 
 Route::middleware(['unit.session'])->group(function () {
 

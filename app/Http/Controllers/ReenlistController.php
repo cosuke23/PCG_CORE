@@ -8,6 +8,13 @@ use Illuminate\Support\Facades\Log;
 
 class ReenlistController extends Controller
 {
+    private const PERSONAL_FIELDS = [
+        'nickname', 'sex', 'civil_status', 'citizenship', 'religion', 'blood_type', 'height', 'weight',
+        'head_size', 'foot_size', 'waist_size', 'distinct_features', 'body_build', 'hair_color', 'skin_color',
+        'eye_color', 'contact_number', 'email', 'home_address', 'permanent_address', 'tin', 'philhealth',
+        'pagibig', 'gsis', 'sss', 'drivers_license',
+    ];
+
     public function store(Request $request)
     {
         // Records are keyed by serial number; only allow writing your own.
@@ -50,9 +57,14 @@ class ReenlistController extends Controller
             Log::info('Step 1: Basic Info Saved');
 
             // ================= STEP 2: Personal Info =================
+            // Only the personal-information fields; never ids, owner or other columns.
+            $personal = array_map(
+                fn ($v) => is_scalar($v) ? mb_substr((string) $v, 0, 255) : null,
+                \Illuminate\Support\Arr::only((array) $request->input('personal', []), self::PERSONAL_FIELDS)
+            );
             DB::table('reinlist_personal_info')->updateOrInsert(
                 ['serial_number' => $serial],
-                array_merge($request->input('personal', []), [
+                array_merge($personal, [
                     'serial_number' => $serial
                 ])
             );

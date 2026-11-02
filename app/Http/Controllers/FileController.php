@@ -58,6 +58,9 @@ class FileController extends Controller
         }
 
         $session = $request->session();
+        if ($session->has('unit_user_id')) {
+            \App\Models\UnitUser::refreshSession($session); // deactivated checkers lose access at once
+        }
         // command/unit-scoped admins have no file access until the scoped 201 module exists
         $isAdmin = (bool) $session->get('admin_logged_in') && !$session->get('admin_org_unit_id');
         $isM1 = $session->has('unit_user_id') && $session->get('unit_role') === \App\Models\UnitUser::ROLE_M1;
@@ -98,6 +101,8 @@ class FileController extends Controller
         return DB::table('personnel_data as pd')
             ->join('users as u', 'u.serial_number', '=', 'pd.serial_number')
             ->where('u.mother_unit', $unit)
+            // the account that owns the record (not just any account with that serial)
+            ->where(fn ($q) => $q->whereNull('pd.personnel_id')->orWhereColumn('pd.personnel_id', 'u.id'))
             ->where(function ($q) use ($relative) {
                 foreach (self::DOCUMENT_COLUMNS as $column) {
                     $q->orWhere('pd.' . $column, $relative);
