@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 # =============================================================================
 # PCG_CORE (MEPCOM HRMIS) - one-time server setup on Ubuntu / Debian.
+# NOT for Hermes (Rocky Linux 9, already set up from ~/pcg-core-deploy): see docs/DEPLOYMENT_GUIDE.md section 9.
 #
 #   sudo bash install-server.sh
 #
