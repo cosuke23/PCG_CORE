@@ -96,6 +96,12 @@
                         <a href="#units" title="Marine Environmental Protection Procurement Unit"><img src="{{ asset('images/brand/meproc-logo.webp') }}" alt="MEPROC seal" width="512" height="512"><span class="lp-slice__name">MEPROC</span></a>
                     </li>
                 </ul>
+                {{-- Phones held upright only (landing.css); closing it is remembered. --}}
+                <p class="lp-tilt" data-lp-tilt role="note">
+                    <span class="lp-tilt__phone" aria-hidden="true"></span>
+                    <span>Tilt your phone sideways to see all the units</span>
+                    <button type="button" class="lp-tilt__close" data-lp-tilt-close aria-label="Dismiss tip">&times;</button>
+                </p>
                 <div class="lp-hero__text">
                     <h1 id="hero-title">MEPCOM AHEAD</h1>
                     <p class="lp-hero__quote">“Steering the Nation Toward Sustainable Seas”</p>

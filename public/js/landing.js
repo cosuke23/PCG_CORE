@@ -40,6 +40,19 @@
     window.addEventListener('resize', onScroll);
     onScroll();
 
+    // ---- "tilt your phone" tip: hide it for good once closed
+    var tilt = document.querySelector('[data-lp-tilt]');
+    if (tilt) {
+        try { if (window.localStorage.getItem('lp-tilt-closed') === '1') { tilt.hidden = true; } } catch (e) { /* storage blocked */ }
+        var tiltClose = tilt.querySelector('[data-lp-tilt-close]');
+        if (tiltClose) {
+            tiltClose.addEventListener('click', function () {
+                tilt.hidden = true;
+                try { window.localStorage.setItem('lp-tilt-closed', '1'); } catch (e) { /* storage blocked */ }
+            });
+        }
+    }
+
     // ---- photos: click (or Enter) opens the picture full screen;
     //      click anywhere, the close button or Escape closes it.
     document.querySelectorAll('[data-lp-zoom]').forEach(function (button) {
