@@ -161,8 +161,9 @@
         {{-- ===================================================== about --}}
         <section class="lp-section lp-about" id="about" aria-labelledby="about-title">
             <div class="lp-wrap lp-about__in">
-                <figure class="lp-about__photo" data-reveal>
-                    <img src="{{ asset('images/landing/personnel.webp') }}" alt="MEPCOM personnel in uniform" loading="lazy">
+                <figure class="lp-about__photo lp-about__photo--pair" data-reveal>
+                    <img src="{{ asset('images/landing/about-team.webp') }}" alt="MEPCOM personnel in uniform, group photo" width="1400" height="1050" loading="lazy">
+                    <img class="lp-about__inset" src="{{ asset('images/landing/about-training.webp') }}" alt="MEPCOM personnel at computers during a training session" width="1000" height="750" loading="lazy">
                 </figure>
                 <div>
                     <p class="lp-eyebrow">About MEPCOM</p>
