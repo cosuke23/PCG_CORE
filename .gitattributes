@@ -1,0 +1,4 @@
+# Server files must keep LF line endings even on a Windows checkout.
+*.sh text eol=lf
+deploy/** text eol=lf
+deploy/*.ps1 text eol=crlf

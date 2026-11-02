@@ -1,0 +1,52 @@
+# managed-by: mepcom-hrmis deploy kit
+# MEPCOM HRMIS. Reachable only from this machine (127.0.0.1); the HTTPS entry
+# point is its own Tailscale node (tailscaled-mepcom), which proxies here.
+# Its own file and port: no other site in conf.d is touched.
+server {
+    listen 127.0.0.1:@PORT@;
+    server_name _;
+
+    root @BASE@/current/public;
+    index index.php;
+    charset utf-8;
+    # documents form: several files of up to 10 MB in one request
+    client_max_body_size 120m;
+    server_tokens off;
+
+    # Only the local Tailscale proxy connects here, so its forwarded client IP
+    # is trusted (sign-in throttling and the audit log use it).
+    set_real_ip_from 127.0.0.1;
+    real_ip_header X-Forwarded-For;
+    real_ip_recursive on;
+
+    # The application sends its own CSP and security headers.
+    add_header Strict-Transport-Security "max-age=31536000" always;
+
+    # Legacy upload folders must never be served directly (files go through
+    # the access-checked /files route); dotfiles neither.
+    location ~* ^/(documents_toupload|201_files|disciplinary_actions|selfies)(/|$) { return 404; }
+    location ~ /\.(?!well-known) { deny all; }
+
+    location / {
+        try_files $uri $uri/ /index.php?$query_string;
+    }
+
+    location = /favicon.ico { access_log off; log_not_found off; }
+    location = /robots.txt  { access_log off; log_not_found off; }
+
+    location = /index.php {
+        fastcgi_pass unix:/run/php-fpm/mepcom-hrmis.sock;
+        include fastcgi_params;
+        fastcgi_param SCRIPT_FILENAME $realpath_root$fastcgi_script_name;
+        fastcgi_param DOCUMENT_ROOT $realpath_root;
+        # Every request arrives over HTTPS through Tailscale.
+        fastcgi_param HTTPS on;
+        fastcgi_param HTTP_PROXY "";
+        fastcgi_hide_header X-Powered-By;
+        fastcgi_read_timeout 120s;
+    }
+
+    location ~ \.php$ { return 404; }
+
+    location ~* \.(css|js|webp|png|jpg|jpeg|svg|woff2|ico)$ { expires 7d; access_log off; try_files $uri =404; }
+}

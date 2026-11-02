@@ -1,0 +1,21 @@
+# managed-by: mepcom-hrmis deploy kit
+# A separate Tailscale node for MEPCOM HRMIS (hostname mepcom-hrmis), so it
+# gets its own https://mepcom-hrmis.<tailnet>.ts.net address. Userspace
+# networking: no network interface, routes or DNS changes, and the existing
+# tailscaled, tailscaled-pcg and tailscaled-afpc nodes are not affected.
+#
+# Control it with:  tailscale --socket=/run/tailscale-mepcom/tailscaled.sock ...
+[Unit]
+Description=Tailscale node for MEPCOM HRMIS
+Wants=network-pre.target
+After=network-pre.target NetworkManager.service systemd-resolved.service
+
+[Service]
+ExecStart=/usr/sbin/tailscaled --statedir=/var/lib/tailscale-mepcom --socket=/run/tailscale-mepcom/tailscaled.sock --port=0 --tun=userspace-networking
+RuntimeDirectory=tailscale-mepcom
+StateDirectory=tailscale-mepcom
+StateDirectoryMode=0700
+Restart=on-failure
+
+[Install]
+WantedBy=multi-user.target
