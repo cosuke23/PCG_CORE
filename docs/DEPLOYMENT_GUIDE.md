@@ -155,6 +155,28 @@ robocopy C:\path\to\PCG_CORE\public\disciplinary_actions D:\backups\disciplinary
 Backups contain personnel PII. Keep them off cloud-synced folders unless those
 are encrypted and access-controlled. Test a restore into a scratch database.
 
+## 9. Linux server (Hermes) with Tailscale, always on
+
+`scripts/linux/install-server.sh` sets up Ubuntu/Debian in one run: nginx (127.0.0.1 only) + PHP-FPM 8.2+ + MariaDB + Composer, the app in `/var/www/pcg_core`, its own database user (random password, written only to `.env`), additive migrations, private upload storage, a daily database backup (`/var/backups/pcg_core`, 14 days, root-only) and Tailscale Serve. It never overwrites data: a backup is imported **only into an empty database**, and a broken `migrations` table is renamed aside, not dropped. Verified on Ubuntu 24.04 (fresh install, re-run, UTF-16 PowerShell dump import, update).
+
+```bash
+# on the old PC (PowerShell): database backup + uploads
+C:\xampp\mysql\bin\mysqldump.exe -u root -p --single-transaction --routines --result-file="$env:USERPROFILE\Documents\pcg_core.sql" pcg_core
+scp -P 400 "$env:USERPROFILE\Documents\pcg_core.sql" coastguard-admin@<server>:~/
+
+# on the server
+ssh -p 400 coastguard-admin@<server>
+sudo tailscale up                 # once, sign in to the same tailnet
+git clone https://github.com/cosuke23/PCG_CORE.git ~/PCG_CORE
+sudo SQL_DUMP=~/pcg_core.sql APP_KEY='<APP_KEY from the old .env>' bash ~/PCG_CORE/scripts/linux/install-server.sh
+```
+
+Options: `FUNNEL=1` (public instead of tailnet-only), `PORT=8080`, `APP_DIR=…`, `SKIP_TAILSCALE=1`. Uploaded files go to `/var/www/pcg_core/storage/app/private/uploads/` (copy `documents_toupload`, `201_files`, `disciplinary_actions`, `selfies` there with `scp -r`, then `sudo chown -R www-data:www-data` that folder). Mail for sign-in codes: `MAIL_*` in `/var/www/pcg_core/.env`, then `sudo -u www-data php artisan config:cache`.
+
+Updates after each change on GitHub: `sudo bash /var/www/pcg_core/scripts/linux/update-server.sh` (backs up first, maintenance page during the update).
+
+Security: the app listens on 127.0.0.1 only; reach it through Tailscale. Keep SSH key-only and consider closing the public SSH port once Tailscale SSH works (`sudo tailscale up --ssh`).
+
 ## 8. Existing production (pcg-mepcom.com, cPanel) — notes only
 
 This guide does not change production. If this branch is deployed there:
