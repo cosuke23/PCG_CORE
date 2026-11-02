@@ -80,13 +80,17 @@
 
         {{-- ===================================================== maroon band --}}
         <section class="lp-band" aria-labelledby="band-title">
-            <div class="lp-wrap lp-band__in">
+            {{-- Entrance animation (landing.css "band entrance"): eyebrow, then the
+                 headline word by word, the gold line with a shine, then the text and
+                 the buttons. Starts when the band scrolls into view. --}}
+            <div class="lp-wrap lp-band__in lp-band__anim" data-reveal>
                 <div>
                     <p class="lp-eyebrow">Philippine Coast Guard · MEPCOM</p>
-                    <h2 id="band-title" data-reveal>Protecting Our Seas. <em>Serving Our Nation.</em></h2>
+                    <h2 id="band-title"><span class="lp-line"><span class="lp-w">Protecting</span> <span class="lp-w">Our</span> <span class="lp-w">Seas.</span></span>
+                        <em class="lp-line"><span class="lp-w">Serving</span> <span class="lp-w">Our</span> <span class="lp-w">Nation.</span></em></h2>
                 </div>
                 <div>
-                    <p><strong>MEPCOM HRMIS</strong> is the personnel information system of the Marine Environmental Protection Command:
+                    <p class="lp-band__lead"><strong>MEPCOM HRMIS</strong> is the personnel information system of the Marine Environmental Protection Command:
                         registration, service records, document review and training, in one place.</p>
                     <div class="lp-actions">
                         <a class="lp-btn lp-btn--gold" href="{{ route('login') }}">Personnel sign in</a>
@@ -94,7 +98,6 @@
                     </div>
                 </div>
             </div>
-            <p class="lp-wrap lp-band__credit">Photo: Philippine Coast Guard, MEPCOM</p>
         </section>
 
 
