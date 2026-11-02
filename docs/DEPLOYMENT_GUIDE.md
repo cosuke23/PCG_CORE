@@ -155,7 +155,9 @@ robocopy C:\path\to\PCG_CORE\public\disciplinary_actions D:\backups\disciplinary
 Backups contain personnel PII. Keep them off cloud-synced folders unless those
 are encrypted and access-controlled. Test a restore into a scratch database.
 
-## 9. Linux server (Hermes) with Tailscale, always on
+## 9. Linux server (Ubuntu/Debian) with Tailscale, always on
+
+> **Not for Hermes.** Hermes (`coastguard-hermes`) runs **Rocky Linux 9** and already hosts PCG-CORE from a server-side kit (`~/pcg-core-deploy`, its own Tailscale node `tailscaled-pcg`), next to BioVerify and AFPC (see the AFPC repo's `deploy/README.md`). `install-server.sh` stops at its first check on Rocky Linux (apt only), so it cannot change Hermes; update PCG-CORE there with the existing kit. Use this section for a new Ubuntu/Debian server.
 
 `scripts/linux/install-server.sh` sets up Ubuntu/Debian in one run: nginx (127.0.0.1 only) + PHP-FPM 8.2+ + MariaDB + Composer, the app in `/var/www/pcg_core`, its own database user (random password, written only to `.env`), additive migrations, private upload storage, a daily database backup (`/var/backups/pcg_core`, 14 days, root-only) and Tailscale Serve. It never overwrites data: a backup is imported **only into an empty database**, and a broken `migrations` table is renamed aside, not dropped. Verified on Ubuntu 24.04 (fresh install, re-run, UTF-16 PowerShell dump import, update).
 
@@ -165,7 +167,7 @@ C:\xampp\mysql\bin\mysqldump.exe -u root -p --single-transaction --routines --re
 scp -P 400 "$env:USERPROFILE\Documents\pcg_core.sql" coastguard-admin@<server>:~/
 
 # on the server
-ssh -p 400 coastguard-admin@<server>
+ssh -p 400 <user>@<ubuntu-server>
 sudo tailscale up                 # once, sign in to the same tailnet
 git clone https://github.com/cosuke23/PCG_CORE.git ~/PCG_CORE
 sudo SQL_DUMP=~/pcg_core.sql APP_KEY='<APP_KEY from the old .env>' bash ~/PCG_CORE/scripts/linux/install-server.sh
