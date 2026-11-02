@@ -120,6 +120,6 @@ Last updated: 2026-10-30 · branch `claude/cool-wozniak-rni95k`
 | 2026-10-31 | Browser: `flow-hrmis.js` (4 roles), crawl 76 pages × 7 roles, flows-admin/users/register | **Passed** — 18/18, 76 ok (map tiles need internet), 25 + 16 + 2 |
 | 2026-10-31 | MEPCOM unit import + sync mapping | **Passed** — 148 tests; dev MariaDB: 140 units imported, re-run creates nothing |
 | 2026-11-02 | Hermes deploy kit (`deploy/`): bash -n + shellcheck, `nginx -t`, `php-fpm -t`, systemd unit verify; release build + migrate, probes (`/`, `/login`, `/admin/login` 200; `/.env` 403; upload folders 404), second release, broken release switched back automatically, `--rollback`, backup, UTF-16 dump import into an empty DB only | **Passed** (Debian sandbox) |
-| — | Kit on Hermes itself (Rocky 9, SELinux, real Tailscale node) | **Not tested** — run `preflight.sh` there first |
+| 2026-11-02 | Kit on Hermes (Rocky 9.8, PHP 8.3.36): preflight, setup, data import, `deploy.ps1 -Migrate`, Funnel at `mepcom-hrmis.tail7d94c9.ts.net`, `verify.sh` | **Passed** — other apps identical before/after; `/`, `/login`, `/admin/login` 200; `/.env` 403; upload folders 404 |
 | — | Real `pcg_core` data | **Blocked** — needs access on your PC |
 | — | Windows scripts, Tailscale | **Not tested** — no Windows/Tailscale in this environment |
