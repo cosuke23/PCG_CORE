@@ -66,11 +66,37 @@
         {{-- ===================================================== hero --}}
         <section class="lp-hero" aria-labelledby="hero-title">
             <div class="lp-wrap lp-hero__in">
-                <div class="lp-hero__seal">
-                    <img src="{{ asset('images/brand/pcg-logo.webp') }}" alt="Philippine Coast Guard seal">
-                    <img src="{{ asset('images/brand/mepcom-logo.webp') }}" alt="Marine Environmental Protection Command seal">
-                </div>
-                <div>
+                {{-- Unit seals in slanted panels; hover a panel to open it wider. --}}
+                <ul class="lp-slices" aria-label="MEPCOM and its units">
+                    <li class="lp-slice" style="--c1: #1f6a40; --c2: #14336b;">
+                        <a href="#units" title="Marine Environmental Protection Law Enforcement Force"><img src="{{ asset('images/brand/meplef-logo.webp') }}" alt="MEPLEF seal" width="512" height="512"><span class="lp-slice__name">MEPLEF</span></a>
+                    </li>
+                    <li class="lp-slice" style="--c1: #2368c8; --c2: #0a2a63;">
+                        <a href="#units" title="National Operations Center for Oil Pollution"><img src="{{ asset('images/brand/nocop-logo.webp') }}" alt="NOCOP seal" width="512" height="512"><span class="lp-slice__name">NOCOP</span></a>
+                    </li>
+                    <li class="lp-slice" style="--c1: #e08a1e; --c2: #a3142b;">
+                        <a href="#units" title="Marine Science Forensic Investigation Service"><img src="{{ asset('images/brand/msfis-logo.webp') }}" alt="MSFIS seal" width="512" height="512"><span class="lp-slice__name">MSFIS</span></a>
+                    </li>
+                    <li class="lp-slice" style="--c1: #1c49b8; --c2: #0a1d52;">
+                        <a href="#units" title="Marine Environmental Protection Regulatory Compliance and Governance Service"><img src="{{ asset('images/brand/meprcgs-logo.webp') }}" alt="MEPRCGS seal" width="512" height="512"><span class="lp-slice__name">MEPRCGS</span></a>
+                    </li>
+                    <li class="lp-slice lp-slice--lead" style="--c1: #d27a22; --c2: #6f1d2b;">
+                        <a href="#units" title="Marine Environmental Protection Command"><img src="{{ asset('images/brand/mepcom-logo.webp') }}" alt="MEPCOM seal" width="512" height="512"><span class="lp-slice__name">MEPCOM</span></a>
+                    </li>
+                    <li class="lp-slice" style="--c1: #1a8436; --c2: #073d18;">
+                        <a href="#units" title="Marine Environmental Protection Training and Doctrine Institute"><img src="{{ asset('images/brand/meptdi-logo.webp') }}" alt="MEPTDI seal" width="512" height="512"><span class="lp-slice__name">MEPTDI</span></a>
+                    </li>
+                    <li class="lp-slice" style="--c1: #2071c0; --c2: #11804a;">
+                        <a href="#units" title="Marine Environmental Protection Accreditation and Certification Service"><img src="{{ asset('images/brand/mepacces-logo.webp') }}" alt="MEP AcCeS seal" width="512" height="512"><span class="lp-slice__name">MEP AcCeS</span></a>
+                    </li>
+                    <li class="lp-slice" style="--c1: #e0711f; --c2: #0d2a66;">
+                        <a href="#units" title="Headquarters Support Service"><img src="{{ asset('images/brand/hss-logo.webp') }}" alt="HSS seal" width="512" height="512"><span class="lp-slice__name">HSS</span></a>
+                    </li>
+                    <li class="lp-slice" style="--c1: #2b93dc; --c2: #c99a12;">
+                        <a href="#units" title="Marine Environmental Protection Procurement Unit"><img src="{{ asset('images/brand/meproc-logo.webp') }}" alt="MEPROC seal" width="512" height="512"><span class="lp-slice__name">MEPROC</span></a>
+                    </li>
+                </ul>
+                <div class="lp-hero__text">
                     <h1 id="hero-title">MEPCOM AHEAD</h1>
                     <p class="lp-hero__quote">“Steering the Nation Toward Sustainable Seas”</p>
                     <a class="lp-hero__scroll" href="#band-title"><span>Scroll to explore</span></a>
