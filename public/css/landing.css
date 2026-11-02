@@ -121,10 +121,41 @@ main > section:not(.lp-hero) { position: relative; z-index: 1; }
     transform-origin: 50% 40%;
     will-change: opacity, transform;
 }
-.lp-hero__in { display: grid; grid-template-columns: auto 1fr; gap: 40px; align-items: center; min-height: calc(100vh - 64px); min-height: calc(100svh - 64px); padding-block: 48px; }
-.lp-hero__seal { display: flex; gap: 14px; align-items: center; }
-.lp-hero__seal img { width: clamp(96px, 15vw, 190px); height: auto; filter: drop-shadow(0 8px 24px rgba(0, 0, 0, .45)); }
-.lp-hero__seal img + img { width: clamp(72px, 11vw, 140px); }
+.lp-hero__in { display: grid; grid-template-columns: 1fr; gap: 28px; align-content: center; justify-items: center; text-align: center; min-height: calc(100vh - 64px); min-height: calc(100svh - 64px); padding-block: 32px; }
+.lp-hero__text { display: grid; justify-items: center; padding: 18px 36px 8px; border-radius: 50%; background: radial-gradient(closest-side, rgba(16, 18, 44, .55), rgba(16, 18, 44, .25) 70%, transparent); }
+
+/* ---- hero "slice wall": every unit seal in its own slanted panel (poster style).
+   Panels are skewed; their content is skewed back so seals and names stay upright.
+   Hover (or keyboard focus) opens a panel wider and brings its seal forward. */
+/* --h: panel height; the side padding leaves room for the slant (tan 12deg ~ .21 x height, half each side) */
+.lp-slices { --skew: -12deg; --h: clamp(250px, min(50vh, 40vw), 470px); display: flex; gap: 8px; width: 100%; height: var(--h); margin: 0; padding: 0 calc(var(--h) * .11 + 4px); list-style: none; box-sizing: border-box; }
+.lp-slice { position: relative; flex: 1 1 0; min-width: 0; transform: skewX(var(--skew)); border-radius: 8px; overflow: hidden;
+    background: radial-gradient(120% 70% at 50% 30%, rgba(255, 255, 255, .22), transparent 60%), linear-gradient(170deg, var(--c1), var(--c2));
+    box-shadow: 0 18px 40px rgba(0, 0, 0, .45), inset 0 0 0 1px rgba(255, 255, 255, .18);
+    transition: flex-grow .55s cubic-bezier(.2, .7, .2, 1), filter .4s ease, box-shadow .4s ease; }
+.lp-slice::after { /* light streak and bottom shade */ content: ""; position: absolute; inset: 0; pointer-events: none;
+    background: linear-gradient(100deg, transparent 30%, rgba(255, 255, 255, .14) 45%, transparent 55%), linear-gradient(180deg, transparent 55%, rgba(0, 0, 0, .55)); }
+.lp-slice--lead { flex-grow: 1.7; }
+.lp-slice a { position: absolute; inset: 0; display: block; color: var(--lp-white); text-decoration: none; }
+.lp-slice a:focus-visible { outline: 3px solid var(--lp-gold); outline-offset: -6px; }
+.lp-slice img { position: absolute; left: 50%; top: 44%; width: auto; height: 64%; max-width: none; aspect-ratio: 1; object-fit: contain;
+    transform: translate(-50%, -50%) skewX(calc(var(--skew) * -1)); filter: drop-shadow(0 12px 22px rgba(0, 0, 0, .5));
+    transition: transform .55s cubic-bezier(.2, .7, .2, 1); }
+.lp-slice--lead img { height: 72%; }
+.lp-slice__name { position: absolute; left: 0; right: 0; bottom: 14px; z-index: 1; transform: skewX(calc(var(--skew) * -1)); font: 700 clamp(11px, 1.1vw, 15px)/1.1 var(--lp-serif); letter-spacing: .08em; text-shadow: 0 2px 10px rgba(0, 0, 0, .7); white-space: nowrap; }
+@media (hover: hover) {
+    .lp-slices:hover .lp-slice { filter: saturate(.75) brightness(.8); }
+    .lp-slices .lp-slice:hover, .lp-slices .lp-slice:focus-within { flex-grow: 2.8; filter: none; box-shadow: 0 24px 60px rgba(0, 0, 0, .6), inset 0 0 0 2px var(--lp-gold); }
+    .lp-slice:hover img, .lp-slice:focus-within img { transform: translate(-50%, -50%) skewX(calc(var(--skew) * -1)) scale(1.08); }
+}
+/* entrance: panels rise one after another on load */
+.lp-js .lp-slice { animation: lp-slice-in .8s cubic-bezier(.2, .7, .2, 1) both; }
+.lp-js .lp-slice:nth-child(1) { animation-delay: .05s; } .lp-js .lp-slice:nth-child(2) { animation-delay: .12s; }
+.lp-js .lp-slice:nth-child(3) { animation-delay: .19s; } .lp-js .lp-slice:nth-child(4) { animation-delay: .26s; }
+.lp-js .lp-slice:nth-child(5) { animation-delay: .33s; } .lp-js .lp-slice:nth-child(6) { animation-delay: .40s; }
+.lp-js .lp-slice:nth-child(7) { animation-delay: .47s; } .lp-js .lp-slice:nth-child(8) { animation-delay: .54s; }
+.lp-js .lp-slice:nth-child(9) { animation-delay: .61s; }
+@keyframes lp-slice-in { from { opacity: 0; transform: skewX(var(--skew)) translateY(60px); } to { opacity: 1; transform: skewX(var(--skew)); } }
 .lp-hero h1 { margin: 0 0 10px; font: 700 clamp(30px, 5.4vw, 68px)/1.05 var(--lp-serif); letter-spacing: .01em; text-transform: uppercase; text-shadow: 0 2px 24px rgba(0, 0, 0, .5); }
 .lp-hero__quote { margin: 0; font: 600 italic clamp(16px, 2vw, 24px)/1.35 var(--lp-serif); color: var(--lp-sand); text-shadow: 0 1px 12px rgba(0, 0, 0, .55); }
 .lp-hero__scroll { display: inline-flex; flex-direction: column; align-items: center; gap: 8px; margin-top: 36px; font-size: 11px; font-weight: 700; letter-spacing: .14em; text-transform: uppercase; color: rgba(255, 255, 255, .85); text-decoration: none; }
@@ -302,7 +333,12 @@ html.lp-lightbox-open { overflow: hidden; }
     .lp-brand img.lp-brand__bp { display: none; }
     .lp-brand img { width: 34px; height: 34px; }
     .lp-brand > span:last-child > span { display: none; }
-    .lp-hero__in { grid-template-columns: 1fr; gap: 20px; text-align: center; justify-items: center; }
+    .lp-hero__in { gap: 20px; }
+    .lp-slices { --skew: -8deg; --h: 230px; overflow-x: auto; overflow-y: hidden; scroll-snap-type: x mandatory; padding: 0 20px; gap: 6px; scrollbar-width: none; }
+    .lp-slices::-webkit-scrollbar { display: none; }
+    .lp-slice { flex: 0 0 104px; scroll-snap-align: center; }
+    .lp-slice--lead { flex: 0 0 150px; }
+    .lp-slice__name { font-size: 12px; }
     .lp-backdrop::before { background: linear-gradient(180deg, rgba(38, 43, 85, .6), rgba(111, 29, 43, .55)); }
     .lp-backdrop img { object-position: 58% 78%; }
     .lp-grid4, .lp-units, .lp-foot__in { grid-template-columns: 1fr; }
@@ -321,4 +357,6 @@ html.lp-lightbox-open { overflow: hidden; }
     .lp-hero__scroll::after { animation: none; }
     .lp-backdrop img { transform: none; }
     .lp-hero__in { opacity: 1; transform: none; }
+    .lp-js .lp-slice { animation: none; }
+    .lp-slice, .lp-slice img { transition: none; }
 }
