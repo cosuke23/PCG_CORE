@@ -61,10 +61,15 @@ Step 'Checking the working tree'
 if (git status --porcelain --untracked-files=no) { Fail 'there are uncommitted changes. Commit them first.' }
 
 Step 'Checking that no sensitive files are tracked'
-$sensitive = git ls-files | Where-Object {
+# Schema-only SQL files that belong in git (no data; checked for INSERTs below).
+$allowedSql = @('database/audit/inspect_schema.sql', 'database/dev/schema_inferred.sql')
+$sensitive = git ls-files | Where-Object { $allowedSql -notcontains $_ } | Where-Object {
     $_ -match '(^|/)\.env$|\.sql(\.gz)?$|\.sqlite$|^public/(documents_toupload|201_files|disciplinary_actions|selfies)/|^selfies/|storage/app/private/(?!\.gitignore$)'
 }
 if ($sensitive) { Fail ("these files must not be in git:`n  " + ($sensitive -join "`n  ")) }
+foreach ($f in $allowedSql) {
+    if ((Test-Path $f) -and (Select-String -Path $f -Pattern 'INSERT\s+INTO' -Quiet)) { Fail "$f must stay schema-only but contains INSERT statements." }
+}
 
 if (-not $SkipTests) {
     Step 'Running the PHP tests'
