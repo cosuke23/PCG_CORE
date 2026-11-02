@@ -1121,6 +1121,27 @@
           ]
         }
       ]
+    },
+    {
+      "code": "MEP AcCeS",
+      "name": "Marine Environmental Protection Accreditation Certification Services",
+      "type": "unit",
+      "description": "Support unit of MEPCOM. Added by the owner on 2026-11-02 (landing page unit list). Verify against the official organisation order.",
+      "children": []
+    },
+    {
+      "code": "HSS",
+      "name": "Headquarters Support Service",
+      "type": "unit",
+      "description": "Support unit of MEPCOM. Added by the owner on 2026-11-02 (landing page unit list). Verify against the official organisation order.",
+      "children": []
+    },
+    {
+      "code": "MEPROC",
+      "name": "Marine Environmental Protection Procurement Unit",
+      "type": "unit",
+      "description": "Support unit of MEPCOM. Added by the owner on 2026-11-02 (landing page unit list). Verify against the official organisation order.",
+      "children": []
     }
   ]
 }

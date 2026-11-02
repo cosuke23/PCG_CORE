@@ -26,7 +26,10 @@ class ImportOrgUnitsTest extends TestCase
         $meplef = OrgUnit::where('code', 'MEPLEF')->first();
         $this->assertSame($mepcom->id, $meplef->parent_id);
         $this->assertSame(OrgUnit::where('code', 'HMEPLEF')->value('id'), OrgUnit::where('code', 'MEPLEF O/C')->value('parent_id'));
-        $this->assertSame(144, OrgUnit::count());
+        $this->assertSame(147, OrgUnit::count());
+        foreach (['MEP AcCeS', 'HSS', 'MEPROC'] as $code) {
+            $this->assertSame($mepcom->id, OrgUnit::where('code', $code)->value('parent_id'));
+        }
         $this->assertContains(OrgUnit::where('code', 'MEPUnit Manila')->value('id'), $mepcom->subtreeIds());
 
         // re-running creates nothing and changes nothing
