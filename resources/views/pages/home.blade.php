@@ -6,6 +6,7 @@
     <title>MEPCOM HRMIS · Philippine Coast Guard</title>
     <meta name="description" content="Personnel information system of the PCG Marine Environmental Protection Command: registration, service records, document review and training.">
     <link rel="icon" href="{{ asset('favicon.ico') }}">
+    @include('partials.share-meta')
     <link rel="stylesheet" href="{{ asset('vendor/inter/inter.css') }}">
     <link rel="stylesheet" href="{{ asset('vendor/fontawesome/css/all.min.css') }}">
     <link rel="stylesheet" href="{{ asset('css/landing.css') }}">
