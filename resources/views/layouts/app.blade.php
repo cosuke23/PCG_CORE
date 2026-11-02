@@ -5,6 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>@yield('title', 'Dashboard')</title>
+    @include('partials.share-meta')
 
     <script src="{{ asset('vendor/alpinejs/alpine-3.14.9.min.js') }}" defer></script>
     <link rel="stylesheet" href="{{ asset('vendor/leaflet/leaflet.css') }}" />

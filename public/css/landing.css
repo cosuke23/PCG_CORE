@@ -151,14 +151,14 @@ main > section:not(.lp-hero) { position: relative; z-index: 1; }
 /* "tilt your phone" tip: only on phones held upright */
 .lp-tilt { display: none; }
 @media (max-width: 600px) and (orientation: portrait) {
-    .lp-tilt { display: inline-flex; align-items: center; gap: 8px; max-width: calc(100vw - 24px); margin: 2px 0 0; padding: 6px 6px 6px 12px; border-radius: 999px; background: rgba(16, 18, 44, .78); -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px); color: var(--lp-white); font-size: clamp(11px, 3.3vw, 13px); font-weight: 600; line-height: 1.2; white-space: nowrap; box-shadow: 0 8px 24px rgba(0, 0, 0, .35); }
+    .lp-tilt { display: inline-flex; align-items: center; gap: 8px; max-width: calc(100vw - 24px); margin: 2px 0 0; padding: 6px 6px 6px 12px; border-radius: 999px; background: rgba(16, 18, 44, .32); border: 1px solid rgba(255, 255, 255, .22); -webkit-backdrop-filter: blur(4px); backdrop-filter: blur(4px); text-shadow: 0 1px 6px rgba(0, 0, 0, .6); color: var(--lp-white); font-size: clamp(11px, 3.3vw, 13px); font-weight: 600; line-height: 1.2; white-space: nowrap; box-shadow: 0 4px 14px rgba(0, 0, 0, .18); }
     .lp-tilt > span:not(.lp-tilt__phone) { overflow: hidden; text-overflow: ellipsis; }
     .lp-tilt[hidden] { display: none; }
 }
 .lp-tilt__phone { position: relative; flex: 0 0 auto; width: 14px; height: 22px; border: 2px solid var(--lp-gold); border-radius: 3px; animation: lp-tilt 2.4s ease-in-out infinite; }
 .lp-tilt__phone::after { content: ""; position: absolute; left: 50%; bottom: 2px; width: 4px; height: 2px; margin-left: -2px; border-radius: 1px; background: var(--lp-gold); }
 @keyframes lp-tilt { 0%, 20% { transform: rotate(0); } 50%, 75% { transform: rotate(-90deg); } 100% { transform: rotate(0); } }
-.lp-tilt__close { flex: 0 0 auto; width: 26px; height: 26px; border: 0; border-radius: 50%; background: rgba(255, 255, 255, .14); color: var(--lp-white); font-size: 18px; line-height: 1; cursor: pointer; }
+.lp-tilt__close { flex: 0 0 auto; width: 26px; height: 26px; border: 0; border-radius: 50%; background: rgba(255, 255, 255, .18); color: var(--lp-white); font-size: 18px; line-height: 1; cursor: pointer; }
 /* phones turned sideways: all nine panels in one row, filling the screen height */
 @media (max-height: 500px) and (orientation: landscape) {
     .lp-hero__in { gap: 10px; padding-block: 12px; }
