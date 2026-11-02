@@ -162,7 +162,7 @@
         <section class="lp-section lp-about" id="about" aria-labelledby="about-title">
             <div class="lp-wrap lp-about__in">
                 <figure class="lp-about__photo lp-about__photo--pair" data-reveal>
-                    <img src="{{ asset('images/landing/about-team.webp') }}" alt="MEPCOM personnel in uniform, group photo" width="1400" height="1050" loading="lazy">
+                    <span class="lp-about__main"><img src="{{ asset('images/landing/about-team.webp') }}" alt="MEPCOM personnel in uniform, group photo" width="1400" height="1050" loading="lazy"></span>
                     <img class="lp-about__inset" src="{{ asset('images/landing/about-training.webp') }}" alt="MEPCOM personnel at computers during a training session" width="1000" height="750" loading="lazy">
                 </figure>
                 <div>
@@ -173,7 +173,7 @@
                     <p>MEPCOM HRMIS keeps one accurate record for every member of the Command, so that the people who protect our seas are
                         supported by reliable personnel information.</p>
 
-                    <h3>MEPCOM AHEAD</h3>
+                    <h3>MEPCOM AHEAD <span>our guiding principles</span></h3>
                     <ol class="lp-ahead" data-reveal>
                         <li><b>A</b> Accountable governance and leadership</li>
                         <li><b>H</b> Highest standard of PCG core values</li>

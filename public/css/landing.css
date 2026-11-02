@@ -184,17 +184,23 @@ main > section:not(.lp-hero) { position: relative; z-index: 1; }
 .lp-about__in { display: grid; grid-template-columns: 1fr 1.15fr; gap: 56px; align-items: center; }
 .lp-about__photo { position: relative; margin: 0; }
 .lp-about__photo img { width: 100%; aspect-ratio: 1 / 1; object-fit: cover; object-position: 60% 20%; border-radius: 6px; }
-/* Two photos: the team, with a training session inset at the lower right. */
-.lp-about__photo--pair { padding-bottom: 22%; }
-.lp-about__photo--pair img { height: auto; aspect-ratio: 4 / 3; object-position: 50% 40%; }
-.lp-about__photo--pair .lp-about__inset { position: absolute; right: -16px; bottom: 0; width: 58%; border: 4px solid rgba(27, 31, 66, 1); box-shadow: 0 18px 40px rgba(0, 0, 0, .45); object-position: 50% 50%; }
+/* Two photos: the team (with the gold frame) and a training session that
+   overlaps its lower-right corner. Normal flow, so nothing hangs outside. */
+.lp-about__photo--pair { display: block; padding: 0 16px 0 0; }
+.lp-about__photo--pair::before { display: none; }
+.lp-about__main { position: relative; display: block; }
+.lp-about__main::before { content: ""; position: absolute; left: -12px; bottom: -12px; width: 45%; height: 45%; border-left: 3px solid var(--lp-gold); border-bottom: 3px solid var(--lp-gold); pointer-events: none; }
+.lp-about__photo--pair img { display: block; width: 100%; height: auto; aspect-ratio: 4 / 3; object-fit: cover; object-position: 50% 45%; border-radius: 6px; }
+.lp-about__photo--pair .lp-about__inset { position: relative; width: 52%; margin: -18% -16px 0 auto; border: 4px solid rgb(27, 31, 66); border-radius: 8px; box-shadow: 0 18px 40px rgba(0, 0, 0, .45); }
 .lp-about__photo::before { content: ""; position: absolute; left: -12px; bottom: -12px; width: 45%; height: 45%; border-left: 3px solid var(--lp-gold); border-bottom: 3px solid var(--lp-gold); }
 .lp-about h2 { color: var(--lp-white); }
 .lp-about p { color: rgba(255, 255, 255, .82); font-size: 15px; }
 .lp-about h3 { margin: 28px 0 12px; font-size: 11px; letter-spacing: .14em; text-transform: uppercase; color: var(--lp-gold); }
-.lp-ahead { display: grid; grid-template-columns: 1fr 1fr; gap: 2px; margin: 0; padding: 0; list-style: none; }
-.lp-ahead li { display: flex; gap: 12px; align-items: baseline; padding: 12px 14px; background: rgba(255, 255, 255, .05); font-size: 14px; font-weight: 600; }
-.lp-ahead b { font: 700 13px var(--lp-serif); color: var(--lp-gold); min-width: 22px; }
+.lp-about h3 span { margin-left: 8px; color: rgba(255, 255, 255, .55); letter-spacing: .06em; text-transform: none; font-weight: 500; }
+/* MEPCOM AHEAD: one line per letter, so the initials spell AHEAD down the side. */
+.lp-ahead { display: grid; gap: 6px; margin: 0; padding: 0; list-style: none; }
+.lp-ahead li { display: flex; gap: 14px; align-items: center; padding: 8px 14px 8px 8px; background: rgba(255, 255, 255, .05); border-left: 3px solid var(--lp-gold); border-radius: 0 6px 6px 0; font-size: 14.5px; font-weight: 600; line-height: 1.35; color: var(--lp-white); }
+.lp-ahead b { flex: 0 0 34px; display: grid; place-items: center; height: 34px; border-radius: 6px; background: rgba(232, 151, 58, .16); font: 700 18px var(--lp-serif); color: var(--lp-gold); }
 
 /* ------------------------------------------------------------ units */
 .lp-units { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin: 0; padding: 0; list-style: none; }
@@ -243,7 +249,6 @@ main > section:not(.lp-hero) { position: relative; z-index: 1; }
     .lp-foot__in { grid-template-columns: 1fr 1fr; }
     .lp-about__photo { max-width: 420px; }
     .lp-about__photo--pair { max-width: 560px; }
-    .lp-about__photo--pair .lp-about__inset { right: 0; }
 }
 @media (max-width: 600px) {
     .lp-top__desktop-cta { display: none; }
@@ -253,7 +258,10 @@ main > section:not(.lp-hero) { position: relative; z-index: 1; }
     .lp-hero__in { grid-template-columns: 1fr; gap: 20px; text-align: center; justify-items: center; }
     .lp-backdrop::before { background: linear-gradient(180deg, rgba(38, 43, 85, .6), rgba(111, 29, 43, .55)); }
     .lp-backdrop img { object-position: 58% 78%; }
-    .lp-grid4, .lp-units, .lp-foot__in, .lp-ahead { grid-template-columns: 1fr; }
+    .lp-grid4, .lp-units, .lp-foot__in { grid-template-columns: 1fr; }
+    .lp-about__photo--pair { padding-right: 8px; }
+    .lp-about__photo--pair .lp-about__inset { width: 58%; margin-right: -8px; }
+    .lp-ahead li { font-size: 14px; }
     .lp-mini + .lp-mini { border-left: 0; border-top: 1px solid var(--lp-line); }
     .lp-section { padding-block: 52px; }
     .lp-band__credit { text-align: left; }
