@@ -56,7 +56,7 @@ class HrmisWorkflowTest extends TestCase
     }
 
     /** Session of a real admin account (the session middleware re-reads it from the database). */
-    private function as(string $role, ?OrgUnit $scope = null, string $email = null): array
+    private function as(string $role, ?OrgUnit $scope = null, ?string $email = null): array
     {
         $admin = AdminUser::create([
             'name' => $role, 'email' => $email ?? $role . uniqid() . '@example.test', 'password' => Hash::make('x'),
