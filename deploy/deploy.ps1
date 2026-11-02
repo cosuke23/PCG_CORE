@@ -73,6 +73,12 @@ foreach ($f in $allowedSql) {
 
 if (-not $SkipTests) {
     Step 'Running the PHP tests'
+    # The tests use an in-memory SQLite database (phpunit.xml).
+    if (-not ((& php -m) -match '^pdo_sqlite$')) {
+        Fail ("PHP on this PC has no pdo_sqlite, which the tests need. In the php.ini shown by 'php --ini', " +
+              "remove the ';' before 'extension=pdo_sqlite' and 'extension=sqlite3', save, and run this again " +
+              "(or deploy without tests: -SkipTests).")
+    }
     Invoke-Checked 'The PHP tests' { & php artisan test --stop-on-failure }
 }
 
