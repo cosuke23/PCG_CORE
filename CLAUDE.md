@@ -24,7 +24,7 @@ php artisan serve --host=127.0.0.1 --port=8000
 # vendor/bin/pint exists but the codebase is not Pint-formatted; do not mass-reformat
 composer audit
 ```
-Windows helpers: `scripts/windows/setup.ps1`, `start.ps1`, `tailscale-serve.ps1`. Ubuntu/Debian server (nginx + PHP-FPM + MariaDB + Tailscale): `sudo bash scripts/linux/install-server.sh` — not Hermes, which is Rocky Linux 9 and runs PCG-CORE from its own `~/pcg-core-deploy` kit, updates `scripts/linux/update-server.sh` (DEPLOYMENT_GUIDE §9).
+Windows helpers: `scripts/windows/setup.ps1`, `start.ps1`, `tailscale-serve.ps1`. Ubuntu/Debian server (nginx + PHP-FPM + MariaDB + Tailscale): `sudo bash scripts/linux/install-server.sh` (DEPLOYMENT_GUIDE §9) — not Hermes, which is Rocky Linux 9: the separate MEPCOM HRMIS deployment there (`/srv/mepcom-hrmis`, port 8010, own FPM pool, DB and Tailscale node, never touching AFPC/BioVerify/`/srv/pcg-core`) uses the isolated kit in `deploy/` (`deploy/README.md`; `preflight.sh` → `server-setup.sh` → `deploy\deploy.ps1 -Migrate` → `verify.sh`).
 Browser end-to-end checks against a `pcg_core_dev` database: `tests/e2e/README.md`
 (dev schema: `database/dev/schema_inferred.sql`).
 
