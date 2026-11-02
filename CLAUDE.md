@@ -54,7 +54,10 @@ Browser end-to-end checks against a `pcg_core_dev` database: `tests/e2e/README.m
 - Don't log passwords, tokens, selfies, or full `$request->all()` (PII).
 - Status values are mixed-case in the DB (`Approved`/`approved`) — compare case-insensitively.
 - UI: new/redesigned pages use `public/css/pcg-ui.css` tokens and `.pcg-*` components plus `public/js/pcg-ui.js` (no CDN, no inline scripts, no build step). Sign-in pages extend `layouts/auth`. Don't add new CDN dependencies.
-- Insert server data into the DOM with `textContent`, or `escapeHtml()` when building HTML strings.
+- Insert server data into the DOM with `textContent`, or `escapeHtml()` when building HTML strings. `data-on-*` only calls page-defined global functions (built-ins like `eval` are refused).
+- Sign-out is POST only (`route('admin.logout')`, `route('unit.logout')` with `@csrf`). Unit sessions are re-checked per request (`UnitUser::refreshSession`); unit checker actions go to `Log::channel('audit')`.
+- One account per serial number (`User::serialTaken`); unit access matches the record owner (`personnel_data.personnel_id`).
+- Phones/tablets: check with `node tests/e2e/responsive.js`; wide tables scroll in `.pcg-table-wrap` (added automatically by `pcg-ui.js`).
 - CSP is enforced: inline `<script>` blocks must carry `nonce="{{ $cspNonce ?? '' }}"`; **no inline event handlers** (`onclick=` etc. — a test fails) — use `data-on-click="globalFunction" data-args='[...]'` (or `pcg.*` built-ins) handled by `public/js/pcg-ui.js`; no external origins.
 - Personnel pages extend `layouts/personnel`; admin pages `layouts/admin`.
 

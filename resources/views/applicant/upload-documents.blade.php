@@ -3,6 +3,7 @@
 
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Upload Required Documents</title>
 
     <link rel="stylesheet" href="{{ asset('vendor/leaflet/leaflet.css') }}" />
@@ -64,7 +65,22 @@
             gap: 15px;
         }
 
+        @media (max-width: 520px) {
+            .grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* Phones: 16px fields so iOS does not zoom in on focus. */
+        @media (max-width: 767px) {
+            input, select, textarea {
+                font-size: 16px;
+            }
+        }
+
         .doc-box {
+            min-width: 0;
+            overflow-wrap: anywhere;
             background: rgba(255, 255, 255, 0.08);
             padding: 15px;
             border-radius: 14px;

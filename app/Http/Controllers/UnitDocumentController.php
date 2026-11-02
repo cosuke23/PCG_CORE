@@ -26,9 +26,13 @@ class UnitDocumentController extends Controller
         // (the unit dashboard lists users.mother_unit = their unit); M1
         // checkers review all units.
         if (session('unit_role') !== \App\Models\UnitUser::ROLE_M1) {
-            $inUnit = DB::table('users')
-                ->where('serial_number', $request->serial_number)
-                ->where('mother_unit', session('unit_name'))
+            // The account that owns the documents must be in this unit (not
+            // just any account carrying that serial number).
+            $inUnit = DB::table('personnel_data as pd')
+                ->join('users as u', 'u.serial_number', '=', 'pd.serial_number')
+                ->where('pd.serial_number', $request->serial_number)
+                ->where('u.mother_unit', session('unit_name'))
+                ->where(fn ($q) => $q->whereNull('pd.personnel_id')->orWhereColumn('pd.personnel_id', 'u.id'))
                 ->exists();
 
             abort_unless($inUnit, 403, 'This applicant is not in your unit.');
@@ -40,16 +44,19 @@ class UnitDocumentController extends Controller
             $decision = $request->decision;
             $docs     = $request->docs ?? [];
 
+            // Keyed by personnel_data column; the review modals post
+            // docs[<column>][checked|comment], so a label always matches its file.
             $docMap = [
-                0 => ['SOI', 'soi'],
-                1 => ['NBI Clearance', 'nbi_clearance'],
-                2 => ['Ombudsman', 'ombudsman_clearance'],
-                3 => ['Sandiganbayan', 'sandiganbayan_clearance'],
-                4 => ['OFR', 'ofr'],
-                5 => ['Medical', 'medical_clearance'],
-                6 => ['PFT', 'pft_clearance'],
-                7 => ['Whole Body', 'whole_body_picture'],
-                8 => ['2x2 Photo', 'photo_2x2'],
+                'soi'                     => 'SOI',
+                'nbi_clearance'           => 'NBI Clearance',
+                'ombudsman_clearance'     => 'Ombudsman',
+                'sandiganbayan_clearance' => 'Sandiganbayan',
+                'ofr'                     => 'OFR',
+                'medical_clearance'       => 'Medical',
+                'pft_clearance'           => 'PFT',
+                'whole_body_picture'      => 'Whole Body',
+                'photo_2x2'               => '2x2 Photo',
+                'residential_sketch'      => 'Residential Sketch',
             ];
 
             Log::info('Decision Flow Started', [
@@ -85,11 +92,11 @@ class UnitDocumentController extends Controller
 
                 Log::warning('🔴 REJECTED FLOW START');
 
-                foreach ($docs as $index => $doc) {
+                foreach ($docs as $column => $doc) {
 
-                    if (!isset($docMap[$index])) continue;
+                    if (!is_string($column) || !isset($docMap[$column]) || !is_array($doc)) continue;
 
-                    [$label, $column] = $docMap[$index];
+                    $label = $docMap[$column];
 
                     $isChecked = isset($doc['checked']);
                     $comment   = $doc['comment'] ?? null;
@@ -161,6 +168,16 @@ class UnitDocumentController extends Controller
             Log::info('=== REVIEW COMPLETED SUCCESSFULLY ===', [
                 'serial_number' => $serial,
                 'decision' => $decision
+            ]);
+            Log::channel('audit')->info('unit.document_review', [
+                'unit_user_id' => session('unit_user_id'),
+                'unit_role' => session('unit_role'),
+                'serial_number' => $serial,
+                'decision' => $decision,
+                'rejected' => $decision === 'rejected'
+                    ? array_keys(array_filter($docs, fn ($d) => is_array($d) && isset($d['checked'])))
+                    : [],
+                'ip' => request()->ip(),
             ]);
 
             return back()->with('success', 'Review completed.');

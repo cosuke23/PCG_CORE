@@ -13,7 +13,6 @@
 <script src="{{ asset('vendor/jquery/jquery-3.7.1.min.js') }}"></script>
 
 <script src="{{ asset('vendor/datatables/dataTables-2.3.2.min.js') }}"></script>
-```
 
 @endsection
 

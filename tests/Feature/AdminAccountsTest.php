@@ -70,6 +70,15 @@ class AdminAccountsTest extends TestCase
         $this->assertNull(session('admin_logged_in'));
     }
 
+    public function test_open_setup_admin_session_ends_once_an_account_exists()
+    {
+        $this->signIn('setup@example.test', 'setup-password-123')->assertRedirect(route('admin.dashboard'));
+        $this->admin(); // a real account is created while the setup session is still open
+
+        $this->get('/admin/accounts')->assertRedirect(route('admin.login'));
+        $this->assertNull(session('admin_logged_in'));
+    }
+
     public function test_new_account_must_enrol_two_factor_before_access()
     {
         $this->admin(AdminUser::ROLE_HR, false);

@@ -54,6 +54,25 @@ class User extends Authenticatable
     protected $casts = [
         'email_verified_at' => 'datetime',
     ];
+    /**
+     * Does another account already use this serial number? Case and
+     * surrounding spaces are ignored; rejected accounts (which cannot sign
+     * in) do not count; $exceptId skips the account being checked.
+     */
+    public static function serialTaken(string $serial, ?int $exceptId = null): bool
+    {
+        $serial = strtoupper(trim($serial));
+        if ($serial === '') {
+            return false;
+        }
+
+        return static::query()
+            ->whereRaw('UPPER(TRIM(serial_number)) = ?', [$serial])
+            ->whereRaw("LOWER(COALESCE(status, '')) <> 'rejected'")
+            ->when($exceptId, fn ($q) => $q->where('id', '!=', $exceptId))
+            ->exists();
+    }
+
     public function administrativeTracks()
     {
         return $this->hasMany(

@@ -38,9 +38,9 @@ async function step(name, fn) {
     const serial = sql("select pd.serial_number from personnel_data pd join users u on u.serial_number=pd.serial_number where u.mother_unit='MEPLEF' order by pd.id limit 1");
     await unit.goto(BASE + '/unit/dashboard');
     await unit.locator('tr', { hasText: serial }).first().dblclick();
-    await unit.waitForSelector('#doc_box input[name="docs[1][checked]"]', { state: 'visible', timeout: 5000 });
-    await unit.check('#doc_box input[name="docs[1][checked]"]');
-    await unit.fill('#doc_box [name="docs[1][comment]"]', 'Flow test: NBI clearance is blurred');
+    await unit.waitForSelector('#doc_box input[name="docs[nbi_clearance][checked]"]', { state: 'visible', timeout: 5000 });
+    await unit.check('#doc_box input[name="docs[nbi_clearance][checked]"]');
+    await unit.fill('#doc_box [name="docs[nbi_clearance][comment]"]', 'Flow test: NBI clearance is blurred');
     await unit.click('button:has-text("❌ REJECT")');
     await unit.click('.swal2-confirm').catch(() => {});
     await unit.waitForLoadState('networkidle'); await unit.waitForTimeout(500);

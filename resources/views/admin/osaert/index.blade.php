@@ -357,7 +357,7 @@
                     </p>
                 </div>
 
-                <div class="flex items-center gap-3">
+                <div class="flex flex-wrap items-center gap-3">
 
                     <span class="bg-blue-100 text-blue-700 px-3 py-1 rounded-full text-sm font-semibold">
                         {{ number_format($trainees->count()) }} Trainees

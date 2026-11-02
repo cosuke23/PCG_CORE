@@ -29,6 +29,15 @@ class EmailLoginCode
     /** Creates a code and emails it. Returns false if the email could not be sent. */
     public static function issue(AdminUser $admin): bool
     {
+        // In production a code must really be sent: the log/array mailers
+        // would never deliver it, and 'log' would write the code to a file.
+        if (app()->environment('production') && in_array(config('mail.default'), ['log', 'array'], true)) {
+            Log::error('Admin sign-in codes need a real mailer; MAIL_MAILER is ' . config('mail.default'));
+            session()->forget(self::KEY);
+
+            return false;
+        }
+
         $code = str_pad((string) random_int(0, 999999), 6, '0', STR_PAD_LEFT);
         $minutes = max(1, (int) config('pcg.admin.email_code_minutes', 10));
 

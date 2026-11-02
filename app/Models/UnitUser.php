@@ -37,4 +37,32 @@ class UnitUser extends Model
         'permissions' => 'array',
         'is_active' => 'boolean',
     ];
+
+    /**
+     * Re-read the signed-in checker from the database on every request, so a
+     * deactivated account, a removed M1 role or a changed unit takes effect
+     * at once instead of when the session expires. Returns false (and clears
+     * the unit session) when the account no longer exists or is inactive.
+     */
+    public static function refreshSession(\Illuminate\Contracts\Session\Session $session): bool
+    {
+        $id = $session->get('unit_user_id');
+        if (!$id) {
+            return false;
+        }
+
+        $user = static::query()->find($id);
+        if (!$user || !$user->is_active) {
+            $session->forget(['unit_user_id', 'unit_full_name', 'unit_email', 'unit_role', 'unit_name']);
+            return false;
+        }
+
+        $session->put([
+            'unit_role' => $user->role,
+            'unit_name' => $user->unit_name,
+            'unit_full_name' => $user->full_name,
+        ]);
+
+        return true;
+    }
 }

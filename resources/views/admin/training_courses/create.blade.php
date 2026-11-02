@@ -6,7 +6,6 @@
 
     <div class="flex min-h-screen bg-gray-100">
 
-        ```
         @include('admin.partials.lms-menu')
 
         <main class="flex-1 p-10">
@@ -157,7 +156,6 @@
             </div>
 
         </main>
-        ```
 
     </div>
 

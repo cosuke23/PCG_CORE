@@ -999,7 +999,7 @@
                                text-xs font-semibold
                                bg-slate-100 text-slate-600">
 
-                        ${status}
+                        ${$('<div>').text(status).html()}
 
                     </span>
 

@@ -70,6 +70,16 @@ return [
             'days' => 14,
         ],
 
+        // Who did what in the unit checker area (document decisions,
+        // disciplinary records). Always written, whatever LOG_LEVEL is; ids
+        // and serial numbers only, never names or file contents.
+        'audit' => [
+            'driver' => 'daily',
+            'path' => storage_path('logs/audit.log'),
+            'level' => 'info',
+            'days' => env('LOG_AUDIT_DAYS', 400),
+        ],
+
         'slack' => [
             'driver' => 'slack',
             'url' => env('LOG_SLACK_WEBHOOK_URL'),

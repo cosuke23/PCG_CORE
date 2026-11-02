@@ -108,6 +108,9 @@ class UnitUserController extends Controller
             ->join('personnel_data as pd', 'u.serial_number', '=', 'pd.serial_number')
             ->leftJoin('reinlist_personal_info as rpi', 'u.serial_number', '=', 'rpi.serial_number')
             ->where('u.mother_unit', $unitName)
+            // only the account that owns each record, so a second account with
+            // the same serial cannot bring someone's documents into this unit
+            ->where(fn ($q) => $q->whereNull('pd.personnel_id')->orWhereColumn('pd.personnel_id', 'u.id'))
             ->select(
                 'pd.*',
                 'u.name as applicant_name',
@@ -299,6 +302,11 @@ class UnitUserController extends Controller
             Log::info('Disciplinary Upload COMPLETED', [
                 'serial_number' => $request->serial_number
             ]);
+            Log::channel('audit')->info('unit.disciplinary_upload', [
+                'unit_user_id' => session('unit_user_id'),
+                'serial_number' => $request->serial_number,
+                'ip' => $request->ip(),
+            ]);
 
             return redirect()->back()->with('success', 'Disciplinary files uploaded successfully.');
         } catch (\Exception $e) {
@@ -333,6 +341,13 @@ class UnitUserController extends Controller
             DB::table('reinlist_disciplinary_actions')
                 ->where('id', $id)
                 ->delete();
+
+            Log::channel('audit')->info('unit.disciplinary_delete', [
+                'unit_user_id' => session('unit_user_id'),
+                'record_id' => $id,
+                'serial_number' => $doc->serial_number ?? null,
+                'ip' => request()->ip(),
+            ]);
         }
 
         return back()->with('success', 'Deleted successfully');
@@ -377,6 +392,7 @@ class UnitUserController extends Controller
     public function logout(Request $request)
     {
         session()->forget(['unit_user_id', 'unit_full_name', 'unit_email', 'unit_role', 'unit_name']);
+        $request->session()->migrate(true);
         $request->session()->regenerateToken();
         return redirect('/unit/login');
     }

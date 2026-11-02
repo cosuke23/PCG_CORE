@@ -319,6 +319,7 @@ class AdminLoginController extends Controller
     {
         AdminAudit::record('logout');
         session()->forget(['admin_logged_in', 'admin_user_id', 'admin_email', 'admin_name', 'admin_role', 'admin_org_unit_id', 'admin_bootstrap', 'admin_2fa_user_id']);
+        $request->session()->migrate(true);
         $request->session()->regenerateToken();
 
         return redirect()->route('admin.login')->with('success', 'Admin logged out successfully');

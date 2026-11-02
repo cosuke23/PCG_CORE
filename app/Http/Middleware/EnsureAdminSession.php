@@ -34,6 +34,12 @@ class EnsureAdminSession
             }
 
             $request->session()->put(['admin_role' => $admin->role, 'admin_org_unit_id' => $admin->org_unit_id]);
+        } elseif ($request->session()->get('admin_bootstrap') && \App\Http\Controllers\AdminLoginController::accountsEnabled()) {
+            // The .env setup admin (no 2FA) only works until the first real
+            // account exists; end any such session that is still open.
+            $request->session()->forget(['admin_logged_in', 'admin_user_id', 'admin_email', 'admin_name', 'admin_role', 'admin_org_unit_id', 'admin_bootstrap']);
+
+            return redirect()->route('admin.login')->withErrors(['email' => 'Admin accounts now exist. Sign in with your own account.']);
         }
 
         return $next($request);

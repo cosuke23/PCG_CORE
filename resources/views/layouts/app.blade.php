@@ -96,22 +96,22 @@
 
     <div class="fixed top-0 left-0 w-full flex justify-center z-50 pt-4 px-4 transition-all duration-300"
         id="nav-container">
-        <nav id="navbar" class="w-full max-w-7xl glass-nav rounded-2xl px-6 py-2 transition-all duration-300">
+        <nav id="navbar" class="w-full max-w-7xl glass-nav rounded-2xl px-3 sm:px-6 py-2 transition-all duration-300">
             <div class="flex items-center justify-between h-14">
 
-                <div class="flex-shrink-0 flex items-center space-x-4">
+                <div class="min-w-0 flex-1 flex items-center space-x-2 sm:space-x-4">
 
                     <!-- Logos -->
-                    <div class="flex items-center space-x-2 border-r border-white/20 pr-4">
+                    <div class="flex shrink-0 items-center space-x-2 border-r border-white/20 pr-2 sm:pr-4">
                         <img src="{{ asset('backgrounds/pcg logo.png') }}" alt="DOTr"
-                            class="h-9 w-auto drop-shadow-sm">
-                        <img src="{{ asset('backgrounds/DOTR.png') }}" alt="PCG" class="h-9 w-auto drop-shadow-sm">
+                            class="h-7 sm:h-9 w-auto drop-shadow-sm">
+                        <img src="{{ asset('backgrounds/DOTR.png') }}" alt="PCG" class="h-7 sm:h-9 w-auto drop-shadow-sm">
                         <img src="{{ asset('backgrounds/bagong_pilipinas.png') }}" alt="Bagong Pilipinas"
-                            class="h-9 w-auto drop-shadow-sm">
+                            class="h-7 sm:h-9 w-auto drop-shadow-sm">
                     </div>
 
                     <!-- Title + Marquee -->
-                    <div class="flex items-center space-x-4 overflow-hidden">
+                    <div class="flex min-w-0 items-center space-x-4 overflow-hidden">
 
                         <!-- Logo + Title -->
                         <div class="flex items-center space-x-2">
@@ -133,7 +133,7 @@
                         </div>
 
                         <!-- Marquee -->
-                        <div class="relative w-48 md:w-64 overflow-hidden">
+                        <div class="relative hidden sm:block w-48 md:w-64 overflow-hidden">
                             <div
                                 class="whitespace-nowrap animate-marquee text-mepcomGold font-semibold text-sm md:text-base flex items-center gap-2">
                                 <img src="/backgrounds/mini_boat.png" alt="Boat" class="w-20 h-20 inline-block">
@@ -169,7 +169,7 @@
                     }
                 </style>
 
-                <div class="hidden md:block">
+                <div class="hidden md:block shrink-0">
                     <div class="flex items-center space-x-1">
                         @if (session('user_id'))
                             <button @click="openSOIModal = true"
@@ -214,7 +214,7 @@
                     </div>
                 </div>
 
-                <div class="md:hidden flex items-center">
+                <div class="md:hidden flex shrink-0 items-center">
                     <button id="mobile-menu-button" class="text-white p-2">
                         <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -233,7 +233,15 @@
         <a href="{{ route('home') }}" class="text-2xl text-white font-bold">HOME</a>
         <a href="{{ route('about') }}" class="text-2xl text-white font-bold">ABOUT</a>
         <a href="{{ route('contact') }}" class="text-2xl text-white font-bold">CONTACT</a>
-        <a href="{{ route('login') }}" class="text-2xl text-mepcomGold font-bold">LOGIN</a>
+        @if (session('user_id'))
+            <a href="{{ url('/dashboard') }}" class="text-2xl text-mepcomGold font-bold">DASHBOARD</a>
+            <a href="#" data-on-click="pcg.submit-form" data-args='["#logout-form"]' data-prevent
+                class="text-lg text-white font-bold">LOGOUT</a>
+        @else
+            <a href="{{ route('login') }}" class="text-2xl text-mepcomGold font-bold">LOGIN</a>
+            <a href="{{ route('register', ['type' => 'officer']) }}" class="text-base text-white font-semibold">Register as Officer</a>
+            <a href="{{ route('register', ['type' => 'non_officer']) }}" class="text-base text-white font-semibold">Register as Non-Officer</a>
+        @endif
     </div>
 
     <main>
