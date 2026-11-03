@@ -29,7 +29,7 @@ class ReenlistmentController extends Controller
     ];
 
     public const STATUSES = [
-        'active' => 'Approved and pending',
+        'active' => 'Approved + pending',
         'approved' => 'Approved only',
         'pending' => 'Pending only',
         'all' => 'All, including rejected',
