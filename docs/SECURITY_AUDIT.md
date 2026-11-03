@@ -1,6 +1,6 @@
 # Security Audit — PCG_CORE (MEPCOM HRMIS)
 
-Audit date: 2026-10-30 · Baseline commit: `83459a9` ("first commit") · Branch: `claude/cool-wozniak-rni95k` · Last updated: 2026-11-02 (full re-run before publication, §0e)
+Audit date: 2026-10-30 · Baseline commit: `83459a9` ("first commit") · Branch: `claude/cool-wozniak-rni95k` · Last updated: 2026-11-03 (penetration test, §0f)
 
 Scope: source code in this repository. The live `pcg_core` database and the
 production server (`pcg-mepcom.com`) were **not** accessed; findings about them
@@ -85,6 +85,21 @@ Server side (nginx site and PHP pool of this app only, applied with `deploy/upda
 Accepted by the owner (2026-11-03): the re-enlistment admin role signs in with a password only (no emailed code) — `PCG_ADMIN_PASSWORD_ONLY_ROLES=reenlistment_admin`. Exposure if that password leaks: names, serial numbers, emails, units, ETE dates and contact numbers of non-officers (read-only; no documents, no changes). Mitigations kept: 12-character minimum, 30 attempts per hour per account across all addresses, audited views and exports, 12-hour session cap. The super admin can never be password-only.
 
 Still open (owner decision): N12 (OSAERT verify links use sequential ids; changing them breaks printed QR codes); 2FA for M1 checker accounts; a database UNIQUE index on `users.serial_number` after a duplicate clean-up; Hermes-wide SSH hardening (key-only login, fail2ban), which affects the other apps and is the server owner's call.
+
+## 0f. Penetration test (2026-11-03)
+
+Black-box attacks against a production-like copy (the deploy kit's nginx site and PHP pool, `APP_ENV=production`, no-dev build), plus a third independent code review aimed at the re-enlistment module and the password-only sign-in. The live site itself was not attacked from the review environment (its network blocks it).
+
+| # | Sev. | Finding | Status |
+|---|------|---------|--------|
+| Q1 | High | The per-account sign-in limit could be bypassed with accented email variants (`ádmin@…` matches `admin@…` under the accent-insensitive collation but had its own counter) — most serious for the password-only re-enlistment admin. | **Fixed**: limiter keys are ASCII-folded; admin and unit sign-in accept ASCII email addresses only. |
+| Q2 | Medium | An HR admin could grant M1 (all units) access or reset an M1 account's password, then open restricted files through the unit login. | **Fixed**: only an admin with `documents.restricted` (the super admin) may grant M1 or set an M1 password. |
+| Q3 | Medium | `/files/…/./…` or `//` variants skipped the restricted-file lookup. | **Fixed**: such paths are refused (404). |
+| Q4 | Medium | A password-only session kept going if the account was later promoted to a role that needs the second step. | **Fixed**: that session is signed out at the next request. |
+| Q5 | Low | Admin dashboard row data used reduced JSON escaping, so HTML entities in an unvalidated profile field could inject keys (Approve/Reject on another account). | **Fixed**: default escaping restored; profile step-4 fields limited to short text. |
+| Q6 | Low | The re-enlistment "Back" link followed the Referer header. | **Fixed**: always the watchlist. |
+
+Attacks that were blocked (24/24 automated checks, plus stored-XSS payloads viewed as admin, re-enlistment admin and M1 checker): 101 protected routes refuse anonymous requests; CSRF required; security headers and Secure/HttpOnly/SameSite cookies; foreign Host 400; 25 sensitive paths and traversal encodings (`..%2f`, `%2e%2e`, `%5c`, double encoding, case) blocked; TRACE 405; no stack traces; SQL injection on search, unit and certificate fields; the re-enlistment admin refused on 36 other admin pages and 31 admin actions; password-only limited to its role; sign-in guessing throttled including case/space variants; members isolated from other people's files and forms; no open redirect; PHP, fake-PDF and SVG uploads refused; no injected script ran on any dashboard, list or detail page.
 
 ## 1. Findings and status
 

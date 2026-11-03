@@ -6,7 +6,7 @@
     <div class="pcg-page">
         <div class="pcg-page__header">
             <div>
-                <p><a href="{{ url()->previous() !== url()->current() && str_contains(url()->previous(), '/admin/reenlistment') ? url()->previous() : route('admin.reenlistment.index') }}">← Back to the ETE watchlist</a></p>
+                <p><a href="{{ route('admin.reenlistment.index') }}">← Back to the ETE watchlist</a></p>
                 <h2>{{ $person->rank }} {{ $person->name }}</h2>
                 <p>Serial number {{ $person->serial_number ?: '—' }} · non-officer ·
                     <span class="pcg-badge {{ $person->ete_tone ? 'pcg-badge--' . $person->ete_tone : '' }}">{{ $person->ete_label }}</span></p>

@@ -91,7 +91,7 @@
 
                     <tbody>
                         @foreach ($usersWithCourse as $user)
-                            <tr data-status="{{ $user->status }}" data-user='@json($user, JSON_HEX_APOS | JSON_HEX_QUOT)'>
+                            <tr data-status="{{ $user->status }}" data-user='@json($user)'>
 
                                 <td>
                                     @if ($user->selfie_image)

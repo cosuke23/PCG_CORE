@@ -29,7 +29,7 @@ class UnitUserController extends Controller
     private function attemptUnitLogin(Request $request): ?UnitUser
     {
         $request->validate([
-            'email'    => 'required|email',
+            'email'    => ['required', 'email', 'max:255', 'regex:/^[\x21-\x7e]+$/'], // plain ASCII only
             'password' => 'required|string',
         ]);
 

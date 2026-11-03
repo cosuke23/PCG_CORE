@@ -40,7 +40,10 @@ class FileController extends Controller
     {
         $path = ltrim(str_replace('\\', '/', $path), '/');
 
-        if ($path === '' || str_contains($path, '..') || str_contains($path, "\0")) {
+        // Only the exact stored form: no "..", no "./" segments, no "//", no NUL
+        // (the permission checks compare this path with the database).
+        if ($path === '' || str_contains($path, '..') || str_contains($path, "\0")
+            || str_contains($path, '//') || preg_match('#(^|/)\.(/|$)#', $path)) {
             abort(404);
         }
 

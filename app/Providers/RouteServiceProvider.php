@@ -56,7 +56,9 @@ class RouteServiceProvider extends ServiceProvider
         // so a password cannot be guessed from many IPs (no permanent lockout:
         // the owner can sign in again after the hour).
         $login = fn (string $name, int $perEmail, int $perIp) => function (Request $request) use ($name, $perEmail, $perIp) {
-            $email = strtolower(trim((string) $request->input('email')));
+            // ASCII-folded, so "ádmin@x" and "admin@x" (equal for the database's
+            // accent-insensitive collation) share one counter
+            $email = strtolower(trim(\Illuminate\Support\Str::ascii((string) $request->input('email'))));
 
             return [
                 Limit::perMinute($perEmail)->by($name . '|' . $request->ip() . '|' . $email),
