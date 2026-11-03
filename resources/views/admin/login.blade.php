@@ -12,7 +12,7 @@
 @section('content')
     <span class="pcg-auth__role">{{ $reenlistment ? 'Re-enlistment admin' : 'Administrator' }}</span>
     <h2>Sign in</h2>
-    <p class="pcg-auth__lead">{{ $reenlistment ? 'For re-enlistment administrators. A one-time code is sent to your email after the password.' : 'Restricted to the system administrator.' }}</p>
+    <p class="pcg-auth__lead">{{ $reenlistment ? 'For re-enlistment administrators. Sign in with your email and password.' : 'Restricted to the system administrator.' }}</p>
 
     @include('auth.partials.alerts')
     @include('auth.partials.credentials', ['action' => route('admin.login.submit')])
