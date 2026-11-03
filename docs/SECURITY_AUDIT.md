@@ -82,6 +82,8 @@ Second independent review of everything reachable from the internet, plus a swee
 
 Server side (nginx site and PHP pool of this app only, applied with `deploy/update-web-config.sh`): per-visitor rate limit (8 requests/s, burst 40) and 30 connections; slow-client timeouts; only GET/HEAD/POST; source, backup, log and archive file types never served; small body limits on sign-in and contact forms; HSTS, nosniff and Referrer-Policy on every response including static files; PHP shell functions disabled for web requests.
 
+Accepted by the owner (2026-11-03): the re-enlistment admin role signs in with a password only (no emailed code) — `PCG_ADMIN_PASSWORD_ONLY_ROLES=reenlistment_admin`. Exposure if that password leaks: names, serial numbers, emails, units, ETE dates and contact numbers of non-officers (read-only; no documents, no changes). Mitigations kept: 12-character minimum, 30 attempts per hour per account across all addresses, audited views and exports, 12-hour session cap. The super admin can never be password-only.
+
 Still open (owner decision): N12 (OSAERT verify links use sequential ids; changing them breaks printed QR codes); 2FA for M1 checker accounts; a database UNIQUE index on `users.serial_number` after a duplicate clean-up; Hermes-wide SSH hardening (key-only login, fail2ban), which affects the other apps and is the server owner's call.
 
 ## 1. Findings and status

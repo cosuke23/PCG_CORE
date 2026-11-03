@@ -23,6 +23,11 @@ return [
         // authenticator app. Email needs working MAIL_* settings in .env.
         'two_factor' => env('PCG_ADMIN_2FA', 'email'),
         'email_code_minutes' => (int) env('PCG_ADMIN_EMAIL_CODE_MINUTES', 10),
+        // Roles that sign in with the password only, without the emailed code
+        // (owner decision 2026-11-03: the re-enlistment admin). Comma-separated;
+        // super_admin is always refused. Empty value = every role uses the code.
+        'password_only_roles' => array_values(array_filter(array_map('trim',
+            explode(',', (string) env('PCG_ADMIN_PASSWORD_ONLY_ROLES', 'reenlistment_admin'))))),
         // An admin session ends this many hours after sign-in, busy or not.
         'max_session_hours' => (int) env('PCG_ADMIN_MAX_SESSION_HOURS', 12),
     ],

@@ -87,6 +87,26 @@ class AdminAccountsTest extends TestCase
         $this->assertNull(session('admin_logged_in'));
     }
 
+    public function test_reenlistment_admin_signs_in_with_password_only()
+    {
+        $this->admin(AdminUser::ROLE_REENLISTMENT, false, 're@example.test');
+
+        $this->signIn('re@example.test')->assertRedirect(route('admin.reenlistment.index'));
+        $this->assertTrue((bool) session('admin_logged_in'));
+        $this->assertSame('reenlistment_admin', session('admin_role'));
+    }
+
+    public function test_other_roles_still_need_the_second_step()
+    {
+        $this->admin(AdminUser::ROLE_HR, false, 'hr@example.test');
+        $this->signIn('hr@example.test')->assertRedirect(route('admin.two-factor.setup'));
+        $this->assertNull(session('admin_logged_in'));
+
+        // the super admin can never be password-only, whatever the setting
+        config(['pcg.admin.password_only_roles' => ['super_admin']]);
+        $this->assertFalse(\App\Http\Controllers\AdminLoginController::passwordOnly('super_admin'));
+    }
+
     public function test_new_account_must_enrol_two_factor_before_access()
     {
         $this->admin(AdminUser::ROLE_HR, false);

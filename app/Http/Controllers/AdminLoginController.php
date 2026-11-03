@@ -75,6 +75,17 @@ class AdminLoginController extends Controller
         }
 
         $request->session()->regenerate();
+
+        // Owner decision 2026-11-03: the re-enlistment admin signs in with the
+        // password only (no emailed code). Configurable, but the super admin
+        // can never be password-only.
+        if (self::passwordOnly($admin->role)) {
+            $this->completeLogin($request, $admin);
+            AdminAudit::record('login.password_only', $admin->email);
+
+            return redirect()->route(self::homeRoute($admin->role));
+        }
+
         session(['admin_2fa_user_id' => $admin->id]);
 
         if (EmailLoginCode::enabled()) {
@@ -314,6 +325,16 @@ class AdminLoginController extends Controller
 
         $admin->forceFill(['last_login_at' => now(), 'last_login_ip' => $request->ip()])->save();
         AdminAudit::record('login.success');
+    }
+
+    /** Roles that sign in without the second step (PCG_ADMIN_PASSWORD_ONLY_ROLES). */
+    public static function passwordOnly(?string $role): bool
+    {
+        if ($role === null || $role === AdminUser::ROLE_SUPER) {
+            return false;
+        }
+
+        return in_array($role, (array) config('pcg.admin.password_only_roles', []), true);
     }
 
     public static function homeRoute(?string $role): string
