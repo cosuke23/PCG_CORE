@@ -1414,3 +1414,58 @@ textarea.pcg-input {
 
 /* keep short values (dates, serial numbers, day counts) on one line */
 .pcg-nowrap, .pcg-nowrap .pcg-badge { white-space: nowrap; }
+
+/* ------------------------------------------------- re-enlistment watchlist */
+.pcg-re__head { display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: var(--pcg-space-4); margin-bottom: var(--pcg-space-6); }
+.pcg-re__head h2 { margin: 0; font-size: 1.75rem; font-weight: 700; color: var(--pcg-navy-900); }
+.pcg-re__eyebrow { margin: 0 0 2px; font-size: var(--pcg-text-xs); font-weight: 700; letter-spacing: .12em; text-transform: uppercase; color: var(--pcg-gold-600, #b7791f); }
+.pcg-re__lead { margin: var(--pcg-space-1) 0 var(--pcg-space-3); color: var(--pcg-text-muted); }
+.pcg-re__chips { display: flex; flex-wrap: wrap; gap: var(--pcg-space-2); margin: 0; padding: 0; list-style: none; }
+.pcg-re__chips li { display: inline-flex; align-items: center; gap: 6px; padding: 4px 10px; border: 1px solid var(--pcg-gray-200); border-radius: 999px; background: var(--pcg-surface); font-size: var(--pcg-text-xs); font-weight: 600; color: var(--pcg-gray-700, #374151); }
+.pcg-re__stats { margin-bottom: var(--pcg-space-5, 1.25rem); }
+.pcg-re__toolbar { display: grid; gap: var(--pcg-space-4); padding: var(--pcg-space-4) var(--pcg-space-5); border-bottom: 1px solid var(--pcg-gray-200); }
+.pcg-re__filters { display: grid; gap: var(--pcg-space-3); grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); align-items: end; }
+.pcg-re__filters .pcg-field { margin: 0; }
+.pcg-re__search { grid-column: span 2; }
+.pcg-re__actions { display: flex; gap: var(--pcg-space-2); }
+.pcg-re__actions .pcg-btn { white-space: nowrap; }
+.pcg-re__listhead { display: flex; align-items: center; justify-content: space-between; gap: var(--pcg-space-3); }
+.pcg-re__table td { vertical-align: middle; }
+.pcg-re__table .pcg-table__muted { display: block; margin-top: 2px; }
+.pcg .pcg-re__name { color: var(--pcg-navy-900); font-weight: 600; text-decoration: none; }
+.pcg .pcg-re__name:hover { text-decoration: underline; }
+.pcg-re__row td:first-child { box-shadow: inset 3px 0 0 transparent; }
+.pcg-re__row.is-danger td:first-child { box-shadow: inset 3px 0 0 var(--pcg-danger-700); }
+.pcg-re__row.is-warning td:first-child { box-shadow: inset 3px 0 0 var(--pcg-warning-700); }
+.pcg-re__row.is-info td:first-child { box-shadow: inset 3px 0 0 var(--pcg-info-700); }
+.pcg-re__row:hover td { background: var(--pcg-gray-50, #f9fafb); }
+.pcg-re__go { width: 1%; text-align: right; }
+.pcg .pcg-re__go a { display: inline-grid; place-items: center; width: 32px; height: 32px; border-radius: 50%; color: var(--pcg-navy-700); text-decoration: none; }
+.pcg .pcg-re__go a:hover { background: var(--pcg-gray-100, #f3f4f6); }
+@media (max-width: 900px) {
+    .pcg-re__search { grid-column: auto; }
+}
+/* phones: each person becomes a card instead of a wide table row */
+@media (max-width: 720px) {
+    .pcg-re__head h2 { font-size: 1.4rem; }
+    .pcg-re__toolbar { padding: var(--pcg-space-3) var(--pcg-space-4); }
+    .pcg-re__filters { grid-template-columns: 1fr 1fr; }
+    .pcg-re__search, .pcg-re__status, .pcg-re__actions { grid-column: 1 / -1; }
+    .pcg-re__actions .pcg-btn { flex: 1; justify-content: center; }
+    .pcg-re__table thead { display: none; }
+    .pcg-re__table, .pcg-re__table tbody { display: block; }
+    .pcg-re__table tr { display: grid; grid-template-columns: 1fr 1fr; gap: 6px 12px; padding: 12px 14px 12px 16px; border-bottom: 1px solid var(--pcg-gray-200); position: relative; }
+    .pcg-re__table td { display: block; padding: 0; border: 0; }
+    .pcg-re__table td:first-child,
+    .pcg-re__row.is-danger td:first-child,
+    .pcg-re__row.is-warning td:first-child,
+    .pcg-re__row.is-info td:first-child { grid-column: 1 / -1; padding-right: 36px; box-shadow: none; }
+    .pcg-re__row.is-danger { box-shadow: inset 4px 0 0 var(--pcg-danger-700); }
+    .pcg-re__row.is-warning { box-shadow: inset 4px 0 0 var(--pcg-warning-700); }
+    .pcg-re__row.is-info { box-shadow: inset 4px 0 0 var(--pcg-info-700); }
+    .pcg-re__table td[data-label]:not(:first-child)::before { content: attr(data-label); display: block; font-size: 11px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--pcg-text-muted); }
+    .pcg-re__go { position: absolute; top: 10px; right: 8px; width: auto; }
+}
+@media print {
+    .pcg-re__row td:first-child { box-shadow: none; }
+}

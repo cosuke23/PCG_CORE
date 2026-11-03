@@ -63,7 +63,7 @@ class ReenlistmentTest extends TestCase
             $res->assertSee($in);
         }
         foreach (['NO-4', 'NO-5', 'NO-6', 'NO-7', 'OF-1'] as $out) {
-            $res->assertDontSee('<td>' . $out . '</td>', false);
+            $res->assertDontSee($out);
         }
         // soonest first, with the time left
         $this->assertTrue(strpos($res->getContent(), 'NO-1') < strpos($res->getContent(), 'NO-8'));
@@ -75,11 +75,11 @@ class ReenlistmentTest extends TestCase
     {
         $this->withSession($this->re);
 
-        $this->get('/admin/reenlistment?window=overdue')->assertOk()->assertSee('NO-5')->assertSee('Passed 94 days ago')->assertDontSee('<td>NO-1</td>', false);
-        $this->get('/admin/reenlistment?window=no_ete')->assertOk()->assertSee('NO-6')->assertDontSee('<td>NO-5</td>', false);
-        $this->get('/admin/reenlistment?window=due&months=3')->assertOk()->assertSee('NO-1')->assertDontSee('<td>NO-2</td>', false);
-        $this->get('/admin/reenlistment?unit=NOCOP')->assertOk()->assertSee('NO-2')->assertDontSee('<td>NO-1</td>', false);
-        $this->get('/admin/reenlistment?q=Edge')->assertOk()->assertSee('NO-3')->assertDontSee('<td>NO-1</td>', false);
+        $this->get('/admin/reenlistment?window=overdue')->assertOk()->assertSee('NO-5')->assertSee('Passed 94 days ago')->assertDontSee('NO-1');
+        $this->get('/admin/reenlistment?window=no_ete')->assertOk()->assertSee('NO-6')->assertDontSee('NO-5');
+        $this->get('/admin/reenlistment?window=due&months=3')->assertOk()->assertSee('NO-1')->assertDontSee('NO-2');
+        $this->get('/admin/reenlistment?unit=NOCOP')->assertOk()->assertSee('NO-2')->assertDontSee('NO-1');
+        $this->get('/admin/reenlistment?q=Edge')->assertOk()->assertSee('NO-3')->assertDontSee('NO-1');
         $this->get('/admin/reenlistment?status=all')->assertOk()->assertSee('NO-7');
         $this->get('/admin/reenlistment?window=bogus')->assertSessionHasErrors('window');
     }
