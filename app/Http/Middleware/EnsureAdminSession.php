@@ -45,6 +45,15 @@ class EnsureAdminSession
                 return redirect()->route('admin.login')->withErrors(['email' => 'Your admin account is no longer active.']);
             }
 
+            // Signed in without the second step, but the role now needs it
+            // (e.g. promoted from re-enlistment admin): sign in again.
+            if ($request->session()->get('admin_password_only') && !\App\Http\Controllers\AdminLoginController::passwordOnly($admin->role)) {
+                $request->session()->forget(['admin_logged_in', 'admin_user_id', 'admin_email', 'admin_name', 'admin_role', 'admin_org_unit_id', 'admin_since', 'admin_password_only']);
+                $request->session()->migrate(true);
+
+                return redirect()->route('admin.login')->withErrors(['email' => 'Your role has changed. Please sign in again.']);
+            }
+
             $request->session()->put(['admin_role' => $admin->role, 'admin_org_unit_id' => $admin->org_unit_id]);
         } elseif ($request->session()->get('admin_bootstrap') && \App\Http\Controllers\AdminLoginController::accountsEnabled()) {
             // The .env setup admin (no 2FA) only works until the first real

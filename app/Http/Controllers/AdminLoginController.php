@@ -37,7 +37,7 @@ class AdminLoginController extends Controller
     public function login(Request $request)
     {
         $request->validate([
-            'email'    => 'required|email',
+            'email'    => ['required', 'email', 'max:255', 'regex:/^[\x21-\x7e]+$/'], // plain ASCII only
             'password' => 'required|string',
         ]);
 
@@ -81,6 +81,7 @@ class AdminLoginController extends Controller
         // can never be password-only.
         if (self::passwordOnly($admin->role)) {
             $this->completeLogin($request, $admin);
+            session(['admin_password_only' => true]);
             AdminAudit::record('login.password_only', $admin->email);
 
             return redirect()->route(self::homeRoute($admin->role));
@@ -311,7 +312,7 @@ class AdminLoginController extends Controller
     private function completeLogin(Request $request, AdminUser $admin): void
     {
         $request->session()->regenerate();
-        session()->forget(['admin_2fa_user_id', 'admin_bootstrap']);
+        session()->forget(['admin_2fa_user_id', 'admin_bootstrap', 'admin_password_only']);
 
         session([
             'admin_logged_in' => true,
@@ -354,7 +355,7 @@ class AdminLoginController extends Controller
     public function logout(Request $request)
     {
         AdminAudit::record('logout');
-        session()->forget(['admin_logged_in', 'admin_user_id', 'admin_email', 'admin_name', 'admin_role', 'admin_org_unit_id', 'admin_bootstrap', 'admin_2fa_user_id', 'admin_since']);
+        session()->forget(['admin_logged_in', 'admin_user_id', 'admin_email', 'admin_name', 'admin_role', 'admin_org_unit_id', 'admin_bootstrap', 'admin_2fa_user_id', 'admin_since', 'admin_password_only']);
         $request->session()->migrate(true);
         $request->session()->regenerateToken();
 

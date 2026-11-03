@@ -346,10 +346,19 @@ class TempRegistrationController extends Controller
 
         // ================= VALIDATION =================
         $validator = Validator::make($request->all(), [
-            'academic' => 'nullable|array',
-            'masteral' => 'nullable|array',
-            'vocational' => 'nullable|array',
-            'trainings' => 'nullable|array',
+            'academic' => 'nullable|array|max:20',
+            'masteral' => 'nullable|array|max:20',
+            'vocational' => 'nullable|array|max:20',
+            'trainings' => 'nullable|array|max:50',
+            // every entry is a set of short values (school, course, years, saved ids)
+            'academic.*.*' => [$short = function ($attribute, $value, $fail) {
+                if (is_array($value) || is_object($value) || mb_strlen((string) $value) > 255) {
+                    $fail('Each education or training field must be text of at most 255 characters.');
+                }
+            }],
+            'masteral.*.*' => [$short],
+            'vocational.*.*' => [$short],
+            'trainings.*.*' => [$short],
         ]);
 
         if ($validator->fails()) {
