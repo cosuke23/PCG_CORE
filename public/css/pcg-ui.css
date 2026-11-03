@@ -1411,3 +1411,6 @@ textarea.pcg-input {
 
 /* Very wide fixed-size content (certificates, print layouts) scrolls in its box. */
 .pcg-scroll-x { max-width: 100%; overflow-x: auto; }
+
+/* keep short values (dates, serial numbers, day counts) on one line */
+.pcg-nowrap, .pcg-nowrap .pcg-badge { white-space: nowrap; }

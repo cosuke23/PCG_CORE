@@ -27,6 +27,9 @@ class AdminPermissions
         'org.view'             => ['super_admin', 'hr_admin', 'records_reviewer', 'records_approver', 'auditor'],
         'org.manage'           => ['super_admin'],
         'audit.view'           => ['super_admin', 'auditor'],
+        // Re-enlistment: non-officers whose ETE (end of term of enlistment) is near
+        'reenlistment.view'    => ['super_admin', 'hr_admin', 'reenlistment_admin', 'auditor'],
+        'reenlistment.export'  => ['super_admin', 'hr_admin', 'reenlistment_admin'],
     ];
 
     public static function allows(?string $role, string $capability): bool

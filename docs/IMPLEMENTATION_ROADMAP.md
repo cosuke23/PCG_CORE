@@ -124,5 +124,6 @@ Last updated: 2026-10-30 · branch `claude/cool-wozniak-rni95k`
 | 2026-11-02 | Security review after going public (N1–N9 fixed, see SECURITY_AUDIT §0d): `php artisan test` | **Passed** — 163 tests, 746 assertions; `composer audit` no advisories |
 | 2026-11-02 | `tests/e2e/responsive.js`: 54 pages × 7 sizes (320–1920 px) | **Passed** — no sideways scrolling except the fixed-size A4 SOI form; no iOS-zoom fields; remaining findings are 20 px text links |
 | 2026-11-02 | Full security re-run before publication (SECURITY_AUDIT §0e, P1–P12): `php artisan test` | **Passed** — 166 tests; nginx + PHP-FPM config with a no-dev build: pages 200, `/files` reaches the app, blocked files 403/404, PUT/TRACE 405, 413 on oversized bodies, 429 under burst, foreign Host 400 |
+| 2026-11-03 | Re-enlistment module (non-officers by ETE) + `reenlistment_admin` role and `/reenlistment/login`: `php artisan test` | **Passed** — 175 tests (6 new: 12-month window incl. boundary, overdue/no-ETE/all lists, filters, mixed-case data, officers and rejected excluded, CSV + audit, role isolation, auditor read-only); browser: sign-in lands on the module, only its menu, pages 200, no JS/CSP errors, no sideways scroll at 390 px |
 | — | Real `pcg_core` data | **Blocked** — needs access on your PC |
 | — | Windows scripts, Tailscale | **Not tested** — no Windows/Tailscale in this environment |

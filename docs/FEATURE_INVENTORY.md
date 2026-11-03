@@ -47,6 +47,15 @@ Status key: **Verified** = passed the browser checks on the dev database ·
 | Open own files | `/files/...` | Verified; other people's files return 404 |
 | Face verification | — | **Removed** (never linked or finished; 20 MB of public model files). Restore from git history if wanted |
 
+## Re-enlistment (login: admin accounts, role `reenlistment_admin`)
+
+| Feature | Route(s) | Status |
+|---------|----------|--------|
+| Sign-in page for the re-enlistment office | `/reenlistment/login` | **New** (2026-11-03): the admin sign-in (password + email code) titled for re-enlistment; the account lands on the watchlist |
+| ETE watchlist | `/admin/reenlistment` | **New**: everyone registered as non-officer, by ETE. Default list: ETE within the next 12 months (3 / 6 / 12 selectable); tabs for ETE passed, no ETE, all non-officers; filters for command/unit, account status and search; days left, re-enlistment form submitted or not |
+| Person detail | `/admin/reenlistment/{id}` | **New**: term of enlistment, unit, account and re-enlistment form; link to the personnel record when one exists |
+| CSV export | `/admin/reenlistment/export` | **New**: the current list (Excel-ready, formulas neutralised); views and exports are in the audit log |
+
 ## Unit checkers (login: `unit_users`)
 
 | Feature | Route(s) | Status |
