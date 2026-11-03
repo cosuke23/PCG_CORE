@@ -28,6 +28,12 @@ class AdminLoginController extends Controller
         return view('admin.login');
     }
 
+    /** The same admin sign-in (password + email code), presented for the re-enlistment office. */
+    public function showReenlistmentLogin()
+    {
+        return view('admin.login', ['variant' => 'reenlistment']);
+    }
+
     public function login(Request $request)
     {
         $request->validate([
@@ -314,6 +320,9 @@ class AdminLoginController extends Controller
     {
         if ($role === AdminUser::ROLE_LMS) {
             return 'admin.training-courses.index';
+        }
+        if ($role === AdminUser::ROLE_REENLISTMENT) {
+            return 'admin.reenlistment.index';
         }
 
         // scoped admins and the records/audit roles work in the scoped HRMIS modules

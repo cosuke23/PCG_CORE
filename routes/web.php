@@ -168,6 +168,8 @@ Route::middleware(['auth'])->group(function () {
 */
 
 Route::get('/admin/login', [AdminLoginController::class, 'showLogin'])->name('admin.login');
+// Sign-in page for the re-enlistment office: same accounts, password and email code.
+Route::get('/reenlistment/login', [AdminLoginController::class, 'showReenlistmentLogin'])->name('reenlistment.login');
 Route::post('/admin/login', [AdminLoginController::class, 'login'])
     ->middleware('throttle:admin-login')
     ->name('admin.login.submit');
@@ -271,6 +273,14 @@ Route::middleware(['admin.session', 'admin.audit'])->group(function () {
             });
             Route::post('/{document}/verify', 'verify')->middleware('admin.can:documents.verify')
                 ->whereNumber('document')->name('verify');
+        });
+
+    // ---- Re-enlistment: non-officers whose ETE is near (read-only; views and exports audited)
+    Route::middleware(['admin.can:reenlistment.view', 'admin.orgwide'])->prefix('admin/reenlistment')->name('admin.reenlistment.')
+        ->controller(\App\Http\Controllers\ReenlistmentController::class)->group(function () {
+            Route::get('/', 'index')->name('index');
+            Route::get('/export', 'export')->middleware('admin.can:reenlistment.export')->name('export');
+            Route::get('/{id}', 'show')->whereNumber('id')->name('show');
         });
 
     Route::get('/admin/reports', [\App\Http\Controllers\ReportController::class, 'index'])
