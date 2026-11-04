@@ -11,8 +11,7 @@ Setup (once): Node.js 18+, then `npm install --no-save playwright@1 && npx playw
 mariadb -uroot -e "DROP DATABASE IF EXISTS pcg_core_dev; CREATE DATABASE pcg_core_dev CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci"
 mariadb -uroot pcg_core_dev < database/dev/schema_inferred.sql
 php artisan migrate --force   # admin accounts, audit log, contact messages, indexes
-php artisan pcg:dev-seed
-php artisan pcg:personnel-sync --apply --assign-to=MEPCOM   # personnel master for the HRMIS pages
+php artisan db:seed   # sample data in every table (core set, units, personnel master, SOI sections, HRMIS records, messages, audit)
 php artisan serve --host=127.0.0.1 --port=8123
 
 node tests/e2e/crawl.js /tmp            # every page, every role: HTTP, PHP and JS errors
