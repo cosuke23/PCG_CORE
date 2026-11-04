@@ -12,7 +12,8 @@ php artisan test              # in-memory SQLite (phpunit.xml) — never the rea
 php artisan pcg:check         # read-only env/DB/folder health check
 php artisan pcg:hash-password # bcrypt hash for ADMIN_PASSWORD_HASH
 php artisan pcg:mail-test you@example.com  # send a test email, show active MAIL_* settings (password hidden)
-php artisan pcg:dev-seed      # sample data; refuses unless APP_ENV=local and DB name ends in _dev
+php artisan db:seed           # sample data in EVERY app table (database/seeders); refuses unless APP_ENV=local and DB name ends in _dev
+php artisan pcg:dev-seed      # the core sample set only (db:seed runs it first)
 php artisan pcg:create-admin  # create an admin account (2FA set up at first sign-in)
 php artisan pcg:personnel-sync [--apply] [--assign-to=MEPCOM] [--map-units=database/data/mepcom_units.json]  # copy approved registrations into the personnel master (dry run by default)
 php artisan pcg:import-org-units database/data/mepcom_units.json [--apply]  # insert-only unit import (dry run by default)

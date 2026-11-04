@@ -30,6 +30,8 @@ async function adminLogin(page, base, email = 'admin@demo.test') {
   await page.fill('#email', email);
   await page.fill('#password', ADMIN_PASSWORD);
   await Promise.all([page.waitForNavigation(), page.click('button[type=submit]')]);
+  // password-only roles (re-enlistment admin) are signed in already
+  if (!page.url().includes('/admin/two-factor/')) return;
   const now = Math.floor(Date.now() / 1000 / 30);
   const step = Math.max(now, lastStep + 1);
   if (step > now + 1) await page.waitForTimeout((step - 1 - now) * 30000 + 1000);
