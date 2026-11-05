@@ -141,12 +141,14 @@ class ApplicantDocumentController extends Controller
             }
 
             // ================= OTHER DATA =================
-            $data['nbi_clearance_expiration'] = $request->nbi_clearance_expiration;
-            $data['ombudsman_clearance_expiration'] = $request->ombudsman_clearance_expiration;
-            $data['sandiganbayan_clearance_expiration'] = $request->sandiganbayan_clearance_expiration;
-
-            $data['latitude'] = $request->latitude;
-            $data['longitude'] = $request->longitude;
+            // Only fields the form actually sent: a section the form hides
+            // (e.g. Ombudsman/Sandiganbayan for some members) keeps its saved
+            // dates instead of being wiped by every upload.
+            foreach (['nbi_clearance_expiration', 'ombudsman_clearance_expiration', 'sandiganbayan_clearance_expiration', 'latitude', 'longitude'] as $field) {
+                if ($request->exists($field)) {
+                    $data[$field] = $request->input($field) ?: null;
+                }
+            }
 
             $data['status'] = 'Pending';
             $data['updated_at'] = now();
@@ -323,32 +325,22 @@ class ApplicantDocumentController extends Controller
             ->where('personnel_id', $userId)
             ->first();
 
-        $data = [
-            'user_id' => $userId,
-            'personnel_id' => $userId,
-            'serial_number' => $serial,
-
-            'soi'          => $uploadedFiles['soi'] ?? null,
-            'appointment'  => $uploadedFiles['appointment'] ?? null,
-            'leave'        => $uploadedFiles['leave'] ?? null,
-            'awards'       => $uploadedFiles['awards'] ?? null,
-            'disciplinary' => $uploadedFiles['disciplinary'] ?? null,
-            'performance'  => $uploadedFiles['performance'] ?? null,
-            'legal'        => $uploadedFiles['legal'] ?? null,
-            'academic'     => $uploadedFiles['academic'] ?? null,
-            'financial'    => $uploadedFiles['financial'] ?? null,
-            'retirement'   => $uploadedFiles['retirement'] ?? null,
-            'body_picture' => $uploadedFiles['body_picture'] ?? null,
-        ];
+        if (!$uploadedFiles) {
+            return redirect()->route('upload.201')->withErrors(['files' => 'Choose at least one file to upload.']);
+        }
 
         if ($existing) {
-
+            // Only the files uploaded now: the other 201 files stay linked
+            // (setting every column used to erase the ones not re-uploaded).
             DB::table('personnel_201_files')
                 ->where('personnel_id', $userId)
-                ->update($data);
+                ->update($uploadedFiles);
         } else {
-
-            DB::table('personnel_201_files')->insert($data);
+            DB::table('personnel_201_files')->insert(array_merge(
+                array_fill_keys(array_keys($folders), null),
+                $uploadedFiles,
+                ['user_id' => $userId, 'personnel_id' => $userId, 'serial_number' => $serial]
+            ));
         }
         // OPTIONAL: Save to database
         // DB::table('personnel_201_files')->insert($uploadedFiles);
