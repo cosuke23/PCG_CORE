@@ -60,6 +60,7 @@ Last updated: 2026-10-30 · branch `claude/cool-wozniak-rni95k`
 - ✅ Unit review route; admin Reject button; add/remove student; student list; OSAERT verify page, certificate page, year filters and numbers; `/upload-201` 500; training-courses JS error; SOI undefined components; logout bugs; disciplinary delete; dead routes and links
 - ✅ Contact form built (stored + admin inbox)
 - ✅ Face verification removed (unfinished, unlinked)
+- ✅ Uploading one 201 file no longer unlinks the member's other 201 files; uploading required documents no longer wipes expiry dates or the map location the form did not send (2026-11-05)
 - ⬜ Track create/edit UI (routes exist for operational tracks only)
 - ⬜ Delete dead controllers and backup views (after your confirmation)
 
