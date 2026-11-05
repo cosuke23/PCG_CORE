@@ -116,13 +116,13 @@ class DevSeed extends Command
                 foreach (['soi', 'nbi_clearance', 'ombudsman_clearance', 'sandiganbayan_clearance', 'medical_clearance', 'pft_clearance'] as $field) {
                     $rel = "documents/demo_{$u['serial']}_$field.pdf";
                     File::ensureDirectoryExists("$root/documents_toupload/documents");
-                    File::put("$root/documents_toupload/$rel", $pdf);
+                    \App\Support\SecureFiles::storeBytes($pdf, "$root/documents_toupload/$rel", "documents_toupload/$rel");
                     $row[$field] = $rel;
                 }
                 foreach (['photo_2x2', 'whole_body_picture'] as $field) {
                     $rel = "photos/demo_{$u['serial']}_$field.png";
                     File::ensureDirectoryExists("$root/documents_toupload/photos");
-                    File::put("$root/documents_toupload/$rel", $png);
+                    \App\Support\SecureFiles::storeBytes($png, "$root/documents_toupload/$rel", "documents_toupload/$rel");
                     $row[$field] = $rel;
                 }
                 DB::table('personnel_data')->insert($row);
@@ -135,14 +135,14 @@ class DevSeed extends Command
             ]);
 
             File::ensureDirectoryExists("$root/201_files/soi");
-            File::put("$root/201_files/soi/demo_{$member['serial']}_soi.pdf", $pdf);
+            \App\Support\SecureFiles::storeBytes($pdf, "$root/201_files/soi/demo_{$member['serial']}_soi.pdf", "201_files/soi/demo_{$member['serial']}_soi.pdf");
             DB::table('personnel_201_files')->insert([
                 'user_id' => $member['id'], 'personnel_id' => $member['id'], 'serial_number' => $member['serial'],
                 'soi' => "201_files/soi/demo_{$member['serial']}_soi.pdf", 'created_at' => $now, 'updated_at' => $now,
             ]);
 
             File::ensureDirectoryExists("$root/disciplinary_actions/disciplinary_actions");
-            File::put("$root/disciplinary_actions/disciplinary_actions/demo_case.pdf", $pdf);
+            \App\Support\SecureFiles::storeBytes($pdf, "$root/disciplinary_actions/disciplinary_actions/demo_case.pdf", "disciplinary_actions/disciplinary_actions/demo_case.pdf");
             DB::table('reinlist_disciplinary_actions')->insert([
                 'serial_number' => $users[1]['serial'], 'file_path' => 'disciplinary_actions/demo_case.pdf', 'created_at' => $now, 'updated_at' => $now,
             ]);

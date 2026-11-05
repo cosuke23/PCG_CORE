@@ -47,6 +47,21 @@ return [
     // Never under public/; files are served only by PersonnelDocumentController.
     'document_root' => env('PCG_DOCUMENT_ROOT') ?: storage_path('app/private/personnel-documents'),
 
+    // Uploaded-file encryption (AES-256-GCM, docs/FILE_ENCRYPTION.md).
+    // Key ring with the master keys: OUTSIDE the upload folders, the web root
+    // and the folders that are backed up with the uploads; mode 0600.
+    // Production: /srv/mepcom-hrmis/shared/keys/file-keys.json
+    'file_keys_path' => env('PCG_FILE_KEYS_PATH') ?: storage_path('app/keys/file-keys.json'),
+    // Tests and CI only: one base64 32-byte key instead of a key ring file.
+    'file_key' => env('PCG_FILE_KEY', ''),
+    // File mode of the key ring: 0600 (only the owner) or, on a server where
+    // the deploy account writes it and the web app's group reads it, 0640.
+    'file_keys_mode' => env('PCG_FILE_KEYS_MODE', '0600'),
+
+    // Where profile photos used to be stored (public disk); read until
+    // `pcg:files encrypt --apply` moves them into the encrypted upload folder.
+    'legacy_photo_dir' => env('PCG_LEGACY_PHOTO_DIR') ?: storage_path('app/public/profile_photos'),
+
     // Upload limit for 201 documents, in kilobytes.
     'document_max_kb' => (int) env('PCG_DOCUMENT_MAX_KB', 10240),
 

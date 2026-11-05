@@ -539,7 +539,11 @@ class DashboardController extends Controller
 
         // Handle photo upload
         if ($request->hasFile('photo')) {
-            $photoPath = $request->file('photo')->store('profile_photos', 'public');
+            // private and encrypted (AES-256-GCM), served only by FileController
+            $photo = $request->file('photo');
+            $name = bin2hex(random_bytes(16)) . ($photo->getMimeType() === 'image/png' ? '.png' : '.jpg');
+            \App\Support\SecureFiles::store($photo, config('pcg.upload_root') . '/profile_photos', $name, 'profile_photos/' . $name);
+            $photoPath = 'profile_photos/' . $name;
         } else {
             $photoPath = optional($user->profile)->photo;
         }

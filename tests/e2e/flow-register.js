@@ -56,8 +56,13 @@ const sql = q => execSync(`${process.env.PCG_E2E_DB_CLI || "mariadb -uroot"} -N 
   console.log(row ? 'PASS  Registration creates a Pending user  ' + row : 'FAIL  Registration did not create a user; dialogs=' + dialogs.join(' / '));
   if (row) {
     const selfie = row.split('|')[2];
-    const f = execSync(`file ${require('path').resolve(__dirname, '../../storage/app/dev-uploads', selfie)}`).toString();
-    console.log(/PNG image/.test(f) ? 'PASS  Selfie saved as a real PNG' : 'FAIL  selfie ' + f);
+    // stored encrypted (AES-256-GCM): no readable PNG on disk, but it decrypts to one
+    const full = require('path').resolve(__dirname, '../../storage/app/dev-uploads', selfie);
+    const head = require('fs').readFileSync(full).subarray(0, 4).toString('latin1');
+    console.log(head === 'PCGF' ? 'PASS  Selfie stored encrypted' : 'FAIL  selfie not encrypted: ' + JSON.stringify(head));
+    const mime = execSync(`php artisan tinker --execute="echo (new finfo(FILEINFO_MIME_TYPE))->buffer(App\\Support\\FileCrypto::decryptToString('${full}', '${selfie}'));"`,
+      { cwd: require('path').resolve(__dirname, '../..') }).toString().trim();
+    console.log(mime === 'image/png' ? 'PASS  Selfie decrypts to a real PNG' : 'FAIL  selfie decrypts to ' + mime);
   }
   console.log('JS errors:', errs.length ? errs : 'none');
   await browser.close();

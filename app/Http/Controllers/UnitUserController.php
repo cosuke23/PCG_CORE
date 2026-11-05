@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Support\SecureFiles;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -266,7 +267,8 @@ class UnitUserController extends Controller
 
                 $fileName = time() . '_' . bin2hex(random_bytes(8)) . '_' . preg_replace('/[^A-Za-z0-9._-]/', '_', $file->getClientOriginalName());
 
-                $file->move($folderPath, $fileName);
+                // encrypted before it is written (AES-256-GCM)
+                SecureFiles::store($file, $folderPath, $fileName, 'disciplinary_actions/' . $folder . '/' . $fileName);
 
                 // return DB relative path ONLY
                 return $folder . '/' . $fileName;

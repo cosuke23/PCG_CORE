@@ -101,6 +101,22 @@ Black-box attacks against a production-like copy (the deploy kit's nginx site an
 
 Attacks that were blocked (24/24 automated checks, plus stored-XSS payloads viewed as admin, re-enlistment admin and M1 checker): 101 protected routes refuse anonymous requests; CSRF required; security headers and Secure/HttpOnly/SameSite cookies; foreign Host 400; 25 sensitive paths and traversal encodings (`..%2f`, `%2e%2e`, `%5c`, double encoding, case) blocked; TRACE 405; no stack traces; SQL injection on search, unit and certificate fields; the re-enlistment admin refused on 36 other admin pages and 31 admin actions; password-only limited to its role; sign-in guessing throttled including case/space variants; members isolated from other people's files and forms; no open redirect; PHP, fake-PDF and SVG uploads refused; no injected script ran on any dashboard, list or detail page.
 
+## 0g. Uploaded files encrypted at rest (2026-11-05)
+
+Owner request: application-level AES-256-GCM encryption for every upload. Details and procedures: `docs/FILE_ENCRYPTION.md`.
+
+- Every upload path (required documents, 201 files, disciplinary records, selfies, profile photos, HR 201 repository) writes through `App\Support\SecureFiles`, which encrypts before anything touches the upload folder. A test fails if a controller writes an upload any other way.
+- Envelope encryption: a random data key per file, wrapped by a master key in a key ring outside the upload folders, the web root and the file backup (`PCG_FILE_KEYS_PATH`). Chunks are bound to the file's path, position and size, so swapped, reordered, truncated or edited files are refused.
+- Decryption only in `FileController` and `PersonnelDocumentController::download`, after the existing access checks; streamed with `no-store`, `nosniff`, `noindex`, `no-referrer`. Every view or download is audited: the audit channel for everyone, `admin_audit_logs` for admins.
+- Profile photos left the public disk (`storage/app/public`, which `/storage` served to anyone); they are now private and served through `/files/profile_photos/...`.
+- `pcg:check` now fails when uploads or selfies are inside `public/`, when the key ring is missing, or (in production) when the keys share `storage/app` with the backed-up files.
+- Key rotation (`pcg:file-keys rotate`, `pcg:files rewrap --apply`, `pcg:file-keys retire`), an offline key backup (`pcg:file-keys backup`) and restore verification (`pcg:files verify`). The nightly backup records key ids, never keys.
+- Older files stay readable until `pcg:files encrypt --apply` converts them. Each is verified before the original is replaced.
+- **Owner actions:**
+  1. After the first release, back up the key ring off the server (two custodians).
+  2. Label `shared/keys` for SELinux (FILE_ENCRYPTION procedure 1).
+  3. Run `pcg:files encrypt --apply` after a backup.
+
 ## 1. Findings and status
 
 ### Critical

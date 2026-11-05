@@ -27,5 +27,7 @@
         <env name="QUEUE_CONNECTION" value="sync"/>
         <env name="SESSION_DRIVER" value="array"/>
         <env name="TELESCOPE_ENABLED" value="false"/>
+        <!-- uploaded-file encryption: fixed test key instead of a key ring file -->
+        <env name="PCG_FILE_KEY" value="base64:MDEyMzQ1Njc4OWFiY2RlZjAxMjM0NTY3ODlhYmNkZWY="/>
     </php>
 </phpunit>

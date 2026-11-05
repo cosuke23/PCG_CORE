@@ -96,7 +96,7 @@ class HrmisRecordsSeeder extends DevOnlySeeder
                 $pdf = "%PDF-1.4\n% Sample document: {$label}\n1 0 obj<</Type/Catalog>>endobj\ntrailer<</Root 1 0 R>>\n%%EOF\n";
                 $relative = $personnelId . '/' . $now->format('Y') . '/' . Str::random(40) . '.pdf';
                 File::ensureDirectoryExists(dirname($root . '/' . $relative), 0755);
-                File::put($root . '/' . $relative, $pdf);
+                \App\Support\SecureFiles::storeBytes($pdf, $root . '/' . $relative, 'personnel-documents/' . $relative); // encrypted like real uploads
 
                 return [$relative, strlen($pdf), hash('sha256', $pdf)];
             };

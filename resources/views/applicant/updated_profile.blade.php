@@ -10,7 +10,7 @@
             <div class="flex flex-col md:flex-row items-center md:items-start space-y-6 md:space-y-0 md:space-x-8">
                 <!-- Photo -->
                 <div class="flex-shrink-0">
-                    <img src="{{ $profile->photo ? asset('storage/'.$profile->photo) : asset('images/default-2x2.png') }}"
+                    <img src="{{ $profile->photo ? \App\Support\Uploads::url($profile->photo) : asset('images/default-2x2.png') }}"
                          alt="Profile Photo" class="w-32 h-32 rounded-lg object-cover border-2 border-gray-300">
                 </div>
 
