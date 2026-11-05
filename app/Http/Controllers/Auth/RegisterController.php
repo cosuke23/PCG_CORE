@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Auth;
 
+use App\Support\SecureFiles;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\User;
@@ -128,10 +129,10 @@ class RegisterController extends Controller
             $fileName = bin2hex(random_bytes(16)) . '.png';
             $filePath = $folderPath . '/' . $fileName;
 
-            file_put_contents($filePath, $image);
-            chmod($filePath, 0644);
             // ✅ SAVE RELATIVE PATH TO DB (IMPORTANT)
             $selfiePath = 'selfies/' . $fileName;
+            // encrypted at rest (AES-256-GCM); served only by FileController
+            SecureFiles::storeBytes($image, $filePath, $selfiePath);
 
             Log::info('Selfie saved', [
                 'file_path' => $filePath,

@@ -41,6 +41,9 @@ Last updated: 2026-10-30 · branch `claude/cool-wozniak-rni95k`
 - ✅ Separate rate limiters per login form (shared counter locked admins out)
 - 🔒 Random verification tokens for OSAERT certificates (schema change + reprint)
 
+- ✅ AES-256-GCM encryption of every uploaded file (envelope keys, streaming, audit of views and downloads, key rotation, backup and restore checks) — `docs/FILE_ENCRYPTION.md`
+- 👤 Hermes: back up the key ring off the server after the first release; label `shared/keys` for SELinux; `php artisan pcg:files encrypt --apply` after a backup (FILE_ENCRYPTION procedure 1)
+
 ## Phase 5 — UI/UX
 - ✅ Design system `public/css/pcg-ui.css` + `public/js/pcg-ui.js` (no build, no CDN)
 - ✅ All sign-in pages; public certificate verification pages

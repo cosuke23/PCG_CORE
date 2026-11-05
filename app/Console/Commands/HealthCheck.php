@@ -44,7 +44,24 @@ class HealthCheck extends Command
 
         $uploads = realpath((string) config('pcg.upload_root')) ?: (string) config('pcg.upload_root');
         $public = realpath(public_path()) ?: public_path();
-        $this->check('Uploads stored outside the web root (PCG_UPLOAD_ROOT)', !str_starts_with($uploads, $public), 'warn');
+        $this->check('Uploads stored outside the web root (PCG_UPLOAD_ROOT)', !str_starts_with($uploads, $public), 'fail');
+        $selfies = realpath((string) config('pcg.selfie_dir')) ?: (string) config('pcg.selfie_dir');
+        $this->check('Selfies stored outside the web root (PCG_SELFIE_DIR)', !str_starts_with($selfies, $public), 'fail');
+
+        // Uploaded-file encryption (docs/FILE_ENCRYPTION.md)
+        try {
+            \App\Support\FileKeys::ring();
+            $keys = (string) \App\Support\FileKeys::path();
+            $this->check('File encryption key ring loaded (' . (config('pcg.file_key') ? 'PCG_FILE_KEY' : $keys) . ')', true);
+            if (!config('pcg.file_key') && DIRECTORY_SEPARATOR === '/' && is_file($keys)) {
+                $want = sprintf('%04o', \App\Support\FileKeys::mode());
+                $this->check("Key ring permissions are {$want}", substr(sprintf('%o', fileperms($keys)), -4) === $want);
+            }
+            $this->check('Encryption keys are kept outside storage/app (not in the same backup as the files)',
+                !str_starts_with(str_replace('\\', '/', $keys), str_replace('\\', '/', storage_path('app'))), app()->environment('production') ? 'fail' : 'warn');
+        } catch (\Throwable $e) {
+            $this->check('File encryption key ring: ' . $e->getMessage(), false);
+        }
 
         try {
             DB::connection()->getPdo();

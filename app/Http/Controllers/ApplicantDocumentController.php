@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Support\SecureFiles;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
@@ -79,8 +80,8 @@ class ApplicantDocumentController extends Controller
                 // filename
                 $fileName = time() . '_' . bin2hex(random_bytes(8)) . '_' . preg_replace('/[^A-Za-z0-9._-]/', '_', $file->getClientOriginalName()); // random part: names cannot be guessed
 
-                // move file
-                $file->move($pathFolder, $fileName);
+                // encrypted before it is written (AES-256-GCM); no readable copy is kept
+                SecureFiles::store($file, $pathFolder, $fileName, 'documents_toupload/' . $folder . '/' . $fileName);
 
                 // ✅ IMPORTANT: return CLEAN DB PATH (NO "storage/")
                 return $folder . '/' . $fileName;
@@ -299,8 +300,9 @@ class ApplicantDocumentController extends Controller
             // safe filename
             $fileName = time() . '_' . bin2hex(random_bytes(8)) . '_' . preg_replace('/[^A-Za-z0-9._-]/', '_', $file->getClientOriginalName()); // random part: names cannot be guessed
 
-            // move file
-            $file->move($pathFolder, $fileName);
+            // encrypted before it is written (AES-256-GCM); the stored value is
+            // "201_files/<category>/<name>", which is also its path under /files
+            SecureFiles::store($file, $pathFolder, $fileName, $folder . '/' . $fileName);
 
             // return CLEAN DB PATH (NO storage/, NO base path)
             return $folder . '/' . $fileName;

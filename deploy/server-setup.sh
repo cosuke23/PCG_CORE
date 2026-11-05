@@ -69,6 +69,8 @@ for d in storage storage/app storage/app/private storage/app/private/personnel-d
     install -d -o "$APP_USER" -g "$APP_USER" -m 2770 "$BASE/shared/$d"
 done
 setfacl -R -m "g:$APP_USER:rwX" -m "d:g:$APP_USER:rwX" "$BASE/shared/storage" "$BASE/shared/uploads"
+# file encryption key ring: written by the deploy account, read (not written) by the app's group
+install -d -o "$DEPLOY_USER" -g "$APP_USER" -m 2750 "$BASE/shared/keys"
 [[ -d "$BASE/repo.git" ]] || sudo -u "$DEPLOY_USER" git init --bare --quiet "$BASE/repo.git"
 echo "$PORT" > "$BASE/shared/PORT"
 
@@ -76,6 +78,7 @@ add_fc() { semanage fcontext -a "$@" 2>/dev/null || semanage fcontext -m "$@"; }
 add_fc -t httpd_sys_content_t "$BASE(/.*)?"
 add_fc -t httpd_sys_rw_content_t "$BASE/shared/storage(/.*)?"
 add_fc -t httpd_sys_rw_content_t "$BASE/shared/uploads(/.*)?"
+add_fc -t httpd_sys_content_t "$BASE/shared/keys(/.*)?"
 restorecon -R "$BASE"
 semanage port -l | grep -E '^http_port_t ' | grep -qw "$PORT" || semanage port -a -t http_port_t -p tcp "$PORT"
 ok "$BASE ready; SELinux labels for $BASE and port $PORT only"

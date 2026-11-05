@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Support\SecureFiles;
 use App\Models\DocumentCategory;
 use App\Models\Personnel;
 use App\Models\PersonnelDocument;
@@ -83,11 +84,13 @@ class PersonnelDocumentController extends Controller
         if (!is_dir($dir) && !mkdir($dir, 0755, true) && !is_dir($dir)) {
             return back()->withErrors(['file' => 'The document folder could not be created. Check PCG_DOCUMENT_ROOT permissions.']);
         }
-        $file->move($dir, basename($relative));
-        $path = config('pcg.document_root') . '/' . $relative;
+        // size and checksum describe the original; only the encrypted copy is stored
+        $plainSize = (int) $file->getSize();
+        $plainSha = hash_file('sha256', $file->getRealPath());
+        $path = SecureFiles::store($file, $dir, basename($relative), 'personnel-documents/' . $relative);
 
         try {
-            $doc = DB::transaction(function () use ($personnel, $data, $file, $mime, $relative, $path, $previous) {
+            $doc = DB::transaction(function () use ($personnel, $data, $file, $mime, $relative, $previous, $plainSize, $plainSha) {
                 if ($previous) {
                     $previous->update(['is_current' => false]);
                 }
@@ -99,8 +102,8 @@ class PersonnelDocumentController extends Controller
                     'stored_path' => $relative,
                     'original_name' => mb_substr(preg_replace('/[^\pL\pN ._()-]+/u', '_', $file->getClientOriginalName()), 0, 200),
                     'mime_type' => $mime,
-                    'size_bytes' => filesize($path),
-                    'sha256' => hash_file('sha256', $path),
+                    'size_bytes' => $plainSize,
+                    'sha256' => $plainSha,
                     'version' => $previous ? $previous->version + 1 : 1,
                     'supersedes_id' => $previous?->id,
                     'is_current' => true,
@@ -135,11 +138,9 @@ class PersonnelDocumentController extends Controller
         $this->log($doc, 'download');
         $name = Str::slug($doc->personnel->serial_number . '-' . $doc->title) . '-v' . $doc->version . '.' . (self::MIMES[$doc->mime_type] ?? 'bin');
 
-        return response()->download($path, $name, [
-            'Content-Type' => $doc->mime_type,
-            'X-Content-Type-Options' => 'nosniff',
-            'Cache-Control' => 'private, no-store',
-        ]);
+        // decrypted on the fly; ?inline=1 shows a PDF or picture in the browser instead
+        return SecureFiles::respond($path, 'personnel-documents/' . $doc->stored_path, $name, !request()->boolean('inline'), $doc->mime_type,
+            ['document_id' => $doc->id, 'personnel_id' => $doc->personnel_id]);
     }
 
     public function verify(Request $request, int $document)

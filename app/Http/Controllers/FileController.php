@@ -21,6 +21,11 @@ use Illuminate\Support\Facades\DB;
  *   201_files/...            (personnel_201_files values already include it)
  *   disciplinary_actions/... (reinlist_disciplinary_actions.file_path)
  *   selfies/...              (users.selfie_image)
+ *   profile_photos/...       (profiles.photo)
+ *
+ * Files are encrypted at rest (AES-256-GCM, App\Support\FileCrypto) and are
+ * decrypted only here, after the checks below; every view or download is
+ * audited (SecureFiles::respond). Add ?download=1 to download instead of view.
  */
 class FileController extends Controller
 {
@@ -50,10 +55,12 @@ class FileController extends Controller
         [$area, $relative] = array_pad(explode('/', $path, 2), 2, '');
 
         $roots = [
-            'documents_toupload'   => config('pcg.upload_root') . '/documents_toupload',
-            '201_files'            => config('pcg.upload_root') . '/201_files',
-            'disciplinary_actions' => config('pcg.upload_root') . '/disciplinary_actions',
-            'selfies'              => config('pcg.selfie_dir'),
+            'documents_toupload'   => [config('pcg.upload_root') . '/documents_toupload'],
+            '201_files'            => [config('pcg.upload_root') . '/201_files'],
+            'disciplinary_actions' => [config('pcg.upload_root') . '/disciplinary_actions'],
+            'selfies'              => [config('pcg.selfie_dir')],
+            // older profile photos sat on the public disk until `pcg:files encrypt` moves them
+            'profile_photos'       => [config('pcg.upload_root') . '/profile_photos', config('pcg.legacy_photo_dir')],
         ];
 
         if (!isset($roots[$area]) || $relative === '') {
@@ -89,19 +96,21 @@ class FileController extends Controller
             }
         }
 
-        $root = realpath($roots[$area]);
-        $full = $root ? realpath($root . '/' . $relative) : false;
-
-        // The resolved file must stay inside its area folder.
-        if (!$full || !str_starts_with($full, $root . DIRECTORY_SEPARATOR) || !is_file($full)) {
+        $full = null;
+        foreach ($roots[$area] as $candidate) {
+            $root = realpath($candidate);
+            $resolved = $root ? realpath($root . '/' . $relative) : false;
+            // The resolved file must stay inside its area folder.
+            if ($resolved && str_starts_with($resolved, $root . DIRECTORY_SEPARATOR) && is_file($resolved)) {
+                $full = $resolved;
+                break;
+            }
+        }
+        if (!$full) {
             abort(404);
         }
 
-        return response()->file($full, [
-            'Content-Disposition' => 'inline; filename="' . basename($full) . '"',
-            'Cache-Control' => 'private, no-store',
-            'X-Content-Type-Options' => 'nosniff',
-        ]);
+        return \App\Support\SecureFiles::respond($full, $path, basename($full), $request->boolean('download'), null, ['area' => $area]);
     }
 
     /**
@@ -112,7 +121,7 @@ class FileController extends Controller
      */
     private function adminMayOpen(?string $role, string $area, string $relative): bool
     {
-        if ($area === 'selfies') {
+        if ($area === 'selfies' || $area === 'profile_photos') {
             return true;
         }
         if (!\App\Support\AdminPermissions::allows($role, 'documents.view')) {
@@ -170,6 +179,9 @@ class FileController extends Controller
 
             case 'selfies':
                 return $user->selfie_image === $path;
+
+            case 'profile_photos':
+                return DB::table('profiles')->where('user_id', $user->id)->where('photo', $path)->exists();
 
             default:
                 // Disciplinary records are for unit checkers and admins only.

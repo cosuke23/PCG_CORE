@@ -46,10 +46,25 @@ echo "==> Composer"
 composer install --no-dev --prefer-dist --optimize-autoloader --no-interaction --no-progress
 # No build step: CSS and JS are committed in public/.
 
+# Uploaded-file encryption settings, added once to an older .env
+if ! grep -qE '^PCG_FILE_KEYS_PATH=' "$BASE/shared/.env"; then
+    printf '\n# Uploaded-file encryption (docs/FILE_ENCRYPTION.md)\nPCG_FILE_KEYS_PATH=%s\nPCG_FILE_KEYS_MODE=0640\n' "$BASE/shared/keys/file-keys.json" >> "$BASE/shared/.env"
+fi
+# server-setup.sh creates it (owner deploy, group app, 2750); this covers an older server
+[[ -d "$BASE/shared/keys" ]] || install -d -m 2750 "$BASE/shared/keys"
+
 echo "==> Laravel caches"
 php artisan config:cache
 php artisan route:cache
 php artisan view:cache
+
+# Uploaded-file encryption: the key ring is created once. init refuses when
+# encrypted files exist without a key ring (restore it from the key backup).
+if ! php artisan pcg:file-keys status >/dev/null 2>&1; then
+    echo "==> Creating the file encryption key ring"
+    php artisan pcg:file-keys init
+    echo "!!  Back up the new key ring OFF the server now (docs/FILE_ENCRYPTION.md, step 2)."
+fi
 
 status="$(php artisan migrate:status 2>&1 || true)"
 pending="$(grep -c 'Pending' <<<"$status" || true)"

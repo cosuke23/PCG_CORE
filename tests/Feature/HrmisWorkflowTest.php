@@ -212,6 +212,8 @@ class HrmisWorkflowTest extends TestCase
         $this->assertFileExists($this->docRoot . '/' . $doc->stored_path);
         $this->assertStringNotContainsString('order', $doc->stored_path); // random name
         $this->assertStringStartsNotWith(public_path(), config('pcg.document_root'));
+        // stored encrypted (AES-256-GCM): no readable copy on disk
+        $this->assertTrue(\App\Support\FileCrypto::isEncrypted($this->docRoot . '/' . $doc->stored_path));
 
         // wrong type and out-of-scope person are refused
         $this->withSession($hr)->post("/admin/personnel/{$ours->id}/documents", [
@@ -222,7 +224,8 @@ class HrmisWorkflowTest extends TestCase
         ])->assertNotFound();
 
         // download: in scope works and is logged; another command gets 404
-        $this->withSession($hr)->get("/admin/documents/{$doc->id}/download")->assertOk()->assertHeader('X-Content-Type-Options', 'nosniff');
+        $download = $this->withSession($hr)->get("/admin/documents/{$doc->id}/download")->assertOk()->assertHeader('X-Content-Type-Options', 'nosniff');
+        $this->assertSame($doc->sha256, hash('sha256', $download->streamedContent())); // decrypted on the fly, byte for byte
         $this->assertSame(1, DB::table('document_access_logs')->where('document_id', $doc->id)->where('action', 'download')->count());
         $this->withSession($this->as('hr_admin', $this->mssc))->get("/admin/documents/{$doc->id}/download")->assertNotFound();
 
