@@ -102,7 +102,7 @@ class FileEncryptionTest extends TestCase
         SecureFiles::storeBytes('%PDF-rotate', $path, 'documents_toupload/documents/a.pdf');
         $old = FileKeys::activeId();
         $this->assertSame($old, FileCrypto::info($path)['kid']);
-        $this->assertSame('0600', substr(sprintf('%o', fileperms(FileKeys::path())), -4));
+        $this->assertOwnerOnly(FileKeys::path());
 
         $this->artisan('pcg:file-keys', ['action' => 'rotate'])->assertSuccessful();
         FileKeys::flush();
@@ -138,7 +138,7 @@ class FileEncryptionTest extends TestCase
         $this->artisan('pcg:file-keys', ['action' => 'backup', '--to' => public_path('keys.json')])->assertFailed();
         $this->assertFileDoesNotExist(public_path('keys.json'));
         $this->artisan('pcg:file-keys', ['action' => 'backup', '--to' => $this->keys . '/backup.json'])->assertSuccessful();
-        $this->assertSame('0600', substr(sprintf('%o', fileperms($this->keys . '/backup.json')), -4));
+        $this->assertOwnerOnly($this->keys . '/backup.json');
         $this->artisan('pcg:file-keys', ['action' => 'init'])->assertFailed(); // never replaced
     }
 
@@ -217,6 +217,17 @@ class FileEncryptionTest extends TestCase
             $code = file_get_contents(app_path("Http/Controllers/{$c}.php"));
             $this->assertDoesNotMatchRegularExpression('/->move\(|->store\(|file_put_contents\(|File::put\(/', $code, "{$c} writes an upload without encryption");
         }
+    }
+
+    /** Mode 0600 on Linux/macOS (Hermes). Windows has no Unix permissions: PHP always reports 0666 there. */
+    private function assertOwnerOnly(string $path): void
+    {
+        if (DIRECTORY_SEPARATOR === '\\') {
+            $this->assertFileExists($path);
+
+            return;
+        }
+        $this->assertSame('0600', substr(sprintf('%o', fileperms($path)), -4));
     }
 
     private function assertDecryptFails(string $path, string $logical): void
