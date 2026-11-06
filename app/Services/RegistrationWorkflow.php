@@ -181,8 +181,12 @@ class RegistrationWorkflow
         if (!$me) {
             throw ValidationException::withMessages(['status' => "Sign in with your own admin account to {$what} registrations (the setup account cannot)."]);
         }
-        if (in_array((int) $me, array_filter([(int) $reg->created_by, (int) $reg->submitted_by]), true)) {
-            throw ValidationException::withMessages(['status' => "You created or submitted this registration, so you cannot {$what} it. Another authorised admin must do it."]);
+        // also anyone who edited its data (the "updated" events): otherwise an
+        // admin could change someone else's draft and then approve their own data
+        $edited = RegistrationEvent::where('registration_id', $reg->id)
+            ->whereIn('action', ['created', 'updated'])->where('admin_user_id', (int) $me)->exists();
+        if ($edited || in_array((int) $me, array_filter([(int) $reg->created_by, (int) $reg->submitted_by]), true)) {
+            throw ValidationException::withMessages(['status' => "You created, edited or submitted this registration, so you cannot {$what} it. Another authorised admin must do it."]);
         }
     }
 

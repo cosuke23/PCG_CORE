@@ -21,7 +21,8 @@ printf '[client]\nuser=%s\npassword=%s\nsocket=%s\n' \
 
 mysqldump --defaults-extra-file="$cnf" --single-transaction --routines --triggers --no-tablespaces \
     --hex-blob --default-character-set=utf8mb4 "$(env_get DB_DATABASE)" | gzip > "$dir/database.sql.gz"
-tar -C "$BASE/shared" -czf "$dir/files.tar.gz" uploads storage/app
+# never the key ring, even if PCG_FILE_KEYS_PATH were left at its default
+tar -C "$BASE/shared" --exclude='storage/app/keys' -czf "$dir/files.tar.gz" uploads storage/app
 # The file encryption keys are NOT in this backup on purpose (they are kept
 # apart from the files). Record which key ids the files need, never the keys.
 (cd "$BASE/current" && php artisan pcg:file-keys status --no-ansi > "$dir/file-key-ids.txt" 2>&1) || true

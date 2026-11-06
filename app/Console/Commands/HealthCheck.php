@@ -48,6 +48,10 @@ class HealthCheck extends Command
         $selfies = realpath((string) config('pcg.selfie_dir')) ?: (string) config('pcg.selfie_dir');
         $this->check('Selfies stored outside the web root (PCG_SELFIE_DIR)', !str_starts_with($selfies, $public), 'fail');
 
+        $legacyPhotos = (string) config('pcg.legacy_photo_dir');
+        $leftover = is_dir($legacyPhotos) ? count(array_filter(scandir($legacyPhotos) ?: [], fn ($n) => $n[0] !== '.' && is_file("$legacyPhotos/$n"))) : 0;
+        $this->check("No unencrypted profile photos left on the public disk ($leftover; run pcg:files encrypt --apply)", $leftover === 0);
+
         // Uploaded-file encryption (docs/FILE_ENCRYPTION.md)
         try {
             \App\Support\FileKeys::ring();

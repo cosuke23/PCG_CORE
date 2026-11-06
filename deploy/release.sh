@@ -47,7 +47,8 @@ composer install --no-dev --prefer-dist --optimize-autoloader --no-interaction -
 # No build step: CSS and JS are committed in public/.
 
 # Uploaded-file encryption settings, added once to an older .env
-if ! grep -qE '^PCG_FILE_KEYS_PATH=' "$BASE/shared/.env"; then
+if ! grep -qE '^PCG_FILE_KEYS_PATH=.+' "$BASE/shared/.env"; then
+    sed -i '/^PCG_FILE_KEYS_PATH=$/d; /^PCG_FILE_KEYS_MODE=/d' "$BASE/shared/.env"
     printf '\n# Uploaded-file encryption (docs/FILE_ENCRYPTION.md)\nPCG_FILE_KEYS_PATH=%s\nPCG_FILE_KEYS_MODE=0640\n' "$BASE/shared/keys/file-keys.json" >> "$BASE/shared/.env"
 fi
 # server-setup.sh creates it (owner deploy, group app, 2750); this covers an older server
@@ -58,12 +59,15 @@ php artisan config:cache
 php artisan route:cache
 php artisan view:cache
 
-# Uploaded-file encryption: the key ring is created once. init refuses when
-# encrypted files exist without a key ring (restore it from the key backup).
+# Uploaded-file encryption: never create a key ring automatically. A missing
+# ring after a restore or a wrong path would otherwise put a NEW key live
+# unnoticed, and files written with it could not be opened once the real ring
+# is restored. Stop before switching and say what to do.
 if ! php artisan pcg:file-keys status >/dev/null 2>&1; then
-    echo "==> Creating the file encryption key ring"
-    php artisan pcg:file-keys init
-    echo "!!  Back up the new key ring OFF the server now (docs/FILE_ENCRYPTION.md, step 2)."
+    echo "RELEASE STOPPED: the file encryption key ring cannot be loaded ($BASE/shared/keys/file-keys.json)."
+    echo "  Existing installation: restore it from the offline key backup (docs/FILE_ENCRYPTION.md, procedure 3)."
+    echo "  Brand-new installation only: cd $REL && php artisan pcg:file-keys init, back it up, then deploy again."
+    exit 1
 fi
 
 status="$(php artisan migrate:status 2>&1 || true)"

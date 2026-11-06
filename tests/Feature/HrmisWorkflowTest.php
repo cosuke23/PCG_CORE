@@ -124,6 +124,25 @@ class HrmisWorkflowTest extends TestCase
         $this->assertSame(1, Personnel::count());
     }
 
+    public function test_an_admin_who_edited_a_registration_cannot_approve_it()
+    {
+        $author = $this->as('hr_admin', $this->mepcom);
+        $this->withSession($author)->post('/admin/registrations', $this->registration(['intent' => 'draft']))->assertRedirect();
+        $reg = PersonnelRegistration::firstOrFail();
+
+        // another HR admin changes the data of the author's draft...
+        $editor = $this->as('hr_admin', $this->mepcom);
+        $this->withSession($editor)->post("/admin/registrations/{$reg->id}", $this->registration(['serial_number' => 'mep-999']))->assertRedirect();
+
+        // ...the author submits, and the editor may not approve their own data
+        $this->withSession(array_merge($author, ['admin_since' => time()]))->post("/admin/registrations/{$reg->id}/submit")->assertSessionHas('success');
+        $this->withSession($editor)->post("/admin/registrations/{$reg->id}/decide", ['action' => 'approve'])->assertSessionHasErrors('status');
+        $this->assertSame(0, Personnel::count());
+
+        $this->withSession($this->as('records_approver', $this->mepcom))->post("/admin/registrations/{$reg->id}/decide", ['action' => 'approve', 'remarks' => 'OK'])->assertRedirect();
+        $this->assertSame('MEP-999', Personnel::firstOrFail()->serial_number);
+    }
+
     public function test_return_for_correction_and_rejection_need_remarks()
     {
         $hr = $this->as('hr_admin');

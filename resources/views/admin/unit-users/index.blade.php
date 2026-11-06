@@ -12,7 +12,7 @@
             </div>
         </div>
 
-        @php $withoutPassword = $accounts->where('is_active', 1)->where('has_password', false)->count(); @endphp
+        @php $canManage = \App\Support\AdminPermissions::can('documents.restricted'); $withoutPassword = $accounts->where('is_active', 1)->where('has_password', false)->count(); @endphp
         @if ($withoutPassword)
             <div class="pcg-alert pcg-alert--warning" role="status">
                 {{ $withoutPassword }} active {{ \Illuminate\Support\Str::plural('account', $withoutPassword) }} ha{{ $withoutPassword === 1 ? 's' : 've' }} no password and cannot sign in. Set one below.
@@ -71,6 +71,7 @@
                                         </td>
                                         <td>
                                             <div class="pcg-actions">
+                                                @if ($canManage)
                                                 <form method="POST" action="{{ route('admin.unit-users.password', $account->id) }}">
                                                     @csrf
                                                     <label class="pcg-visually-hidden" for="pw-{{ $account->id }}">New password for {{ $account->email }}</label>
@@ -85,6 +86,7 @@
                                                         {{ $isM1 ? 'Remove M1 access' : 'Grant M1 access' }}
                                                     </button>
                                                 </form>
+                                                @endif
                                                 <form method="POST" action="{{ route('admin.unit-users.status', $account->id) }}">
                                                     @csrf
                                                     <input type="hidden" name="is_active" value="{{ $account->is_active ? 0 : 1 }}">
@@ -102,6 +104,7 @@
                 @endif
             </section>
 
+            @if ($canManage)
             <section class="pcg-card" aria-labelledby="create-heading">
                 <div class="pcg-card__header">
                     <h3 id="create-heading">Create account</h3>
@@ -141,6 +144,9 @@
                     </form>
                 </div>
             </section>
+            @else
+            <p class="pcg-muted">Creating checker accounts and setting their passwords is limited to admins who may see restricted documents, because every checker account can open medical clearances.</p>
+            @endif
         </div>
     </div>
 @endsection

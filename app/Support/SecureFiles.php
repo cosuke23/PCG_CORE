@@ -72,6 +72,19 @@ class SecureFiles
         }
     }
 
+    /**
+     * Name to store an upload under: time, random part and a safe extension
+     * only. The uploader's own file name (often a person's name) is never
+     * part of the stored path, so it does not reach URLs, logs or audit entries.
+     */
+    public static function storedName(UploadedFile $file): string
+    {
+        $ext = strtolower((string) ($file->guessExtension() ?: $file->getClientOriginalExtension()));
+        $ext = ['jpeg' => 'jpg', 'jpg' => 'jpg', 'png' => 'png', 'pdf' => 'pdf'][$ext] ?? 'bin';
+
+        return time() . '_' . bin2hex(random_bytes(12)) . '.' . $ext;
+    }
+
     /** Encrypt an uploaded file into $directory/$fileName. Returns the full path. */
     public static function store(UploadedFile $file, string $directory, string $fileName, string $logicalPath): string
     {

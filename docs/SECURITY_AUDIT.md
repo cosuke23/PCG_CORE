@@ -117,6 +117,33 @@ Owner request: application-level AES-256-GCM encryption for every upload. Detail
   2. Label `shared/keys` for SELinux (FILE_ENCRYPTION procedure 1).
   3. Run `pcg:files encrypt --apply` after a backup.
 
+## 0h. Full re-check (2026-11-06)
+
+Dependency audit, two independent code reviews (the encryption and file delivery; access control on every route) and the penetration test against a production-like copy built from the deploy kit's nginx site and PHP pool. The test now has 31 checks, 7 of them new. Result: **30 of 31 passed.** The one failure is the cookie Secure flag, which is expected on the plain-HTTP test copy; Hermes sets it.
+
+| # | Sev. | Finding | Status |
+|---|------|---------|--------|
+| R1 | Medium | Symfony 7.4.22 had six advisories, among them HEAD requests bypassing method rules, path rules bypassed through the script name, a host-placeholder routing bypass, and client-chosen hosts in generated URLs. | **Fixed**: updated to 7.4.23; `composer audit` is clean. |
+| R2 | Medium–High | `/files` is outside the admin route group, so it trusted the session's admin flags. A deactivated, demoted or re-scoped admin, a session older than 12 hours, or the retired `.env` setup admin kept their old file rights, restricted files included. | **Fixed**: the admin-session check was moved into `EnsureAdminSession::revalidate()`, and `FileController` calls it. |
+| R3 | Medium | Every admin role, including the re-enlistment and LMS admins, could open every selfie and profile photo. | **Fixed**: these photos now need `documents.view`, like other personnel files. |
+| R4 | Medium | An HR admin could create an own-unit checker account, or reset one's password, then sign in as that checker and open its unit's medical clearances. This bypassed `documents.restricted` (Q2 covered M1 accounts only). | **Fixed**: only admins with `documents.restricted` may create checker accounts or set their passwords; the page hides those forms from others. **Behaviour change for HR admins.** |
+| R5 | Low–Medium | Member sessions were checked only at sign-in. A member who was later rejected, for example after their serial number went to another approved account, kept writing to that serial's records. | **Fixed**: the account status is checked on every request; a member who is no longer approved is signed out. |
+| R6 | Low | For older `personnel_data` rows without `personnel_id`, a *pending* registration with someone else's serial number could pull that person's documents into another unit. | **Fixed**: for those rows only an approved account counts (`UnitUser::recordOwner`). |
+| R7 | Low | Maker-checker on registrations ignored editors: an admin could edit someone else's draft and then approve their own changes. | **Fixed**: anyone who created, edited or submitted a registration may not decide it. |
+| R8 | Low | `release.sh` created a new key ring whenever the old one could not be loaded, for example after a restore or with a wrong path, putting a different key live without anyone noticing. | **Fixed**: the release now stops and explains how to restore the key ring or run `init` by hand. |
+| R9 | Low | If `PCG_FILE_KEYS_PATH` was set but empty, the default key folder would have gone into the nightly file backup. | **Fixed**: an empty value is replaced, and `backup.sh` always leaves out `storage/app/keys`. |
+| R10 | Low | nginx belongs to the app group, which could read the key ring. | **Fixed** in `server-setup.sh`: a separate `mepcom-keys` group for PHP-FPM and the deploy account only. **Owner action:** re-run `server-setup.sh` once. |
+| R11 | Low | Stored upload names kept the uploader's own file name (often a person's name); it reached URLs, logs and audit entries, and names containing `..` could not be opened. | **Fixed**: new uploads are stored as `time_random.ext`; the original name is no longer logged. Existing files keep their names. |
+| R12 | Low | Old profile photos could still be public at `/storage/profile_photos/…` on installs where `storage:link` had been run. | **Fixed**: blocked in nginx and `.htaccess`; `pcg:check` fails while any remain (`pcg:files encrypt --apply` moves them). |
+| R13 | Info | The chunk size in an encrypted file's header was not authenticated; a tampered file could make the reader allocate large buffers. | **Fixed**: only the size the app writes is accepted; each file's key is wiped after reading. |
+
+Checked and found safe, among others:
+- route groups, CSRF, sign-out (POST only), org scope and the auditor's read-only access;
+- SQL bindings, output escaping, CSV formula escaping, upload validation;
+- crypto nonces and authenticated data, path traversal, response headers, atomic writes, audit coverage.
+
+Still open: N12, the sequential OSAERT verify ids.
+
 ## 1. Findings and status
 
 ### Critical

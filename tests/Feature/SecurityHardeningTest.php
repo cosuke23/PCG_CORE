@@ -36,7 +36,7 @@ class SecurityHardeningTest extends TestCase
         ]);
     }
 
-    public function test_hr_admin_cannot_grant_m1_or_reset_an_m1_password()
+    public function test_hr_admin_cannot_take_over_checker_accounts()
     {
         $hr = ['admin_logged_in' => true, 'admin_role' => 'hr_admin'];
 
@@ -46,8 +46,12 @@ class SecurityHardeningTest extends TestCase
         $this->withSession($hr)->post('/admin/unit-users/1/password', ['password' => 'taken-over-123'])->assertForbidden();
         $this->assertTrue(Hash::check('old-password-1', DB::table('unit_users')->where('id', 1)->value('password')));
 
-        // ordinary unit accounts: HR keeps managing them
-        $this->withSession($hr)->post('/admin/unit-users/2/password', ['password' => 'new-password-12'])->assertRedirect();
+        // own-unit accounts too: every checker account opens its unit's medical
+        // clearances, so taking one over would bypass documents.restricted
+        $this->withSession($hr)->post('/admin/unit-users/2/password', ['password' => 'new-password-12'])->assertForbidden();
+        $this->withSession($hr)->post('/unit-users/store', ['full_name' => 'X', 'email' => 'x@example.test',
+            'password' => 'chosen-by-hr-1', 'unit_name' => 'NOCOP'])->assertForbidden();
+        $this->assertSame(0, DB::table('unit_users')->where('email', 'x@example.test')->count());
 
         // the super admin may do both
         $super = ['admin_logged_in' => true, 'admin_role' => 'super_admin'];

@@ -126,15 +126,19 @@ class FileAccessTest extends TestCase
 
     public function test_admin_roles_follow_the_document_permissions()
     {
-        // LMS admin: photos only, no clearances or disciplinary files
+        // LMS and re-enlistment admins: no personnel files at all, photos included
+        $this->withSession(['admin_logged_in' => true, 'admin_role' => 'reenlistment_admin']);
+        $this->get('/files/selfies/abc.png')->assertNotFound();
+        $this->flushSession();
         $this->withSession(['admin_logged_in' => true, 'admin_role' => 'lms_admin']);
-        $this->get('/files/selfies/abc.png')->assertOk();
+        $this->get('/files/selfies/abc.png')->assertNotFound();
         $this->get('/files/documents_toupload/documents/1_nbi.pdf')->assertNotFound();
         $this->get('/files/disciplinary_actions/disciplinary_actions/1_case.pdf')->assertNotFound();
         $this->flushSession();
 
-        // HR admin: documents yes, restricted (disciplinary) no
+        // HR admin: documents and photos yes, restricted (disciplinary) no
         $this->withSession(['admin_logged_in' => true, 'admin_role' => 'hr_admin']);
+        $this->get('/files/selfies/abc.png')->assertOk();
         $this->get('/files/documents_toupload/documents/1_nbi.pdf')->assertOk();
         $this->get('/files/disciplinary_actions/disciplinary_actions/1_case.pdf')->assertNotFound();
         $this->flushSession();

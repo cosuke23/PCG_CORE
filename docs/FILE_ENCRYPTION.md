@@ -75,12 +75,19 @@ On Hermes, run them from `/srv/mepcom-hrmis/current` as the deploy account.
 ### 1. First switch-on (Hermes)
 
 1. Deploy as usual (`deploy\deploy.ps1`). The release adds
-   `PCG_FILE_KEYS_PATH` and `PCG_FILE_KEYS_MODE=0640` to an older `.env`,
-   creates `shared/keys/`, and runs `pcg:file-keys init` if there is no key
-   ring yet. From that moment new uploads are encrypted.
+   `PCG_FILE_KEYS_PATH` and `PCG_FILE_KEYS_MODE=0640` to an older `.env` and
+   creates `shared/keys/`.
+   - **Since 2026-11-06 the release never creates a key ring itself.** If none
+     can be loaded, it stops before switching.
+   - On a brand-new installation, run `php artisan pcg:file-keys init` once
+     in the new release folder, then deploy again.
+   - On Hermes the key ring already exists (created on 2026-11-05).
+   - From the moment a key ring exists, new uploads are encrypted.
 2. **Back up the key ring off the server immediately** (procedure 2).
-3. Server owner, once: label the keys folder for SELinux so PHP-FPM may read
-   it. Either re-run `deploy/server-setup.sh`, or run
+3. Server owner, once: re-run `deploy/server-setup.sh` as root. It puts the
+   key ring in its own `mepcom-keys` group: PHP-FPM and the deploy account
+   can read it, nginx cannot. It also labels the folder for SELinux.
+   Alternatively, for the label only, run
    `semanage fcontext -a -t httpd_sys_content_t "/srv/mepcom-hrmis/shared/keys(/.*)?" && restorecon -Rv /srv/mepcom-hrmis/shared/keys`.
    Then check that `php artisan pcg:check` passes.
 4. Make a normal backup (`deploy/backup.sh`).

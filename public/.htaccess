@@ -16,7 +16,7 @@
 
     # Personnel uploads are served only through /files/... (access-checked).
     # Block direct requests to the upload folders.
-    RewriteRule ^(documents_toupload|201_files|disciplinary_actions|selfies)(/|$) - [F,L,NC]
+    RewriteRule ^(documents_toupload|201_files|disciplinary_actions|selfies|profile_photos|storage/profile_photos)(/|$) - [F,L,NC]
 
     # Serve existing files directly (IMPORTANT for images)
     RewriteCond %{REQUEST_FILENAME} -f

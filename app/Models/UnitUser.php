@@ -65,4 +65,17 @@ class UnitUser extends Model
 
         return true;
     }
+
+    /**
+     * Join condition between users (u) and personnel_data (pd) matched by
+     * serial number: the account that owns the record. Older rows have no
+     * personnel_id; for those only an APPROVED account counts, so a pending
+     * registration with someone else's serial number cannot pull that
+     * person's documents into another unit.
+     */
+    public static function recordOwner($query)
+    {
+        return $query->whereColumn('pd.personnel_id', 'u.id')
+            ->orWhere(fn ($q) => $q->whereNull('pd.personnel_id')->whereRaw('LOWER(TRIM(u.status)) = ?', ['approved']));
+    }
 }

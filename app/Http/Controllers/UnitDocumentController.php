@@ -32,7 +32,7 @@ class UnitDocumentController extends Controller
                 ->join('users as u', 'u.serial_number', '=', 'pd.serial_number')
                 ->where('pd.serial_number', $request->serial_number)
                 ->where('u.mother_unit', session('unit_name'))
-                ->where(fn ($q) => $q->whereNull('pd.personnel_id')->orWhereColumn('pd.personnel_id', 'u.id'))
+                ->where(fn ($q) => \App\Models\UnitUser::recordOwner($q))
                 ->exists();
 
             abort_unless($inUnit, 403, 'This applicant is not in your unit.');
