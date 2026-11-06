@@ -71,6 +71,12 @@ class FileController extends Controller
         if ($session->has('unit_user_id')) {
             \App\Models\UnitUser::refreshSession($session); // deactivated checkers lose access at once
         }
+        // /files is outside the admin route group, so re-check the admin session
+        // here too: a deactivated, demoted or re-scoped admin, an expired session
+        // or the retired .env setup admin must not keep earlier file rights.
+        if ($session->get('admin_logged_in') && \App\Http\Middleware\EnsureAdminSession::revalidate($session) !== null) {
+            abort(404);
+        }
         // command/unit-scoped admins have no file access until the scoped 201 module exists
         $isAdmin = (bool) $session->get('admin_logged_in') && !$session->get('admin_org_unit_id');
         if ($isAdmin && !$this->adminMayOpen($session->get('admin_role'), $area, $relative)) {
@@ -114,18 +120,18 @@ class FileController extends Controller
     }
 
     /**
-     * Admin roles follow the HRMIS document rules (AdminPermissions): selfies
-     * for every admin (lists show them), personnel documents need
-     * documents.view, and medical / disciplinary / legal / financial files
-     * also need documents.restricted.
+     * Admin roles follow the HRMIS document rules (AdminPermissions): every
+     * file, selfies and profile photos included, needs documents.view (so the
+     * re-enlistment and LMS admins see none), and medical / disciplinary /
+     * legal / financial files also need documents.restricted.
      */
     private function adminMayOpen(?string $role, string $area, string $relative): bool
     {
-        if ($area === 'selfies' || $area === 'profile_photos') {
-            return true;
-        }
         if (!\App\Support\AdminPermissions::allows($role, 'documents.view')) {
             return false;
+        }
+        if ($area === 'selfies' || $area === 'profile_photos') {
+            return true;
         }
 
         $restricted = $area === 'disciplinary_actions'
@@ -145,7 +151,7 @@ class FileController extends Controller
             ->join('users as u', 'u.serial_number', '=', 'pd.serial_number')
             ->where('u.mother_unit', $unit)
             // the account that owns the record (not just any account with that serial)
-            ->where(fn ($q) => $q->whereNull('pd.personnel_id')->orWhereColumn('pd.personnel_id', 'u.id'))
+            ->where(fn ($q) => \App\Models\UnitUser::recordOwner($q))
             ->where(function ($q) use ($relative) {
                 foreach (self::DOCUMENT_COLUMNS as $column) {
                     $q->orWhere('pd.' . $column, $relative);

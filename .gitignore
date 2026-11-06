@@ -65,3 +65,4 @@ desktop.ini
 
 # deploy target for deploy.ps1 (server address stays out of git)
 /deploy/target.local
+__pycache__/

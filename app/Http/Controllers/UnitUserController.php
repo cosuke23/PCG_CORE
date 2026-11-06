@@ -114,7 +114,7 @@ class UnitUserController extends Controller
             ->where('u.mother_unit', $unitName)
             // only the account that owns each record, so a second account with
             // the same serial cannot bring someone's documents into this unit
-            ->where(fn ($q) => $q->whereNull('pd.personnel_id')->orWhereColumn('pd.personnel_id', 'u.id'))
+            ->where(fn ($q) => \App\Models\UnitUser::recordOwner($q))
             ->select(
                 'pd.*',
                 'u.name as applicant_name',
@@ -191,6 +191,11 @@ class UnitUserController extends Controller
 
     public function store(Request $request)
     {
+        // A new checker account opens its unit's medical clearances: only an
+        // admin who may see restricted documents may create one.
+        abort_unless(\App\Support\AdminPermissions::can('documents.restricted'), 403,
+            'Only an admin who may see restricted documents can create checker accounts.');
+
         $request->validate([
             'personnel_id'  => 'nullable|string|max:100',
             'serial_number' => 'nullable|string|max:100',
@@ -265,7 +270,7 @@ class UnitUserController extends Controller
                     mkdir($folderPath, 0755, true);
                 }
 
-                $fileName = time() . '_' . bin2hex(random_bytes(8)) . '_' . preg_replace('/[^A-Za-z0-9._-]/', '_', $file->getClientOriginalName());
+                $fileName = \App\Support\SecureFiles::storedName($file);
 
                 // encrypted before it is written (AES-256-GCM)
                 SecureFiles::store($file, $folderPath, $fileName, 'disciplinary_actions/' . $folder . '/' . $fileName);
@@ -278,7 +283,6 @@ class UnitUserController extends Controller
 
                 Log::info('Processing disciplinary file', [
                     'index' => $index,
-                    'name' => $file->getClientOriginalName(),
                     'mime' => $file->getMimeType(),
                     'size' => $file->getSize(),
                 ]);

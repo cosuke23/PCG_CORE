@@ -43,11 +43,12 @@ class UnitAccountController extends Controller
             'password' => 'required|string|min:8',
         ]);
 
-        // An M1 account opens every unit's restricted files: only an admin who
-        // may see restricted documents (the super admin) may set its password.
-        $target = DB::table('unit_users')->where('id', $id)->value('role');
-        abort_if($target === UnitUser::ROLE_M1 && !\App\Support\AdminPermissions::can('documents.restricted'), 403,
-            'Only the super admin can set the password of an M1 account.');
+        // Every checker account opens restricted files (an own-unit checker sees
+        // its unit's medical clearances, M1 every unit's restricted files), so
+        // only an admin who may see restricted documents may set its password;
+        // otherwise an HR admin could take over an account to read them.
+        abort_unless(\App\Support\AdminPermissions::can('documents.restricted'), 403,
+            'Only an admin who may see restricted documents can set a checker account password.');
 
         $updated = DB::table('unit_users')->where('id', $id)->update([
             'password' => Hash::make($request->password),

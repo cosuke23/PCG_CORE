@@ -199,9 +199,24 @@ class FileEncryptionTest extends TestCase
 
         // admins: shown, and written to the Audit log page
         auth()->logout();
+        Schema::create('admin_users', function (Blueprint $t) {
+            $t->id(); $t->string('email'); $t->string('role'); $t->unsignedBigInteger('org_unit_id')->nullable(); $t->boolean('is_active')->default(true); $t->timestamps();
+        });
+        DB::table('admin_users')->insert(['id' => 7, 'email' => 'a@example.test', 'role' => 'super_admin', 'is_active' => true]);
         $this->withSession(['admin_logged_in' => true, 'admin_role' => 'super_admin', 'admin_user_id' => 7, 'admin_email' => 'a@example.test']);
         $this->get('/files/selfies/me.png?download=1')->assertOk();
         $this->assertSame(1, DB::table('admin_audit_logs')->where('action', 'file.download')->where('subject', 'selfies/me.png')->where('admin_user_id', 7)->count());
+
+        // a deactivated admin loses file access at once, even on /files (outside the admin pages)
+        DB::table('admin_users')->where('id', 7)->update(['is_active' => false]);
+        $this->get('/files/selfies/me.png')->assertNotFound();
+        DB::table('admin_users')->where('id', 7)->update(['is_active' => true]);
+        $this->withSession(['admin_logged_in' => true, 'admin_role' => 'super_admin', 'admin_user_id' => 7, 'admin_email' => 'a@example.test']);
+
+        // demoted to a role without documents.view: no files, whatever the old session said
+        DB::table('admin_users')->where('id', 7)->update(['role' => 'lms_admin']);
+        $this->get('/files/selfies/me.png')->assertNotFound();
+        DB::table('admin_users')->where('id', 7)->update(['role' => 'super_admin']);
 
         // a damaged file is refused, not served
         $bytes = file_get_contents($this->root . '/selfies/me.png');

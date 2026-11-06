@@ -69,8 +69,18 @@ for d in storage storage/app storage/app/private storage/app/private/personnel-d
     install -d -o "$APP_USER" -g "$APP_USER" -m 2770 "$BASE/shared/$d"
 done
 setfacl -R -m "g:$APP_USER:rwX" -m "d:g:$APP_USER:rwX" "$BASE/shared/storage" "$BASE/shared/uploads"
-# file encryption key ring: written by the deploy account, read (not written) by the app's group
-install -d -o "$DEPLOY_USER" -g "$APP_USER" -m 2750 "$BASE/shared/keys"
+# file encryption key ring: written by the deploy account and read by the PHP-FPM
+# user through their own group. Not the app group: nginx is in that one, and
+# the web server has no reason to be able to read the keys.
+KEYS_GROUP="${APP_USER}-keys"
+getent group "$KEYS_GROUP" >/dev/null || groupadd -r "$KEYS_GROUP"
+usermod -aG "$KEYS_GROUP" "$APP_USER"
+usermod -aG "$KEYS_GROUP" "$DEPLOY_USER"
+install -d -o "$DEPLOY_USER" -g "$KEYS_GROUP" -m 2750 "$BASE/shared/keys"
+if [[ -f "$BASE/shared/keys/file-keys.json" ]]; then
+    chown "$DEPLOY_USER:$KEYS_GROUP" "$BASE/shared/keys/file-keys.json"
+    chmod 0640 "$BASE/shared/keys/file-keys.json"
+fi
 [[ -d "$BASE/repo.git" ]] || sudo -u "$DEPLOY_USER" git init --bare --quiet "$BASE/repo.git"
 echo "$PORT" > "$BASE/shared/PORT"
 

@@ -46,7 +46,7 @@ server {
 
     # Legacy upload folders must never be served directly (files go through
     # the access-checked /files route); dotfiles neither.
-    location ~* ^/(documents_toupload|201_files|disciplinary_actions|selfies)(/|$) { return 404; }
+    location ~* ^/(documents_toupload|201_files|disciplinary_actions|selfies|profile_photos|storage/profile_photos)(/|$) { return 404; }
     location ~ /\.(?!well-known) { deny all; }
     # Never serve source, backups, dumps, logs or archives, even if one lands in public/.
     location ~* \.(sql|bak|old|orig|swp|log|sh|ini|env|conf|yml|yaml|json|lock|md|zip|tar|gz|tgz|7z|rar|phar|txt|html?)$ { return 404; }

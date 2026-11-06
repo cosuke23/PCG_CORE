@@ -146,6 +146,9 @@ class FileCrypto
             }
         } finally {
             fclose($h);
+            if (isset($dek)) {
+                self::wipe($dek);
+            }
         }
     }
 
@@ -257,6 +260,11 @@ class FileCrypto
         $id = self::readExact($h, 16);
         $size = unpack('J', self::readExact($h, 8))[1];
         $chunk = unpack('N', self::readExact($h, 4))[1];
+        // not covered by a tag: accept only the size this code writes, so a
+        // tampered header cannot make the reader allocate huge buffers
+        if ($chunk !== self::CHUNK) {
+            throw new RuntimeException('Encrypted file is damaged (unexpected chunk size).');
+        }
         $wrapNonce = self::readExact($h, 12);
         $wrapTag = self::readExact($h, 16);
         $wrapped = self::readExact($h, 32);

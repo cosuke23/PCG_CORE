@@ -25,7 +25,7 @@ class UnitAccessTest extends TestCase
 
         Schema::create('users', function (Blueprint $t) {
             $t->id(); $t->string('name'); $t->string('email'); $t->string('password');
-            $t->string('serial_number')->nullable(); $t->string('mother_unit')->nullable(); $t->timestamps();
+            $t->string('serial_number')->nullable(); $t->string('mother_unit')->nullable(); $t->string('status')->default('Approved'); $t->timestamps();
         });
         Schema::create('unit_users', function (Blueprint $t) {
             $t->id(); $t->string('full_name')->nullable(); $t->string('email'); $t->string('password')->nullable();
@@ -103,6 +103,18 @@ class UnitAccessTest extends TestCase
         // SN-B belongs to account 2 (NOCOP). An impostor registers SN-B in MEPLEF.
         DB::table('personnel_data')->where('serial_number', 'SN-B')->update(['personnel_id' => 2]);
         DB::table('users')->insert(['name' => 'Impostor', 'email' => 'i@x.test', 'password' => 'x', 'serial_number' => 'SN-B', 'mother_unit' => 'MEPLEF']);
+
+        $this->withSession($this->unit);
+        $this->post('/unit/documents/review', ['serial_number' => 'SN-B', 'decision' => 'approved'])->assertForbidden();
+        $this->assertSame('Pending', DB::table('personnel_data')->where('serial_number', 'SN-B')->value('status'));
+        $this->get('/files/documents_toupload/documents/b.pdf')->assertNotFound();
+    }
+
+    public function test_a_pending_account_cannot_pull_an_older_record_into_its_unit()
+    {
+        // Older rows have no personnel_id. A pending registration with SN-B in
+        // MEPLEF must not make SN-B's documents visible to the MEPLEF checker.
+        DB::table('users')->insert(['name' => 'Impostor', 'email' => 'i@x.test', 'password' => 'x', 'serial_number' => 'SN-B', 'mother_unit' => 'MEPLEF', 'status' => 'Pending']);
 
         $this->withSession($this->unit);
         $this->post('/unit/documents/review', ['serial_number' => 'SN-B', 'decision' => 'approved'])->assertForbidden();
