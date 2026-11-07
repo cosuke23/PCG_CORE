@@ -24,6 +24,9 @@ class SecurityHeaders
     {
         $nonce = base64_encode(random_bytes(18));
         View::share('cspNonce', $nonce);
+        // per-request flags set by templates (see below); start each request clean
+        app()->forgetInstance('csp.allow_eval');
+        app()->forgetInstance('csp.allow_osm');
 
         $response = $next($request);
 
@@ -40,27 +43,37 @@ class SecurityHeaders
         $mode = config('pcg.csp', 'enforce');
         if ($mode !== 'off') {
             $header = $mode === 'report' ? 'Content-Security-Policy-Report-Only' : 'Content-Security-Policy';
-            // 'unsafe-eval' only where Alpine.js is loaded (it needs it);
-            // every other page gets the strict policy.
-            $content = method_exists($response, 'getContent') ? $response->getContent() : false;
-            $needsEval = is_string($content) && str_contains($content, 'vendor/alpinejs');
-            $response->headers->set($header, $this->policy($nonce, $needsEval));
+            // 'unsafe-eval' and the OpenStreetMap hosts only where a template
+            // asks for them (the Alpine.js layouts; the map page), decided by
+            // the server-side template, never by the response text, which
+            // injected markup could influence.
+            $needsEval = app()->bound('csp.allow_eval') && app('csp.allow_eval') === true;
+            $needsMap = app()->bound('csp.allow_osm') && app('csp.allow_osm') === true;
+            $response->headers->set($header, $this->policy($nonce, $needsEval, $needsMap));
         }
+        app()->forgetInstance('csp.allow_eval');
+        app()->forgetInstance('csp.allow_osm');
 
         return $response;
     }
 
-    private function policy(string $nonce, bool $allowEval = true): string
+    private function policy(string $nonce, bool $allowEval = false, bool $allowMap = false): string
     {
         $eval = $allowEval ? " 'unsafe-eval'" : '';
+        $tiles = $allowMap ? ' https://*.tile.openstreetmap.org' : '';
+        $geo = $allowMap ? ' https://nominatim.openstreetmap.org' : '';
 
+        // Every <script> carries the nonce. 'strict-dynamic' makes current
+        // browsers ignore 'self', so an injected <script src="/any/our/file.js">
+        // without the nonce does not run; 'self' stays only as a fallback for
+        // browsers without CSP level 3.
         return implode('; ', [
             "default-src 'self'",
-            "script-src 'self' 'nonce-$nonce'$eval",
+            "script-src 'self' 'nonce-$nonce' 'strict-dynamic'$eval",
             "style-src 'self' 'unsafe-inline'",
-            "img-src 'self' data: blob: https://*.tile.openstreetmap.org",
+            "img-src 'self' data: blob:$tiles",
             "font-src 'self' data:",
-            "connect-src 'self' https://nominatim.openstreetmap.org",
+            "connect-src 'self'$geo",
             "media-src 'self' blob:",
             "frame-src 'self'",
             "object-src 'none'",

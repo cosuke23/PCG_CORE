@@ -137,5 +137,6 @@
 </section>
 
 <!-- Alpine.js CDN -->
-<script src="{{ asset('vendor/alpinejs/alpine-3.14.9.min.js') }}" defer></script>
+@php(app()->instance('csp.allow_eval', true)) {{-- Alpine.js needs 'unsafe-eval' on this page only --}}
+<script nonce="{{ $cspNonce ?? '' }}" src="{{ asset('vendor/alpinejs/alpine-3.14.9.min.js') }}" defer></script>
 @endsection

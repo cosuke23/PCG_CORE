@@ -15,7 +15,7 @@
     <link rel="icon" href="{{ asset('favicon.ico') }}">
     <link rel="stylesheet" href="{{ asset('vendor/inter/inter.css') }}">
     <link rel="stylesheet" href="{{ asset('css/pcg-ui.css') }}">
-    <script src="{{ asset('js/pcg-ui.js') }}" defer></script>
+    <script nonce="{{ $cspNonce ?? '' }}" src="{{ asset('js/pcg-ui.js') }}" defer></script>
 </head>
 
 <body class="pcg">

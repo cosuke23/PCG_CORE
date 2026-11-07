@@ -72,7 +72,13 @@
         'pcg.close': function () { window.close(); },
         'pcg.show': function (el, sel) { document.querySelector(sel).classList.remove('hidden'); },
         'pcg.hide': function (el, sel) { document.querySelector(sel).classList.add('hidden'); },
-        'pcg.submit-form': function (el, sel) { (sel ? document.querySelector(sel) : el.form).submit(); },
+        // Only the element's own form, or a form that opts in with
+        // data-pcg-submittable (e.g. the logout form), so injected markup
+        // cannot submit an approve/delete form elsewhere on the page.
+        'pcg.submit-form': function (el, sel) {
+            var form = sel ? document.querySelector(sel) : el.form;
+            if (form && (form === el.form || form.hasAttribute('data-pcg-submittable'))) form.submit();
+        },
         'pcg.open-src': function (el) { window.open(el.currentSrc || el.src, '_blank', 'noopener'); },
         'pcg.img-fallback': function (el) {
             el.style.display = 'none';
@@ -91,8 +97,12 @@
     // Only plain global functions defined by our own page scripts may be
     // called. Built-in browser functions (eval, setTimeout, fetch, open, ...)
     // are refused, so injected markup cannot turn data-on-* into code.
+    // Library globals are never callable from markup either.
+    var notCallable = ['$', 'jQuery', 'Swal', 'Sweetalert2', 'Chart', 'QRCode', 'DataTable', 'L', 'Alpine', 'pcg', 'escapeHtml'];
+
     function isPageFunction(name) {
         if (typeof name !== 'string' || !/^[A-Za-z_$][\w$]*$/.test(name)) return false;
+        if (notCallable.indexOf(name) !== -1) return false;
         if (!Object.prototype.hasOwnProperty.call(window, name)) return false;
         var fn = window[name];
         if (typeof fn !== 'function') return false;
@@ -109,6 +119,9 @@
             var el = e.target && e.target.closest ? e.target.closest('[' + attr + ']') : null;
             if (!el) return;
             var name = el.getAttribute(attr);
+            // "error" fires without any click (e.g. a broken <img>): only the
+            // image fallback may run on it.
+            if (type === 'error' && name !== 'pcg.img-fallback') return;
             var args = [];
             try { args = JSON.parse(el.getAttribute('data-args') || '[]'); } catch (err) { args = []; }
             args = args.map(function (a) { return a === '$this' ? el : a; });

@@ -1,6 +1,9 @@
+# Never list folders (outside IfModule, so it applies with any module set).
+Options -Indexes
+
 <IfModule mod_rewrite.c>
     <IfModule mod_negotiation.c>
-        Options -MultiViews -Indexes
+        Options -MultiViews
     </IfModule>
 
     RewriteEngine On
@@ -17,6 +20,17 @@
     # Personnel uploads are served only through /files/... (access-checked).
     # Block direct requests to the upload folders.
     RewriteRule ^(documents_toupload|201_files|disciplinary_actions|selfies|profile_photos|storage/profile_photos)(/|$) - [F,L,NC]
+
+    # Hidden files (.env, .git, ...) and backups, dumps, logs, configs and
+    # archives are never served, even if one lands in public/ by mistake.
+    RewriteRule (^|/)\.(?!well-known/) - [F,L]
+    RewriteCond %{REQUEST_URI} !^/robots\.txt$
+    RewriteRule \.(sql|bak|old|orig|swp|log|sh|ini|env|conf|yml|yaml|json|lock|md|zip|tar|gz|tgz|7z|rar|phar|txt)$ - [F,L,NC]
+    # Only index.php runs: a browser request for any other .php file in public/
+    # is refused (THE_REQUEST is what the client sent, so Laravel's own
+    # internal rewrite to index.php is unaffected).
+    RewriteCond %{THE_REQUEST} \s/+(?!index\.php)[^?\s]*\.php[\s?/] [NC]
+    RewriteRule ^ - [F,L]
 
     # Serve existing files directly (IMPORTANT for images)
     RewriteCond %{REQUEST_FILENAME} -f

@@ -95,16 +95,31 @@ class AdminController extends Controller
             return redirect()->route('admin.login')->withErrors(['username' => 'Please login as admin.']);
         }
 
-        $user = User::findOrFail($id);
+        // Check and approve in one locked step, so two admins approving two
+        // accounts with the same serial at the same moment cannot both succeed.
+        $result = \Illuminate\Support\Facades\DB::transaction(function () use ($id) {
+            $user = User::lockForUpdate()->findOrFail($id);
+            $serial = strtoupper(trim((string) $user->serial_number));
+            if ($serial !== '') {
+                User::whereRaw('UPPER(TRIM(serial_number)) = ?', [$serial])->lockForUpdate()->pluck('id');
+            }
 
-        // Never approve a second account for a serial number that already has one.
-        if (User::serialTaken((string) $user->serial_number, $user->id)) {
+            // Never approve a second account for a serial number that already has one.
+            if (User::serialTaken((string) $user->serial_number, $user->id)) {
+                return [false, $user];
+            }
+
+            $user->status = 'Approved';
+            $user->save();
+
+            return [true, $user];
+        });
+        [$approved, $user] = $result;
+
+        if (!$approved) {
             return back()->with('error', 'Not approved: serial number ' . $user->serial_number
                 . ' already belongs to another account. Reject this registration or correct the serial first.');
         }
-
-        $user->status = 'Approved';
-        $user->save();
 
         return back()->with('success', $user->name . ' has been approved.');
     }

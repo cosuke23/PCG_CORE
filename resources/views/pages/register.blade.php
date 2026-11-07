@@ -3,7 +3,7 @@
 @section('title', 'Register')
 
 @section('content')
-    <script src="{{ asset('vendor/sweetalert2/sweetalert2-11.22.0.all.min.js') }}"></script>
+    <script nonce="{{ $cspNonce ?? '' }}" src="{{ asset('vendor/sweetalert2/sweetalert2-11.22.0.all.min.js') }}"></script>
 
     @php $isOfficer = $type === 'officer'; @endphp
     {{-- Intro video. Closes itself if the video file is missing (it is not in git). --}}

@@ -19,7 +19,8 @@ class AdminLoginCode extends Mailable
 
     public function envelope(): Envelope
     {
-        return new Envelope(subject: 'MEPCOM HRMIS sign-in code: ' . $this->code);
+        // The code is only in the body: subjects show on lock screens and in mail logs.
+        return new Envelope(subject: 'MEPCOM HRMIS sign-in code');
     }
 
     public function content(): Content

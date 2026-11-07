@@ -122,6 +122,19 @@ class UnitAccessTest extends TestCase
         $this->get('/files/documents_toupload/documents/b.pdf')->assertNotFound();
     }
 
+    public function test_review_changes_only_the_owners_row_when_a_serial_is_duplicated()
+    {
+        // An impostor (approved, other unit) uploaded under SN-A: two rows share the serial.
+        DB::table('personnel_data')->where('serial_number', 'SN-A')->update(['personnel_id' => 1]);
+        DB::table('users')->insert(['name' => 'Impostor', 'email' => 'i@x.test', 'password' => 'x', 'serial_number' => 'SN-A', 'mother_unit' => 'NOCOP']);
+        DB::table('personnel_data')->insert(['personnel_id' => 3, 'serial_number' => 'SN-A', 'nbi_clearance' => 'documents/i.pdf', 'status' => 'Pending']);
+
+        $this->withSession($this->unit);
+        $this->post('/unit/documents/review', ['serial_number' => 'SN-A', 'decision' => 'approved'])->assertRedirect();
+        $this->assertSame('approved', DB::table('personnel_data')->where('personnel_id', 1)->value('status'));
+        $this->assertSame('Pending', DB::table('personnel_data')->where('personnel_id', 3)->value('status'));
+    }
+
     public function test_rejecting_a_document_clears_that_document_only()
     {
         Schema::create('rejected_documents', function (Blueprint $t) {

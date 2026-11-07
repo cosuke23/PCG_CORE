@@ -27,5 +27,5 @@
         <button type="submit" class="pcg-btn pcg-btn--primary pcg-btn--block" data-busy-label="Checking…">Turn on two-factor sign-in</button>
     </form>
 
-    <script src="{{ asset('vendor/qrcodejs/qrcode-1.0.0.min.js') }}" defer></script>
+    <script nonce="{{ $cspNonce ?? '' }}" src="{{ asset('vendor/qrcodejs/qrcode-1.0.0.min.js') }}" defer></script>
 @endsection

@@ -10,7 +10,7 @@
     <link rel="stylesheet" href="{{ asset('vendor/inter/inter.css') }}">
     <link rel="stylesheet" href="{{ asset('vendor/fontawesome/css/all.min.css') }}">
     <link rel="stylesheet" href="{{ asset('css/landing.css') }}">
-    <script src="{{ asset('js/landing.js') }}" defer></script>
+    <script nonce="{{ $cspNonce ?? '' }}" src="{{ asset('js/landing.js') }}" defer></script>
 </head>
 <body class="lp">
     <a class="lp-skip" href="#main">Skip to content</a>

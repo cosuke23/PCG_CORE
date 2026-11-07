@@ -98,10 +98,10 @@ class CourseStudentController extends Controller
             ],
         ]);
 
-        $user = User::where(
-            'serial_number',
-            $request->serial_number
-        )->firstOrFail();
+        // the approved account for this serial (never a pending/rejected one)
+        $user = User::where('serial_number', $request->serial_number)
+            ->whereRaw('LOWER(TRIM(status)) = ?', ['approved'])
+            ->firstOrFail();
 
         // Prevent duplicate enrollment
         $exists = CourseStudent::where('course_id', $course->id)
@@ -435,10 +435,9 @@ class CourseStudentController extends Controller
                     'serial_number' => $personnelId,
                 ]);
 
-                $user = User::where(
-                    'serial_number',
-                    $personnelId
-                )->first();
+                $user = User::where('serial_number', $personnelId)
+                    ->whereRaw('LOWER(TRIM(status)) = ?', ['approved'])
+                    ->first();
 
                 if (!$user) {
 

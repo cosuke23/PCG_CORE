@@ -7,7 +7,7 @@
     <title>Document Checker</title>
 
     <link rel="stylesheet" href="{{ asset('css/tailwind.css') }}">
-    <script src="{{ asset('js/pcg-ui.js') }}" defer></script>
+    <script nonce="{{ $cspNonce ?? '' }}" src="{{ asset('js/pcg-ui.js') }}" defer></script>
 </head>
 
 <body id="body"

@@ -722,7 +722,7 @@
 
 @if (session('success') || session('error'))
 
-<script src="{{ asset('vendor/sweetalert2/sweetalert2-11.22.0.all.min.js') }}"></script>
+<script nonce="{{ $cspNonce ?? '' }}" src="{{ asset('vendor/sweetalert2/sweetalert2-11.22.0.all.min.js') }}"></script>
 
 <script nonce="{{ $cspNonce ?? '' }}">
 
@@ -745,7 +745,7 @@ window.addEventListener('load', function () {
 @endif
 
 
-<script src="{{ asset('vendor/chartjs/chart-4.4.4.umd.min.js') }}"></script>
+<script nonce="{{ $cspNonce ?? '' }}" src="{{ asset('vendor/chartjs/chart-4.4.4.umd.min.js') }}"></script>
 
 <script nonce="{{ $cspNonce ?? '' }}">
 

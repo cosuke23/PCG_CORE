@@ -550,7 +550,7 @@ class DashboardController extends Controller
         // Update or create profile
         $year = now()->year; // 2025
         $district = $validated['district']; // HRMU-SV
-        $random = str_pad(mt_rand(0, 99999), 5, '0', STR_PAD_LEFT);
+        $random = str_pad((string) random_int(0, 99999), 5, '0', STR_PAD_LEFT); // display code; random_int, not mt_rand
 
         $applicant_id = "{$year}-{$district}-{$random}";
         $profile = Profile::updateOrCreate(

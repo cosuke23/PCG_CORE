@@ -126,27 +126,27 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/upload-documents', [DashboardController::class, 'uploadDocuments'])
         ->name('upload.documents');
     Route::post('/profile/update', [DashboardController::class, 'updateProfile'])
-        ->name('profile.update');
+        ->middleware('throttle:member-uploads')->name('profile.update');
 
     Route::post('/documents/upload', [ApplicantDocumentController::class, 'store'])
-        ->name('documents.store');
+        ->middleware('throttle:member-uploads')->name('documents.store');
     Route::get('/documents/upload', [ApplicantDocumentController::class, 'create']);
 
     Route::get('/upload-201', [ApplicantDocumentController::class, 'index_201'])
         ->name('upload.201');
     Route::post('/upload-201', [ApplicantDocumentController::class, 'store_201'])
-        ->name('upload.201.store');
+        ->middleware('throttle:member-uploads')->name('upload.201.store');
 
 
     // Multi-step profile (SOI) form
-    Route::post('/temp-save/step1', [TempRegistrationController::class, 'saveStep1'])->name('temp.save.step1');
-    Route::post('/temp-save/step2', [TempRegistrationController::class, 'saveStep2'])->name('temp.save.step2');
-    Route::post('/temp-save/step3', [TempRegistrationController::class, 'saveStep3'])->name('temp.save.step3');
-    Route::post('/temp-save/step4', [TempRegistrationController::class, 'saveStep4'])->name('temp.save.step4');
-    Route::post('/temp-save/step5', [TempRegistrationController::class, 'saveStep5'])->name('temp.save.step5');
-    Route::post('/temp-save/step6', [TempRegistrationController::class, 'saveStep6'])->name('temp.save.step6');
+    Route::post('/temp-save/step1', [TempRegistrationController::class, 'saveStep1'])->middleware('throttle:member-writes')->name('temp.save.step1');
+    Route::post('/temp-save/step2', [TempRegistrationController::class, 'saveStep2'])->middleware('throttle:member-writes')->name('temp.save.step2');
+    Route::post('/temp-save/step3', [TempRegistrationController::class, 'saveStep3'])->middleware('throttle:member-writes')->name('temp.save.step3');
+    Route::post('/temp-save/step4', [TempRegistrationController::class, 'saveStep4'])->middleware('throttle:member-writes')->name('temp.save.step4');
+    Route::post('/temp-save/step5', [TempRegistrationController::class, 'saveStep5'])->middleware('throttle:member-writes')->name('temp.save.step5');
+    Route::post('/temp-save/step6', [TempRegistrationController::class, 'saveStep6'])->middleware('throttle:member-writes')->name('temp.save.step6');
 
-    Route::post('/reinlist/store', [ReenlistController::class, 'store']);
+    Route::post('/reinlist/store', [ReenlistController::class, 'store'])->middleware('throttle:member-writes');
 
     Route::get('/generate-soi', [ProfileController::class, 'generateSOI'])
         ->name('generate.soi');
@@ -157,7 +157,7 @@ Route::middleware(['auth'])->group(function () {
         ->name('applicant.operational.training');
     // GET /applicant/training/apply removed: unlinked, and its view never existed.
     Route::post('/applicant/training/apply', [ApplicantTrainingController::class, 'store'])
-        ->name('applicant.training.store');
+        ->middleware('throttle:member-writes')->name('applicant.training.store');
 });
 
 
