@@ -65,8 +65,10 @@ class PersonnelSync extends Command
 
         $missing = $candidates->filter(fn ($u) => Personnel::normalizeSerial($u->serial_number) === '');
         $withSerial = $candidates->reject(fn ($u) => Personnel::normalizeSerial($u->serial_number) === '');
-        // duplicates are judged across ALL accounts, not only the candidates
-        $allBySerial = $users->groupBy(fn ($u) => Personnel::normalizeSerial($u->serial_number))->forget('');
+        // duplicates are judged among the accounts that could be copied (approved,
+        // plus pending with --include-pending): a pending or rejected account
+        // squatting a member's serial must not keep the real member out
+        $allBySerial = $candidates->groupBy(fn ($u) => Personnel::normalizeSerial($u->serial_number))->forget('');
         $duplicates = $allBySerial->filter(fn ($g) => $g->count() > 1);
 
         $existingSerials = Personnel::pluck('serial_number')->map(fn ($s) => Personnel::normalizeSerial($s))->flip();

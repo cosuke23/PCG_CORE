@@ -80,6 +80,16 @@ class RouteServiceProvider extends ServiceProvider
             Limit::perMinute(5)->by('register|' . $request->ip()),
             Limit::perHour(20)->by('register-h|' . $request->ip()),
         ]);
+        // Signed-in members: per account, so one session cannot flood the
+        // database or fill the disk with encrypted uploads.
+        RateLimiter::for('member-writes', fn (Request $request) => [
+            Limit::perMinute(30)->by('member-writes|' . ($request->user()?->id ?: $request->ip())),
+            Limit::perHour(300)->by('member-writes-h|' . ($request->user()?->id ?: $request->ip())),
+        ]);
+        RateLimiter::for('member-uploads', fn (Request $request) => [
+            Limit::perMinute(10)->by('member-uploads|' . ($request->user()?->id ?: $request->ip())),
+            Limit::perHour(60)->by('member-uploads-h|' . ($request->user()?->id ?: $request->ip())),
+        ]);
         RateLimiter::for('contact', fn (Request $request) => Limit::perMinute(5)->by('contact|' . $request->ip()));
         RateLimiter::for('public-verify', fn (Request $request) => Limit::perMinute(60)->by('verify|' . $request->ip()));
     }

@@ -210,18 +210,25 @@ server {
     client_max_body_size 120m;
     server_tokens off;
 
-    # never serve legacy upload folders or dotfiles directly
-    location ~* ^/(documents_toupload|201_files|disciplinary_actions|selfies)(/|\$) { return 404; }
+    # never serve upload folders, dotfiles, backups, dumps, logs or configs directly
+    location ~* ^/(documents_toupload|201_files|disciplinary_actions|selfies|profile_photos|storage/profile_photos)(/|\$) { return 404; }
     location ~ /\.(?!well-known) { deny all; }
+    location = /robots.txt { access_log off; log_not_found off; }
+    location ~* \.(sql|bak|old|orig|swp|log|sh|ini|env|conf|yml|yaml|json|lock|md|zip|tar|gz|tgz|7z|rar|phar|txt|html?)\$ { return 404; }
 
     location / { try_files \$uri \$uri/ /index.php?\$query_string; }
 
-    location ~ \.php\$ {
+    # Access-checked personnel files always go to the app.
+    location ^~ /files/ { rewrite ^ /index.php last; }
+
+    # Only index.php runs; any other .php file is refused.
+    location = /index.php {
         include snippets/fastcgi-php.conf;
         fastcgi_pass unix:/run/php/php${PHPV}-fpm.sock;
         fastcgi_param SCRIPT_FILENAME \$realpath_root\$fastcgi_script_name;
         fastcgi_param DOCUMENT_ROOT \$realpath_root;
     }
+    location ~ \.php\$ { return 404; }
     location ~* \.(css|js|webp|png|jpg|jpeg|svg|woff2|ico)\$ { expires 7d; access_log off; try_files \$uri =404; }
 }
 NGINX

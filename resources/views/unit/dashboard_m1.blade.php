@@ -7,7 +7,7 @@
     <title>Document Checker</title>
 
     <link rel="stylesheet" href="{{ asset('css/tailwind.css') }}">
-    <script src="{{ asset('js/pcg-ui.js') }}" defer></script>
+    <script nonce="{{ $cspNonce ?? '' }}" src="{{ asset('js/pcg-ui.js') }}" defer></script>
 </head>
 
 <body id="body" class="bg-[#f5f5f7] min-h-screen overflow-hidden transition-all duration-300">
@@ -127,13 +127,13 @@
                 </div>
 
             </div>
-            <script src="{{ asset('vendor/sweetalert2/sweetalert2-11.22.0.all.min.js') }}"></script>
+            <script nonce="{{ $cspNonce ?? '' }}" src="{{ asset('vendor/sweetalert2/sweetalert2-11.22.0.all.min.js') }}"></script>
             @if (session('success'))
                 <script nonce="{{ $cspNonce ?? '' }}">
                     Swal.fire({
                         icon: 'success',
                         title: 'Success',
-                        text: "{{ session('success') }}",
+                        text: @json(session('success')),
                         confirmButtonColor: '#16a34a'
                     });
                 </script>
@@ -190,7 +190,7 @@
 
                         try {
 
-                            let response = await fetch(`/unit/search-serial/${serial}`);
+                            let response = await fetch(`/unit/search-serial/${encodeURIComponent(serial)}`);
 
                             let data = await response.json();
 

@@ -61,4 +61,47 @@ class ContentSecurityPolicyTest extends TestCase
         config(['pcg.csp' => 'off']);
         $this->assertNull($this->get('/unit/login')->headers->get('Content-Security-Policy'));
     }
+
+    public function test_script_src_uses_strict_dynamic_and_eval_only_where_flagged()
+    {
+        $login = $this->get('/unit/login')->headers->get('Content-Security-Policy');
+        $this->assertStringContainsString("'strict-dynamic'", $login);
+        $this->assertStringNotContainsString("'unsafe-eval'", $login);
+        $this->assertStringNotContainsString('tile.openstreetmap.org', $login);
+
+        // layouts/app loads Alpine (needs eval); the flag must not leak to the next request
+        $this->assertStringContainsString("'unsafe-eval'", $this->get('/contact')->headers->get('Content-Security-Policy'));
+        $this->assertStringNotContainsString("'unsafe-eval'", $this->get('/unit/login')->headers->get('Content-Security-Policy'));
+    }
+
+    public function test_every_external_script_tag_carries_the_nonce()
+    {
+        // with 'strict-dynamic', 'self' is ignored: a <script src> without the nonce does not run
+        $offenders = [];
+        foreach (File::allFiles(resource_path('views')) as $file) {
+            if (!str_ends_with($file->getFilename(), '.blade.php') || str_contains($file->getFilename(), 'backup')) {
+                continue;
+            }
+            preg_match_all('/<script\b[^>]*\bsrc=[^>]*>/i', $file->getContents(), $m);
+            foreach ($m[0] as $tag) {
+                if (!str_contains($tag, 'nonce=')) {
+                    $offenders[] = $file->getRelativePathname();
+                }
+            }
+        }
+
+        $this->assertSame([], array_values(array_unique($offenders)));
+    }
+
+    public function test_map_hosts_are_allowed_only_by_the_upload_documents_page()
+    {
+        $flagged = [];
+        foreach (File::allFiles(resource_path('views')) as $file) {
+            if (str_contains($file->getContents(), "'csp.allow_osm'")) {
+                $flagged[] = str_replace('\\', '/', $file->getRelativePathname());
+            }
+        }
+
+        $this->assertSame(['applicant/upload-documents.blade.php'], $flagged);
+    }
 }

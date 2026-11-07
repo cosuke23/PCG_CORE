@@ -185,13 +185,20 @@ class PersonnelTest extends TestCase
         $this->assertSame(0, Personnel::count());
 
         $this->artisan('pcg:personnel-sync', ['--apply' => true, '--assign-to' => 'mepcom', '--start-date' => '2026-01-01'])->assertSuccessful();
-        $this->assertEqualsCanonicalizing(['S-1', 'S-2'], Personnel::pluck('serial_number')->all());
+        // S-3: the pending duplicate does not keep the approved member out
+        $this->assertEqualsCanonicalizing(['S-1', 'S-2', 'S-3'], Personnel::pluck('serial_number')->all());
         $this->assertSame('officer', Personnel::where('serial_number', 'S-2')->value('classification'));
-        $this->assertSame(2, PersonnelAssignment::where('org_unit_id', $this->mepcom->id)->whereNull('end_date')->count());
+        $this->assertSame(3, PersonnelAssignment::where('org_unit_id', $this->mepcom->id)->whereNull('end_date')->count());
         $this->assertSame(6, DB::table('users')->count()); // users untouched
 
         // running again creates nothing new
         $this->artisan('pcg:personnel-sync', ['--apply' => true])->assertSuccessful();
-        $this->assertSame(2, Personnel::count());
+        $this->assertSame(3, Personnel::count());
+
+        // two APPROVED accounts with one serial are still skipped
+        DB::table('users')->insert(['name' => 'Twin', 'email' => 'g@x.test', 'password' => 'x', 'serial_number' => 'S-9', 'rank' => 'PO1', 'registration_type' => null, 'status' => 'Approved', 'mother_unit' => null, 'created_at' => $now]);
+        DB::table('users')->insert(['name' => 'Twin 2', 'email' => 'h@x.test', 'password' => 'x', 'serial_number' => 's-9', 'rank' => 'PO1', 'registration_type' => null, 'status' => 'approved', 'mother_unit' => null, 'created_at' => $now]);
+        $this->artisan('pcg:personnel-sync', ['--apply' => true])->assertSuccessful();
+        $this->assertSame(3, Personnel::count());
     }
 }

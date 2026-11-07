@@ -327,7 +327,7 @@
             }
         }
     </style>
-    <script src="{{ asset('js/pcg-ui.js') }}" defer></script>
+    <script nonce="{{ $cspNonce ?? '' }}" src="{{ asset('js/pcg-ui.js') }}" defer></script>
 </head>
 
 <body>
@@ -481,7 +481,7 @@
 
     @endforelse
 
-    <script src="{{ asset('vendor/qrcodejs/qrcode-1.0.0.min.js') }}"></script>
+    <script nonce="{{ $cspNonce ?? '' }}" src="{{ asset('vendor/qrcodejs/qrcode-1.0.0.min.js') }}"></script>
 
     <script nonce="{{ $cspNonce ?? '' }}">
         document.addEventListener('DOMContentLoaded', function () {

@@ -109,7 +109,7 @@ class RegisterController extends Controller
             $imageInfo = $image !== false ? @getimagesizefromstring($image) : false;
 
             if (!$imageInfo || !in_array($imageInfo[2], [IMAGETYPE_PNG, IMAGETYPE_JPEG], true)
-                || $imageInfo[0] < 64 || $imageInfo[1] < 64 || $imageInfo[0] > 4096 || $imageInfo[1] > 4096) {
+                || $imageInfo[0] < 64 || $imageInfo[1] < 64 || $imageInfo[0] > 2048 || $imageInfo[1] > 2048) {
                 return back()
                     ->withErrors(['selfie_image' => 'Please capture a valid selfie photo.'])
                     ->withInput($request->except(['password', 'password_confirmation', 'selfie_image']));
@@ -117,7 +117,14 @@ class RegisterController extends Controller
 
             // Re-encode: only the picture itself is stored (no extra bytes or
             // embedded data), scaled down to at most 1280 px.
-            $image = self::reencodeSelfie($image) ?? $image;
+            // Never store the bytes as sent: if re-encoding fails (or GD is
+            // missing) the selfie is refused, so nothing hidden rides along.
+            $image = self::reencodeSelfie($image);
+            if ($image === null) {
+                return back()
+                    ->withErrors(['selfie_image' => 'The selfie could not be processed. Please capture it again.'])
+                    ->withInput($request->except(['password', 'password_confirmation', 'selfie_image']));
+            }
 
             // Production (cPanel) sets PCG_SELFIE_DIR to the old fixed path.
             $folderPath = config('pcg.selfie_dir');

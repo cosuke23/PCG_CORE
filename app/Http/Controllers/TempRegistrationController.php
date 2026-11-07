@@ -96,13 +96,13 @@ class TempRegistrationController extends Controller
                 ->where('serial_number', $serialNumber)
                 ->exists();
 
-            // ✅ VALIDATION
-            if (!$existsInReinlist) {
-                // Run validation only if serial_number does NOT exist
+            // ✅ VALIDATION, on every save (it used to be skipped once a row
+            // existed, so later saves wrote unchecked, unlimited input)
+            {
                 $validator = Validator::make($request->all(), [
                     'nickname' => 'nullable|string|max:100',
-                    'sex' => 'nullable|string',
-                    'civil_status' => 'nullable|string',
+                    'sex' => 'nullable|string|max:20',
+                    'civil_status' => 'nullable|string|max:30',
                     'citizenship' => 'nullable|string|max:100',
                     'religion' => 'nullable|string|max:100',
                     'blood_type' => 'nullable|string|max:5',
@@ -242,7 +242,6 @@ class TempRegistrationController extends Controller
             return response()->json([
                 'status' => 'error',
                 'message' => 'Something went wrong!',
-                'error' => $e->getMessage()
             ], 500);
         }
     }
@@ -537,6 +536,20 @@ class TempRegistrationController extends Controller
     }
     public function saveStep5(Request $request)
     {
+        // bounded lists of short text: an oversized body cannot turn into
+        // thousands of inserts or huge rows
+        $request->validate([
+            'appointments' => 'nullable|array|max:100',
+            'appointments.*' => 'array',
+            'appointments.*.description' => 'nullable|string|max:500',
+            'appointments.*.date' => 'nullable|string|max:50',
+            'appointments.*.authority' => 'nullable|string|max:255',
+            'duties' => 'nullable|array|max:10',
+            'duties.*' => 'nullable|array|max:100',
+            'duties.*.*' => 'array',
+            'duties.*.*.*' => self::shortText(),
+        ]);
+
         try {
 
             $userId = $request->user()->id;
@@ -653,16 +666,16 @@ class TempRegistrationController extends Controller
         try {
 
             $validated = $request->validate([
-                'cgAwardsDecorations' => 'nullable|array',
-                'cgLetters' => 'nullable|array',
-                'cgAppreciations' => 'nullable|array',   // NEW
-                'cgPlaques' => 'nullable|array',         // NEW
-                'militaryAwards' => 'nullable|array',
-                'careers' => 'nullable|array',
-                'otherLetters' => 'nullable|array',        // NEW
-                'otherAppreciations' => 'nullable|array',   // NEW
-                'otherPlaques' => 'nullable|array',         // NEW
-                'civilianCommendations' => 'nullable|array',
+                'cgAwardsDecorations' => 'nullable|array|max:200', 'cgAwardsDecorations.*' => 'array', 'cgAwardsDecorations.*.*' => self::shortText(),
+                'cgLetters' => 'nullable|array|max:200', 'cgLetters.*' => 'array', 'cgLetters.*.*' => self::shortText(),
+                'cgAppreciations' => 'nullable|array|max:200', 'cgAppreciations.*' => 'array', 'cgAppreciations.*.*' => self::shortText(),   // NEW
+                'cgPlaques' => 'nullable|array|max:200', 'cgPlaques.*' => 'array', 'cgPlaques.*.*' => self::shortText(),         // NEW
+                'militaryAwards' => 'nullable|array|max:200', 'militaryAwards.*' => 'array', 'militaryAwards.*.*' => self::shortText(),
+                'careers' => 'nullable|array|max:200', 'careers.*' => 'array', 'careers.*.*' => self::shortText(),
+                'otherLetters' => 'nullable|array|max:200', 'otherLetters.*' => 'array', 'otherLetters.*.*' => self::shortText(),        // NEW
+                'otherAppreciations' => 'nullable|array|max:200', 'otherAppreciations.*' => 'array', 'otherAppreciations.*.*' => self::shortText(),   // NEW
+                'otherPlaques' => 'nullable|array|max:200', 'otherPlaques.*' => 'array', 'otherPlaques.*.*' => self::shortText(),         // NEW
+                'civilianCommendations' => 'nullable|array|max:200', 'civilianCommendations.*' => 'array', 'civilianCommendations.*.*' => self::shortText(),
             ]);
 
             $userId = $request->user()->id;
@@ -1035,12 +1048,13 @@ class TempRegistrationController extends Controller
             // =========================
             DB::commit();
 
-            session(['step6' => $validated]);
 
             return response()->json([
                 'status' => 'success',
                 'message' => 'Step 6 data saved successfully.'
             ]);
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            throw $e; // 422 with the field errors, not a logged server error
         } catch (\Exception $e) {
             // No-op if the error happened before the transaction started.
             DB::rollBack();
@@ -1054,5 +1068,15 @@ class TempRegistrationController extends Controller
                 'message' => 'Failed to save Step 6.'
             ], 500);
         }
+    }
+
+    /** Validation rule: an optional short scalar value (text, number or yes/no), at most 1,000 characters. */
+    private static function shortText(): array
+    {
+        return ['nullable', function ($attribute, $value, $fail) {
+            if (!is_scalar($value) || mb_strlen((string) $value) > 1000) {
+                $fail('Each entry must be short text (at most 1,000 characters).');
+            }
+        }];
     }
 }

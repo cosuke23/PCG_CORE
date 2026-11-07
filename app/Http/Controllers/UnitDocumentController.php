@@ -22,21 +22,20 @@ class UnitDocumentController extends Controller
             'docs'          => 'nullable|array',
         ]);
 
-        // Unit checkers may only decide on personnel of their own unit
-        // (the unit dashboard lists users.mother_unit = their unit); M1
-        // checkers review all units.
+        // The record being decided: the one owned by the approved account with
+        // this serial. Own-unit checkers only for their unit (users.mother_unit);
+        // M1 checkers for all units. Every update below targets this row only,
+        // never every row that happens to carry the serial number.
+        $owned = DB::table('personnel_data as pd')
+            ->join('users as u', 'u.serial_number', '=', 'pd.serial_number')
+            ->where('pd.serial_number', $request->serial_number)
+            ->where(fn ($q) => \App\Models\UnitUser::recordOwner($q));
         if (session('unit_role') !== \App\Models\UnitUser::ROLE_M1) {
-            // The account that owns the documents must be in this unit (not
-            // just any account carrying that serial number).
-            $inUnit = DB::table('personnel_data as pd')
-                ->join('users as u', 'u.serial_number', '=', 'pd.serial_number')
-                ->where('pd.serial_number', $request->serial_number)
-                ->where('u.mother_unit', session('unit_name'))
-                ->where(fn ($q) => \App\Models\UnitUser::recordOwner($q))
-                ->exists();
-
-            abort_unless($inUnit, 403, 'This applicant is not in your unit.');
+            $owned->where('u.mother_unit', session('unit_name'));
         }
+        $rowId = $owned->orderByDesc('pd.id')->value('pd.id');
+
+        abort_unless($rowId, 403, 'This applicant is not in your unit.');
 
         try {
 
@@ -74,7 +73,7 @@ class UnitDocumentController extends Controller
                 Log::info('🟢 APPROVED FLOW START');
 
                 DB::table('personnel_data')
-                    ->where('serial_number', $serial)
+                    ->where('id', $rowId)
                     ->update([
                         'status' => 'approved',
                         'updated_at' => now()
@@ -102,7 +101,7 @@ class UnitDocumentController extends Controller
                     $comment   = $doc['comment'] ?? null;
 
                     $filePath = DB::table('personnel_data')
-                        ->where('serial_number', $serial)
+                        ->where('id', $rowId)
                         ->value($column);
 
                     Log::info('Processing Rejected Doc', [
@@ -120,7 +119,7 @@ class UnitDocumentController extends Controller
                     if ($isChecked) {
 
                         DB::table('personnel_data')
-                            ->where('serial_number', $serial)
+                            ->where('id', $rowId)
                             ->update([
                                 $column => null,
                                 'updated_at' => now()
@@ -151,7 +150,7 @@ class UnitDocumentController extends Controller
                 }
 
                 DB::table('personnel_data')
-                    ->where('serial_number', $serial)
+                    ->where('id', $rowId)
                     ->update([
                         'status' => 'rejected',
                         'updated_at' => now()

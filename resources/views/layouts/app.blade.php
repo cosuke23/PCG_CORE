@@ -7,15 +7,16 @@
     <title>@yield('title', 'Dashboard')</title>
     @include('partials.share-meta')
 
-    <script src="{{ asset('vendor/alpinejs/alpine-3.14.9.min.js') }}" defer></script>
+    @php(app()->instance('csp.allow_eval', true)) {{-- Alpine.js needs 'unsafe-eval' on this layout only --}}
+    <script nonce="{{ $cspNonce ?? '' }}" src="{{ asset('vendor/alpinejs/alpine-3.14.9.min.js') }}" defer></script>
     <link rel="stylesheet" href="{{ asset('vendor/leaflet/leaflet.css') }}" />
     <link rel="stylesheet" href="{{ asset('vendor/leaflet-geocoder/Control.Geocoder.css') }}" />
     <link href="{{ asset('vendor/bootstrap/bootstrap-5.3.1.min.css') }}" rel="stylesheet">
-    <script src="{{ asset('vendor/bootstrap/bootstrap-5.3.1.bundle.min.js') }}"></script>
-    <script src="{{ asset('vendor/sweetalert2/sweetalert2-11.22.0.all.min.js') }}"></script>
+    <script nonce="{{ $cspNonce ?? '' }}" src="{{ asset('vendor/bootstrap/bootstrap-5.3.1.bundle.min.js') }}"></script>
+    <script nonce="{{ $cspNonce ?? '' }}" src="{{ asset('vendor/sweetalert2/sweetalert2-11.22.0.all.min.js') }}"></script>
     <link rel="stylesheet" href="{{ asset('vendor/inter/inter.css') }}">
     <link rel="stylesheet" href="{{ asset('css/pcg-ui.css') }}">
-    <script src="{{ asset('js/pcg-ui.js') }}" defer></script>
+    <script nonce="{{ $cspNonce ?? '' }}" src="{{ asset('js/pcg-ui.js') }}" defer></script>
     <style>
         /* Inter is self-hosted: vendor/inter/inter.css */
 
@@ -187,7 +188,7 @@
                                 class="text-white hover:bg-red-600 px-4 py-2 rounded-full text-xs font-bold transition">
                                 LOGOUT
                             </a>
-                            <form id="logout-form" action="{{ route('logout') }}" method="POST" class="hidden">@csrf
+                            <form id="logout-form" data-pcg-submittable action="{{ route('logout') }}" method="POST" class="hidden">@csrf
                             </form>
                         @else
                             <a href="{{ route('home') }}"

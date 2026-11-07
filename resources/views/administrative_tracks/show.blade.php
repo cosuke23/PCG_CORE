@@ -477,15 +477,15 @@
     {{-- ================= JAVASCRIPT ================= --}}
 
     {{-- jQuery --}}
-    <script src="{{ asset('vendor/jquery/jquery-3.7.1.min.js') }}"></script>
+    <script nonce="{{ $cspNonce ?? '' }}" src="{{ asset('vendor/jquery/jquery-3.7.1.min.js') }}"></script>
 
     {{-- DataTables --}}
-    <script
+    <script nonce="{{ $cspNonce ?? '' }}"
         src="{{ asset('vendor/datatables/dataTables-2.3.2.min.js') }}">
     </script>
 
     {{-- DataTables Responsive --}}
-    <script
+    <script nonce="{{ $cspNonce ?? '' }}"
         src="{{ asset('vendor/datatables/dataTables.responsive-3.0.5.min.js') }}">
     </script>
 

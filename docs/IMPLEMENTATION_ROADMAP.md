@@ -46,6 +46,8 @@ Last updated: 2026-10-30 · branch `claude/cool-wozniak-rni95k`
 
 - ✅ Full re-check 2026-11-06 (SECURITY_AUDIT §0h): Symfony 7.4.23; /files re-checks admin sessions; photos need `documents.view`; checker accounts are created and reset only by admins with `documents.restricted`; member status re-checked per request; maker-checker counts editors; key ring never auto-created; random upload names
 - 👤 Hermes: re-run `deploy/server-setup.sh` as root once (key ring group without nginx)
+- ✅ Reverse-engineering review 2026-11-07 (SECURITY_AUDIT §0i): unit decisions change one row; CSP `strict-dynamic`; dispatcher locked down; member write/upload limits; bounded SOI lists; training rank check; approval lock; selfie re-encode; Apache/nginx deny rules; unused npm build tools removed; `deploy/audit-server.sh`; PHP `open_basedir`
+- 👤 Hermes: `update-web-config.sh`, then `sudo bash ~/mepcom-hrmis-deploy/audit-server.sh` and send the output; owner decisions in §0i (email squatting, unique serial index, disciplinary soft delete, watchlist)
 
 ## Phase 5 — UI/UX
 - ✅ Design system `public/css/pcg-ui.css` + `public/js/pcg-ui.js` (no build, no CDN)

@@ -187,6 +187,13 @@ class ApplicantTrainingController extends Controller
             abort(404, 'Training track not found.');
         }
 
+        // The same rank rule as the listing: a member may only apply for a
+        // track shown to them (the id used to be accepted for any track).
+        $equivalentRank = $this->getEquivalentRank($user->rank);
+        if ($equivalentRank === null || stripos((string) $track->rank, $equivalentRank) === false) {
+            abort(403, 'This training track is not open to your rank.');
+        }
+
         $existingApplication = TrainingApplication::where(
             'serial_number',
             $user->serial_number

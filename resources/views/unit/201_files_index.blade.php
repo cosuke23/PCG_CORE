@@ -6,7 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>201 Files</title>
     <link rel="stylesheet" href="{{ asset('css/tailwind.css') }}">
-    <script src="{{ asset('js/pcg-ui.js') }}" defer></script>
+    <script nonce="{{ $cspNonce ?? '' }}" src="{{ asset('js/pcg-ui.js') }}" defer></script>
 </head>
 
 <body class="bg-[#f5f5f7] min-h-screen overflow-hidden">
@@ -131,7 +131,7 @@
         // OPEN MODAL
         function openModal(serial) {
 
-            fetch(`/unit/201-files/${serial}`)
+            fetch(`/unit/201-files/${encodeURIComponent(serial)}`)
                 .then(res => res.json())
                 .then(data => {
 

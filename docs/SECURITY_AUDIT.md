@@ -144,6 +144,36 @@ Checked and found safe, among others:
 
 Still open: N12, the sequential OSAERT verify ids.
 
+## 0i. Reverse-engineering review (2026-11-07)
+
+The whole system was taken apart the way an attacker would: the browser code and what it trusts, the web server rules, the build tools, every controller that writes data (white-box), and the running copy from outside (black-box). The penetration test against the production-like copy (deploy kit nginx site and PHP pool): **30 of 31 passed**, the same expected plain-HTTP cookie result as in 0h. 206 automated tests pass; browser flows show no JavaScript or CSP errors.
+
+| # | Sev. | Finding | Status |
+|---|------|---------|--------|
+| V1 | Medium | A unit document decision updated **every** `personnel_data` row with that serial number, including a row uploaded by another account carrying the same serial. | **Fixed**: the decision picks the one row owned by the account in the checker's unit (`UnitUser::recordOwner`) and updates only that row id. |
+| V2 | Medium | CSP allowed every script from the site (`'self'`) and `'unsafe-eval'` on every page; any file that reached `public/` could run as script. | **Fixed**: `'strict-dynamic'` with the nonce on every `<script>` (inline and `src`); `'unsafe-eval'` only on pages whose template asks for it (the Alpine.js layouts), the OpenStreetMap hosts only on the residence map page. The flags are cleared on every request. |
+| V3 | Medium | The `data-on-*` dispatcher could call library globals (`$`, `Swal`, `L`, `Alpine`, …) and the `pcg.submit-form` built-in could submit any form on the page. | **Fixed**: library objects are refused; `submit-form` only submits the element's own form or one marked `data-pcg-submittable`; `data-on-error` only for the image fallback. |
+| V4 | Medium | Member save and upload routes had no rate limit: a signed-in account could fill disks or tables. | **Fixed**: `member-writes` (30/min, 300/h per account) on SOI steps, re-enlistment and training applications; `member-uploads` (10/min, 60/h) on profile, document and 201 uploads. |
+| V5 | Medium | SOI steps 5 and 6 accepted unlimited, nested lists; step 2 skipped validation for some members and returned the database error text. | **Fixed**: bounded lists of short text; step 2 always validates; errors no longer leak; validation errors return 422 instead of a logged server error. |
+| V6 | Low–Medium | A member could apply for a training track that is not for their rank by posting its id. | **Fixed**: the server checks rank eligibility (403 otherwise). |
+| V7 | Low–Medium | Two admins approving accounts with the same serial at the same moment could both succeed. | **Fixed**: approval runs in a transaction with row locks before the one-account-per-serial check. A unique index is an owner decision (below). |
+| V8 | Low | The registration selfie was stored as sent: any metadata or trailing bytes in the image stayed. | **Fixed**: the selfie is decoded and re-encoded (max 2048 px); a file that cannot be decoded is refused. `pcg:check` now fails without GD. |
+| V9 | Low | `pcg:personnel-sync` judged duplicate serials across all accounts, so a pending or rejected account with a member's serial kept the real member out of the personnel master. | **Fixed**: duplicates are judged among the accounts that can be copied; two approved accounts with one serial are still skipped. |
+| V10 | Low | Training-course student lookups by serial could match a pending or rejected account. | **Fixed**: approved accounts only. |
+| V11 | Low | `public/.htaccess` (Apache/XAMPP) served dotfiles, backups, dumps and any other `.php` file in `public/`; the Ubuntu nginx template did the same. | **Fixed**: dotfiles, backup/config/archive extensions and every PHP file except `index.php` are refused; folder listing is off; `robots.txt` still served. |
+| V12 | Low | Unused front-end build tools (Vite, axios, lodash) carried 12 npm advisories. | **Fixed**: removed; only Tailwind and PostCSS stay; `npm audit` is clean. |
+| V13 | Low | Session flash text and serial numbers were put into JavaScript strings and fetch URLs without encoding. | **Fixed**: `@json(...)` and `encodeURIComponent(...)`. |
+| V14 | Info | The admin sign-in code was in the email subject (lock screens, mail logs); a dashboard value used `mt_rand`. | **Fixed**: code only in the body; `random_int`. |
+| V15 | Server | Hermes checks that need root (SSH, fail2ban, SELinux, who can read the keys, the Hermes AI agent's rights) were not scripted; PHP could read any folder. | **Added**: `deploy/audit-server.sh` (read-only); PHP pool `open_basedir` limited to the app and `/tmp`. **Owner action:** run `update-web-config.sh`, then the audit, and send its output. |
+
+Owner decisions (not changed in code):
+- **Email squatting:** anyone can register a pending account with another person's email, which blocks that email until an admin rejects it. Options: email verification before review, or let a new registration replace an old pending one.
+- **Unique serial index:** a unique index on approved serials would make V7 impossible at the database level; it is a schema change (needs approval and a duplicate check first).
+- **Disciplinary records** are deleted for good; a soft delete keeps them for audit (schema change).
+- **Watchlist** shows pending accounts next to approved ones; decide whether pending accounts belong there.
+- **CSP reports:** a `report-uri` endpoint would show blocked scripts in production; not added.
+- Not done: page-size caps on some long lists and the OSAERT bulk-upload error list (low risk; admin-only pages).
+
 ## 1. Findings and status
 
 ### Critical

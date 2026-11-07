@@ -128,7 +128,7 @@
             }
         }
     </style>
-    <script src="{{ asset('js/pcg-ui.js') }}" defer></script>
+    <script nonce="{{ $cspNonce ?? '' }}" src="{{ asset('js/pcg-ui.js') }}" defer></script>
 </head>
 
 <body>
@@ -317,9 +317,10 @@
 
         </div>
     </div>
-    <script src="{{ asset('vendor/leaflet/leaflet.js') }}"></script>
+    @php(app()->instance('csp.allow_osm', true)) {{-- map tiles and address search: OpenStreetMap on this page only --}}
+    <script nonce="{{ $cspNonce ?? '' }}" src="{{ asset('vendor/leaflet/leaflet.js') }}"></script>
     <link rel="stylesheet" href="{{ asset('vendor/leaflet-geocoder/Control.Geocoder.css') }}" />
-    <script src="{{ asset('vendor/leaflet-geocoder/Control.Geocoder.js') }}"></script>
+    <script nonce="{{ $cspNonce ?? '' }}" src="{{ asset('vendor/leaflet-geocoder/Control.Geocoder.js') }}"></script>
 
     <script nonce="{{ $cspNonce ?? '' }}">
         let map, marker;

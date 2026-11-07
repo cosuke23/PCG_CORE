@@ -11,7 +11,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     {{-- Alpine.js is loaded once by layouts/app (a second copy initialised the form twice) --}}
-    <script src="{{ asset('vendor/sweetalert2/sweetalert2-11.22.0.all.min.js') }}"></script>
+    <script nonce="{{ $cspNonce ?? '' }}" src="{{ asset('vendor/sweetalert2/sweetalert2-11.22.0.all.min.js') }}"></script>
     <title>SOI Form</title>
     <link rel="stylesheet" href="{{ asset('css/tailwind.css') }}">
 </head>

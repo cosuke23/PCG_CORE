@@ -35,7 +35,7 @@ class HealthCheck extends Command
             config('pcg.admin.email') && str_starts_with((string) config('pcg.admin.password_hash'), '$2y$'), 'warn');
 
         foreach (['pdo_mysql', 'mbstring', 'openssl', 'fileinfo', 'gd'] as $ext) {
-            $this->check("PHP extension $ext", extension_loaded($ext), $ext === 'gd' ? 'warn' : 'fail');
+            $this->check("PHP extension $ext", extension_loaded($ext)); // gd too: selfies are refused without it
         }
 
         foreach ([storage_path('framework/sessions'), storage_path('framework/views'), storage_path('logs'), config('pcg.upload_root')] as $dir) {

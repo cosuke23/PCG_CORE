@@ -122,4 +122,5 @@ before removing either (`DROP DATABASE` is never run by these scripts).
 | `backup.sh` | server, deploy account / cron | `/srv/mepcom-hrmis/backups` |
 | `verify.sh` | server, sudo | nothing |
 | `update-web-config.sh` | server, sudo | this app's nginx site and PHP pool only |
+| `audit-server.sh` | server, sudo | nothing (read-only security audit: OS, SSH, firewall, Funnel, file modes, who can read `.env`/keys/backups, the Hermes agent's rights) |
 | `deploy.ps1` | the PC | pushes and calls `release.sh` |
