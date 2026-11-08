@@ -209,7 +209,7 @@ class UnitUserController extends Controller
             'is_active'     => 'nullable|boolean',
         ]);
 
-        DB::table('unit_users')->insert([
+        $row = [
             'user_id' => $request->personnel_id,
             'personnel_id' => $request->personnel_id,
             'serial_number' => $request->serial_number,
@@ -222,11 +222,13 @@ class UnitUserController extends Controller
             // (MEPLEF, NOCOP, ...); use it when the free-text unit is empty.
             'unit_name' => $request->unit_name ?: $request->role,
             'unit_code' => $request->unit_code,
-            'permissions' => $request->permissions,
+            'permissions' => is_array($request->permissions) ? json_encode($request->permissions) : $request->permissions,
             'is_active' => $request->boolean('is_active', true),
             'created_at' => now(),
             'updated_at' => now(),
-        ]);
+        ];
+
+        DB::table('unit_users')->insert(self::fitToTable('unit_users', $row));
 
         return back()->with('success', 'Unit account created successfully.');
     }
@@ -404,5 +406,32 @@ class UnitUserController extends Controller
         $request->session()->migrate(true);
         $request->session()->regenerateToken();
         return redirect('/unit/login');
+    }
+
+    /**
+     * The real unit_users table differs from the one this code was written
+     * for (on Hermes, user_id is NOT NULL although nothing reads it). Leave
+     * out columns the table does not have, and give a required column with
+     * no default an empty value (0 or '') instead of NULL, so creating an
+     * account does not fail with "Column ... cannot be null".
+     */
+    private static function fitToTable(string $table, array $row): array
+    {
+        $columns = collect(\Illuminate\Support\Facades\Schema::getColumns($table))->keyBy('name');
+        $numeric = ['tinyint', 'smallint', 'mediumint', 'int', 'integer', 'bigint', 'decimal', 'numeric', 'float', 'double', 'real'];
+
+        $fitted = [];
+        foreach ($row as $name => $value) {
+            $col = $columns->get($name);
+            if (!$col) {
+                continue;
+            }
+            if ($value === null && !$col['nullable'] && $col['default'] === null && !$col['auto_increment']) {
+                $value = in_array(strtolower($col['type_name']), $numeric, true) ? 0 : '';
+            }
+            $fitted[$name] = $value;
+        }
+
+        return $fitted;
     }
 }
