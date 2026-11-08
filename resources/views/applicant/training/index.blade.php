@@ -1,8 +1,14 @@
-@extends('layouts.app')
+@extends('layouts.personnel')
+
+@section('title', $type === 'ACT' ? 'Administrative track' : 'Operational track')
+
+@section('styles')
+    <link rel="stylesheet" href="{{ \App\Support\Asset::v('css/tailwind.css') }}">
+@endsection
 
 @section('content')
 
-    <div class="min-h-screen bg-gray-950 text-white py-8">
+    <div class="bg-gray-950 text-white py-8 rounded-2xl" style="margin: clamp(8px, 2vw, 24px);">
 
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
 
@@ -84,31 +90,7 @@
                 </div>
 
             </div>
-            @if (session('success'))
-                <script nonce="{{ $cspNonce ?? '' }}">
-                    document.addEventListener('DOMContentLoaded', function() {
-                        Swal.fire({
-                            icon: 'success',
-                            title: 'Application Submitted',
-                            text: @js(session('success')),
-                            confirmButtonText: 'OK'
-                        });
-                    });
-                </script>
-            @endif
-
-            @if (session('error'))
-                <script nonce="{{ $cspNonce ?? '' }}">
-                    document.addEventListener('DOMContentLoaded', function() {
-                        Swal.fire({
-                            icon: 'warning',
-                            title: 'Already Applied',
-                            text: @js(session('error')),
-                            confirmButtonText: 'OK'
-                        });
-                    });
-                </script>
-            @endif
+            {{-- success / error messages are shown by the member layout --}}
             <!-- RANK NOT DEFINED -->
             @if (!$equivalentRank)
                 <div class="bg-yellow-900/30 border border-yellow-500/30
@@ -515,4 +497,9 @@
         }
     </script>
 
+@endsection
+
+@section('scripts')
+    @php(app()->instance('csp.allow_eval', true)) {{-- Alpine.js on this page --}}
+    <script nonce="{{ $cspNonce ?? '' }}" src="{{ asset('vendor/alpinejs/alpine-3.14.9.min.js') }}" defer></script>
 @endsection
