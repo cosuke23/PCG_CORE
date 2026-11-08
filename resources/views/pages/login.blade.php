@@ -11,6 +11,12 @@
     <p class="pcg-auth__lead">Use the email and password you registered with. New accounts must be approved by the administrator first.</p>
 
     @include('auth.partials.alerts')
+    @if (session('registered'))
+        {{-- registration accepted: drop the half-typed copy the register page kept in this tab --}}
+        <script nonce="{{ $cspNonce ?? '' }}">
+            try { sessionStorage.removeItem('pcgRegisterDraft:officer'); sessionStorage.removeItem('pcgRegisterDraft:non_officer'); } catch (e) {}
+        </script>
+    @endif
     @include('auth.partials.credentials', ['action' => route('login.store')])
 
     <p class="pcg-help">Forgot your password? Contact the HRMIS administrator to have it reset.</p>
