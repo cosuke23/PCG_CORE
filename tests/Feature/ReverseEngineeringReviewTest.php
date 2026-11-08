@@ -88,4 +88,16 @@ class ReverseEngineeringReviewTest extends TestCase
         $mail = new \App\Mail\AdminLoginCode(new \App\Models\AdminUser(), '123456', 10);
         $this->assertStringNotContainsString('123456', $mail->envelope()->subject);
     }
+
+    public function test_registration_page_shows_why_it_was_refused()
+    {
+        $this->from('/register?type=non_officer')
+            ->post('/register.submit', ['email' => 'member@example.test', 'name' => 'Juan Test'])
+            ->assertRedirect('/register?type=non_officer');
+
+        $this->get('/register?type=non_officer')
+            ->assertSee('Your registration was not sent')
+            ->assertSee('This email is already registered')
+            ->assertSee('value="Juan Test"', false);
+    }
 }
