@@ -19,6 +19,7 @@ class DocumentUploadModuleTest extends TestCase
 {
     private const PDF_FIELDS = ['soi', 'nbi_clearance', 'ombudsman_clearance', 'sandiganbayan_clearance', 'ofr', 'medical_clearance', 'pft_clearance', 'residential_sketch'];
     private const IMAGE_FIELDS = ['whole_body_picture', 'photo_2x2'];
+    private const SECTIONS_201 = ['soi', 'appointment', 'leave', 'awards', 'disciplinary', 'performance', 'legal', 'academic', 'financial', 'retirement', 'body_picture'];
 
     private string $root;
     private User $member;
@@ -48,6 +49,12 @@ class DocumentUploadModuleTest extends TestCase
         });
         Schema::create('rejected_documents', function (Blueprint $t) {
             $t->id(); $t->string('serial_number'); $t->string('doc_type'); $t->string('status')->nullable(); $t->timestamps();
+        });
+        Schema::create('personnel_201_files', function (Blueprint $t) {
+            $t->id(); $t->unsignedBigInteger('user_id')->nullable(); $t->unsignedBigInteger('personnel_id'); $t->string('serial_number')->nullable();
+            foreach (self::SECTIONS_201 as $c) {
+                $t->string($c)->nullable();
+            }
         });
         Schema::create('reinlist_basic_info', function (Blueprint $t) {
             $t->id(); $t->string('serial_number');
@@ -165,5 +172,45 @@ class DocumentUploadModuleTest extends TestCase
         $this->assertStringContainsString('aria-current="page"', $html, 'sidebar marks this page');
         $this->assertMatchesRegularExpression('/upload-documents\.js\?v=[0-9a-f]{10}/', $html, 'versioned script URL');
         $this->assertStringNotContainsString('class="ud-overlay is-on"', $html, 'overlay never starts visible');
+    }
+
+    public function test_201_files_upload_encrypted_with_an_accurate_message()
+    {
+        $post = [];
+        foreach (self::SECTIONS_201 as $i => $f) {
+            $post[$f] = $i % 2 ? UploadedFile::fake()->image($f . '.jpg') : $this->pdf($f . '.pdf');
+        }
+        $this->actingAs($this->member)->post('/upload-201', $post)
+            ->assertRedirect(route('upload.201'))
+            ->assertSessionHas('success', '11 files uploaded and encrypted to your 201 file.');
+
+        $row = DB::table('personnel_201_files')->where('personnel_id', $this->member->id)->first();
+        foreach (self::SECTIONS_201 as $f) {
+            $this->assertStringStartsWith('201_files/' . $f . '/', $row->$f);
+            $this->assertStringNotContainsString('secret-member-content', File::get($this->root . '/' . $row->$f), "$f encrypted on disk");
+        }
+    }
+
+    public function test_201_files_refuse_wrong_types_oversize_and_empty_submits()
+    {
+        $this->actingAs($this->member);
+        $this->post('/upload-201', ['legal' => UploadedFile::fake()->create('evil.php', 5, 'application/x-php')])->assertSessionHasErrors('legal');
+        $this->post('/upload-201', ['legal' => UploadedFile::fake()->create('big.pdf', 10241, 'application/pdf')])->assertSessionHasErrors('legal');
+        $this->post('/upload-201', [])->assertSessionHasErrors('files');
+        $this->assertSame(0, DB::table('personnel_201_files')->count());
+    }
+
+    public function test_201_page_shows_each_section_with_the_sidebar()
+    {
+        DB::table('personnel_201_files')->insert(['user_id' => $this->member->id, 'personnel_id' => $this->member->id, 'serial_number' => 'SN-1',
+            'soi' => '201_files/soi/a.pdf', 'awards' => '201_files/awards/b.pdf']);
+
+        $html = $this->actingAs($this->member)->get('/upload-201')->assertOk()->getContent();
+        $this->assertStringContainsString('<strong>2 of 11</strong>', $html);
+        $this->assertMatchesRegularExpression('/ud-doc--ok">\\s*<div class="ud-doc__head">\\s*<h3 id="lbl-awards"/', $html);
+        $this->assertMatchesRegularExpression('/ud-doc--missing">\\s*<div class="ud-doc__head">\\s*<h3 id="lbl-legal"/', $html);
+        $this->assertStringContainsString('AES-256', $html);
+        $this->assertMatchesRegularExpression('/href="[^"]*upload-201"[^>]*aria-current="page"|aria-current="page"[^>]*href="[^"]*upload-201"/', $html, 'sidebar marks 201 files');
+        $this->assertMatchesRegularExpression('/upload-documents\\.js\\?v=[0-9a-f]{10}/', $html);
     }
 }

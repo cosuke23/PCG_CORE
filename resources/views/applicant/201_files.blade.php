@@ -1,238 +1,102 @@
-<!DOCTYPE html>
-<html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
+@extends('layouts.personnel')
 
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Upload 201 Files</title>
+@section('title', '201 files')
 
-    {{-- Was @vite(...), which needs an npm build that was never deployed (HTTP 500). --}}
-    <link rel="stylesheet" href="{{ \App\Support\Asset::v('css/tailwind.css') }}">
+@section('styles')
+    <link rel="stylesheet" href="{{ \App\Support\Asset::v('css/upload-documents.css') }}">
+@endsection
 
-    <style>
-        body {
-            margin: 0;
-            font-family: Arial, sans-serif;
-            background: linear-gradient(to bottom, #1e3a8a, #1e40af);
-        }
+@php
+    $docs = $documents ?? null;
+    $fileUrl = fn ($path) => \App\Support\Uploads::url($path);
+    // Personnel 201 file (folder sections A to K)
+    $categories = [
+        'soi' => ['A', 'Latest SOI'],
+        'appointment' => ['B', 'Appointment'],
+        'leave' => ['C', 'Leave balance'],
+        'awards' => ['D', 'Awards'],
+        'disciplinary' => ['E', 'Disciplinary action'],
+        'performance' => ['F', 'Performance record'],
+        'legal' => ['G', 'Legal documents'],
+        'academic' => ['H', 'Academic records'],
+        'financial' => ['I', 'Financial record'],
+        'retirement' => ['J', 'Retirement record'],
+        'body_picture' => ['K', 'Whole-body picture'],
+    ];
+    $total = count($categories);
+    $done = collect(array_keys($categories))->filter(fn ($f) => !empty($docs->$f))->count();
+@endphp
 
-        .container {
-            max-width: 1100px;
-            margin: auto;
-            padding: 20px;
-        }
-
-        .card {
-            background: rgba(255, 255, 255, 0.10);
-            backdrop-filter: blur(12px);
-            border-radius: 20px;
-            padding: 25px;
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            color: white;
-        }
-
-        h1 {
-            text-align: center;
-            margin-bottom: 5px;
-        }
-
-        p.subtitle {
-            text-align: center;
-            opacity: 0.8;
-            margin-bottom: 25px;
-        }
-
-        .grid {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 15px;
-        }
-
-        @media (max-width: 768px) {
-            .grid {
-                grid-template-columns: 1fr;
-            }
-        }
-
-        .doc-box {
-            background: rgba(255, 255, 255, 0.08);
-            border: 1px dashed rgba(255, 255, 255, 0.3);
-            padding: 15px;
-            border-radius: 14px;
-        }
-
-        .doc-box label {
-            font-weight: bold;
-            display: block;
-            margin-bottom: 8px;
-        }
-
-        .doc-box input {
-            width: 100%;
-            color: white;
-        }
-
-        .uploaded {
-            border: 1px solid #22c55e !important;
-        }
-
-        .success {
-            background: rgba(34, 197, 94, 0.2);
-            border: 1px solid #22c55e;
-            padding: 10px;
-            border-radius: 10px;
-            margin-bottom: 15px;
-        }
-
-        .error {
-            background: rgba(239, 68, 68, 0.2);
-            border: 1px solid #ef4444;
-            padding: 10px;
-            border-radius: 10px;
-            margin-bottom: 15px;
-        }
-
-        .btn {
-            padding: 10px 16px;
-            border-radius: 10px;
-            border: none;
-            cursor: pointer;
-            font-weight: bold;
-            text-decoration: none;
-            display: inline-block;
-        }
-
-        .btn-blue {
-            background: #2563eb;
-            color: white;
-        }
-
-        .btn-blue:hover {
-            background: #1d4ed8;
-        }
-
-        .btn-gray {
-            background: #6b7280;
-            color: white;
-        }
-
-        .header {
-            text-align: center;
-            margin-bottom: 20px;
-        }
-
-        .btn-row {
-            display: flex;
-            justify-content: space-between;
-            margin-bottom: 15px;
-        }
-    </style>
-</head>
-
-<body>
-
-    <div class="container">
-
-        <div class="card">
-
-            {{-- BACK BUTTON --}}
-            <div class="btn-row">
-                <a href="/profile" class="btn btn-gray">← Back</a>
-            </div>
-
-            <div class="header">
-                <h1>Upload 201 Files</h1>
-                <p class="subtitle">Complete your personnel document requirements</p>
-            </div>
-
-            {{-- SUCCESS --}}
-            @if (session('success'))
-                <div class="success">
-                    {{ session('success') }}
-                </div>
-            @endif
-
-            {{-- ERRORS --}}
-            @if ($errors->any())
-                <div class="error">
-                    <ul>
-                        @foreach ($errors->all() as $error)
-                            <li>{{ $error }}</li>
-                        @endforeach
-                    </ul>
-                </div>
-            @endif
-
-            {{-- DOCUMENT STATUS --}}
-            @if (!empty($hasDocuments))
-                <div class="success" style="text-align:center;">
-                    ✔ You already uploaded 201 documents
-                </div>
-            @else
-                <div class="error" style="text-align:center;">
-                    ⚠ No documents uploaded yet
-                </div>
-            @endif
-
-            @php
-                $categories = [
-                    'soi' => 'A. Latest SOI',
-                    'appointment' => 'B. Appointment',
-                    'leave' => 'C. Leave Balance',
-                    'awards' => 'D. Awards',
-                    'disciplinary' => 'E. Disciplinary Action',
-                    'performance' => 'F. Performance Record',
-                    'legal' => 'G. Legal Documents',
-                    'academic' => 'H. Academic Records',
-                    'financial' => 'I. Financial Record',
-                    'retirement' => 'J. Retirement Record',
-                    'body_picture' => 'K. Whole Body Picture',
-                ];
-            @endphp
-
-            <form action="{{ route('upload.201.store') }}" method="POST" enctype="multipart/form-data">
-
-                @csrf
-
-                <div class="grid">
-
-                    @foreach ($categories as $key => $label)
-                        <div class="doc-box {{ !empty($documents->$key) ? 'uploaded' : '' }}">
-
-                            <label>{{ $label }}</label>
-
-                            {{-- EXISTING FILE --}}
-                            @if (!empty($documents->$key))
-                                <div style="margin-bottom:8px;">
-                                    <small style="color:#22c55e;">
-                                        ✔ Uploaded:
-                                        <a href="{{ \App\Support\Uploads::url($documents->$key) }}" target="_blank"
-                                            style="color:#22c55e;">
-                                            View File
-                                        </a>
-                                    </small>
-                                </div>
-                            @endif
-
-                            <input type="file" name="{{ $key }}" accept=".pdf,.jpg,.jpeg,.png">
-
-                        </div>
-                    @endforeach
-
-                </div>
-
-                <div style="margin-top: 20px; text-align: right;">
-                    <button type="submit" class="btn btn-blue">
-                        Submit All Documents
-                    </button>
-                </div>
-
-            </form>
-
+@section('content')
+    <div class="ud-overlay" id="ud-overlay" hidden>
+        <div class="ud-overlay__box" role="status" aria-live="polite">
+            <span class="ud-spinner" aria-hidden="true"></span>
+            <p>Encrypting and uploading your files…</p>
         </div>
-
     </div>
 
-</body>
+    <div class="pcg-page ud ud-main">
+        <section class="ud-hero">
+            <div>
+                <p class="ud-eyebrow">Personnel record · 201 file</p>
+                <h1>201 files</h1>
+                <p class="ud-lede">Your 201 file, section by section (A to K). Upload a section now and the rest later; only the files you choose are sent. A new file replaces the one already in that section.</p>
+            </div>
+            <div class="ud-progress" aria-label="{{ $done }} of {{ $total }} sections uploaded">
+                <div class="ud-progress__top"><strong>{{ $done }} of {{ $total }}</strong><span>sections uploaded</span></div>
+                <div class="ud-progress__bar"><span style="width: {{ $total ? round($done / $total * 100) : 0 }}%"></span></div>
+            </div>
+        </section>
 
-</html>
+        <p class="ud-secure">
+            <i class="fa-solid fa-lock" aria-hidden="true"></i>
+            <span>Every file is encrypted with <strong>AES-256</strong> as soon as it arrives and stored under a random name. Only you, the M1 checker and authorised HR staff can open it, and each opening is logged.</span>
+        </p>
+
+        <form id="uploadForm" action="{{ route('upload.201.store') }}" method="POST" enctype="multipart/form-data">
+            @csrf
+            <section class="ud-group" aria-labelledby="g-201">
+                <h2 id="g-201">Sections</h2>
+                <div class="ud-grid">
+                    @foreach ($categories as $field => [$letter, $label])
+                        @php($have = !empty($docs->$field))
+                        <article class="ud-doc ud-doc--{{ $have ? 'ok' : 'missing' }}">
+                            <div class="ud-doc__head">
+                                <h3 id="lbl-{{ $field }}"><span class="ud-letter">{{ $letter }}.</span> {{ $label }}</h3>
+                                <span class="ud-chip ud-chip--{{ $have ? 'ok' : 'missing' }}">{{ $have ? 'Uploaded' : 'Not uploaded' }}</span>
+                            </div>
+
+                            @if ($have)
+                                <p class="ud-doc__meta">
+                                    <a href="{{ $fileUrl($docs->$field) }}" target="_blank" rel="noopener"><i class="fa-regular fa-eye" aria-hidden="true"></i> View current file</a>
+                                </p>
+                            @endif
+
+                            <input class="ud-file" type="file" id="f-{{ $field }}" name="{{ $field }}"
+                                accept=".pdf,.jpg,.jpeg,.png,application/pdf,image/jpeg,image/png"
+                                aria-labelledby="lbl-{{ $field }}" data-on-change="pcg.file-types" data-args='["application/pdf","image/jpeg","image/png"]'>
+                            <label class="ud-drop" for="f-{{ $field }}">
+                                <i class="fa-solid fa-cloud-arrow-up" aria-hidden="true"></i>
+                                <span class="ud-drop__text" data-default="{{ $have ? 'Choose a new file to replace it' : 'Choose a file' }}">{{ $have ? 'Choose a new file to replace it' : 'Choose a file' }}</span>
+                                <span class="ud-drop__hint">PDF, JPG or PNG, up to 10 MB</span>
+                            </label>
+                        </article>
+                    @endforeach
+                </div>
+            </section>
+
+            <div class="ud-bar">
+                <div class="ud-bar__row">
+                    <span class="ud-bar__count" id="ud-count" aria-live="polite">No new files chosen</span>
+                    <button type="submit" id="submitBtn" class="pcg-btn pcg-btn--primary">
+                        <i class="fa-solid fa-upload" aria-hidden="true"></i> Upload files
+                    </button>
+                </div>
+            </div>
+        </form>
+    </div>
+@endsection
+
+@section('scripts')
+    <script nonce="{{ $cspNonce ?? '' }}" src="{{ \App\Support\Asset::v('js/upload-documents.js') }}"></script>
+@endsection
