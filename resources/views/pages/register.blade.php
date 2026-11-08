@@ -5,6 +5,21 @@
 @section('content')
     <style>
         #registerForm input:focus, #registerForm select:focus { border-color: #3b82f6 !important; box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.3); outline: none; }
+        .reg-pw-grid { display: grid; gap: 1rem; grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr)); }
+        .reg-pw-field { position: relative; margin-top: 0.25rem; }
+        .reg-pw-field input { width: 100%; padding: 0.5rem 3rem 0.5rem 1rem; border: 1px solid #ccc; border-radius: 0.5rem; font-size: 1rem; }
+        .reg-eye { position: absolute; right: 0.25rem; top: 50%; transform: translateY(-50%); width: 2.5rem; height: 2.5rem; display: grid; place-items: center; border: 0; background: transparent; color: #4b5563; cursor: pointer; border-radius: 0.4rem; }
+        .reg-eye:focus-visible { outline: 2px solid #3b82f6; }
+        .reg-eye .reg-eye-shut { display: none; }
+        .reg-eye[aria-pressed="true"] .reg-eye-open { display: none; }
+        .reg-eye[aria-pressed="true"] .reg-eye-shut { display: block; }
+        .reg-meter { height: 6px; background: #e5e7eb; border-radius: 3px; margin-top: 0.5rem; overflow: hidden; }
+        .reg-meter span { display: block; height: 100%; width: 0; background: #dc2626; transition: width .2s, background-color .2s; }
+        .reg-pw-label { font-size: 0.85rem; color: #4b5563; margin-top: 0.35rem; min-height: 1.2em; }
+        .reg-pw-checks { list-style: none; padding: 0; margin: 0.35rem 0 0; font-size: 0.82rem; color: #6b7280; display: grid; gap: 0.15rem; }
+        .reg-pw-checks li::before { content: "○ "; }
+        .reg-pw-checks li.ok { color: #15803d; }
+        .reg-pw-checks li.ok::before { content: "✓ "; }
     </style>
     <script nonce="{{ $cspNonce ?? '' }}" src="{{ asset('vendor/sweetalert2/sweetalert2-11.22.0.all.min.js') }}"></script>
 
@@ -73,8 +88,11 @@
                             @if (session('email_exists'))
                                 <li>This email is already registered. Sign in instead, or use another email. If you registered before and are waiting, the administrator still has to approve your account.</li>
                             @endif
-                            @foreach ($errors->all() as $message)
-                                <li>{{ $message }}</li>
+                            @php $stepNames = ['Step 1 (Basic)', 'Step 2 (Service)', 'Step 3 (Unit)', 'Step 4 (Verify)']; @endphp
+                            @foreach ($errors->getMessages() as $field => $messages)
+                                @foreach ($messages as $message)
+                                    <li><strong>{{ isset($fieldStep[$field]) ? $stepNames[$fieldStep[$field]] . ': ' : '' }}</strong>{{ $message }}</li>
+                                @endforeach
                             @endforeach
                         </ul>
                     </div>
@@ -219,11 +237,30 @@
                     <div x-show="step === 3" class="space-y-5" data-reg-step="3">
                         <h3 class="font-semibold text-lg">Security & Verification</h3>
 
-                        <div class="grid grid-cols-2 gap-4">
-                            <input type="password" name="password" placeholder="Password (at least 8 characters)" autocomplete="new-password"
-                                style="width: 100%; padding: 0.5rem 1rem; border: 1px solid #ccc; border-radius: 0.5rem; outline: none; transition: 0.3s; font-size: 1rem;">
-                            <input type="password" name="password_confirmation" placeholder="Confirm Password" autocomplete="new-password"
-                                style="width: 100%; padding: 0.5rem 1rem; border: 1px solid #ccc; border-radius: 0.5rem; outline: none; transition: 0.3s; font-size: 1rem;">
+                        <div class="reg-pw-grid">
+                            <div>
+                                <label for="regPassword" class="text-sm font-medium">Password</label>
+                                <div class="reg-pw-field">
+                                    <input type="password" id="regPassword" name="password" placeholder="At least 8 characters" autocomplete="new-password" aria-describedby="regPwHelp">
+                                    <button type="button" class="reg-eye" data-target="regPassword" aria-label="Show password" aria-pressed="false"><svg class="reg-eye-open" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7S1 12 1 12z"/><circle cx="12" cy="12" r="3"/></svg><svg class="reg-eye-shut" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 19c-7 0-11-7-11-7a18.5 18.5 0 0 1 5.06-5.94"/><path d="M9.9 4.24A9.1 9.1 0 0 1 12 4c7 0 11 7 11 7a18.6 18.6 0 0 1-2.16 3.19"/><path d="M14.12 14.12a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg></button>
+                                </div>
+                                <div class="reg-meter" aria-hidden="true"><span id="regPwBar"></span></div>
+                                <p id="regPwHelp" class="reg-pw-label" aria-live="polite">Use 12 or more characters with upper and lower case letters, a number and a symbol.</p>
+                                <ul class="reg-pw-checks" id="regPwChecks">
+                                    <li data-check="len">At least 8 characters</li>
+                                    <li data-check="case">Upper and lower case letters</li>
+                                    <li data-check="num">A number</li>
+                                    <li data-check="sym">A symbol (for example ! @ # ?)</li>
+                                </ul>
+                            </div>
+                            <div>
+                                <label for="regPasswordConfirm" class="text-sm font-medium">Confirm password</label>
+                                <div class="reg-pw-field">
+                                    <input type="password" id="regPasswordConfirm" name="password_confirmation" placeholder="Type it again" autocomplete="new-password">
+                                    <button type="button" class="reg-eye" data-target="regPasswordConfirm" aria-label="Show password" aria-pressed="false"><svg class="reg-eye-open" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7S1 12 1 12z"/><circle cx="12" cy="12" r="3"/></svg><svg class="reg-eye-shut" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 19c-7 0-11-7-11-7a18.5 18.5 0 0 1 5.06-5.94"/><path d="M9.9 4.24A9.1 9.1 0 0 1 12 4c7 0 11 7 11 7a18.6 18.6 0 0 1-2.16 3.19"/><path d="M14.12 14.12a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg></button>
+                                </div>
+                                <p id="regPwMatch" class="reg-pw-label" aria-live="polite"></p>
+                            </div>
                         </div>
 
                         <!-- CAMERA -->
@@ -615,6 +652,56 @@
                 preview.classList.remove('hidden');
                 Swal.fire('Captured!', 'Selfie saved.', 'success');
             });
+
+            // PASSWORD: show/hide and strength
+            document.querySelectorAll('.reg-eye').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const input = document.getElementById(btn.dataset.target);
+                    const show = input.type === 'password';
+                    input.type = show ? 'text' : 'password';
+                    btn.setAttribute('aria-pressed', show ? 'true' : 'false');
+                    btn.setAttribute('aria-label', show ? 'Hide password' : 'Show password');
+                });
+            });
+            const pw = document.getElementById('regPassword');
+            const pw2 = document.getElementById('regPasswordConfirm');
+            const bar = document.getElementById('regPwBar');
+            const help = document.getElementById('regPwHelp');
+            const match = document.getElementById('regPwMatch');
+            const LEVELS = [
+                ['Too short', '#dc2626', 10], ['Weak', '#dc2626', 25], ['Fair', '#f59e0b', 50],
+                ['Good', '#2563eb', 75], ['Strong', '#15803d', 100]
+            ];
+            function rate() {
+                const v = pw.value;
+                const checks = {
+                    len: v.length >= 8,
+                    case: /[a-z]/.test(v) && /[A-Z]/.test(v),
+                    num: /\d/.test(v),
+                    sym: /[^A-Za-z0-9]/.test(v)
+                };
+                document.querySelectorAll('#regPwChecks li').forEach(li => li.classList.toggle('ok', checks[li.dataset.check]));
+                let level = 0;
+                if (v.length >= 8) {
+                    level = 1 + [checks.case, checks.num, checks.sym].filter(Boolean).length;
+                    if (v.length >= 12 && level >= 3) level = 4;
+                    level = Math.min(level, v.length >= 12 ? 4 : 3);
+                }
+                if (/^(.)\1+$/.test(v) || /password|12345678|qwerty/i.test(v)) level = Math.min(level, 1);
+                const [label, color, width] = LEVELS[level];
+                bar.style.width = v ? width + '%' : '0';
+                bar.style.backgroundColor = color;
+                help.textContent = v ? 'Strength: ' + label + (level < 3 ? '. Add length, mixed case, numbers or symbols.' : '.') : 'Use 12 or more characters with upper and lower case letters, a number and a symbol.';
+                rateMatch();
+            }
+            function rateMatch() {
+                if (!pw2.value) { match.textContent = ''; return; }
+                const same = pw2.value === pw.value;
+                match.textContent = same ? '✓ Passwords match' : 'Passwords do not match yet';
+                match.style.color = same ? '#15803d' : '#b91c1c';
+            }
+            pw.addEventListener('input', rate);
+            pw2.addEventListener('input', rateMatch);
 
             // SUBMIT
             document.getElementById('registerForm').addEventListener('submit', (event) => {

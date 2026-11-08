@@ -187,12 +187,16 @@ class RegisterController extends Controller
                 ->withInput($request->except(['password', 'password_confirmation', 'selfie_image']));
         } catch (\Exception $e) {
 
+            // the reference lets the administrator find this line in the log
+            $ref = strtoupper(bin2hex(random_bytes(3)));
             Log::error('Registration failed', [
-                'error' => $e->getMessage()
+                'ref' => $ref,
+                'error' => $e->getMessage(),
+                'at' => basename($e->getFile()) . ':' . $e->getLine(),
             ]);
 
             return back()
-                ->withErrors(['error' => 'Registration failed. Please try again.'])
+                ->withErrors(['error' => "The server could not save your registration (reference $ref). Nothing was saved. Please try again in a few minutes; if it happens again, send this reference to the HRMIS administrator."])
                 ->withInput($request->except(['password', 'password_confirmation', 'selfie_image']));
         }
     }
