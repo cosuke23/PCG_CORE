@@ -5,6 +5,7 @@
 @section('content')
     <style>
         #registerForm input:focus, #registerForm select:focus { border-color: #3b82f6 !important; box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.3); outline: none; }
+        #regDraftNote[hidden] { display: none !important; }
         .reg-pw-grid { display: grid; gap: 1rem; grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr)); }
         .reg-pw-field { position: relative; margin-top: 0.25rem; }
         .reg-pw-field input { width: 100%; padding: 0.5rem 3rem 0.5rem 1rem; border: 1px solid #ccc; border-radius: 0.5rem; font-size: 1rem; }
@@ -97,6 +98,12 @@
                         </ul>
                     </div>
                 @endif
+
+                <div id="regDraftNote" hidden role="status"
+                    style="display: flex; flex-wrap: wrap; gap: 0.5rem 1rem; align-items: center; justify-content: space-between; border: 1px solid #bfdbfe; background: #eff6ff; color: #1e3a8a; border-radius: 0.75rem; padding: 0.6rem 1rem; margin-bottom: 1.25rem; font-size: 0.9rem;">
+                    <span>We kept what you typed on this device. Passwords and the selfie need to be entered again.</span>
+                    <button type="button" id="regStartOver" style="font-weight: 600; text-decoration: underline; background: none; border: 0; color: inherit; cursor: pointer;">Start over</button>
+                </div>
 
                 <!-- STEPPER -->
                 <div class="flex justify-between mb-8">
@@ -300,6 +307,60 @@
 
     <!-- STEP FORM JS -->
     <script nonce="{{ $cspNonce ?? '' }}">
+        // Draft: what the person typed is kept in this browser tab (sessionStorage),
+        // so a refresh does not lose it. Passwords and the selfie are never kept.
+        // The tab's copy is removed once the registration is accepted (sign-in page),
+        // with "Start over", after 12 hours, or when the tab closes.
+        const REG_DRAFT_KEY = 'pcgRegisterDraft:{{ $isOfficer ? 'officer' : 'non_officer' }}';
+        const REG_DRAFT_FIELDS = ['rank', 'serial_number', 'name', 'email', 'dob', 'date_of_appointment', 'ete',
+            'command', 'category', 'unit', 'sub_unit'];
+
+        function regSaveDraft() {
+            const form = document.getElementById('registerForm');
+            if (!form) return;
+            const data = { saved: Date.now() };
+            REG_DRAFT_FIELDS.forEach(name => { const el = form.elements[name]; if (el && el.value) data[name] = el.value; });
+            const root = document.querySelector('[x-data*="stepForm"]');
+            if (root && window.Alpine) data.step = Alpine.$data(root).step;
+            try { sessionStorage.setItem(REG_DRAFT_KEY, JSON.stringify(data)); } catch (e) { /* storage off: nothing kept */ }
+        }
+
+        function regClearDraft() {
+            try { sessionStorage.removeItem(REG_DRAFT_KEY); } catch (e) {}
+        }
+
+        function regRestoreDraft() {
+            let data = null;
+            try { data = JSON.parse(sessionStorage.getItem(REG_DRAFT_KEY) || 'null'); } catch (e) {}
+            if (!data || Date.now() - (data.saved || 0) > 12 * 3600 * 1000) { regClearDraft(); return; }
+            const form = document.getElementById('registerForm');
+            const serverAnswered = !!document.getElementById('registerErrors');
+            ['rank', 'serial_number', 'name', 'email', 'dob', 'date_of_appointment', 'ete'].forEach(name => {
+                const el = form.elements[name];
+                if (el && !el.value && data[name]) el.value = data[name]; // what the server sent back wins
+            });
+            const dob = document.getElementById('dob');
+            if (dob.value) dob.dispatchEvent(new Event('change'));
+            const unitBox = document.querySelector('[data-reg-step="2"]');
+            if (unitBox && data.command) Alpine.$data(unitBox).restoreUnits(data.command, data.category, data.unit, data.sub_unit);
+            const root = document.querySelector('[x-data*="stepForm"]');
+            if (root && !serverAnswered && Number.isInteger(data.step)) Alpine.$data(root).step = Math.min(data.step, 3);
+            // no intro video again for someone who is half-way through
+            const intro = document.querySelector('[aria-label="MEPCOM introduction video"]');
+            if (intro) { Alpine.$data(intro).open = false; intro.querySelector('video')?.pause(); }
+            const note = document.getElementById('regDraftNote');
+            if (note) note.hidden = false;
+        }
+
+        document.addEventListener('alpine:initialized', () => {
+            regRestoreDraft();
+            const form = document.getElementById('registerForm');
+            form.addEventListener('input', regSaveDraft);
+            form.addEventListener('change', regSaveDraft);
+            const restart = document.getElementById('regStartOver');
+            if (restart) restart.addEventListener('click', () => { regClearDraft(); window.location.reload(); });
+        });
+
         // Fields each step must have before the person can move on (the server checks again).
         const REG_REQUIRED = {
             0: { rank: 'Rank', serial_number: 'Serial number', name: 'Full name', email: 'Email' },
@@ -340,6 +401,9 @@
             return {
                 step: {{ (int) ($startStep ?? 0) }},
                 steps: ['Basic', 'Service', 'Unit', 'Verify'],
+                init() {
+                    this.$watch('step', () => regSaveDraft());
+                },
                 next() {
                     const problems = regProblems(this.step);
                     if (problems.length) { regShowProblems(problems); return; }
@@ -588,6 +652,25 @@
                     this.selectedSubUnit = '';
                     const data = this.units[this.selectedCommand]?.[this.selectedCategory]?.[this.selectedUnit];
                     this.subUnits = Array.isArray(data) ? data : [];
+                },
+
+                // Put back a saved choice level by level, waiting for each list to render.
+                restoreUnits(cmd, cat, unit, sub) {
+                    if (!cmd || !this.units[cmd]) return;
+                    this.selectedCommand = cmd;
+                    this.categories = Object.keys(this.units[cmd]);
+                    this.$nextTick(() => {
+                        if (!cat || !this.units[cmd][cat]) return;
+                        this.selectedCategory = cat;
+                        this.unitsList = Object.keys(this.units[cmd][cat]);
+                        this.$nextTick(() => {
+                            if (!unit || !this.units[cmd][cat][unit]) return;
+                            this.selectedUnit = unit;
+                            const data = this.units[cmd][cat][unit];
+                            this.subUnits = Array.isArray(data) ? data : [];
+                            this.$nextTick(() => { if (sub && this.subUnits.includes(sub)) this.selectedSubUnit = sub; });
+                        });
+                    });
                 }
             }
         }
