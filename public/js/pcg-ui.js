@@ -88,7 +88,8 @@
             var types = Array.prototype.slice.call(arguments, 1);
             var file = el.files && el.files[0];
             if (file && types.indexOf(file.type) === -1) {
-                alert(types.length === 1 && types[0] === 'application/pdf' ? 'PDF files only' : 'Only JPG and PNG images are allowed');
+                var pdf = types.indexOf('application/pdf') !== -1, img = types.length > (pdf ? 1 : 0);
+                alert(pdf && img ? 'PDF, JPG or PNG files only' : pdf ? 'PDF files only' : 'Only JPG and PNG images are allowed');
                 el.value = '';
             }
         }

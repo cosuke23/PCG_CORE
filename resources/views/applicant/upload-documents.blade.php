@@ -4,411 +4,181 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Upload Required Documents</title>
-
-    <link rel="stylesheet" href="{{ asset('vendor/leaflet/leaflet.css') }}" />
-
-    <style>
-        body {
-            margin: 0;
-            font-family: Arial, sans-serif;
-            background: linear-gradient(to bottom, #1e3a8a, #1e40af);
-        }
-
-        .container {
-            max-width: 1000px;
-            margin: auto;
-            padding: 20px;
-        }
-
-        .card {
-            background: rgba(255, 255, 255, 0.1);
-            backdrop-filter: blur(10px);
-            border-radius: 20px;
-            padding: 25px;
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            color: white;
-        }
-
-        h2 {
-            text-align: center;
-            margin-bottom: 20px;
-        }
-
-        .btn {
-            padding: 10px 16px;
-            border-radius: 8px;
-            text-decoration: none;
-            color: white;
-            font-weight: bold;
-            border: none;
-            cursor: pointer;
-        }
-
-        .btn-gray {
-            background: gray;
-        }
-
-        .btn-green {
-            background: green;
-        }
-
-        .btn-row {
-            display: flex;
-            justify-content: space-between;
-            margin-bottom: 15px;
-        }
-
-        .grid {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 15px;
-        }
-
-        @media (max-width: 520px) {
-            .grid {
-                grid-template-columns: 1fr;
-            }
-        }
-
-        /* Phones: 16px fields so iOS does not zoom in on focus. */
-        @media (max-width: 767px) {
-            input, select, textarea {
-                font-size: 16px;
-            }
-        }
-
-        .doc-box {
-            min-width: 0;
-            overflow-wrap: anywhere;
-            background: rgba(255, 255, 255, 0.08);
-            padding: 15px;
-            border-radius: 14px;
-            border: 1px dashed rgba(255, 255, 255, 0.4);
-        }
-
-        .uploaded {
-            border: 1px solid #22c55e !important;
-        }
-
-        input[type="file"] {
-            width: 100%;
-            color: white;
-        }
-
-        #map {
-            height: 320px;
-            border-radius: 12px;
-            border: 2px solid white;
-            margin-top: 15px;
-        }
-
-        .loading-overlay {
-            position: fixed;
-            inset: 0;
-            background: rgba(0, 0, 0, 0.65);
-            display: none;
-            align-items: center;
-            justify-content: center;
-            z-index: 9999;
-        }
-
-        .spinner {
-            width: 60px;
-            height: 60px;
-            border: 6px solid #ccc;
-            border-top: 6px solid #22c55e;
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
-        }
-
-        @keyframes spin {
-            100% {
-                transform: rotate(360deg);
-            }
-        }
-    </style>
+    <meta name="csrf-token" content="{{ csrf_token() }}">
+    <title>Required documents · MEPCOM HRMIS</title>
+    <link rel="stylesheet" href="{{ asset('vendor/inter/inter.css') }}">
+    <link rel="stylesheet" href="{{ asset('vendor/fontawesome/css/all.min.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/pcg-ui.css') }}">
+    <link rel="stylesheet" href="{{ asset('vendor/leaflet/leaflet.css') }}">
+    <link rel="stylesheet" href="{{ asset('vendor/leaflet-geocoder/Control.Geocoder.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/upload-documents.css') }}">
     <script nonce="{{ $cspNonce ?? '' }}" src="{{ asset('js/pcg-ui.js') }}" defer></script>
 </head>
 
-<body>
+@php
+    $docs = $documents ?? null;
+    $today = \Carbon\Carbon::now('Asia/Manila')->startOfDay();
+    $fileUrl = fn ($path) => \App\Support\Uploads::url('documents_toupload/' . $path);
+    // Ombudsman and Sandiganbayan clearances: shown to everyone, as before
+    // (the old page meant to hide them for enlisted ranks but never did).
+    $groups = [
+        'Forms' => [
+            'soi' => ['Statement of Information (SOI)', 'pdf', false],
+            'ofr' => ['OFR / NOPER', 'pdf', false],
+        ],
+        'Clearances' => [
+            'nbi_clearance' => ['NBI clearance', 'pdf', true],
+            'ombudsman_clearance' => ['Ombudsman clearance', 'pdf', true],
+            'sandiganbayan_clearance' => ['Sandiganbayan clearance', 'pdf', true],
+            'medical_clearance' => ['Medical clearance', 'pdf', false],
+            'pft_clearance' => ['PFT clearance', 'pdf', false],
+        ],
+        'Photos and sketch' => [
+            'photo_2x2' => ['2x2 photo', 'image', false],
+            'whole_body_picture' => ['Whole-body photo', 'image', false],
+            'residential_sketch' => ['Residential sketch', 'pdf-or-image', false],
+        ],
+    ];
+    $types = [
+        'pdf' => ['accept' => '.pdf,application/pdf', 'mimes' => '["application/pdf"]', 'hint' => 'PDF, up to 10 MB'],
+        'image' => ['accept' => '.jpg,.jpeg,.png,image/jpeg,image/png', 'mimes' => '["image/jpeg","image/png"]', 'hint' => 'JPG or PNG, up to 10 MB'],
+        'pdf-or-image' => ['accept' => '.pdf,.jpg,.jpeg,.png,application/pdf,image/jpeg,image/png', 'mimes' => '["application/pdf","image/jpeg","image/png"]', 'hint' => 'PDF, JPG or PNG, up to 10 MB'],
+    ];
+    $total = collect($groups)->flatten(1)->count();
+    $done = collect($groups)->map(fn ($g) => array_keys($g))->flatten()->filter(fn ($f) => !empty($docs->$f))->count();
+@endphp
 
-    <div class="loading-overlay" id="loadingOverlay">
-        <div>
-            <div class="spinner"></div>
-            <p style="color:white;">Uploading...</p>
+<body class="pcg ud">
+    <a class="pcg-skip-link" href="#ud-main">Skip to content</a>
+
+    <div class="ud-overlay" id="ud-overlay" hidden>
+        <div class="ud-overlay__box" role="status" aria-live="polite">
+            <span class="ud-spinner" aria-hidden="true"></span>
+            <p>Encrypting and uploading your files…</p>
         </div>
     </div>
 
-    <div class="container">
-        <div class="card">
+    <header class="ud-top">
+        <div class="ud-wrap ud-top__row">
+            <a class="ud-back" href="/profile"><i class="fa-solid fa-arrow-left" aria-hidden="true"></i> Back to profile</a>
+            <span class="ud-brand">MEPCOM HRMIS</span>
+        </div>
+    </header>
 
-            <div class="btn-row">
-                <a href="/profile" class="btn btn-gray">← Back</a>
+    <main class="ud-wrap ud-main" id="ud-main">
+        <section class="ud-hero">
+            <div>
+                <p class="ud-eyebrow">Statement of Information · requirements</p>
+                <h1>Required documents</h1>
+                <p class="ud-lede">Upload each document here. You can upload some now and the rest later; only the files you choose are sent. Your unit checker reviews them and tells you if one needs to be uploaded again.</p>
             </div>
+            <div class="ud-progress" aria-label="{{ $done }} of {{ $total }} documents uploaded">
+                <div class="ud-progress__top"><strong>{{ $done }} of {{ $total }}</strong><span>uploaded</span></div>
+                <div class="ud-progress__bar"><span style="width: {{ $total ? round($done / $total * 100) : 0 }}%"></span></div>
+            </div>
+        </section>
 
-            <h2>Upload Required Documents</h2>
+        <p class="ud-secure">
+            <i class="fa-solid fa-lock" aria-hidden="true"></i>
+            <span>Every file is encrypted with <strong>AES-256</strong> as soon as it arrives and stored under a random name. Only you, your unit's document checker and authorised HR staff can open it, and each opening is logged.</span>
+        </p>
 
-            @if (session('success'))
-                <div role="status" style="background:#dcfce7;color:#166534;padding:10px 14px;border-radius:8px;margin-bottom:12px;">
-                    {{ session('success') }}
-                </div>
-            @endif
-            @if (session('error'))
-                <div role="alert" style="background:#fee2e2;color:#991b1b;padding:10px 14px;border-radius:8px;margin-bottom:12px;">
-                    {{ session('error') }}
-                </div>
-            @endif
-            @if ($errors->any())
-                <div role="alert" style="background:#fee2e2;color:#991b1b;padding:10px 14px;border-radius:8px;margin-bottom:12px;">
-                    <ul style="margin:0;padding-left:18px;">
-                        @foreach ($errors->all() as $error)
-                            <li>{{ $error }}</li>
+        @if (session('success'))
+            <div class="pcg-alert pcg-alert--success" role="status">{{ session('success') }}</div>
+        @endif
+        @if (session('error'))
+            <div class="pcg-alert pcg-alert--danger" role="alert">{{ session('error') }}</div>
+        @endif
+        @if ($errors->any())
+            <div class="pcg-alert pcg-alert--danger" role="alert">
+                <p><strong>Nothing was uploaded. Please fix the following:</strong></p>
+                <ul>@foreach ($errors->all() as $error)<li>{{ $error }}</li>@endforeach</ul>
+            </div>
+        @endif
+
+        <form id="uploadForm" action="/documents/upload" method="POST" enctype="multipart/form-data">
+            @csrf
+
+            @foreach ($groups as $groupName => $fields)
+                <section class="ud-group" aria-labelledby="g-{{ $loop->index }}">
+                    <h2 id="g-{{ $loop->index }}">{{ $groupName }}</h2>
+                    <div class="ud-grid">
+                        @foreach ($fields as $field => [$label, $kind, $hasExpiry])
+                            @php
+                                $have = !empty($docs->$field);
+                                $exp = $hasExpiry && !empty($docs->{$field . '_expiration'}) ? \Carbon\Carbon::parse($docs->{$field . '_expiration'}) : null;
+                                $state = !$have ? 'missing' : ($exp && $exp->lt($today) ? 'expired' : ($exp && $exp->lte($today->copy()->addDays(30)) ? 'soon' : 'ok'));
+                                $t = $types[$kind];
+                            @endphp
+                            <article class="ud-doc ud-doc--{{ $state }}">
+                                <div class="ud-doc__head">
+                                    <h3 id="lbl-{{ $field }}">{{ $label }}</h3>
+                                    <span class="ud-chip ud-chip--{{ $state }}">
+                                        @switch($state)
+                                            @case('missing') Not uploaded @break
+                                            @case('expired') Expired @break
+                                            @case('soon') Expires soon @break
+                                            @default Uploaded
+                                        @endswitch
+                                    </span>
+                                </div>
+
+                                @if ($have)
+                                    <p class="ud-doc__meta">
+                                        <a href="{{ $fileUrl($docs->$field) }}" target="_blank" rel="noopener"><i class="fa-regular fa-eye" aria-hidden="true"></i> View current file</a>
+                                        @if ($exp)
+                                            <span>Valid until {{ $exp->format('d M Y') }}</span>
+                                        @endif
+                                    </p>
+                                @endif
+
+                                <input class="ud-file" type="file" id="f-{{ $field }}" name="{{ $field }}" accept="{{ $t['accept'] }}"
+                                    aria-labelledby="lbl-{{ $field }}" data-on-change="pcg.file-types" data-args='{{ $t['mimes'] }}'>
+                                <label class="ud-drop" for="f-{{ $field }}">
+                                    <i class="fa-solid fa-cloud-arrow-up" aria-hidden="true"></i>
+                                    <span class="ud-drop__text" data-default="{{ $have ? 'Choose a new file to replace it' : 'Choose a file' }}">{{ $have ? 'Choose a new file to replace it' : 'Choose a file' }}</span>
+                                    <span class="ud-drop__hint">{{ $t['hint'] }}</span>
+                                </label>
+
+                                @if ($hasExpiry)
+                                    <div class="ud-exp">
+                                        <label class="pcg-label" for="e-{{ $field }}">Valid until</label>
+                                        <input class="pcg-input" type="date" id="e-{{ $field }}" name="{{ $field }}_expiration"
+                                            value="{{ $docs->{$field . '_expiration'} ?? '' }}">
+                                    </div>
+                                @endif
+                            </article>
                         @endforeach
-                    </ul>
-                </div>
-            @endif
-
-            <form id="uploadForm" action="/documents/upload" method="POST" enctype="multipart/form-data">
-                @csrf
-
-                <div class="grid">
-
-                    @php
-                        $docs = $documents ?? null;
-                    @endphp
-                    <!-- SOI -->
-                    <div class="doc-box {{ !empty($docs->soi) ? 'uploaded' : '' }}">
-                        <label>SOI</label>
-
-                        @if (!empty($docs->soi))
-                            <small style="color:#22c55e;">
-                                ✔ Uploaded:
-                                <a href="{{ \App\Support\Uploads::url('documents_toupload/' . $docs->soi) }}" target="_blank">View</a>
-                            </small>
-                        @endif
-
-                        <input type="file" name="soi" accept=".pdf,application/pdf"
-                            data-on-change="pcg.file-types" data-args='["application/pdf"]'>
                     </div>
+                </section>
+            @endforeach
 
-                    <!-- NBI -->
-                    <div class="doc-box {{ !empty($docs->nbi_clearance) ? 'uploaded' : '' }}">
-                        <label>NBI Clearance</label>
+            <section class="ud-group" aria-labelledby="g-map">
+                <h2 id="g-map">Residence location</h2>
+                <p class="ud-note">Search for your address, then drag the pin or tap the map to mark your house. Your current position is shown too, if your browser allows it.</p>
+                <div id="map" class="ud-map" role="application" aria-label="Map to pin your residence"
+                    data-lat="{{ is_numeric($docs->latitude ?? null) ? $docs->latitude : '' }}"
+                    data-lng="{{ is_numeric($docs->longitude ?? null) ? $docs->longitude : '' }}"></div>
+                <p class="ud-coords" id="coords" aria-live="polite"></p>
+                <input type="hidden" name="latitude" id="latitude" value="{{ is_numeric($docs->latitude ?? null) ? $docs->latitude : '' }}">
+                <input type="hidden" name="longitude" id="longitude" value="{{ is_numeric($docs->longitude ?? null) ? $docs->longitude : '' }}">
+            </section>
 
-                        @if (!empty($docs->nbi_clearance))
-                            <small style="color:#22c55e;">
-                                ✔ Uploaded:
-                                <a href="{{ \App\Support\Uploads::url('documents_toupload/' . $docs->nbi_clearance) }}" target="_blank">View</a>
-                            </small>
-                            <br>
-                            <small>Exp: {{ $docs->nbi_clearance_expiration }}</small>
-                        @endif
-
-                        <input type="file" name="nbi_clearance" accept=".pdf,application/pdf"
-                            data-on-change="pcg.file-types" data-args='["application/pdf"]'>
-                        <input type="date" name="nbi_clearance_expiration"
-                            value="{{ $docs->nbi_clearance_expiration ?? '' }}">
-                    </div>
-
-                    @php
-                        $hideClearances = in_array($applicant->rank ?? null, [
-                            'FMCPO',
-                            'MCPO',
-                            'SCPO',
-                            'CPO',
-                            'PO1',
-                            'PO2',
-                            'PO3',
-                            'SN1',
-                            'SN2',
-                            'ASN',
-                        ]);
-                    @endphp
-
-                    @if (!$hideClearances)
-
-                        <!-- Ombudsman -->
-                        <div class="doc-box {{ !empty($docs->ombudsman_clearance) ? 'uploaded' : '' }}">
-                            <label> Ombudsman</label>
-
-                            @if (!empty($docs->ombudsman_clearance))
-                                <small style="color:#22c55e;">
-                                    ✔ Uploaded:
-                                    <a href="{{ \App\Support\Uploads::url('documents_toupload/' . $docs->ombudsman_clearance) }}"
-                                        target="_blank">View</a>
-                                </small>
-                                <br>
-                                <small>Exp: {{ $docs->ombudsman_clearance_expiration }}</small>
-                            @endif
-
-                            <input type="file" name="ombudsman_clearance" accept=".pdf,application/pdf"
-                                data-on-change="pcg.file-types" data-args='["application/pdf"]'>
-                            <input type="date" name="ombudsman_clearance_expiration"
-                                value="{{ $docs->ombudsman_clearance_expiration ?? '' }}">
-                        </div>
-
-                        <!-- Sandiganbayan -->
-                        <div class="doc-box {{ !empty($docs->sandiganbayan_clearance) ? 'uploaded' : '' }}">
-                            <label>Sandiganbayan</label>
-
-                            @if (!empty($docs->sandiganbayan_clearance))
-                                <small style="color:#22c55e;">
-                                    ✔ Uploaded:
-                                    <a href="{{ \App\Support\Uploads::url('documents_toupload/' . $docs->sandiganbayan_clearance) }}"
-                                        target="_blank">View</a>
-                                </small>
-                                <br>
-                                <small>Exp: {{ $docs->sandiganbayan_clearance_expiration }}</small>
-                            @endif
-
-                            <input type="file" name="sandiganbayan_clearance" accept=".pdf,application/pdf"
-                                data-on-change="pcg.file-types" data-args='["application/pdf"]'>
-                            <input type="date" name="sandiganbayan_clearance_expiration"
-                                value="{{ $docs->sandiganbayan_clearance_expiration ?? '' }}">
-                        </div>
-
-                    @endif
-
-                    <!-- Remaining simple fields -->
-                    @foreach ([
-        'ofr' => 'OFR/NOPER',
-        'whole_body_picture' => 'Whole Body',
-        'photo_2x2' => '2x2 Photo',
-        'medical_clearance' => 'Medical Clearance',
-        'pft_clearance' => 'PFT Clearance',
-        'residential_sketch' => 'Residential Sketch',
-    ] as $field => $label)
-                        <div class="doc-box {{ !empty($docs->$field) ? 'uploaded' : '' }}">
-                            <label>{{ $label }}</label>
-
-                            @if (!empty($docs->$field))
-                                <small style="color:#22c55e;">
-                                    ✔ Uploaded:
-                                    <a href="{{ \App\Support\Uploads::url('documents_toupload/' . $docs->$field) }}" target="_blank">
-                                        View
-                                    </a>
-                                </small>
-                            @endif
-
-                            <input type="file" name="{{ $field }}"
-                                @if (in_array($field, ['whole_body_picture', 'photo_2x2'])) accept=".jpg,.jpeg,.png,image/jpeg,image/png"
-    @else
-        accept=".pdf,application/pdf" @endif
-                                @if (in_array($field, ['whole_body_picture', 'photo_2x2'])) data-on-change="pcg.file-types" data-args='["image/jpeg","image/png"]' @else data-on-change="pcg.file-types" data-args='["application/pdf"]' @endif>
-                        </div>
-                    @endforeach
-
+            <div class="ud-bar">
+                <div class="ud-wrap ud-bar__row">
+                    <span class="ud-bar__count" id="ud-count" aria-live="polite">No new files chosen</span>
+                    <button type="submit" id="submitBtn" class="pcg-btn pcg-btn--primary">
+                        <i class="fa-solid fa-upload" aria-hidden="true"></i> Save and upload
+                    </button>
                 </div>
+            </div>
+        </form>
+    </main>
 
-                <div class="section-title">📍 Pin Location</div>
-                <div id="map"></div>
-
-                <input type="hidden" name="latitude" id="latitude" value="{{ $docs->latitude ?? '' }}">
-                <input type="hidden" name="longitude" id="longitude" value="{{ $docs->longitude ?? '' }}">
-
-                <p id="coords"></p>
-
-                <div class="btn-row" style="margin-top:20px;">
-                    <button type="submit" id="submitBtn" class="btn btn-green">Submit</button>
-                </div>
-
-            </form>
-
-        </div>
-    </div>
     @php(app()->instance('csp.allow_osm', true)) {{-- map tiles and address search: OpenStreetMap on this page only --}}
     <script nonce="{{ $cspNonce ?? '' }}" src="{{ asset('vendor/leaflet/leaflet.js') }}"></script>
-    <link rel="stylesheet" href="{{ asset('vendor/leaflet-geocoder/Control.Geocoder.css') }}" />
     <script nonce="{{ $cspNonce ?? '' }}" src="{{ asset('vendor/leaflet-geocoder/Control.Geocoder.js') }}"></script>
-
-    <script nonce="{{ $cspNonce ?? '' }}">
-        let map, marker;
-        let userMarker;
-
-        window.onload = function() {
-            initMap();
-
-            const form = document.getElementById('uploadForm');
-            if (form) {
-                form.addEventListener('submit', function() {
-                    document.getElementById('loadingOverlay').style.display = 'flex';
-                });
-            }
-        };
-
-        function initMap() {
-
-            let lat = {{ $docs->latitude ?? 13.41 }};
-            let lng = {{ $docs->longitude ?? 122.56 }};
-
-            map = L.map('map').setView([lat, lng], 6);
-
-            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                attribution: ''
-            }).addTo(map);
-
-            // =========================
-            // SEARCH CONTROL (NEW)
-            // =========================
-            const geocoder = L.Control.geocoder({
-                    defaultMarkGeocode: false
-                })
-                .on('markgeocode', function(e) {
-                    const center = e.geocode.center;
-
-                    map.setView(center, 15);
-
-                    marker.setLatLng(center);
-                    setCoords(center.lat, center.lng);
-                })
-                .addTo(map);
-
-            // =========================
-            // MAIN MARKER
-            // =========================
-            marker = L.marker([lat, lng], {
-                draggable: true
-            }).addTo(map);
-
-            setCoords(lat, lng);
-
-            marker.on('dragend', function() {
-                const pos = marker.getLatLng();
-                setCoords(pos.lat, pos.lng);
-            });
-
-            map.on('click', function(e) {
-                marker.setLatLng(e.latlng);
-                setCoords(e.latlng.lat, e.latlng.lng);
-            });
-
-            // =========================
-            // USER LOCATION
-            // =========================
-            if (navigator.geolocation) {
-                navigator.geolocation.getCurrentPosition(function(pos) {
-
-                    let userLat = pos.coords.latitude;
-                    let userLng = pos.coords.longitude;
-
-                    userMarker = L.marker([userLat, userLng]).addTo(map)
-                        .bindPopup("📍 Your Current Location")
-                        .openPopup();
-
-                });
-            }
-        }
-
-        function setCoords(lat, lng) {
-            document.getElementById('latitude').value = lat;
-            document.getElementById('longitude').value = lng;
-
-            document.getElementById('coords').innerText =
-                "Lat: " + lat.toFixed(6) + ", Lng: " + lng.toFixed(6);
-        }
-    </script>
-
+    <script nonce="{{ $cspNonce ?? '' }}" src="{{ asset('js/upload-documents.js') }}"></script>
 </body>
 
 </html>
