@@ -17,6 +17,7 @@ php artisan pcg:dev-seed      # the core sample set only (db:seed runs it first)
 php artisan pcg:create-admin  # create an admin account (2FA set up at first sign-in)
 php artisan pcg:personnel-sync [--apply] [--assign-to=MEPCOM] [--map-units=database/data/mepcom_units.json]  # copy approved registrations into the personnel master (dry run by default)
 php artisan pcg:import-org-units database/data/mepcom_units.json [--apply]  # insert-only unit import (dry run by default)
+php artisan pcg:purge-accounts --keep-admin=EMAIL [--keep-user=EMAIL] [--keep-since=YYYY-MM-DD] [--apply]  # delete test accounts + their records, keep the named ones (dry run by default; back up first)
 php artisan pcg:move-uploads [--apply]  # copy uploads out of public/ into private storage (never deletes)
 php artisan pcg:file-keys init|status|rotate|retire|backup  # master keys for upload encryption (docs/FILE_ENCRYPTION.md)
 php artisan pcg:files status|encrypt|verify|rewrap [--apply]  # encrypt older uploads, verify after a restore, rewrap after rotation
