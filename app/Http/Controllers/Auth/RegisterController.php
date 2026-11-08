@@ -193,7 +193,7 @@ class RegisterController extends Controller
             // (password hash, name, email, birth date): log only the
             // database's own reason, e.g. "Data too long for column 'sub_unit'".
             $reason = $e instanceof \Illuminate\Database\QueryException
-                ? 'SQLSTATE ' . ($e->errorInfo[0] ?? '?') . ': ' . ($e->errorInfo[2] ?? 'database error')
+                ? \App\Support\DbError::reason($e)
                 : $e->getMessage();
             Log::error('Registration failed', [
                 'ref' => $ref,

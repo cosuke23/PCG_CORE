@@ -167,10 +167,9 @@ class ApplicantDocumentController extends Controller
             }
             $data = array_intersect_key($data, $fileFields) + $changed;
 
-            // documents or their validity changed: the unit checker reviews again
-            if ($uploaded || array_diff_key($changed, ['latitude' => 1, 'longitude' => 1])) {
-                $data['status'] = 'Pending';
-            }
+            // documents, their validity or the residence pin changed: the unit
+            // checker reviews again (the checker sees the pin on the review page)
+            $data['status'] = 'Pending';
             $data['updated_at'] = now();
 
             // ================= SAVE =================
@@ -196,7 +195,7 @@ class ApplicantDocumentController extends Controller
 
             return back()->with('success', $uploaded
                 ? ($uploaded === 1 ? '1 file' : $uploaded . ' files') . ' uploaded and encrypted. Your unit checker will review ' . ($uploaded === 1 ? 'it.' : 'them.')
-                : 'Changes saved.');
+                : 'Changes saved. Your unit checker will review them.');
         } catch (\Exception $e) {
 
             Log::error('❌ UPLOAD FAILED', [

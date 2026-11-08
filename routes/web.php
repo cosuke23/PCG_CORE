@@ -14,7 +14,6 @@ use App\Http\Controllers\ApplicantDocumentController;
 use App\Http\Controllers\AdminController;
 use App\Http\Controllers\AdminLoginController;
 
-use App\Http\Controllers\ReenlistController;
 use App\Http\Controllers\UnitDocumentController;
 use App\Http\Controllers\UnitUserController;
 
@@ -146,7 +145,8 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/temp-save/step5', [TempRegistrationController::class, 'saveStep5'])->middleware('throttle:member-writes')->name('temp.save.step5');
     Route::post('/temp-save/step6', [TempRegistrationController::class, 'saveStep6'])->middleware('throttle:member-writes')->name('temp.save.step6');
 
-    Route::post('/reinlist/store', [ReenlistController::class, 'store'])->middleware('throttle:member-writes');
+    // /reinlist/store (one-shot SOI save) was retired 2026-11-08: no page used it and it
+    // replaced Adjutant-recorded rows; the SOI saves through /temp-save/step1..6.
 
     Route::get('/generate-soi', [ProfileController::class, 'generateSOI'])
         ->name('generate.soi');

@@ -92,7 +92,6 @@ class AccessControlTest extends TestCase
             ['get', '/upload-201'],
             ['post', '/upload-201'],
             ['post', '/temp-save/step1'],
-            ['post', '/reinlist/store'],
             ['get', '/generate-soi'],
             ['get', '/applicant/operational-training'],
         ];

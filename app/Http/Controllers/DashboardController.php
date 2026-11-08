@@ -169,7 +169,13 @@ class DashboardController extends Controller
         $reinlistData->trainings = [
             'civilian_others_local'   => $trainingRaw['others_local'] ?? collect(),
             'civilian_others_foreign' => $trainingRaw['others_foreign'] ?? collect(),
-            'coastguard'     => $trainingRaw['coastguard'] ?? collect(),
+            // recorded by the Adjutant: the member sees that, not which admin id
+            'coastguard'     => ($trainingRaw['coastguard'] ?? collect())->map(function ($t) {
+                if (property_exists($t, 'added_by')) {
+                    $t->added_by = !empty($t->added_by);
+                }
+                return $t;
+            }),
             'others_local'   => $trainingRaw['others_local'] ?? collect(),
             'others_foreign' => $trainingRaw['others_foreign'] ?? collect(),
             'military'       => $trainingRaw['military'] ?? collect(),
@@ -319,7 +325,7 @@ class DashboardController extends Controller
             ->map(fn($a) => [
                 'type' => $a->type,
                 'authority' => $a->authority,
-                'added_by' => $a->added_by ?? null, // recorded by the Adjutant
+                'added_by' => !empty($a->added_by), // recorded by the Adjutant (the admin id stays on the server)
             ]);
 
         $reinlistData->cgAwardsDecorations = $cgAwards->isEmpty()

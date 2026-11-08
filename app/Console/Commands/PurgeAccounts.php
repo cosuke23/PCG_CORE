@@ -21,6 +21,13 @@ use Illuminate\Support\Facades\Schema;
  * courses and OSAERT records are never touched; encrypted files stay on disk,
  * unlinked. Records whose serial number belongs to no deleted account, or to a
  * kept account, are left alone.
+ *
+ * "Records tied to its serial number" means EVERY table with a serial_number
+ * column, including LMS enrolments (course_students, which a CSV import can
+ * create without an account), training applications and disciplinary actions.
+ * A test account that used a real member's serial takes that member's rows in
+ * those tables with it unless the member's account is kept: read the per-table
+ * counts of the dry run before --apply.
  */
 class PurgeAccounts extends Command
 {
