@@ -37,4 +37,28 @@ class UnitAccountCreateTest extends TestCase
         $this->assertSame('MEPCOM', $row->unit_name);
         $this->assertTrue(Hash::check('chosen-pass-123', $row->password));
     }
+
+    public function test_m1_access_password_and_status_work_on_a_table_without_timestamps()
+    {
+        $this->withoutMiddleware(\App\Http\Middleware\VerifyCsrfToken::class);
+        Schema::create('unit_users', function (Blueprint $t) {
+            $t->id(); $t->string('email'); $t->string('password'); $t->string('role')->nullable();
+            $t->string('unit_name')->nullable(); $t->boolean('is_active')->default(true);
+        });
+        DB::table('unit_users')->insert(['email' => 'c@example.test', 'password' => 'x', 'role' => 'unit_checker', 'unit_name' => 'MEPTDI']);
+        $super = ['admin_logged_in' => true, 'admin_role' => 'super_admin'];
+
+        $this->withSession($super)->post('/admin/unit-users/1/role', ['role' => 'm1_checker'])->assertRedirect()->assertSessionHas('success');
+        $this->assertSame('m1_checker', DB::table('unit_users')->value('role'));
+        // granting again (nothing changes) is not a "not found"
+        $this->withSession($super)->post('/admin/unit-users/1/role', ['role' => 'm1_checker'])->assertRedirect();
+
+        $this->withSession($super)->post('/admin/unit-users/1/password', ['password' => 'new-password-123'])->assertRedirect();
+        $this->assertTrue(Hash::check('new-password-123', DB::table('unit_users')->value('password')));
+
+        $this->withSession($super)->post('/admin/unit-users/1/status', ['is_active' => 0])->assertRedirect();
+        $this->assertSame(0, (int) DB::table('unit_users')->value('is_active'));
+
+        $this->withSession($super)->post('/admin/unit-users/99/role', ['role' => 'm1_checker'])->assertNotFound();
+    }
 }
