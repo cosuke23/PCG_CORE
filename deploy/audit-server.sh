@@ -48,8 +48,16 @@ ss -Htln 2>/dev/null | awk '{print $4}' | grep -qE "(^|:)$PORT$" && {
     ss -Htln | awk '{print $4}' | grep -E ":$PORT$" | grep -qvE '^(127\.0\.0\.1|\[::1\]):' && warn "port $PORT is reachable from outside localhost" || ok "app port $PORT listens on localhost only"
 }
 if command -v tailscale >/dev/null; then
-    echo "  Tailscale Funnel/Serve (what is published to the internet):"
-    tailscale funnel status 2>/dev/null | sed 's/^/    /' | head -20
+    # this app's own node (not the server's main tailscaled)
+    TSC=(tailscale --socket="$TS_SOCK")
+    systemctl is-active --quiet "$TS_UNIT" && ok "$TS_UNIT running" || warn "$TS_UNIT not running: the site cannot be reached (sudo systemctl enable --now $TS_UNIT)"
+    if [[ $root -eq 1 ]]; then
+        "${TSC[@]}" status >/dev/null 2>&1 && ok "Tailscale node signed in" || warn "Tailscale node not signed in: tailscale --socket=$TS_SOCK up --hostname=$TS_HOSTNAME"
+        f="$("${TSC[@]}" funnel status 2>/dev/null)"
+        echo "  Tailscale Funnel/Serve of this app (what is published):"
+        sed 's/^/    /' <<<"$f" | head -20
+        grep -qi 'funnel on' <<<"$f" && info "site is PUBLIC (Funnel)" || info "site is tailnet-only: only devices signed in to the tailnet can open it"
+    fi
 fi
 
 sec "MEPCOM HRMIS files"
