@@ -12,6 +12,7 @@ class AdminUser extends Model
     public const ROLE_HR = 'hr_admin';
     public const ROLE_LMS = 'lms_admin';
     public const ROLE_REENLISTMENT = 'reenlistment_admin';
+    public const ROLE_ADJUTANT = 'adjutant';
 
     public const ROLES = [
         self::ROLE_SUPER => 'Super admin — everything, incl. admin accounts and audit log',
@@ -21,6 +22,7 @@ class AdminUser extends Model
         'records_approver' => 'Records approver — approves or rejects registrations, verifies documents, restricted documents',
         'auditor' => 'Read-only auditor — personnel, documents list, reports and audit log; changes nothing',
         self::ROLE_REENLISTMENT => 'Re-enlistment admin — non-officers whose ETE ends within a year (list, details, export); nothing else',
+        self::ROLE_ADJUTANT => 'Adjutant — records Coast Guard awards and decorations and Coast Guard schooling in members\' SOI (own command/unit); nothing else',
     ];
 
     protected $fillable = ['name', 'email', 'password', 'role', 'org_unit_id', 'is_active'];

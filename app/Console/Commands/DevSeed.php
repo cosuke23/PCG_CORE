@@ -80,8 +80,8 @@ class DevSeed extends Command
             // ---------------- admin accounts (2FA enrolled with the dev secret) ----------------
             if (\Illuminate\Support\Facades\Schema::hasTable('admin_users')) {
                 $mepcomId = \Illuminate\Support\Facades\Schema::hasTable('org_units') ? DB::table('org_units')->where('code', 'MEPCOM')->value('id') : null;
-                foreach ([['admin@demo.test', 'Sample Super Admin', 'super_admin', null], ['hr@demo.test', 'Sample HR Admin', 'hr_admin', null], ['lms@demo.test', 'Sample LMS Admin', 'lms_admin', null], ['mepcom-hr@demo.test', 'Sample MEPCOM HR Admin', 'hr_admin', $mepcomId], ['approver@demo.test', 'Sample Records Approver', 'records_approver', null], ['reviewer@demo.test', 'Sample Records Reviewer', 'records_reviewer', null], ['auditor@demo.test', 'Sample Auditor', 'auditor', null], ['reenlistment@demo.test', 'Sample Re-enlistment Admin', 'reenlistment_admin', null]] as [$email, $name, $role, $scope]) {
-                    if ($email === 'mepcom-hr@demo.test' && !$scope) {
+                foreach ([['admin@demo.test', 'Sample Super Admin', 'super_admin', null], ['hr@demo.test', 'Sample HR Admin', 'hr_admin', null], ['lms@demo.test', 'Sample LMS Admin', 'lms_admin', null], ['mepcom-hr@demo.test', 'Sample MEPCOM HR Admin', 'hr_admin', $mepcomId], ['approver@demo.test', 'Sample Records Approver', 'records_approver', null], ['reviewer@demo.test', 'Sample Records Reviewer', 'records_reviewer', null], ['auditor@demo.test', 'Sample Auditor', 'auditor', null], ['reenlistment@demo.test', 'Sample Re-enlistment Admin', 'reenlistment_admin', null], ['adjutant@demo.test', 'Sample MEPCOM Adjutant', 'adjutant', $mepcomId]] as [$email, $name, $role, $scope]) {
+                    if (in_array($email, ['mepcom-hr@demo.test', 'adjutant@demo.test'], true) && !$scope) {
                         continue;
                     }
                     $admin = \App\Models\AdminUser::create(['name' => $name, 'email' => $email, 'password' => Hash::make(self::ADMIN_PASSWORD), 'role' => $role, 'org_unit_id' => $scope, 'is_active' => true]);
@@ -230,7 +230,7 @@ class DevSeed extends Command
         $this->line('  personnel   member@demo.test   (/login)');
         $this->line('  unit        unit@demo.test     (/unit/login)');
         $this->line('  M1          m1@demo.test       (/unit/loginM1)');
-        $this->line('  admins      admin@ / hr@ / lms@ / mepcom-hr@ (MEPCOM-scoped) / approver@ / reviewer@ / auditor@ / reenlistment@demo.test, password ' . self::ADMIN_PASSWORD . ', authenticator key ' . self::ADMIN_TOTP_SECRET);
+        $this->line('  admins      admin@ / hr@ / lms@ / mepcom-hr@ (MEPCOM-scoped) / approver@ / reviewer@ / auditor@ / reenlistment@ / adjutant@ (MEPCOM-scoped) demo.test, password ' . self::ADMIN_PASSWORD . ', authenticator key ' . self::ADMIN_TOTP_SECRET);
 
         return 0;
     }

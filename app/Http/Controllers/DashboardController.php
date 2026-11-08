@@ -319,6 +319,7 @@ class DashboardController extends Controller
             ->map(fn($a) => [
                 'type' => $a->type,
                 'authority' => $a->authority,
+                'added_by' => $a->added_by ?? null, // recorded by the Adjutant
             ]);
 
         $reinlistData->cgAwardsDecorations = $cgAwards->isEmpty()
