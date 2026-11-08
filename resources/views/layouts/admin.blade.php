@@ -20,10 +20,11 @@
     <link rel="stylesheet" href="{{ \App\Support\Asset::v('css/pcg-console.css') }}">
     {{-- theme before first paint: the viewer's saved choice, dark by default --}}
     <script nonce="{{ $cspNonce ?? '' }}">
-        (function () { try { var t = localStorage.getItem('pcgTheme'); if (t === 'light' || t === 'dark') document.documentElement.setAttribute('data-theme', t); } catch (e) {} })();
+        (function () { try { var t = localStorage.getItem('pcgTheme'); if (t === 'light' || t === 'dark') document.documentElement.setAttribute('data-theme', t); if (localStorage.getItem('pcgSidebar') === 'collapsed') document.documentElement.setAttribute('data-sidebar', 'collapsed'); } catch (e) {} })();
     </script>
     <script nonce="{{ $cspNonce ?? '' }}" src="{{ \App\Support\Asset::v('js/pcg-theme.js') }}" defer></script>
     <script nonce="{{ $cspNonce ?? '' }}" src="{{ \App\Support\Asset::v('js/pcg-ui.js') }}" defer></script>
+    <script nonce="{{ $cspNonce ?? '' }}" src="{{ \App\Support\Asset::v('js/pcg-navbar.js') }}" defer></script>
     @yield('styles')
 </head>
 
@@ -110,26 +111,78 @@
         <div class="pcg-backdrop" data-pcg-nav-close></div>
 
         <div class="pcg-console__main">
-            <header class="pcg-topbar">
+            @php
+                $adminName = session('admin_name') ?: session('admin_email', 'Administrator');
+                $initials = collect(preg_split('/[\s@._-]+/', (string) $adminName))->filter()->take(2)->map(fn ($w) => mb_strtoupper(mb_substr($w, 0, 1)))->implode('') ?: 'A';
+                $unitCode = session('admin_org_unit_id') ? \App\Models\OrgUnit::whereKey(session('admin_org_unit_id'))->value('code') : null;
+                $pendingRegistrations = null;
+                if ($hr && $orgWide) {
+                    try { $pendingRegistrations = \App\Models\User::where('status', 'Pending')->count(); } catch (\Throwable $e) { $pendingRegistrations = null; }
+                }
+            @endphp
+            <header class="pcg-topbar pcg-navbar">
                 <button type="button" class="pcg-btn pcg-btn--secondary pcg-btn--sm pcg-topbar__menu" data-pcg-nav-toggle
                     aria-controls="sidebar" aria-expanded="false" aria-label="Open navigation">
                     <i class="fa-solid fa-bars" aria-hidden="true"></i>
                 </button>
+                <button type="button" class="pcg-navbar__icon pcg-navbar__collapse" data-pcg-sidebar-toggle
+                    aria-controls="sidebar" aria-expanded="true" aria-label="Collapse sidebar" title="Collapse sidebar">
+                    <i class="fa-solid fa-angles-left" aria-hidden="true"></i>
+                </button>
                 <h1 class="pcg-topbar__title">@yield('title', 'Admin')</h1>
-                <div class="pcg-topbar__user">
-                    <span>Signed in as <strong>{{ session('admin_name') ?: session('admin_email', 'Administrator') }}</strong>
-                        · {{ str_replace('_', ' ', session('admin_role', 'admin')) }}{{ session('admin_org_unit_id') ? ' · ' . \App\Models\OrgUnit::whereKey(session('admin_org_unit_id'))->value('code') : '' }}</span>
-                    <button type="button" class="pcg-btn pcg-btn--secondary pcg-btn--sm pcg-theme-toggle" data-pcg-theme-toggle aria-pressed="false">
-                        <span class="when-dark"><i class="fa-solid fa-sun" aria-hidden="true"></i> Light</span>
-                        <span class="when-light"><i class="fa-solid fa-moon" aria-hidden="true"></i> Dark</span>
+
+                <div class="pcg-navbar__search" role="search">
+                    <i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i>
+                    <input type="search" id="pcg-jump" class="pcg-navbar__input" placeholder="Go to a page…" autocomplete="off"
+                        role="combobox" aria-expanded="false" aria-controls="pcg-jump-list" aria-autocomplete="list" aria-label="Go to a page">
+                    <kbd class="pcg-navbar__kbd" aria-hidden="true">/</kbd>
+                    <ul class="pcg-navbar__results" id="pcg-jump-list" role="listbox" hidden></ul>
+                </div>
+
+                <div class="pcg-navbar__actions">
+                    @if ($pendingRegistrations !== null)
+                        <a href="{{ route('admin.dashboard') }}" class="pcg-navbar__icon pcg-navbar__bell"
+                            aria-label="{{ $pendingRegistrations }} pending {{ $pendingRegistrations === 1 ? 'registration' : 'registrations' }}"
+                            title="{{ $pendingRegistrations }} pending {{ $pendingRegistrations === 1 ? 'registration' : 'registrations' }}">
+                            <i class="fa-regular fa-bell" aria-hidden="true"></i>
+                            @if ($pendingRegistrations > 0)
+                                <span class="pcg-navbar__badge">{{ $pendingRegistrations > 99 ? '99+' : $pendingRegistrations }}</span>
+                            @endif
+                        </a>
+                    @endif
+                    <button type="button" class="pcg-navbar__icon pcg-theme-toggle" data-pcg-theme-toggle aria-pressed="false" title="Switch theme">
+                        <span class="when-dark"><i class="fa-solid fa-sun" aria-hidden="true"></i></span>
+                        <span class="when-light"><i class="fa-solid fa-moon" aria-hidden="true"></i></span>
                         <span class="pcg-visually-hidden">theme</span>
                     </button>
-                    <form action="{{ route('admin.logout') }}" method="POST">
-                        @csrf
-                        <button type="submit" class="pcg-btn pcg-btn--secondary pcg-btn--sm">
-                            <i class="fa-solid fa-right-from-bracket" aria-hidden="true"></i> Sign out
+
+                    <div class="pcg-navbar__user">
+                        <button type="button" class="pcg-navbar__me" data-pcg-user-toggle aria-expanded="false" aria-controls="pcg-user-menu">
+                            <span class="pcg-navbar__avatar" aria-hidden="true">{{ $initials }}</span>
+                            <span class="pcg-navbar__who">
+                                <strong>{{ $adminName }}</strong>
+                                <span>{{ str_replace('_', ' ', session('admin_role', 'admin')) }}{{ $unitCode ? ' · ' . $unitCode : '' }}</span>
+                            </span>
+                            <i class="fa-solid fa-chevron-down pcg-navbar__chev" aria-hidden="true"></i>
+                            <span class="pcg-visually-hidden">Account menu</span>
                         </button>
-                    </form>
+                        <div class="pcg-navbar__menu" id="pcg-user-menu" hidden>
+                            <div class="pcg-navbar__menu-head">
+                                <span class="pcg-navbar__avatar pcg-navbar__avatar--lg" aria-hidden="true">{{ $initials }}</span>
+                                <div>
+                                    <strong>{{ $adminName }}</strong>
+                                    <span>{{ session('admin_email') }}</span>
+                                    <span class="pcg-navbar__role">{{ str_replace('_', ' ', session('admin_role', 'admin')) }}{{ $unitCode ? ' · ' . $unitCode : '' }}</span>
+                                </div>
+                            </div>
+                            <form action="{{ route('admin.logout') }}" method="POST">
+                                @csrf
+                                <button type="submit" class="pcg-navbar__menu-item">
+                                    <i class="fa-solid fa-right-from-bracket" aria-hidden="true"></i> Sign out
+                                </button>
+                            </form>
+                        </div>
+                    </div>
                 </div>
             </header>
 
