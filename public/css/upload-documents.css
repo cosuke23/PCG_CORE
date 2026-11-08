@@ -1,0 +1,84 @@
+/* Member: required documents (applicant/upload-documents). Builds on pcg-ui.css tokens. */
+.ud {
+    --ud-bg: #eef2f7; --ud-surface: #ffffff; --ud-line: #d6dee8; --ud-ink: #0b1626; --ud-muted: #4b5b70;
+    --ud-accent: #0e7490; --ud-accent-soft: rgba(14, 116, 144, .10); --ud-navy: #0b2747;
+    --ud-ok: #15803d; --ud-ok-soft: #e7f6ec; --ud-warn: #a15c07; --ud-warn-soft: #fdf3e2; --ud-bad: #b42318; --ud-bad-soft: #fdecea;
+    background: var(--ud-bg); color: var(--ud-ink); margin: 0; min-height: 100vh;
+}
+.ud [hidden] { display: none !important; }
+.ud-wrap { max-width: 1080px; margin: 0 auto; padding-left: max(16px, env(safe-area-inset-left)); padding-right: max(16px, env(safe-area-inset-right)); }
+
+.ud-top { background: var(--ud-navy); color: #fff; }
+.ud-top__row { display: flex; justify-content: space-between; align-items: center; min-height: 56px; gap: 12px; }
+.pcg a.ud-back { color: #fff; text-decoration: none; font-weight: 600; display: inline-flex; gap: 8px; align-items: center; min-height: 44px; }
+.pcg a.ud-back:hover { text-decoration: underline; }
+.ud-brand { font-size: .78rem; font-weight: 700; letter-spacing: .14em; color: #67e8f9; }
+
+.ud-main { padding-block: 24px 120px; display: grid; gap: 18px; }
+.ud-hero { display: flex; flex-wrap: wrap; gap: 16px 32px; align-items: flex-end; justify-content: space-between; }
+.ud-eyebrow { margin: 0; font-size: .74rem; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; color: var(--ud-accent); }
+.ud h1 { margin: 4px 0 6px; font-size: clamp(1.6rem, 4vw, 2.1rem); letter-spacing: -.02em; }
+.ud-lede { margin: 0; max-width: 62ch; color: var(--ud-muted); }
+.ud-progress { min-width: 220px; flex: 0 1 280px; }
+.ud-progress__top { display: flex; gap: 6px; align-items: baseline; margin-bottom: 6px; }
+.ud-progress__top strong { font-size: 1.4rem; font-variant-numeric: tabular-nums; }
+.ud-progress__top span { color: var(--ud-muted); }
+.ud-progress__bar { height: 8px; border-radius: 999px; background: #dbe3ec; overflow: hidden; }
+.ud-progress__bar span { display: block; height: 100%; background: var(--ud-accent); border-radius: inherit; }
+
+.ud-secure { display: flex; gap: 12px; align-items: flex-start; margin: 0; padding: 12px 14px; border: 1px solid #b9dde6; background: #eaf6f9; border-radius: 12px; color: #0b3d4d; font-size: .93rem; }
+.ud-secure i { color: var(--ud-accent); margin-top: 3px; }
+
+.ud-group { display: grid; gap: 12px; }
+.ud-group h2 { margin: 10px 0 0; font-size: 1.05rem; letter-spacing: -.01em; }
+.ud-note { margin: 0; color: var(--ud-muted); font-size: .92rem; max-width: 70ch; }
+.ud-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 300px), 1fr)); gap: 12px; }
+
+.ud-doc { display: grid; gap: 10px; align-content: start; padding: 14px; background: var(--ud-surface); border: 1px solid var(--ud-line); border-radius: 14px; box-shadow: 0 1px 2px rgba(11, 22, 38, .05); }
+.ud-doc--ok { border-left: 4px solid var(--ud-ok); }
+.ud-doc--soon { border-left: 4px solid var(--ud-warn); }
+.ud-doc--expired { border-left: 4px solid var(--ud-bad); }
+.ud-doc--missing { border-left: 4px solid #c3ccd8; }
+.ud-doc__head { display: flex; justify-content: space-between; align-items: flex-start; gap: 8px; }
+.ud-doc__head h3 { margin: 0; font-size: .98rem; }
+.ud-chip { flex: none; font-size: .74rem; font-weight: 700; padding: 4px 9px; border-radius: 999px; white-space: nowrap; }
+.ud-chip--ok { background: var(--ud-ok-soft); color: var(--ud-ok); }
+.ud-chip--soon { background: var(--ud-warn-soft); color: var(--ud-warn); }
+.ud-chip--expired { background: var(--ud-bad-soft); color: var(--ud-bad); }
+.ud-chip--missing { background: #eef1f5; color: var(--ud-muted); }
+.ud-doc__meta { margin: 0; display: flex; flex-wrap: wrap; gap: 4px 14px; font-size: .88rem; color: var(--ud-muted); }
+.pcg .ud-doc__meta a { color: var(--ud-accent); font-weight: 600; text-decoration: none; }
+.pcg .ud-doc__meta a:hover { text-decoration: underline; }
+
+/* the real file input stays in the page (keyboard, screen readers, tests); the label is the visible target */
+.ud-file { position: absolute; width: 1px; height: 1px; opacity: 0; overflow: hidden; }
+.ud-drop { display: grid; grid-template-columns: auto 1fr; grid-template-rows: auto auto; column-gap: 12px; align-items: center;
+    min-height: 64px; padding: 10px 14px; border: 1.5px dashed #a9b7c8; border-radius: 12px; background: #f7f9fc; cursor: pointer; }
+.ud-drop i { grid-row: span 2; font-size: 1.4rem; color: var(--ud-accent); }
+.ud-drop__text { font-weight: 600; overflow-wrap: anywhere; }
+.ud-drop__hint { font-size: .8rem; color: var(--ud-muted); }
+.ud-drop:hover, .ud-drop.is-dragover { border-color: var(--ud-accent); background: var(--ud-accent-soft); }
+.ud-file:focus-visible + .ud-drop { outline: 3px solid var(--ud-accent); outline-offset: 2px; }
+.ud-drop.is-chosen { border-style: solid; border-color: var(--ud-accent); background: var(--ud-accent-soft); }
+.ud-exp { display: grid; gap: 4px; }
+.ud-exp .pcg-input { font-size: 16px; min-height: 44px; }
+
+.ud-map { height: 340px; border-radius: 14px; border: 1px solid var(--ud-line); overflow: hidden; z-index: 0; }
+.ud-coords { margin: 0; font: .85rem ui-monospace, Menlo, Consolas, monospace; color: var(--ud-muted); }
+
+.ud-bar { position: fixed; inset: auto 0 0; z-index: 20; background: rgba(255, 255, 255, .92); border-top: 1px solid var(--ud-line);
+    -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px); padding-bottom: env(safe-area-inset-bottom); }
+.ud-bar__row { display: flex; justify-content: space-between; align-items: center; gap: 12px; min-height: 68px; }
+.ud-bar__count { color: var(--ud-muted); font-size: .92rem; }
+.ud-bar .pcg-btn { min-height: 46px; padding-inline: 20px; }
+@media (max-width: 480px) { .ud-bar__row { flex-direction: column; align-items: stretch; padding-block: 10px; gap: 6px; } .ud-bar__count { text-align: center; } }
+
+.ud-overlay { position: fixed; inset: 0; z-index: 50; display: grid; place-items: center; background: rgba(5, 15, 38, .6); }
+.ud-overlay__box { background: #fff; border-radius: 14px; padding: 22px 26px; display: grid; justify-items: center; gap: 10px; }
+.ud-overlay__box p { margin: 0; font-weight: 600; }
+.ud-spinner { width: 34px; height: 34px; border: 4px solid #dbe3ec; border-top-color: var(--ud-accent); border-radius: 50%; }
+@media (prefers-reduced-motion: no-preference) {
+    .ud-spinner { animation: ud-spin .9s linear infinite; }
+    @keyframes ud-spin { to { transform: rotate(360deg); } }
+    .ud-drop { transition: border-color .15s, background-color .15s; }
+}

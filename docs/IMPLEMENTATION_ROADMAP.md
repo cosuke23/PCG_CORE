@@ -52,6 +52,7 @@ Last updated: 2026-10-30 · branch `claude/cool-wozniak-rni95k`
 - ✅ Admin redesign (2026-11-08): dark/light console theme for every admin page (`pcg-console.css`); HRMIS overview rebuilt as an interactive dashboard (clickable KPI cards and bars as combinable filters, search, sort, person details, 30-day movement chart, scoped and audited CSV export); Edit Profile fix
 - ✅ Adjutant module (2026-11-08): role `adjutant` with OTP sign-in at /adjutant/login; records Coast Guard awards and decorations and Coast Guard schooling in members' SOI, scoped to its command/unit, audited; members see them read-only; SOI Education & Trainings save fixed (every training was refused)
 - 👤 Hermes: create Adjutant accounts (Admin accounts → role Adjutant, access scope = command/unit) after `deploy.ps1 -Migrate`
+- ✅ Member "Required documents" page redesigned (2026-11-08): grouped checklist with status (uploaded / expires soon / expired / not uploaded), progress, chosen-file names, drag and drop, AES-256 note, map script moved out of the page; residential sketch now accepts PDF/JPG/PNG like the server
 - 👤 Hermes: `update-web-config.sh`, then `sudo bash ~/mepcom-hrmis-deploy/audit-server.sh` and send the output; owner decisions in §0i (email squatting, unique serial index, disciplinary soft delete, watchlist)
 
 ## Phase 5 — UI/UX
