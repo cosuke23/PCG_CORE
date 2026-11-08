@@ -15,8 +15,8 @@
     <script nonce="{{ $cspNonce ?? '' }}" src="{{ asset('vendor/bootstrap/bootstrap-5.3.1.bundle.min.js') }}"></script>
     <script nonce="{{ $cspNonce ?? '' }}" src="{{ asset('vendor/sweetalert2/sweetalert2-11.22.0.all.min.js') }}"></script>
     <link rel="stylesheet" href="{{ asset('vendor/inter/inter.css') }}">
-    <link rel="stylesheet" href="{{ asset('css/pcg-ui.css') }}">
-    <script nonce="{{ $cspNonce ?? '' }}" src="{{ asset('js/pcg-ui.js') }}" defer></script>
+    <link rel="stylesheet" href="{{ \App\Support\Asset::v('css/pcg-ui.css') }}">
+    <script nonce="{{ $cspNonce ?? '' }}" src="{{ \App\Support\Asset::v('js/pcg-ui.js') }}" defer></script>
     <style>
         /* Inter is self-hosted: vendor/inter/inter.css */
 
@@ -91,7 +91,7 @@
         }
     </style>
     {{-- Tailwind theme colours (pcgblue, mepcomGold) live in tailwind.config.js --}}
-    <link rel="stylesheet" href="{{ asset('css/tailwind.css') }}">
+    <link rel="stylesheet" href="{{ \App\Support\Asset::v('css/tailwind.css') }}">
 </head>
 
 <body class="min-h-screen antialiased bg-gray-100" x-data="soiHandler()">

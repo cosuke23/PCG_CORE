@@ -5,7 +5,7 @@
 @section('styles')
     <link rel="stylesheet" href="{{ asset('vendor/leaflet/leaflet.css') }}">
     <link rel="stylesheet" href="{{ asset('vendor/leaflet-geocoder/Control.Geocoder.css') }}">
-    <link rel="stylesheet" href="{{ asset('css/upload-documents.css') }}">
+    <link rel="stylesheet" href="{{ \App\Support\Asset::v('css/upload-documents.css') }}">
 @endsection
 
 @php
@@ -151,5 +151,5 @@
     @php(app()->instance('csp.allow_osm', true)) {{-- map tiles and address search: OpenStreetMap on this page only --}}
     <script nonce="{{ $cspNonce ?? '' }}" src="{{ asset('vendor/leaflet/leaflet.js') }}"></script>
     <script nonce="{{ $cspNonce ?? '' }}" src="{{ asset('vendor/leaflet-geocoder/Control.Geocoder.js') }}"></script>
-    <script nonce="{{ $cspNonce ?? '' }}" src="{{ asset('js/upload-documents.js') }}"></script>
+    <script nonce="{{ $cspNonce ?? '' }}" src="{{ \App\Support\Asset::v('js/upload-documents.js') }}"></script>
 @endsection

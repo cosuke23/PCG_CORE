@@ -7,7 +7,7 @@
     <title>Upload 201 Files</title>
 
     {{-- Was @vite(...), which needs an npm build that was never deployed (HTTP 500). --}}
-    <link rel="stylesheet" href="{{ asset('css/tailwind.css') }}">
+    <link rel="stylesheet" href="{{ \App\Support\Asset::v('css/tailwind.css') }}">
 
     <style>
         body {

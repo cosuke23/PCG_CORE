@@ -25,7 +25,7 @@
             border: 1px solid rgba(255, 215, 0, 0.3);
         }
     </style>
-    <link rel="stylesheet" href="{{ asset('css/tailwind.css') }}">
+    <link rel="stylesheet" href="{{ \App\Support\Asset::v('css/tailwind.css') }}">
 </head>
 <body class="antialiased">
     <div class="relative min-h-screen hero-bg flex flex-col items-center">
