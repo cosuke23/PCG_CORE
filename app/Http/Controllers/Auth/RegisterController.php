@@ -189,9 +189,15 @@ class RegisterController extends Controller
 
             // the reference lets the administrator find this line in the log
             $ref = strtoupper(bin2hex(random_bytes(3)));
+            // A database error's message carries the whole SQL with its values
+            // (password hash, name, email, birth date): log only the
+            // database's own reason, e.g. "Data too long for column 'sub_unit'".
+            $reason = $e instanceof \Illuminate\Database\QueryException
+                ? 'SQLSTATE ' . ($e->errorInfo[0] ?? '?') . ': ' . ($e->errorInfo[2] ?? 'database error')
+                : $e->getMessage();
             Log::error('Registration failed', [
                 'ref' => $ref,
-                'error' => $e->getMessage(),
+                'error' => $reason,
                 'at' => basename($e->getFile()) . ':' . $e->getLine(),
             ]);
 

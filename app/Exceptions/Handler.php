@@ -43,8 +43,15 @@ class Handler extends ExceptionHandler
      */
     public function register()
     {
-        $this->reportable(function (Throwable $e) {
-            //
-        });
+        // A database error's message holds the whole SQL with its values
+        // (password hashes, names, emails, birth dates). Log the database's
+        // own reason and where it happened instead, never the values.
+        $this->reportable(function (\Illuminate\Database\QueryException $e) {
+            \Illuminate\Support\Facades\Log::error('Database error', [
+                'reason' => 'SQLSTATE ' . ($e->errorInfo[0] ?? '?') . ': ' . ($e->errorInfo[2] ?? 'database error'),
+                'at' => basename($e->getFile()) . ':' . $e->getLine(),
+                'url' => request()?->path(),
+            ]);
+        })->stop();
     }
 }
