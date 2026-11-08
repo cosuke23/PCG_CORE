@@ -73,18 +73,28 @@
             }));
         }
 
-        var units = D.units || { labels: [], data: [] };
-        var uc = document.getElementById('unitChart');
-        if (uc) {
-            var accent = token('--c-accent');
-            charts.push(new Chart(uc, {
-                type: 'bar',
-                data: { labels: units.labels, datasets: [{ label: 'Personnel', data: units.data, backgroundColor: accent + 'b3', hoverBackgroundColor: accent, borderRadius: 6, borderSkipped: false, maxBarThickness: 22 }] },
+        var trend = D.trend || { labels: [], registered: [], approved: [] };
+        var tc = document.getElementById('trendChart');
+        if (tc) {
+            var accent = token('--c-accent'), ok = token('--c-ok');
+            var ctx = tc.getContext('2d');
+            var grad = ctx.createLinearGradient(0, 0, 0, tc.clientHeight || 260);
+            grad.addColorStop(0, accent + '59');
+            grad.addColorStop(1, accent + '00');
+            charts.push(new Chart(tc, {
+                type: 'line',
+                data: {
+                    labels: trend.labels,
+                    datasets: [
+                        { label: 'Registered', data: trend.registered, borderColor: accent, backgroundColor: grad, fill: true, cubicInterpolationMode: 'monotone', borderWidth: 2, pointRadius: 3, pointBackgroundColor: accent },
+                        { label: 'Now approved', data: trend.approved, borderColor: ok, backgroundColor: 'transparent', borderDash: [5, 4], cubicInterpolationMode: 'monotone', borderWidth: 2, pointRadius: 2, pointBackgroundColor: ok }
+                    ]
+                },
                 options: {
-                    indexAxis: 'y', responsive: true, maintainAspectRatio: false,
+                    responsive: true, maintainAspectRatio: false, interaction: { mode: 'index', intersect: false },
                     scales: {
-                        x: { beginAtZero: true, ticks: { precision: 0, color: muted }, grid: { color: line }, border: { display: false } },
-                        y: { ticks: { color: text, autoSkip: false }, grid: { display: false }, border: { display: false } }
+                        x: { ticks: { color: muted, maxRotation: 0, autoSkipPadding: 12 }, grid: { display: false }, border: { display: false } },
+                        y: { beginAtZero: true, ticks: { precision: 0, color: muted }, grid: { color: line }, border: { display: false } }
                     },
                     plugins: { legend: { display: false }, tooltip: tooltip }
                 }
@@ -179,9 +189,13 @@
         if (!user) return;
         if (statusKey(user.status) === 'pending') review(user); else showDetails(user);
     }
-    function rowById(id) {
-        return document.querySelector('#personnelTable tbody tr[data-id="' + CSS.escape(String(id)) + '"]');
-    }
+    // collected before DataTables pages the table (rows on other pages leave the DOM)
+    var usersById = {};
+    document.querySelectorAll('#personnelTable tbody tr[data-id]').forEach(function (tr) {
+        var u = userFromRow(tr);
+        if (u) usersById[String(u.id)] = u;
+    });
+    function userById(id) { return usersById[String(id)] || null; }
 
     /* ---------------- table + filters ---------------- */
     var table = null;
@@ -189,7 +203,7 @@
     function setFilter(key) {
         activeFilter = key || '';
         document.querySelectorAll('[data-ad-filter]').forEach(function (b) {
-            if (b.classList.contains('ad-head__cta') || b.classList.contains('ad-link')) return;
+            if (!b.classList.contains('ad-kpi') && !b.closest('.ad-segment')) return;
             b.setAttribute('aria-pressed', b.getAttribute('data-ad-filter') === activeFilter ? 'true' : 'false');
         });
         if (table) table.draw();
@@ -232,16 +246,16 @@
             var f = e.target.closest('[data-ad-filter]');
             if (f) {
                 setFilter(f.getAttribute('data-ad-filter'));
-                if (f.classList.contains('ad-head__cta') || f.classList.contains('ad-link') || f.classList.contains('ad-kpi')) {
+                if (!f.closest('.ad-segment')) {
                     var t = document.getElementById('ad-table-title');
                     if (t) t.scrollIntoView({ behavior: 'smooth', block: 'start' });
                 }
                 return;
             }
             var r = e.target.closest('[data-ad-review]');
-            if (r) { var row = rowById(r.getAttribute('data-ad-review')); var u = userFromRow(row); if (u) review(u); return; }
+            if (r) { var u = userById(r.getAttribute('data-ad-review')); if (u) review(u); return; }
             var v = e.target.closest('[data-ad-view]');
-            if (v) { var u2 = userFromRow(rowById(v.getAttribute('data-ad-view'))); if (u2) showDetails(u2); }
+            if (v) { var u2 = userById(v.getAttribute('data-ad-view')); if (u2) showDetails(u2); }
         });
 
         buildCharts();

@@ -58,7 +58,9 @@ class AdminController extends Controller
                 'users.mother_unit',
                 'users.sub_unit',
                 'users.unit_assignment',
+                'users.registration_type',
                 'users.created_at',
+                'users.updated_at',
                 'reinlist_academic.course',
                 'reinlist_academic.level',
                 'reinlist_academic.school'
@@ -75,8 +77,11 @@ class AdminController extends Controller
                 return $user->unit_assignment ?: 'N/A';
             })
             ->map->count();
+        $crm = $this->registrationPipeline($usersWithCourse);
+
         return view('admin.dashboard', compact(
 
+            'crm',
             'allUsers',
             'totalUsers',
             'pendingUsers',
@@ -86,6 +91,75 @@ class AdminController extends Controller
             'unitCounts',
             'usersWithCourse' // 👈 pass to blade
         ));
+    }
+
+    /**
+     * CRM-style figures for the dashboard: monthly trend, month-on-month change,
+     * oldest pending registration and a recent activity feed (registrations from
+     * users.created_at, decisions from the admin audit log). Dates in Asia/Manila.
+     */
+    private function registrationPipeline($users): array
+    {
+        $tz = 'Asia/Manila';
+        $now = now($tz);
+        $status = fn ($u) => strtolower(trim((string) $u->status));
+        $local = fn ($v) => $v ? \Illuminate\Support\Carbon::parse($v, config('app.timezone'))->timezone($tz) : null;
+
+        $months = [];
+        for ($i = 11; $i >= 0; $i--) {
+            $m = $now->copy()->startOfMonth()->subMonths($i);
+            $months[$m->format('Y-m')] = ['label' => $m->format('M Y'), 'registered' => 0, 'approved' => 0];
+        }
+        foreach ($users as $u) {
+            $at = $local($u->created_at);
+            if (!$at || !isset($months[$at->format('Y-m')])) {
+                continue;
+            }
+            $months[$at->format('Y-m')]['registered']++;
+            if ($status($u) === 'approved') {
+                $months[$at->format('Y-m')]['approved']++;
+            }
+        }
+
+        $thisKey = $now->format('Y-m');
+        $lastKey = $now->copy()->startOfMonth()->subMonth()->format('Y-m');
+        $thisMonth = $months[$thisKey]['registered'];
+        $lastMonth = $months[$lastKey]['registered'];
+
+        $oldestPending = $users->filter(fn ($u) => $status($u) === 'pending' && $u->created_at)
+            ->map(fn ($u) => $local($u->created_at))->sort()->first();
+
+        $byId = $users->keyBy('id');
+        $activity = $users->filter(fn ($u) => $u->created_at)->map(fn ($u) => [
+            'type' => 'registered', 'at' => $local($u->created_at), 'user' => $u, 'by' => null,
+        ])->values();
+
+        if (\Illuminate\Support\Facades\Schema::hasTable('admin_audit_logs')) {
+            $decisions = DB::table('admin_audit_logs')
+                ->where(fn ($q) => $q->where('action', 'like', 'admin/approve/%')->orWhere('action', 'like', 'admin/reject/%'))
+                ->where('status', '<', 400)
+                ->orderByDesc('id')->limit(40)
+                ->get(['action', 'admin_email', 'created_at']);
+            foreach ($decisions as $d) {
+                [, $verb, $id] = array_pad(explode('/', $d->action), 3, null);
+                $u = $byId->get((int) $id);
+                // a refused approval still answered with a redirect: only count it if the member is approved now
+                if (!$u || ($verb === 'approve' && $status($u) !== 'approved')) {
+                    continue;
+                }
+                $activity->push(['type' => $verb === 'approve' ? 'approved' : 'rejected', 'at' => $local($d->created_at), 'user' => $u, 'by' => $d->admin_email]);
+            }
+        }
+
+        return [
+            'months' => array_values($months),
+            'thisMonth' => $thisMonth,
+            'lastMonth' => $lastMonth,
+            'change' => $lastMonth > 0 ? (int) round(($thisMonth - $lastMonth) / $lastMonth * 100) : null,
+            'oldestPendingDays' => $oldestPending ? (int) $oldestPending->diffInDays($now) : null,
+            'activity' => $activity->sortByDesc('at')->take(8)->values(),
+            'nonOfficers' => $users->filter(fn ($u) => strtolower((string) $u->registration_type) === 'non_officer')->count(),
+        ];
     }
 
     // Approve a user
