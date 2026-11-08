@@ -1,4 +1,4 @@
-/* Member: required documents. Shows chosen file names, counts them, drag and drop,
+/* Member upload pages (Required documents, 201 files). Shows chosen file names, counts them, drag and drop,
    the residence map (Leaflet + address search), and the upload overlay. */
 (function () {
     'use strict';
@@ -62,7 +62,7 @@
         var n = chosen();
         if (!n && !changedFields()) {
             e.preventDefault();
-            count.textContent = 'Nothing to save yet: choose a file, change a date or move the pin.';
+            count.textContent = tracked.length ? 'Nothing to save yet: choose a file, change a date or move the pin.' : 'Nothing to upload yet: choose a file first.';
             count.classList.add('is-warn');
             return;
         }

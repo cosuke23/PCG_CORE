@@ -369,6 +369,6 @@ class ApplicantDocumentController extends Controller
 
         return redirect()
             ->route('upload.201')
-            ->with('success', '201 Files uploaded successfully.');
+            ->with('success', (count($uploadedFiles) === 1 ? '1 file' : count($uploadedFiles) . ' files') . ' uploaded and encrypted to your 201 file.');
     }
 }

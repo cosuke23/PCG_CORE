@@ -80,3 +80,4 @@
     @keyframes ud-spin { to { transform: rotate(360deg); } }
     .ud-drop { transition: border-color .15s, background-color .15s; }
 }
+.ud-letter { color: var(--ud-accent); font-weight: 700; margin-right: 2px; }
