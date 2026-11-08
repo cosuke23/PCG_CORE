@@ -115,7 +115,7 @@ class DocumentUploadModuleTest extends TestCase
         $this->assertNull($this->row()->nbi_clearance ?? null);
     }
 
-    public function test_a_save_changes_only_what_changed_and_keeps_the_review_status()
+    public function test_a_save_changes_only_what_changed_and_sends_it_back_for_review()
     {
         DB::table('personnel_data')->insert(['personnel_id' => $this->member->id, 'serial_number' => 'SN-1', 'soi' => 'documents/old.pdf',
             'nbi_clearance_expiration' => '2027-01-01', 'latitude' => 14.5995, 'longitude' => 120.9842, 'status' => 'approved']);
@@ -126,13 +126,14 @@ class DocumentUploadModuleTest extends TestCase
             ->assertSessionHas('info');
         $this->assertSame('approved', $this->row()->status);
 
-        // pin only: saved, decision kept
-        $this->post('/documents/upload', ['latitude' => '14.6', 'longitude' => '121.0'])->assertSessionHas('success', 'Changes saved.');
-        $this->assertSame('approved', $this->row()->status);
+        // pin moved after approval: the checker reviews the residence again
+        $this->post('/documents/upload', ['latitude' => '14.6', 'longitude' => '121.0'])->assertSessionHas('success', 'Changes saved. Your unit checker will review them.');
+        $this->assertSame('Pending', $this->row()->status);
         $this->assertEqualsWithDelta(14.6, (float) $this->row()->latitude, 0.000001);
 
         // a clearance date changed: reviewed again
-        $this->post('/documents/upload', ['nbi_clearance_expiration' => '2028-06-30'])->assertSessionHas('success', 'Changes saved.');
+        DB::table('personnel_data')->update(['status' => 'approved']);
+        $this->post('/documents/upload', ['nbi_clearance_expiration' => '2028-06-30'])->assertSessionHas('success', 'Changes saved. Your unit checker will review them.');
         $this->assertSame('Pending', $this->row()->status);
         $this->assertSame('documents/old.pdf', $this->row()->soi, 'other documents untouched');
     }

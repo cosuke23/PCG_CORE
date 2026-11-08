@@ -144,6 +144,39 @@ Checked and found safe, among others:
 
 Still open: N12, the sequential OSAERT verify ids.
 
+## 0j. Reverse-engineering review, second pass (2026-11-08)
+
+A second attacker-style pass over everything changed since 0i (38 commits): the Adjutant module, checker accounts, `pcg:purge-accounts`, `pcg:schema-report`, registration (draft kept after refresh), the redesigned member pages (Required documents, 201 files, training tracks), the admin console, the CRM dashboard with JSON approve/reject, the HRMIS overview and its export, and the navbar. Each finding was checked by reading the code end to end. The penetration test against the production-like copy (deploy kit nginx site and PHP pool): **30 of 31 passed**. The one failure is the expected plain-HTTP cookie result from 0h. 238 automated tests pass, the member browser flows pass 16 of 16, and `composer audit` and `npm audit` are clean.
+
+| # | Sev. | Finding | Status |
+|---|------|---------|--------|
+| W1 | Medium | `POST /reinlist/store`, an old one-shot SOI save, was still live although no page called it. It deleted every `reinlist_trainings` row of the member's serial, including Coast Guard schooling recorded by the Adjutant. This broke the owner decision of 2026-11-08. It also had looser list validation than the step saves. | **Fixed**: route and `ReenlistController` removed (404). The SOI saves through `/temp-save/step1..6`, which keep Adjutant rows. |
+| W2 | Low | A member could move the residence pin after the unit checker approved the record, and the status stayed Approved. | **Fixed**: a pin change also sends the record back to Pending. **Behaviour change**: before, a pin-only save kept the decision. |
+| W3 | Low | Database errors in the log could still quote a value: MySQL's own reason includes it (`Duplicate entry 'juan@x.ph' for key …`, `Incorrect integer value: '…'`). | **Fixed**: `App\Support\DbError::reason()` keeps column, key and table names and blanks every other quoted text. Used by the exception handler and by registration. |
+| W4 | Low | The Adjutant could save any free text as an award type. It then appeared in the member's SOI as an official award (escaped, so no XSS). | **Fixed**: the type must be on the shared list. `App\Support\CgAwardTypes` reads it from `applicant/partials/cg-award-options`, so the form and the server cannot drift apart. |
+| W5 | Info | The member's SOI page carried the internal admin id (`added_by`) of the Adjutant who recorded an entry. | **Fixed**: the page gets only true/false ("Recorded by the Adjutant"). |
+| W6 | Info | `pcg:purge-accounts` deletes rows in **every** table with a serial number, including LMS enrolments and disciplinary actions. Its description did not say so. | **Documented** in the command. The dry run already lists per-table counts, so read them before `--apply`. |
+
+Checked and found safe, among others:
+- the Adjutant scope (approved members with a current assignment in the Adjutant's unit, 404 outside it);
+- serial numbers taken from the member row, never from input;
+- deletes limited to the member's rows with `added_by` set;
+- all routes in the right groups and listed in `AccessControlTest`;
+- the CRM dashboard (org-wide HR roles only, escaped Swal HTML, `@json` data, no hashes or tokens);
+- the HRMIS export (re-applies `OrgScope`, audited, formula-safe; no birth dates or contacts in the rows);
+- the navbar search (links only from the server-rendered sidebar, so no open redirect);
+- the theme and sidebar values in `localStorage` (only fixed values accepted);
+- nonces on every script, no inline handlers, no `{!! !!}` with user data;
+- the registration draft (password and selfie never stored);
+- the 0i fixes (no regressions).
+
+Left as they are (owner decisions or accepted):
+- The registration draft keeps rank, serial, name, email, birth date and unit in the tab's `sessionStorage` for 12 hours, so on a shared PC the next person in that tab could see them. Options: leave out the birth date, or drop the draft after 30 minutes of inactivity.
+- The Required documents page asks for the browser's location as soon as it opens, only to centre the map; the position is never sent. A "Show my location" button would ask only on demand.
+- Any Adjutant of the same unit can remove an entry another Adjutant added (both are in scope; every removal is audited).
+- The rollbacks of migrations 2026_11_08_000001/2 rely on state files in `storage/app/migration-state/`. On Hermes `storage/` is shared across releases, so they work there.
+- Still open from before: N12 (sequential OSAERT ids), the unique serial index, email squatting, disciplinary soft delete.
+
 ## 0i. Reverse-engineering review (2026-11-07)
 
 The whole system was taken apart the way an attacker would: the browser code and what it trusts, the web server rules, the build tools, every controller that writes data (white-box), and the running copy from outside (black-box). The penetration test against the production-like copy (deploy kit nginx site and PHP pool): **30 of 31 passed**, the same expected plain-HTTP cookie result as in 0h. 206 automated tests pass; browser flows show no JavaScript or CSP errors.

@@ -5,10 +5,12 @@ namespace App\Http\Controllers;
 use App\Models\Personnel;
 use App\Services\OrgScope;
 use App\Support\AdminAudit;
+use App\Support\CgAwardTypes;
 use App\Support\TableColumns;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
+use Illuminate\Validation\Rule;
 
 /**
  * Adjutant module: records the Coast Guard parts of a member's SOI that members
@@ -93,7 +95,7 @@ class AdjutantController extends Controller
     {
         $m = $this->member($user);
         $data = $request->validate([
-            'type' => 'required|string|max:255',
+            'type' => ['required', 'string', 'max:255', Rule::in(CgAwardTypes::all())],
             'authority' => 'required|string|max:255',
         ]);
 

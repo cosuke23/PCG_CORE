@@ -89,6 +89,10 @@ class AdjutantTest extends TestCase
         $this->assertSame($this->adjutantId, (int) $tr->added_by);
 
         $this->post('/admin/adjutant/' . $this->inside . '/trainings', ['type' => 'Made-up type', 'course' => 'X'])->assertSessionHasErrors('type');
+        // award types come from the shared list only (the Medal of Valor text is on it; free text is not)
+        $this->post('/admin/adjutant/' . $this->inside . '/awards', ['type' => 'Made-up Medal of Everything', 'authority' => 'GO 1'])->assertSessionHasErrors('type');
+        $this->assertSame(1, DB::table('reinlist_cg_awards_decorations')->count());
+        $this->assertContains('Medalya ng Katapatan sa Paglilingkod (PNP Distinguished Service Medal)', \App\Support\CgAwardTypes::all(), 'multi-line options are read as the browser sends them');
         $this->assertDatabaseHas('admin_audit_logs', ['action' => 'adjutant.award.added']);
         $this->assertDatabaseHas('admin_audit_logs', ['action' => 'adjutant.training.added']);
     }
