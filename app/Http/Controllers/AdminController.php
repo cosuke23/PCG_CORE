@@ -117,8 +117,17 @@ class AdminController extends Controller
         [$approved, $user] = $result;
 
         if (!$approved) {
-            return back()->with('error', 'Not approved: serial number ' . $user->serial_number
-                . ' already belongs to another account. Reject this registration or correct the serial first.');
+            $message = 'Not approved: serial number ' . $user->serial_number
+                . ' already belongs to another account. Reject this registration or correct the serial first.';
+            if (request()->expectsJson()) {
+                return response()->json(['ok' => false, 'message' => $message], 409);
+            }
+
+            return back()->with('error', $message);
+        }
+
+        if (request()->expectsJson()) {
+            return response()->json(['ok' => true, 'status' => 'Approved', 'message' => $user->name . ' has been approved.']);
         }
 
         return back()->with('success', $user->name . ' has been approved.');
@@ -134,6 +143,10 @@ class AdminController extends Controller
         $user = User::findOrFail($id);
         $user->status = 'Rejected';
         $user->save();
+
+        if (request()->expectsJson()) {
+            return response()->json(['ok' => true, 'status' => 'Rejected', 'message' => $user->name . ' has been rejected.']);
+        }
 
         return back()->with('error', $user->name . ' has been rejected.');
     }
