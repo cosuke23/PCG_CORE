@@ -50,12 +50,11 @@ class UnitAccountController extends Controller
         abort_unless(\App\Support\AdminPermissions::can('documents.restricted'), 403,
             'Only an admin who may see restricted documents can set a checker account password.');
 
-        $updated = DB::table('unit_users')->where('id', $id)->update([
+        abort_unless(DB::table('unit_users')->where('id', $id)->exists(), 404);
+        DB::table('unit_users')->where('id', $id)->update(\App\Support\TableColumns::fit('unit_users', [
             'password' => Hash::make($request->password),
             'updated_at' => now(),
-        ]);
-
-        abort_unless($updated, 404);
+        ]));
 
         Log::info('Unit account password set by admin', ['unit_user_id' => $id]);
 
@@ -70,12 +69,11 @@ class UnitAccountController extends Controller
         abort_if($request->role === UnitUser::ROLE_M1 && !\App\Support\AdminPermissions::can('documents.restricted'), 403,
             'Only the super admin can grant M1 (all units) access.');
 
-        $updated = DB::table('unit_users')->where('id', $id)->update([
+        abort_unless(DB::table('unit_users')->where('id', $id)->exists(), 404);
+        DB::table('unit_users')->where('id', $id)->update(\App\Support\TableColumns::fit('unit_users', [
             'role' => $request->role,
             'updated_at' => now(),
-        ]);
-
-        abort_unless($updated, 404);
+        ]));
 
         Log::info('Unit account role changed by admin', ['unit_user_id' => $id, 'role' => $request->role]);
 
@@ -90,12 +88,11 @@ class UnitAccountController extends Controller
             'is_active' => 'required|boolean',
         ]);
 
-        $updated = DB::table('unit_users')->where('id', $id)->update([
+        abort_unless(DB::table('unit_users')->where('id', $id)->exists(), 404);
+        DB::table('unit_users')->where('id', $id)->update(\App\Support\TableColumns::fit('unit_users', [
             'is_active' => $request->boolean('is_active'),
             'updated_at' => now(),
-        ]);
-
-        abort_unless($updated, 404);
+        ]));
 
         return back()->with('success', $request->boolean('is_active') ? 'Account activated.' : 'Account deactivated. It can no longer sign in.');
     }
