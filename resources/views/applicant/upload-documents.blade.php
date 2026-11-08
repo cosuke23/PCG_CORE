@@ -1,19 +1,12 @@
-<!DOCTYPE html>
-<html lang="en">
+@extends('layouts.personnel')
 
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>Required documents · MEPCOM HRMIS</title>
-    <link rel="stylesheet" href="{{ asset('vendor/inter/inter.css') }}">
-    <link rel="stylesheet" href="{{ asset('vendor/fontawesome/css/all.min.css') }}">
-    <link rel="stylesheet" href="{{ asset('css/pcg-ui.css') }}">
+@section('title', 'Required documents')
+
+@section('styles')
     <link rel="stylesheet" href="{{ asset('vendor/leaflet/leaflet.css') }}">
     <link rel="stylesheet" href="{{ asset('vendor/leaflet-geocoder/Control.Geocoder.css') }}">
     <link rel="stylesheet" href="{{ asset('css/upload-documents.css') }}">
-    <script nonce="{{ $cspNonce ?? '' }}" src="{{ asset('js/pcg-ui.js') }}" defer></script>
-</head>
+@endsection
 
 @php
     $docs = $documents ?? null;
@@ -48,9 +41,7 @@
     $done = collect($groups)->map(fn ($g) => array_keys($g))->flatten()->filter(fn ($f) => !empty($docs->$f))->count();
 @endphp
 
-<body class="pcg ud">
-    <a class="pcg-skip-link" href="#ud-main">Skip to content</a>
-
+@section('content')
     <div class="ud-overlay" id="ud-overlay" hidden>
         <div class="ud-overlay__box" role="status" aria-live="polite">
             <span class="ud-spinner" aria-hidden="true"></span>
@@ -58,14 +49,7 @@
         </div>
     </div>
 
-    <header class="ud-top">
-        <div class="ud-wrap ud-top__row">
-            <a class="ud-back" href="/profile"><i class="fa-solid fa-arrow-left" aria-hidden="true"></i> Back to profile</a>
-            <span class="ud-brand">MEPCOM HRMIS</span>
-        </div>
-    </header>
-
-    <main class="ud-wrap ud-main" id="ud-main">
+    <div class="pcg-page ud ud-main">
         <section class="ud-hero">
             <div>
                 <p class="ud-eyebrow">Statement of Information · requirements</p>
@@ -82,19 +66,6 @@
             <i class="fa-solid fa-lock" aria-hidden="true"></i>
             <span>Every file is encrypted with <strong>AES-256</strong> as soon as it arrives and stored under a random name. Only you, your unit's document checker and authorised HR staff can open it, and each opening is logged.</span>
         </p>
-
-        @if (session('success'))
-            <div class="pcg-alert pcg-alert--success" role="status">{{ session('success') }}</div>
-        @endif
-        @if (session('error'))
-            <div class="pcg-alert pcg-alert--danger" role="alert">{{ session('error') }}</div>
-        @endif
-        @if ($errors->any())
-            <div class="pcg-alert pcg-alert--danger" role="alert">
-                <p><strong>Nothing was uploaded. Please fix the following:</strong></p>
-                <ul>@foreach ($errors->all() as $error)<li>{{ $error }}</li>@endforeach</ul>
-            </div>
-        @endif
 
         <form id="uploadForm" action="/documents/upload" method="POST" enctype="multipart/form-data">
             @csrf
@@ -165,7 +136,7 @@
             </section>
 
             <div class="ud-bar">
-                <div class="ud-wrap ud-bar__row">
+                <div class="ud-bar__row">
                     <span class="ud-bar__count" id="ud-count" aria-live="polite">No new files chosen</span>
                     <button type="submit" id="submitBtn" class="pcg-btn pcg-btn--primary">
                         <i class="fa-solid fa-upload" aria-hidden="true"></i> Save and upload
@@ -173,12 +144,12 @@
                 </div>
             </div>
         </form>
-    </main>
+    </div>
+@endsection
 
+@section('scripts')
     @php(app()->instance('csp.allow_osm', true)) {{-- map tiles and address search: OpenStreetMap on this page only --}}
     <script nonce="{{ $cspNonce ?? '' }}" src="{{ asset('vendor/leaflet/leaflet.js') }}"></script>
     <script nonce="{{ $cspNonce ?? '' }}" src="{{ asset('vendor/leaflet-geocoder/Control.Geocoder.js') }}"></script>
     <script nonce="{{ $cspNonce ?? '' }}" src="{{ asset('js/upload-documents.js') }}"></script>
-</body>
-
-</html>
+@endsection

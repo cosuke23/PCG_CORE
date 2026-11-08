@@ -707,7 +707,7 @@
     transition: background-color var(--pcg-transition), color var(--pcg-transition);
 }
 
-.pcg .pcg-nav__link {
+.pcg a.pcg-nav__link {
     color: rgba(255, 255, 255, 0.82);
 }
 
@@ -717,12 +717,12 @@
     color: rgba(255, 255, 255, 0.55);
 }
 
-.pcg .pcg-nav__link:hover {
+.pcg a.pcg-nav__link:hover {
     color: var(--pcg-white);
     background: rgba(255, 255, 255, 0.07);
 }
 
-.pcg .pcg-nav__link[aria-current="page"] {
+.pcg a.pcg-nav__link[aria-current="page"] {
     color: var(--pcg-white);
     background: rgba(201, 162, 39, 0.14);
     border-left-color: var(--pcg-gold-500);
