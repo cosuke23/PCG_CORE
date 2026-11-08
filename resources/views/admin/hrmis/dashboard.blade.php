@@ -3,7 +3,7 @@
 @section('title', 'HRMIS overview')
 
 @section('styles')
-    <link rel="stylesheet" href="{{ asset('css/hrmis-overview.css') }}">
+    <link rel="stylesheet" href="{{ \App\Support\Asset::v('css/hrmis-overview.css') }}">
 @endsection
 
 @section('content')
@@ -225,5 +225,5 @@
 @endsection
 
 @section('scripts')
-    <script nonce="{{ $cspNonce ?? '' }}" src="{{ asset('js/hrmis-overview.js') }}" defer></script>
+    <script nonce="{{ $cspNonce ?? '' }}" src="{{ \App\Support\Asset::v('js/hrmis-overview.js') }}" defer></script>
 @endsection

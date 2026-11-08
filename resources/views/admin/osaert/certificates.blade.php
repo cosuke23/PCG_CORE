@@ -327,7 +327,7 @@
             }
         }
     </style>
-    <script nonce="{{ $cspNonce ?? '' }}" src="{{ asset('js/pcg-ui.js') }}" defer></script>
+    <script nonce="{{ $cspNonce ?? '' }}" src="{{ \App\Support\Asset::v('js/pcg-ui.js') }}" defer></script>
 </head>
 
 <body>

@@ -13,7 +13,7 @@
     {{-- Alpine.js is loaded once by layouts/app (a second copy initialised the form twice) --}}
     <script nonce="{{ $cspNonce ?? '' }}" src="{{ asset('vendor/sweetalert2/sweetalert2-11.22.0.all.min.js') }}"></script>
     <title>SOI Form</title>
-    <link rel="stylesheet" href="{{ asset('css/tailwind.css') }}">
+    <link rel="stylesheet" href="{{ \App\Support\Asset::v('css/tailwind.css') }}">
 </head>
 
 <body class="bg-gray-900 text-white">

@@ -150,7 +150,27 @@ class ApplicantDocumentController extends Controller
                 }
             }
 
-            $data['status'] = 'Pending';
+            // What actually changed: a resubmission without any change must not
+            // undo the checker's decision, and the message must say what happened.
+            $uploaded = count(array_intersect_key($data, $fileFields));
+            $changed = array_filter(array_diff_key($data, $fileFields), function ($value, $field) use ($existing) {
+                $old = $existing->$field ?? null;
+                if (in_array($field, ['latitude', 'longitude'], true)) {
+                    return ($old === null) !== ($value === null) || ($value !== null && abs((float) $old - (float) $value) > 0.0000005);
+                }
+
+                return (string) $old !== (string) $value;
+            }, ARRAY_FILTER_USE_BOTH);
+
+            if (!$uploaded && !$changed) {
+                return back()->with('info', 'Nothing to save: no file was chosen and no date or pin changed.');
+            }
+            $data = array_intersect_key($data, $fileFields) + $changed;
+
+            // documents or their validity changed: the unit checker reviews again
+            if ($uploaded || array_diff_key($changed, ['latitude' => 1, 'longitude' => 1])) {
+                $data['status'] = 'Pending';
+            }
             $data['updated_at'] = now();
 
             // ================= SAVE =================
@@ -174,7 +194,9 @@ class ApplicantDocumentController extends Controller
 
             Log::info('=== UPLOAD SUCCESS ===');
 
-            return back()->with('success', 'Documents uploaded successfully!');
+            return back()->with('success', $uploaded
+                ? ($uploaded === 1 ? '1 file' : $uploaded . ' files') . ' uploaded and encrypted. Your unit checker will review ' . ($uploaded === 1 ? 'it.' : 'them.')
+                : 'Changes saved.');
         } catch (\Exception $e) {
 
             Log::error('❌ UPLOAD FAILED', [

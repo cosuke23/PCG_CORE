@@ -6,8 +6,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Document Checker</title>
 
-    <link rel="stylesheet" href="{{ asset('css/tailwind.css') }}">
-    <script nonce="{{ $cspNonce ?? '' }}" src="{{ asset('js/pcg-ui.js') }}" defer></script>
+    <link rel="stylesheet" href="{{ \App\Support\Asset::v('css/tailwind.css') }}">
+    <script nonce="{{ $cspNonce ?? '' }}" src="{{ \App\Support\Asset::v('js/pcg-ui.js') }}" defer></script>
 </head>
 
 <body id="body"

@@ -15,15 +15,15 @@
     <link rel="icon" href="{{ asset('favicon.ico') }}">
     <link rel="stylesheet" href="{{ asset('vendor/inter/inter.css') }}">
     <link rel="stylesheet" href="{{ asset('vendor/fontawesome/css/all.min.css') }}">
-    <link rel="stylesheet" href="{{ asset('css/tailwind.css') }}">
-    <link rel="stylesheet" href="{{ asset('css/pcg-ui.css') }}">
-    <link rel="stylesheet" href="{{ asset('css/pcg-console.css') }}">
+    <link rel="stylesheet" href="{{ \App\Support\Asset::v('css/tailwind.css') }}">
+    <link rel="stylesheet" href="{{ \App\Support\Asset::v('css/pcg-ui.css') }}">
+    <link rel="stylesheet" href="{{ \App\Support\Asset::v('css/pcg-console.css') }}">
     {{-- theme before first paint: the viewer's saved choice, dark by default --}}
     <script nonce="{{ $cspNonce ?? '' }}">
         (function () { try { var t = localStorage.getItem('pcgTheme'); if (t === 'light' || t === 'dark') document.documentElement.setAttribute('data-theme', t); } catch (e) {} })();
     </script>
-    <script nonce="{{ $cspNonce ?? '' }}" src="{{ asset('js/pcg-theme.js') }}" defer></script>
-    <script nonce="{{ $cspNonce ?? '' }}" src="{{ asset('js/pcg-ui.js') }}" defer></script>
+    <script nonce="{{ $cspNonce ?? '' }}" src="{{ \App\Support\Asset::v('js/pcg-theme.js') }}" defer></script>
+    <script nonce="{{ $cspNonce ?? '' }}" src="{{ \App\Support\Asset::v('js/pcg-ui.js') }}" defer></script>
     @yield('styles')
 </head>
 

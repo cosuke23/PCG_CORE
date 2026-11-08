@@ -14,8 +14,8 @@
     @include('partials.share-meta')
     <link rel="icon" href="{{ asset('favicon.ico') }}">
     <link rel="stylesheet" href="{{ asset('vendor/inter/inter.css') }}">
-    <link rel="stylesheet" href="{{ asset('css/pcg-ui.css') }}">
-    <script nonce="{{ $cspNonce ?? '' }}" src="{{ asset('js/pcg-ui.js') }}" defer></script>
+    <link rel="stylesheet" href="{{ \App\Support\Asset::v('css/pcg-ui.css') }}">
+    <script nonce="{{ $cspNonce ?? '' }}" src="{{ \App\Support\Asset::v('js/pcg-ui.js') }}" defer></script>
 </head>
 
 <body class="pcg">

@@ -82,7 +82,7 @@ async function step(name, fn) {
     await me.click('.swal2-confirm').catch(() => {});
     const v = sql("select ombudsman_clearance from personnel_data pd join users u on u.id=pd.personnel_id where u.email='member@demo.test'");
     check('Personnel uploads a required document', /^documents\/\d+_[0-9a-f]{24}\.pdf$/.test(v), v);
-    check('Upload success message shown', (await me.content()).includes('Documents uploaded successfully'));
+    check('Upload success message shown', (await me.content()).includes('uploaded and encrypted'));
     const res = await me.request.get(BASE + '/files/documents_toupload/' + v);
     check('Personnel can open own uploaded file', res.status() === 200);
   });
