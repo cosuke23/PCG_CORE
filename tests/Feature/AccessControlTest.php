@@ -32,6 +32,7 @@ class AccessControlTest extends TestCase
             ['post', '/admin/osaert/bulk-upload'],
             ['get', '/admin/organization'],
             ['get', '/admin/hrmis'],
+            ['post', '/admin/hrmis/export'],
             ['get', '/admin/personnel'],
             ['get', '/admin/personnel/create'],
             ['get', '/admin/personnel/1/edit'],

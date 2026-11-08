@@ -4,7 +4,7 @@
     Page content may still use Tailwind utilities; the shell uses pcg-ui.css.
 --}}
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="dark">
 
 <head>
     <meta charset="UTF-8">
@@ -17,11 +17,17 @@
     <link rel="stylesheet" href="{{ asset('vendor/fontawesome/css/all.min.css') }}">
     <link rel="stylesheet" href="{{ asset('css/tailwind.css') }}">
     <link rel="stylesheet" href="{{ asset('css/pcg-ui.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/pcg-console.css') }}">
+    {{-- theme before first paint: the viewer's saved choice, dark by default --}}
+    <script nonce="{{ $cspNonce ?? '' }}">
+        (function () { try { var t = localStorage.getItem('pcgTheme'); if (t === 'light' || t === 'dark') document.documentElement.setAttribute('data-theme', t); } catch (e) {} })();
+    </script>
+    <script nonce="{{ $cspNonce ?? '' }}" src="{{ asset('js/pcg-theme.js') }}" defer></script>
     <script nonce="{{ $cspNonce ?? '' }}" src="{{ asset('js/pcg-ui.js') }}" defer></script>
     @yield('styles')
 </head>
 
-<body class="pcg">
+<body class="pcg pcg-app">
     <a class="pcg-skip-link" href="#content">Skip to content</a>
 
     <div class="pcg-console" data-nav-open="false">
@@ -108,6 +114,11 @@
                 <div class="pcg-topbar__user">
                     <span>Signed in as <strong>{{ session('admin_name') ?: session('admin_email', 'Administrator') }}</strong>
                         · {{ str_replace('_', ' ', session('admin_role', 'admin')) }}{{ session('admin_org_unit_id') ? ' · ' . \App\Models\OrgUnit::whereKey(session('admin_org_unit_id'))->value('code') : '' }}</span>
+                    <button type="button" class="pcg-btn pcg-btn--secondary pcg-btn--sm pcg-theme-toggle" data-pcg-theme-toggle aria-pressed="false">
+                        <span class="when-dark"><i class="fa-solid fa-sun" aria-hidden="true"></i> Light</span>
+                        <span class="when-light"><i class="fa-solid fa-moon" aria-hidden="true"></i> Dark</span>
+                        <span class="pcg-visually-hidden">theme</span>
+                    </button>
                     <form action="{{ route('admin.logout') }}" method="POST">
                         @csrf
                         <button type="submit" class="pcg-btn pcg-btn--secondary pcg-btn--sm">

@@ -73,4 +73,58 @@ class HrmisDashboardTest extends TestCase
         $this->withSession(['admin_logged_in' => true, 'admin_role' => 'super_admin'])->get('/admin/hrmis')
             ->assertOk()->assertSee('No personnel records yet')->assertViewHas('total', 0);
     }
+
+    public function test_explorer_rows_follow_the_scope_and_carry_no_birth_dates_or_contacts()
+    {
+        $mepcom = OrgUnit::where('code', 'MEPCOM')->first();
+        $mssc = OrgUnit::where('code', 'MSSC')->first();
+        $meplef = OrgUnit::create(['parent_id' => $mepcom->id, 'code' => 'MEPLEF', 'name' => 'Law Enforcement Force', 'type' => 'unit']);
+        $a = $this->person('A1', $meplef, 'LT', 'Ana Officer', now()->subDays(3)->toDateString());
+        $a->update(['email' => 'ana.private@example.test', 'contact_number' => '09170000000']);
+        $this->person('B1', $mssc, 'CAPT', 'Dan Mssc');
+        Personnel::create(['serial_number' => 'C1', 'full_name' => 'Eve Unassigned']);
+
+        $scoped = $this->withSession(['admin_logged_in' => true, 'admin_role' => 'hr_admin', 'admin_org_unit_id' => $mepcom->id])->get('/admin/hrmis')->assertOk();
+        $rows = collect($scoped->viewData('explorer')['rows']);
+        $this->assertSame(['A1'], $rows->pluck('serial')->all());
+        $row = $rows->first();
+        $this->assertSame('MEPLEF', $row['bucket']);
+        $this->assertTrue($row['moved']);
+        $this->assertSame([], $row['missing']);
+        $this->assertArrayNotHasKey('date_of_birth', $row);
+        $scoped->assertDontSee('1990-01-01')->assertDontSee('ana.private@example.test')->assertDontSee('09170000000')->assertDontSee('Dan Mssc');
+
+        $this->flushSession();
+        $hq = $this->withSession(['admin_logged_in' => true, 'admin_role' => 'hr_admin'])->get('/admin/hrmis')->assertOk();
+        $all = collect($hq->viewData('explorer')['rows'])->keyBy('serial');
+        $this->assertCount(3, $all);
+        $this->assertNull($all['C1']['unit']);
+        $this->assertSame(['rank', 'birth date', 'service entry date'], $all['C1']['missing']);
+        // rows add up to the figures shown on the cards
+        $this->assertSame($hq->viewData('total'), $all->count());
+        $this->assertSame($hq->viewData('incomplete'), $all->filter(fn ($r) => $r['missing'])->count());
+        $this->assertSame($hq->viewData('unassigned'), $all->filter(fn ($r) => !$r['unit'])->count());
+    }
+
+    public function test_export_is_limited_to_the_scope_and_audited()
+    {
+        $this->withoutMiddleware(\App\Http\Middleware\VerifyCsrfToken::class);
+        $mepcom = OrgUnit::where('code', 'MEPCOM')->first();
+        $mssc = OrgUnit::where('code', 'MSSC')->first();
+        $a = $this->person('A1', $mepcom, 'LT', 'Ana Officer');
+        $b = $this->person('B1', $mssc, 'CAPT', 'Dan Mssc');
+
+        $scoped = ['admin_logged_in' => true, 'admin_role' => 'hr_admin', 'admin_org_unit_id' => $mepcom->id, 'admin_email' => 'hr@example.test'];
+        $csv = $this->withSession($scoped)->post('/admin/hrmis/export', ['ids' => $a->id . ',' . $b->id, 'filters' => 'Officers'])
+            ->assertOk()->streamedContent();
+        $this->assertStringContainsString('Ana Officer', $csv);
+        $this->assertStringNotContainsString('Dan Mssc', $csv); // outside the admin's command
+        $this->assertStringNotContainsString('1990-01-01', $csv);
+        $this->assertDatabaseHas('admin_audit_logs', ['action' => 'hrmis.overview.csv']);
+
+        $this->withSession($scoped)->post('/admin/hrmis/export', ['ids' => '1;DROP'])->assertSessionHasErrors('ids');
+        // re-enlistment admins cannot see personnel at all
+        $this->withSession(['admin_logged_in' => true, 'admin_role' => 'reenlistment_admin'])
+            ->post('/admin/hrmis/export', ['ids' => (string) $a->id])->assertForbidden();
+    }
 }
