@@ -1,416 +1,218 @@
 @extends('layouts.admin')
 
-@section('title', 'Admin Dashboard')
+@section('title', 'Self-registrations')
 
 @section('styles')
     <link rel="stylesheet" href="{{ asset('vendor/datatables/dataTables.dataTables-2.3.2.min.css') }}">
-
-    <script nonce="{{ $cspNonce ?? '' }}" src="{{ asset('vendor/jquery/jquery-3.7.1.min.js') }}"></script>
-
-    <script nonce="{{ $cspNonce ?? '' }}" src="{{ asset('vendor/datatables/dataTables-2.3.2.min.js') }}"></script>
+    <link rel="stylesheet" href="{{ \App\Support\Asset::v('css/admin-dashboard.css') }}">
 @endsection
 
+@php
+    $pendingCount = $pendingUsers->count();
+    $decided = $approvedUsers + $rejectedUsers;
+    $approvalRate = $decided > 0 ? round($approvedUsers / $decided * 100) : null;
+    $pct = fn ($n) => $totalUsers > 0 ? round($n / $totalUsers * 100, 1) : 0;
+    $statusKey = fn ($s) => in_array(strtolower(trim((string) $s)), ['pending', 'approved', 'rejected'], true) ? strtolower(trim((string) $s)) : 'other';
+    $photo = fn ($u) => $u->selfie_image ? \App\Support\Uploads::url($u->selfie_image) : asset('images/no-photo.svg');
+    $adData = [
+        'courses' => ['labels' => $courseCounts->keys()->values(), 'data' => $courseCounts->values()],
+        'units' => ['labels' => $unitCounts->keys()->values(), 'data' => $unitCounts->values()],
+        'filesUrl' => \App\Support\Uploads::baseUrl(),
+        'noPhotoUrl' => asset('images/no-photo.svg'),
+        'csrf' => csrf_token(),
+        'flash' => session('swal_success'),
+    ];
+    $queue = $usersWithCourse->filter(fn ($u) => $statusKey($u->status) === 'pending')->sortBy('created_at')->values();
+@endphp
+
 @section('content')
+    <div class="pcg-page ad">
+        <div class="ad-orb ad-orb--a" aria-hidden="true"></div>
+        <div class="ad-orb ad-orb--b" aria-hidden="true"></div>
 
-    <script nonce="{{ $cspNonce ?? '' }}" src="{{ asset('vendor/sweetalert2/sweetalert2-11.22.0.all.min.js') }}"></script>
-
-    <div class="flex min-h-screen bg-gray-100">
-
-        @include('admin.partials.lms-menu')
-
-        <!-- ================= MAIN ================= -->
-        <main class="flex-1 p-6">
-            {{-- Unit accounts are managed on their own page (Admin → Unit accounts). --}}
-            <!-- SUMMARY -->
-            <div class="pcg-stats">
-                <div class="pcg-stat">
-                    <span class="pcg-stat__label">Registered personnel</span>
-                    <span class="pcg-stat__value">{{ $totalUsers }}</span>
-                    <span class="pcg-stat__hint">all accounts</span>
-                </div>
-                <div class="pcg-stat pcg-stat--warning">
-                    <span class="pcg-stat__label">Pending approval</span>
-                    <span class="pcg-stat__value">{{ $pendingUsers->count() }}</span>
-                    <span class="pcg-stat__hint">double-click a row below to approve or reject</span>
-                </div>
-                <div class="pcg-stat pcg-stat--success">
-                    <span class="pcg-stat__label">Approved</span>
-                    <span class="pcg-stat__value">{{ $approvedUsers }}</span>
-                    <span class="pcg-stat__hint">can sign in</span>
-                </div>
-                <div class="pcg-stat pcg-stat--danger">
-                    <span class="pcg-stat__label">Rejected</span>
-                    <span class="pcg-stat__value">{{ $rejectedUsers }}</span>
-                    <span class="pcg-stat__hint">cannot sign in</span>
-                </div>
+        <header class="ad-head">
+            <div>
+                <p class="ad-eyebrow">Personnel · Self-registrations</p>
+                <h2>Registration dashboard</h2>
+                <p class="ad-lede">Every account registered through the sign-up page. Review pending registrations, then approve or reject them. Approved members can sign in.</p>
             </div>
-            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+            @if ($pendingCount > 0)
+                <button type="button" class="pcg-btn pcg-btn--primary ad-head__cta" data-ad-filter="pending">
+                    <i class="fa-solid fa-user-check" aria-hidden="true"></i> Review {{ $pendingCount }} pending
+                </button>
+            @endif
+        </header>
 
-                <!-- PCG Course Chart -->
-                <div class="bg-white rounded-lg shadow p-5">
-                    <h3 class="text-lg font-semibold text-gray-800 mb-4">
-                        PCG Personnel by Course
-                    </h3>
+        {{-- KPI cards: each one filters the table below --}}
+        <section class="ad-kpis" aria-label="Registration totals">
+            <button type="button" class="ad-kpi ad-glass" data-ad-filter="" aria-pressed="true">
+                <span class="ad-kpi__icon"><i class="fa-solid fa-users" aria-hidden="true"></i></span>
+                <span class="ad-kpi__label">Registered personnel</span>
+                <span class="ad-kpi__value">{{ number_format($totalUsers) }}</span>
+                <span class="ad-kpi__hint">All accounts · show all</span>
+            </button>
+            <button type="button" class="ad-kpi ad-glass ad-kpi--warn" data-ad-filter="pending" aria-pressed="false">
+                <span class="ad-kpi__icon"><i class="fa-solid fa-hourglass-half" aria-hidden="true"></i></span>
+                <span class="ad-kpi__label">Pending approval</span>
+                <span class="ad-kpi__value">{{ number_format($pendingCount) }}</span>
+                <span class="ad-kpi__bar"><span style="--w: {{ $pct($pendingCount) }}%"></span></span>
+                <span class="ad-kpi__hint">{{ $pendingCount > 0 ? 'Waiting for a decision' : 'Nothing waiting' }}</span>
+            </button>
+            <button type="button" class="ad-kpi ad-glass ad-kpi--ok" data-ad-filter="approved" aria-pressed="false">
+                <span class="ad-kpi__icon"><i class="fa-solid fa-circle-check" aria-hidden="true"></i></span>
+                <span class="ad-kpi__label">Approved</span>
+                <span class="ad-kpi__value">{{ number_format($approvedUsers) }}</span>
+                <span class="ad-kpi__bar"><span style="--w: {{ $pct($approvedUsers) }}%"></span></span>
+                <span class="ad-kpi__hint">{{ $approvalRate !== null ? $approvalRate . '% of decisions approved' : 'Can sign in' }}</span>
+            </button>
+            <button type="button" class="ad-kpi ad-glass ad-kpi--danger" data-ad-filter="rejected" aria-pressed="false">
+                <span class="ad-kpi__icon"><i class="fa-solid fa-circle-xmark" aria-hidden="true"></i></span>
+                <span class="ad-kpi__label">Rejected</span>
+                <span class="ad-kpi__value">{{ number_format($rejectedUsers) }}</span>
+                <span class="ad-kpi__bar"><span style="--w: {{ $pct($rejectedUsers) }}%"></span></span>
+                <span class="ad-kpi__hint">Cannot sign in</span>
+            </button>
+        </section>
 
-                    <div style="height: 350px;">
-                        <canvas id="courseChart"></canvas>
-                    </div>
+        <div class="ad-grid">
+            {{-- Pending queue --}}
+            <section class="ad-panel ad-glass ad-queue" aria-labelledby="ad-queue-title">
+                <div class="ad-panel__head">
+                    <h3 id="ad-queue-title"><i class="fa-solid fa-inbox" aria-hidden="true"></i> Pending queue</h3>
+                    <span class="ad-count">{{ $pendingCount }}</span>
                 </div>
-
-                <!-- PCG Unit Chart -->
-                <div class="bg-white rounded-lg shadow p-5">
-                    <h3 class="text-lg font-semibold text-gray-800 mb-4">
-                        PCG Personnel by Unit
-                    </h3>
-
-                    <div style="height: 350px;">
-                        <canvas id="unitChart"></canvas>
+                @if ($queue->isEmpty())
+                    <div class="ad-empty">
+                        <i class="fa-regular fa-circle-check" aria-hidden="true"></i>
+                        <p>All caught up. New registrations appear here.</p>
                     </div>
-                </div>
-
-            </div>
-            <!-- TABLE -->
-            <div class="bg-white p-6 rounded shadow">
-
-                <h3 class="mb-1 font-bold">PCG Personnel</h3>
-                <p class="mb-3 text-sm text-gray-500">
-                    Double-click a row to see details. Pending registrations open the approve / reject dialog.
-                </p>
-
-                <table id="personnelTable" class="w-full">
-                    <thead>
-                        <tr>
-                            <th>Photo</th>
-                            <th>Name</th>
-                            <th>Course</th>
-                            <th>Unit Assignment</th>
-                            <th>Email</th>
-                            <th>Status</th>
-                        </tr>
-                    </thead>
-
-                    <tbody>
-                        @foreach ($usersWithCourse as $user)
-                            <tr data-status="{{ $user->status }}" data-user='@json($user)'>
-
-                                <td>
-                                    @if ($user->selfie_image)
-                                        <img src="{{ \App\Support\Uploads::url($user->selfie_image) }}"
-                                            class="w-10 h-10 rounded object-cover">
-                                    @else
-                                        <img src="{{ asset('images/no-photo.svg') }}"
-                                            class="w-10 h-10 rounded object-cover">
+                @else
+                    <ul class="ad-queue__list">
+                        @foreach ($queue->take(6) as $u)
+                            <li class="ad-queue__item">
+                                <img src="{{ $photo($u) }}" alt="" class="ad-avatar" loading="lazy">
+                                <div class="ad-queue__who">
+                                    <strong>{{ $u->name }}</strong>
+                                    <span>{{ $u->rank ? $u->rank . ' · ' : '' }}{{ $u->unit_assignment ?: ($u->mother_unit ?: 'No unit') }}</span>
+                                    @if ($u->created_at)
+                                        <span class="ad-faint">Registered {{ \Illuminate\Support\Carbon::parse($u->created_at)->timezone('Asia/Manila')->diffForHumans() }}</span>
                                     @endif
-                                </td>
-
-                                <td>{{ $user->name }}</td>
-
-                                <td>{{ $user->course ?? 'N/A' }}</td>
-
-                                <td>{{ $user->unit_assignment ?? 'N/A' }}</td>
-
-                                <td>{{ $user->email }}</td>
-
-                                <td class="font-semibold">
-                                    {{ $user->status }}
-                                </td>
-
-                            </tr>
+                                </div>
+                                <button type="button" class="pcg-btn pcg-btn--secondary pcg-btn--sm" data-ad-review="{{ $u->id }}"
+                                    aria-label="Review {{ $u->name }}">Review</button>
+                            </li>
                         @endforeach
-                    </tbody>
-                </table>
-            </div>
+                    </ul>
+                    @if ($queue->count() > 6)
+                        <button type="button" class="ad-link" data-ad-filter="pending">See all {{ $queue->count() }} pending in the table <i class="fa-solid fa-arrow-down" aria-hidden="true"></i></button>
+                    @endif
+                @endif
+            </section>
 
-        </main>
-    </div>
+            {{-- Course chart --}}
+            <section class="ad-panel ad-glass" aria-labelledby="ad-course-title">
+                <div class="ad-panel__head">
+                    <h3 id="ad-course-title"><i class="fa-solid fa-graduation-cap" aria-hidden="true"></i> Personnel by course</h3>
+                </div>
+                <div class="ad-chart ad-chart--donut">
+                    <canvas id="courseChart" role="img" aria-label="Personnel by course"></canvas>
+                </div>
+            </section>
 
-    <!-- ================= MODAL ================= -->
-    <div id="userModal" class="hidden fixed inset-0 bg-black/50 flex items-center justify-center">
-
-        <div class="bg-white p-6 rounded w-96 relative">
-
-            <button class="closeModal absolute right-3 top-3 text-red-600">✕</button>
-
-            <img id="modalPhoto" class="w-24 h-24 rounded-full mx-auto mb-3">
-
-            <h2 id="modalName" class="text-center font-bold"></h2>
-            <p id="modalEmail" class="text-center text-sm text-gray-500"></p>
-
-            <div class="mt-4 text-sm">
-                <p><b>Course:</b> <span id="modalCourse"></span></p>
-                <p><b>Unit:</b> <span id="modalUnit"></span></p>
-                <p><b>Serial:</b> <span id="modalSerial"></span></p>
-            </div>
-
+            {{-- Unit chart --}}
+            <section class="ad-panel ad-glass ad-panel--wide" aria-labelledby="ad-unit-title">
+                <div class="ad-panel__head">
+                    <h3 id="ad-unit-title"><i class="fa-solid fa-sitemap" aria-hidden="true"></i> Personnel by unit assignment</h3>
+                    <span class="ad-faint">{{ $unitCounts->count() }} {{ $unitCounts->count() === 1 ? 'unit' : 'units' }}</span>
+                </div>
+                <div class="ad-chart ad-chart--bar" style="--rows: {{ min(max($unitCounts->count(), 3), 14) }}">
+                    <canvas id="unitChart" role="img" aria-label="Personnel by unit assignment"></canvas>
+                </div>
+            </section>
         </div>
+
+        {{-- Personnel table --}}
+        <section class="ad-panel ad-glass ad-table" aria-labelledby="ad-table-title">
+            <div class="ad-panel__head">
+                <div>
+                    <h3 id="ad-table-title"><i class="fa-solid fa-id-card" aria-hidden="true"></i> PCG personnel</h3>
+                    <p class="ad-faint">Select <b>Review</b> (or double-click a row) to approve or reject a pending registration, or <b>View</b> for details.</p>
+                </div>
+                <div class="ad-segment" role="group" aria-label="Filter by status">
+                    <button type="button" data-ad-filter="" aria-pressed="true">All</button>
+                    <button type="button" data-ad-filter="pending" aria-pressed="false">Pending</button>
+                    <button type="button" data-ad-filter="approved" aria-pressed="false">Approved</button>
+                    <button type="button" data-ad-filter="rejected" aria-pressed="false">Rejected</button>
+                </div>
+            </div>
+
+            <table id="personnelTable" class="ad-dt">
+                <thead>
+                    <tr>
+                        <th>Photo</th>
+                        <th>Name</th>
+                        <th>Course</th>
+                        <th>Unit Assignment</th>
+                        <th>Email</th>
+                        <th>Status</th>
+                        <th><span class="sr-only">Action</span></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach ($usersWithCourse as $user)
+                        @php($key = $statusKey($user->status))
+                        <tr data-status="{{ $user->status }}" data-status-key="{{ $key }}" data-user='@json($user)' data-id="{{ $user->id }}">
+                            <td><img src="{{ $photo($user) }}" alt="" class="ad-avatar ad-avatar--sm" loading="lazy"></td>
+                            <td>
+                                <span class="ad-name">{{ $user->name }}</span>
+                                @if ($user->serial_number)
+                                    <span class="ad-sub">{{ $user->serial_number }}</span>
+                                @endif
+                            </td>
+                            <td>{{ $user->course ?? 'N/A' }}</td>
+                            <td>{{ $user->unit_assignment ?? 'N/A' }}</td>
+                            <td class="ad-email">{{ $user->email }}</td>
+                            <td data-search="{{ $key }}"><span class="ad-pill ad-pill--{{ $key }}">{{ $user->status }}</span></td>
+                            <td class="ad-actions">
+                                @if ($key === 'pending')
+                                    <button type="button" class="pcg-btn pcg-btn--primary pcg-btn--sm" data-ad-review="{{ $user->id }}" aria-label="Review {{ $user->name }}">Review</button>
+                                @else
+                                    <button type="button" class="pcg-btn pcg-btn--secondary pcg-btn--sm" data-ad-view="{{ $user->id }}" aria-label="View {{ $user->name }}">View</button>
+                                @endif
+                            </td>
+                        </tr>
+                    @endforeach
+                </tbody>
+            </table>
+        </section>
     </div>
+
+    {{-- Details --}}
+    <dialog id="userModal" class="ad-dialog" aria-labelledby="modalName">
+        <div class="ad-dialog__inner">
+            <button type="button" class="closeModal ad-dialog__close" aria-label="Close"><i class="fa-solid fa-xmark" aria-hidden="true"></i></button>
+            <img id="modalPhoto" class="ad-avatar ad-avatar--lg" alt="">
+            <h2 id="modalName"></h2>
+            <p id="modalEmail" class="ad-faint"></p>
+            <span id="modalStatus" class="ad-pill"></span>
+            <dl class="ad-dl">
+                <div><dt>Serial</dt><dd id="modalSerial"></dd></div>
+                <div><dt>Rank</dt><dd id="modalRank"></dd></div>
+                <div><dt>Course</dt><dd id="modalCourse"></dd></div>
+                <div><dt>Unit</dt><dd id="modalUnit"></dd></div>
+                <div><dt>Mother unit</dt><dd id="modalMother"></dd></div>
+                <div><dt>Registered</dt><dd id="modalCreated"></dd></div>
+            </dl>
+        </div>
+    </dialog>
+
+    <script type="application/json" id="ad-data" nonce="{{ $cspNonce ?? '' }}">@json($adData)</script>
+@endsection
+
+@section('scripts')
+    <script nonce="{{ $cspNonce ?? '' }}" src="{{ asset('vendor/jquery/jquery-3.7.1.min.js') }}"></script>
+    <script nonce="{{ $cspNonce ?? '' }}" src="{{ asset('vendor/datatables/dataTables-2.3.2.min.js') }}"></script>
+    <script nonce="{{ $cspNonce ?? '' }}" src="{{ asset('vendor/sweetalert2/sweetalert2-11.22.0.all.min.js') }}"></script>
     <script nonce="{{ $cspNonce ?? '' }}" src="{{ asset('vendor/chartjs/chart-4.4.4.umd.min.js') }}"></script>
-    <script nonce="{{ $cspNonce ?? '' }}">
-        const courseLabels = @json($courseCounts->keys()->values());
-        const courseData = @json($courseCounts->values());
-
-        const unitLabels = @json($unitCounts->keys()->values());
-        const unitData = @json($unitCounts->values());
-
-        // PCG Course Chart
-        new Chart(document.getElementById('courseChart'), {
-            type: 'doughnut',
-            data: {
-                labels: courseLabels,
-                datasets: [{
-                    label: 'Personnel',
-                    data: courseData,
-                    borderWidth: 1
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: {
-                    legend: {
-                        position: 'right'
-                    }
-                }
-            }
-        });
-
-        // PCG Unit Chart
-        new Chart(document.getElementById('unitChart'), {
-            type: 'bar',
-            data: {
-                labels: unitLabels,
-                datasets: [{
-                    label: 'Personnel',
-                    data: unitData,
-                    borderWidth: 1
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                scales: {
-                    y: {
-                        beginAtZero: true,
-                        ticks: {
-                            precision: 0
-                        }
-                    }
-                },
-                plugins: {
-                    legend: {
-                        display: false
-                    }
-                }
-            }
-        });
-    </script>
-    <script nonce="{{ $cspNonce ?? '' }}">
-        @if (session('swal_success'))
-            Swal.fire({
-                icon: 'success',
-                title: 'Success!',
-                text: @json(session('swal_success')),
-                confirmButtonColor: '#16a34a'
-            });
-        @endif
-    </script>
-
-    <!-- ================= SCRIPTS ================= -->
-    <script nonce="{{ $cspNonce ?? '' }}">
-        const FILES_URL = @json(\App\Support\Uploads::baseUrl());
-        const NO_PHOTO_URL = @json(asset('images/no-photo.svg'));
-
-        // Registration data is user-supplied: escape before inserting as HTML.
-        function escapeHtml(value) {
-            return String(value ?? '').replace(/[&<>"']/g, c => ({
-                '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
-            })[c]);
-        }
-
-        $(document).ready(function() {
-
-            // ================= DATA TABLE =================
-
-            const table = $('#personnelTable').DataTable({
-                pageLength: 10,
-
-                lengthMenu: [
-                    [10, 25, 50, 100, -1],
-                    [10, 25, 50, 100, 'All']
-                ],
-
-                order: [
-                    [1, 'asc']
-                ],
-
-                columnDefs: [{
-                    targets: 0,
-                    orderable: false,
-                    searchable: false
-                }],
-
-                language: {
-                    search: "Search Personnel:",
-                    searchPlaceholder: "Name, course, unit, email...",
-                    lengthMenu: "Show _MENU_ personnel",
-                    info: "Showing _START_ to _END_ of _TOTAL_ personnel",
-                    emptyTable: "No personnel found"
-                }
-            });
-
-
-            // ================= DOUBLE CLICK =================
-
-            $('#personnelTable tbody').on('dblclick', 'tr', function() {
-
-                let user = $(this).attr('data-user');
-
-                if (!user) {
-                    return;
-                }
-
-                try {
-                    user = JSON.parse(user);
-                } catch (error) {
-                    console.error('Invalid user JSON:', error);
-                    return;
-                }
-
-
-                // ================= APPROVE PENDING USER =================
-
-                if (user.status === 'Pending') {
-
-                    let photo = user.selfie_image ?
-                        FILES_URL + user.selfie_image :
-                        NO_PHOTO_URL;
-
-                    Swal.fire({
-                        title: 'Approve this user?',
-                        html: `
-                        <div style="text-align:center">
-
-                            <img src="${escapeHtml(photo)}"
-                                style="
-                                    width:90px;
-                                    height:90px;
-                                    border-radius:50%;
-                                    object-fit:cover;
-                                    margin:10px auto;
-                                    border:2px solid #16a34a;
-                                ">
-
-                            <h3 style="
-                                margin-top:10px;
-                                font-size:18px;
-                                font-weight:bold;
-                            ">
-                                ${escapeHtml(user.name)}
-                            </h3>
-
-                            <p style="margin:2px 0;">
-                                <b>Serial:</b>
-                                ${escapeHtml(user.serial_number ?? 'N/A')}
-                            </p>
-
-                            <p style="margin:2px 0;">
-                                <b>Unit:</b>
-                                ${escapeHtml(user.unit_assignment ?? 'N/A')}
-                            </p>
-
-                            <p style="margin:2px 0;">
-                                <b>Email:</b>
-                                ${escapeHtml(user.email ?? 'N/A')}
-                            </p>
-
-                        </div>
-                    `,
-                        icon: 'question',
-                        showCancelButton: true,
-                        showDenyButton: true,
-                        confirmButtonColor: '#16a34a',
-                        denyButtonColor: '#b42318',
-                        cancelButtonColor: '#6b7280',
-                        confirmButtonText: 'Approve',
-                        denyButtonText: 'Reject',
-                        cancelButtonText: 'Cancel'
-                    }).then(function(result) {
-
-                        if (!result.isConfirmed && !result.isDenied) {
-                            return;
-                        }
-
-                        // Reject used to have no button at all (route existed, no UI).
-                        const action = result.isConfirmed ? 'approve' : 'reject';
-
-                        $.ajax({
-                            url: `/admin/${action}/${user.id}`,
-                            type: 'POST',
-
-                            data: {
-                                _token: '{{ csrf_token() }}'
-                            },
-
-                            success: function() {
-
-                                Swal.fire({
-                                    icon: 'success',
-                                    title: action === 'approve' ? 'Approved!' : 'Rejected',
-                                    text: action === 'approve'
-                                        ? 'User has been approved successfully.'
-                                        : 'User has been rejected and cannot sign in.'
-                                }).then(function() {
-                                    location.reload();
-                                });
-
-                            },
-
-                            error: function(xhr) {
-
-                                console.error(xhr);
-
-                                Swal.fire({
-                                    icon: 'error',
-                                    title: 'Error',
-                                    text: `Unable to ${action} the user.`
-                                });
-
-                            }
-                        });
-
-                    });
-
-                    return;
-                }
-
-
-                // ================= SHOW USER MODAL =================
-
-                $('#modalPhoto').attr(
-                    'src',
-                    user.selfie_image ?
-                    FILES_URL + user.selfie_image :
-                    NO_PHOTO_URL
-                );
-
-                $('#modalName').text(user.name || 'N/A');
-                $('#modalEmail').text(user.email || 'N/A');
-                $('#modalCourse').text(user.course || 'N/A');
-                $('#modalUnit').text(user.unit_assignment || 'N/A');
-                $('#modalSerial').text(user.serial_number || 'N/A');
-
-                $('#userModal').removeClass('hidden');
-
-            });
-
-
-            // ================= CLOSE USER MODAL =================
-
-            $('.closeModal').click(function() {
-                $('#userModal').addClass('hidden');
-            });
-
-        });
-    </script>
-
+    <script nonce="{{ $cspNonce ?? '' }}" src="{{ \App\Support\Asset::v('js/admin-dashboard.js') }}"></script>
 @endsection

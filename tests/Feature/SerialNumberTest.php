@@ -72,4 +72,21 @@ class SerialNumberTest extends TestCase
 
         $this->assertSame('Pending', DB::table('users')->where('id', $impostor)->value('status'));
     }
+
+    public function test_dashboard_review_gets_the_reason_as_json()
+    {
+        $impostor = DB::table('users')->where('email', 'imp@x.test')->value('id');
+        $admin = $this->withoutMiddleware([\App\Http\Middleware\AuditAdminRequests::class])
+            ->withSession(['admin_logged_in' => true, 'admin_role' => 'super_admin']);
+
+        $admin->postJson("/admin/approve/{$impostor}")
+            ->assertStatus(409)
+            ->assertJson(['ok' => false])
+            ->assertJsonFragment(['message' => 'Not approved: serial number ' . DB::table('users')->where('id', $impostor)->value('serial_number')
+                . ' already belongs to another account. Reject this registration or correct the serial first.']);
+        $this->assertSame('Pending', DB::table('users')->where('id', $impostor)->value('status'));
+
+        $admin->postJson("/admin/reject/{$impostor}")->assertOk()->assertJson(['ok' => true, 'status' => 'Rejected']);
+        $this->assertSame('Rejected', DB::table('users')->where('id', $impostor)->value('status'));
+    }
 }
