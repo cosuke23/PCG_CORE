@@ -357,7 +357,10 @@ class TempRegistrationController extends Controller
             }],
             'masteral.*.*' => [$short],
             'vocational.*.*' => [$short],
-            'trainings.*.*' => [$short],
+            // trainings arrive per category: trainings[category][index][field]
+            'trainings.*' => 'array|max:50',
+            'trainings.*.*' => 'array',
+            'trainings.*.*.*' => [$short],
         ]);
 
         if ($validator->fails()) {
@@ -398,8 +401,11 @@ class TempRegistrationController extends Controller
                 ->delete();
 
             \Log::info("Deleting old training records | serial_number: {$personalInfo->serial_number}");
+            // Coast Guard schooling (category coastguard) is recorded by the
+            // Adjutant: a member's save never removes or replaces it
             DB::table('reinlist_trainings')
                 ->where('serial_number', $personalInfo->serial_number)
+                ->where(fn ($q) => $q->whereNull('category')->orWhere('category', '!=', 'coastguard'))
                 ->delete();
 
             // ================= SAVE ACADEMIC =================
@@ -488,7 +494,8 @@ class TempRegistrationController extends Controller
 
             // ================= SAVE TRAININGS =================
             $trainingInsert = [];
-            $categories = ['coastguard', 'others_local', 'others_foreign', 'military', 'military_others_local', 'military_others_foreign'];
+            // 'coastguard' is left out on purpose: only the Adjutant adds it
+            $categories = ['others_local', 'others_foreign', 'military', 'military_others_local', 'military_others_foreign'];
 
             foreach ($categories as $cat) {
                 foreach ($request->trainings[$cat] ?? [] as $train) {
@@ -694,7 +701,8 @@ class TempRegistrationController extends Controller
 
             DB::table('reinlist_awards')->where('applicant_id', $userId)->delete();
             DB::table('reinlist_careers')->where('applicant_id', $userId)->delete();
-            DB::table('reinlist_cg_awards_decorations')->where('applicant_id', $userId)->delete();
+            // Coast Guard awards and decorations are recorded by the Adjutant:
+            // not deleted or replaced here
             DB::table('reinlist_cg_letters')->where('applicant_id', $userId)->delete();
             DB::table('reinlist_civilian_awards')->where('applicant_id', $userId)->delete();
 
@@ -802,28 +810,7 @@ class TempRegistrationController extends Controller
             // =========================
             // CG AWARDS / DECORATIONS
             // =========================
-            if (!empty($validated['cgAwardsDecorations'])) {
-
-                $cgAwards = [];
-
-                foreach ($validated['cgAwardsDecorations'] as $item) {
-
-                    if (!empty($item['type']) || !empty($item['authority'])) {
-                        $cgAwards[] = [
-                            'serial_number' => $serialNumber,
-                            'applicant_id' => $userId,
-                            'type' => $item['type'] ?? null,
-                            'authority' => $item['authority'] ?? null,
-                            'created_at' => now(),
-                            'updated_at' => now(),
-                        ];
-                    }
-                }
-
-                if (!empty($cgAwards)) {
-                    DB::table('reinlist_cg_awards_decorations')->insert($cgAwards);
-                }
-            }
+            // (Coast Guard awards and decorations: recorded by the Adjutant, see AdjutantController)
 
             // =========================
             // CG LETTERS

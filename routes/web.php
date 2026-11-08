@@ -170,6 +170,7 @@ Route::middleware(['auth'])->group(function () {
 Route::get('/admin/login', [AdminLoginController::class, 'showLogin'])->name('admin.login');
 // Sign-in page for the re-enlistment office: same accounts, password and email code.
 Route::get('/reenlistment/login', [AdminLoginController::class, 'showReenlistmentLogin'])->name('reenlistment.login');
+Route::get('/adjutant/login', [AdminLoginController::class, 'showAdjutantLogin'])->name('adjutant.login');
 Route::post('/admin/login', [AdminLoginController::class, 'login'])
     ->middleware('throttle:admin-login')
     ->name('admin.login.submit');
@@ -278,6 +279,17 @@ Route::middleware(['admin.session', 'admin.audit'])->group(function () {
         });
 
     // ---- Re-enlistment: non-officers whose ETE is near (read-only; views and exports audited)
+    // ---- Adjutant: Coast Guard awards and decorations, Coast Guard schooling (members' SOI) ----
+    Route::middleware('admin.can:soi.adjutant')->prefix('admin/adjutant')->name('admin.adjutant.')
+        ->controller(\App\Http\Controllers\AdjutantController::class)->group(function () {
+            Route::get('/', 'index')->name('index');
+            Route::get('/{user}', 'show')->whereNumber('user')->name('show');
+            Route::post('/{user}/awards', 'storeAward')->whereNumber('user')->name('awards.store');
+            Route::post('/{user}/awards/{id}/delete', 'destroyAward')->whereNumber(['user', 'id'])->name('awards.destroy');
+            Route::post('/{user}/trainings', 'storeTraining')->whereNumber('user')->name('trainings.store');
+            Route::post('/{user}/trainings/{id}/delete', 'destroyTraining')->whereNumber(['user', 'id'])->name('trainings.destroy');
+        });
+
     Route::middleware(['admin.can:reenlistment.view', 'admin.orgwide'])->prefix('admin/reenlistment')->name('admin.reenlistment.')
         ->controller(\App\Http\Controllers\ReenlistmentController::class)->group(function () {
             Route::get('/', 'index')->name('index');

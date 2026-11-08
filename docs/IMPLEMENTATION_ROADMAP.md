@@ -50,6 +50,8 @@ Last updated: 2026-10-30 · branch `claude/cool-wozniak-rni95k`
 - ✅ Registration fixed on Hermes (2026-11-08): users.mother_unit/sub_unit/unit_assignment widened to VARCHAR(255) (migration 2026_11_08_000001, reversible, owner request); the page shows every refusal by step; password eye toggle and strength meter; database errors logged without SQL values
 - ✅ Checker accounts on Hermes (2026-11-08): create/M1/password/status fit the real unit_users columns; migration 2026_11_08_000002 adds m1_checker to the role ENUM (reversible, owner approval pending); `pcg:schema-report` (read-only) to align the dev schema with Hermes
 - ✅ Admin redesign (2026-11-08): dark/light console theme for every admin page (`pcg-console.css`); HRMIS overview rebuilt as an interactive dashboard (clickable KPI cards and bars as combinable filters, search, sort, person details, 30-day movement chart, scoped and audited CSV export); Edit Profile fix
+- ✅ Adjutant module (2026-11-08): role `adjutant` with OTP sign-in at /adjutant/login; records Coast Guard awards and decorations and Coast Guard schooling in members' SOI, scoped to its command/unit, audited; members see them read-only; SOI Education & Trainings save fixed (every training was refused)
+- 👤 Hermes: create Adjutant accounts (Admin accounts → role Adjutant, access scope = command/unit) after `deploy.ps1 -Migrate`
 - 👤 Hermes: `update-web-config.sh`, then `sudo bash ~/mepcom-hrmis-deploy/audit-server.sh` and send the output; owner decisions in §0i (email squatting, unique serial index, disciplinary soft delete, watchlist)
 
 ## Phase 5 — UI/UX

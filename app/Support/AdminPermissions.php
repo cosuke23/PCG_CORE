@@ -30,6 +30,8 @@ class AdminPermissions
         // Re-enlistment: non-officers whose ETE (end of term of enlistment) is near
         'reenlistment.view'    => ['super_admin', 'hr_admin', 'reenlistment_admin', 'auditor'],
         'reenlistment.export'  => ['super_admin', 'hr_admin', 'reenlistment_admin'],
+        // Adjutant: Coast Guard awards and decorations (SOI 1.a) and Coast Guard schooling (SOI 3.a)
+        'soi.adjutant'         => ['super_admin', 'adjutant'],
     ];
 
     public static function allows(?string $role, string $capability): bool
@@ -45,6 +47,6 @@ class AdminPermissions
     /** Roles that may be limited to a command/unit. */
     public static function scopableRoles(): array
     {
-        return ['hr_admin', 'records_reviewer', 'records_approver', 'auditor'];
+        return ['hr_admin', 'records_reviewer', 'records_approver', 'auditor', 'adjutant'];
     }
 }

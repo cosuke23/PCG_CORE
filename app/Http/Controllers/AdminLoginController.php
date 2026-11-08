@@ -34,6 +34,12 @@ class AdminLoginController extends Controller
         return view('admin.login', ['variant' => 'reenlistment']);
     }
 
+    /** Adjutant sign-in page: same sign-in (password, then the emailed one-time code). */
+    public function showAdjutantLogin()
+    {
+        return view('admin.login', ['variant' => 'adjutant']);
+    }
+
     public function login(Request $request)
     {
         $request->validate([
@@ -345,6 +351,9 @@ class AdminLoginController extends Controller
         }
         if ($role === AdminUser::ROLE_REENLISTMENT) {
             return 'admin.reenlistment.index';
+        }
+        if ($role === AdminUser::ROLE_ADJUTANT) {
+            return 'admin.adjutant.index';
         }
 
         // scoped admins and the records/audit roles work in the scoped HRMIS modules

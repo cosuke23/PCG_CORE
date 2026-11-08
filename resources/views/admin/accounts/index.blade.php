@@ -135,7 +135,7 @@
                                     <option value="{{ $unit->id }}" @selected((string) old('org_unit_id') === (string) $unit->id)>{{ str_repeat('— ', $unit->depth) }}{{ $unit->code }} and its units only</option>
                                 @endforeach
                             </select>
-                            <p class="pcg-help">HR admins only. A command HR admin (e.g. MEPCOM) sees and manages only personnel assigned there.</p>
+                            <p class="pcg-help">HR, records and audit roles and Adjutants. A command-scoped account (e.g. MEPCOM) sees and works only on personnel assigned there; an Adjutant records awards and schooling for those members only.</p>
                         </div>
                         <div class="pcg-field">
                             <label class="pcg-label" for="password">Temporary password</label>

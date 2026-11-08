@@ -11,7 +11,7 @@ use Illuminate\Validation\Rules\Password;
 
 class CreateAdmin extends Command
 {
-    protected $signature = 'pcg:create-admin {--role=super_admin : super_admin, hr_admin, lms_admin, records_reviewer, records_approver, auditor or reenlistment_admin}';
+    protected $signature = 'pcg:create-admin {--role=super_admin : super_admin, hr_admin, lms_admin, records_reviewer, records_approver, auditor, reenlistment_admin or adjutant}';
 
     protected $description = 'Create an administrator account (two-factor setup happens at first sign-in)';
 

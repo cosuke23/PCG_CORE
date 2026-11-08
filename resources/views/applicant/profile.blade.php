@@ -593,61 +593,28 @@
                 <div class="space-y-4 pt-4 border-t border-gray-100">
 
 
-                    <!-- ================= A. COAST GUARD ================= -->
+                    <!-- ================= A. COAST GUARD (recorded by the Adjutant) ================= -->
                     <div class="space-y-4 pt-4 border-t">
-                        <div class="flex justify-between items-center">
+                        <div class="flex justify-between items-center flex-wrap gap-2">
                             <h3 class="font-bold text-blue-600 uppercase tracking-wide text-sm">3.Trainings /
                                 Seminars
                             </h3>
                             <h3 class="font-bold text-blue-600 text-sm">a. Coast Guard</h3>
-
-                            <button type="button"
-                                @click="trainings.coastguard.push({
-                                    course:'', type:'', authority:'', school:'', period:'', remarks:''
-                                })"
-                                class="text-xs bg-blue-50 text-blue-600 px-3 py-1.5 rounded-lg border">
-                                + Add Training
-                            </button>
                         </div>
+                        <p class="text-xs text-gray-500">Coast Guard schooling is recorded by your unit's Adjutant. Ask the Adjutant if an entry is missing or wrong.</p>
 
-                        <template x-for="(train, index) in trainings.coastguard" :key="index">
-                            <div class="p-5 bg-white border rounded-xl shadow-sm space-y-4 relative">
-
-                                <button @click="trainings.coastguard.splice(index,1)"
-                                    class="absolute top-2 right-2 text-red-500">✕</button>
-
-                                <div class="grid md:grid-cols-2 gap-4 text-black">
-
-                                    <!-- TYPE -->
-                                    <select x-model="train.type" class="w-full px-4 py-2 border rounded-lg">
-                                        <option value="" disabled>Select Training Type</option>
-                                        <option>Advance Training</option>
-                                        <option>Strategic Training</option>
-                                        <option>PCG Admiral Staff Course</option>
-                                    </select>
-
-                                    <!-- COURSE -->
-                                    <input x-model="train.course" placeholder="Course Name"
-                                        class="w-full px-4 py-2 border rounded-lg">
-
-                                    <!-- AUTHORITY -->
-                                    <input x-model="train.authority" placeholder="Authority (Order)"
-                                        class="w-full px-4 py-2 border rounded-lg">
-
-                                    <!-- SCHOOL -->
-                                    <input x-model="train.school" placeholder="School / Provider"
-                                        class="w-full px-4 py-2 border rounded-lg">
-
-                                    <!-- PERIOD -->
-                                    <input x-model="train.period" placeholder="Period"
-                                        class="w-full px-4 py-2 border rounded-lg">
-
-                                    <!-- REMARKS -->
-                                    <input x-model="train.remarks" placeholder="Remarks"
-                                        class="w-full px-4 py-2 border rounded-lg">
-                                </div>
+                        <template x-for="(train, index) in (trainings.coastguard || [])" :key="'cgt' + index">
+                            <div class="p-4 bg-white border rounded-xl shadow-sm grid md:grid-cols-2 gap-x-6 gap-y-1 text-sm text-black">
+                                <p><span class="text-gray-500">Course:</span> <span x-text="train.course || '—'"></span></p>
+                                <p><span class="text-gray-500">Type:</span> <span x-text="train.type || '—'"></span></p>
+                                <p><span class="text-gray-500">Authority:</span> <span x-text="train.authority || '—'"></span></p>
+                                <p><span class="text-gray-500">School / provider:</span> <span x-text="train.school || '—'"></span></p>
+                                <p><span class="text-gray-500">Period:</span> <span x-text="train.period || '—'"></span></p>
+                                <p><span class="text-gray-500">Remarks:</span> <span x-text="train.remarks || '—'"></span></p>
+                                <p class="md:col-span-2 text-xs text-gray-500" x-text="train.added_by ? 'Recorded by the Adjutant' : 'Entered before Adjutant records began'"></p>
                             </div>
                         </template>
+                        <p class="text-sm text-gray-500" x-show="!(trainings.coastguard || []).length">No Coast Guard schooling recorded yet.</p>
                     </div>
                     <!-- ================= A.1 OTHERS LOCAL ================= -->
                     <div class="space-y-4 mt-6">
@@ -1107,198 +1074,16 @@
 
                         <div class="grid grid-cols-1 gap-8">
                             <div class="space-y-3">
-                                <div class="flex justify-between items-center">
-                                    <h4 class="text-sm font-semibold text-gray-700">a. Awards and Decorations</h4>
-                                    <button type="button" @click="addCgDecoration()"
-                                        class="text-xs text-blue-600 hover:underline font-bold">+ Add Award</button>
-                                </div>
-                                <template x-for="(a,i) in cgAwardsDecorations" :key="i">
-                                    <div class="flex gap-2 items-start mb-2 animate-fadeIn">
-                                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 flex-1">
-                                            <select x-model="a.type"
-                                                class="w-full px-4 py-2 bg-white border border-gray-300 rounded-lg text-sm text-black">
-
-                                                <option value="">Select Award Type</option>
-
-                                                <!-- ================= COAST GUARD ================= -->
-                                                <optgroup label="Coast Guard Awards">
-                                                    <option>Coast Guard Medal of Valor and Ribbon</option>
-                                                    <option>Coast Guard Legion of Honor - LAKAN</option>
-                                                    <option>Coast Guard Legion of Honor - DATU</option>
-                                                    <option>Coast Guard Legion of Honor - MAGINOO</option>
-                                                    <option>Coast Guard Distinguished Conduct Star</option>
-                                                    <option>Coast Guard Distinguished Service Medal</option>
-                                                    <option>Coast Guard Outstanding Achievement Medal</option>
-                                                    <option>Coast Guard Superior Achievement Medal</option>
-                                                    <option>Coast Guard Bronze Cross Medal</option>
-                                                    <option>Coast Guard Search and Rescue Medal</option>
-                                                    <option>Coast Guard Merit Medal</option>
-                                                    <option>Coast Guard Commendation Medal</option>
-                                                    <option>Coast Guard Wounded Personnel Medal</option>
-                                                    <option>Coast Guard Civic Action Ribbon</option>
-                                                    <option>Coast Guard Good Conduct Ribbon</option>
-                                                    <option>Coast Guard Long Service Ribbon</option>
-                                                </optgroup>
-
-                                                <optgroup label="Coast Guard Unit Awards">
-                                                    <option>Presidential Unit Citation</option>
-                                                    <option>CPCG Unit Citation</option>
-                                                    <option>Meritorious Unit Commendation</option>
-                                                    <option>Meritorious Team Commendation</option>
-                                                    <option>Efficiency Ribbon</option>
-                                                </optgroup>
-
-                                                <!-- ================= BUCOR ================= -->
-                                                <optgroup label="BuCor - Heroism">
-                                                    <option>Medal of Valor (MOV)</option>
-                                                    <option>Distinguished Conduct Medal (DCM)</option>
-                                                    <option>Gold Cross Medal (GCM)</option>
-                                                    <option>Silver Cross Medal (SCM)</option>
-                                                    <option>Bronze Cross Medal (BCM)</option>
-                                                    <option>Gallantry Medal</option>
-                                                    <option>Merit Medal</option>
-                                                </optgroup>
-
-                                                <optgroup label="BuCor - Service">
-                                                    <option>Distinguished Service Star (DSS)</option>
-                                                    <option>Distinguished Service Medal (DSM)</option>
-                                                    <option>BuCor Commendation Medal</option>
-                                                    <option>BuCor Good Conduct Medal</option>
-                                                    <option>BuCor Service Medal</option>
-                                                    <option>Special Service Medal</option>
-                                                </optgroup>
-
-                                                <!-- ================= AFP ================= -->
-                                                <optgroup label="AFP Awards">
-                                                    <option>Medal of Valor</option>
-                                                    <option>Philippine Legion of Honor</option>
-                                                    <option>Outstanding Achievement Medal</option>
-                                                    <option>Distinguished Service Medal</option>
-                                                    <option>Gold Cross</option>
-                                                    <option>Silver Cross</option>
-                                                    <option>Bronze Cross</option>
-                                                    <option>Military Merit Medal</option>
-                                                    <option>Military Commendation Medal</option>
-                                                </optgroup>
-
-                                                <!-- ================= PNP ================= -->
-                                                <optgroup label="PNP Awards">
-
-                                                    <option>Medalya ng Kagitingan (PNP Medal of Valor)</option>
-                                                    <option>Medalya ng Kabayanihan (PNP Distinguished Conduct Medal)
-                                                    </option>
-                                                    <option>Medalya ng Katapatan sa Paglilingkod (PNP Distinguished
-                                                        Service Medal)</option>
-                                                    <option>Medalya ng Katapangan (PNP Bravery Medal)</option>
-                                                    <option>Medalya ng Katangitanging Gawa (PNP Outstanding Achievement
-                                                        Medal)</option>
-                                                    <option>Medalya ng Pambihirang Paglilingkod (PNP Special Service
-                                                        Medal)</option>
-                                                    <option>Medalya ng Kadakilaan (PNP Heroism Medal)</option>
-                                                    <option>Medalya ng Katangitanging Asal (PNP Outstanding Conduct
-                                                        Medal)</option>
-
-                                                    <option>Medalya ng Kagalingan (PNP Medal of Merit)</option>
-                                                    <option>Medalya ng Kasanayan (PNP Efficiency Medal)</option>
-                                                    <option>Medalya ng Papuri (PNP Commendation Medal)</option>
-                                                    <option>Medalya ng Sugatang Magiting (PNP Wounded Personnel Medal)
-                                                    </option>
-
-                                                    <option>Medalya ng Ugnayang Pampulisya (PNP Police Relations Medal)
-                                                    </option>
-                                                    <option>Medalya ng Mabuting Asal (PNP Good Conduct Medal)</option>
-                                                    <option>Medalya ng Paglilingkod (PNP Service Medal)</option>
-
-                                                </optgroup>
-                                                <optgroup label="PNP Unit Decorations">
-                                                    <option>Presidential Unit Citation Badge</option>
-                                                    <option>Martial Law Unit Citation</option>
-                                                    <option>People Power I Unit Citation</option>
-                                                    <option>People Power II Unit Citation</option>
-                                                </optgroup>
-
-                                                <optgroup label="PNP Campaign & Service Medals">
-                                                    <option>PNP Anti-Dissidence Campaign Medal</option>
-                                                    <option>PNP Disaster Relief and Rehabilitation Medal</option>
-                                                    <option>PNP Luzon Campaign Medal</option>
-                                                    <option>PNP Visayas Campaign Medal</option>
-                                                    <option>PNP Mindanao Campaign Medal</option>
-                                                </optgroup>
-                                                <!-- ================= BJMP ================= -->
-                                                <optgroup label="BJMP Awards">
-
-                                                    <option>Medalya ng Kagitingan (BJMP Medal of Valor)</option>
-                                                    <option>Medalya ng Kabayanihan (BJMP Distinguished Conduct Medal)
-                                                    </option>
-                                                    <option>Medalya ng Kagalingan (BJMP Medal of Merit)</option>
-                                                    <option>Medalya ng Natatanging Gawa (BJMP Outstanding Achievement
-                                                        Medal)</option>
-                                                    <option>Medalya ng Kadakilaan (BJMP Gallantry Medal)</option>
-                                                    <option>Medalya ng Sugatang Magiting (BJMP Wounded Personnel Medal)
-                                                    </option>
-
-                                                    <option>Medalya ng Katapatan sa Paglilingkod (BJMP Distinguished
-                                                        Service Medal)</option>
-                                                    <option>Medalya ng Katapatan (BJMP Loyalty Medal)</option>
-                                                    <option>Medalya ng Kasanayan (BJMP Efficiency Medal)</option>
-                                                    <option>Medalya ng Papuri (BJMP Commendation Medal)</option>
-                                                    <option>Medalya ng Paglilingkod (BJMP Service Medal)</option>
-                                                    <option>Medalya ng Pambihirang Paglilingkod (BJMP Special Service
-                                                        Medal)</option>
-
-                                                    <!-- Special Action Medal (with levels) -->
-                                                    <option>Medalya ng Katangi-Tanging Asal - Raja</option>
-                                                    <option>Medalya ng Katangi-Tanging Asal - Datu</option>
-                                                    <option>Medalya ng Katangi-Tanging Asal - Lakan</option>
-                                                    <option>Medalya ng Katangi-Tanging Asal - Maginoo</option>
-
-                                                    <!-- Special Service Medal (with levels) -->
-                                                    <option>BJMP Special Service Medal - Raja</option>
-                                                    <option>BJMP Special Service Medal - Datu</option>
-                                                    <option>BJMP Special Service Medal - Lakan</option>
-                                                    <option>BJMP Special Service Medal - Maginoo</option>
-
-                                                    <option>Medalya ng Ugnayang Pangkomunidad (BJMP Community Relations
-                                                        Medal)</option>
-                                                    <option>Disaster Relief Operation Ribbon</option>
-                                                    <option>Medalya ng Mabuting Asal (BJMP Good Conduct Medal)</option>
-
-                                                    <option>BJMP Luzon Service Medal</option>
-                                                    <option>BJMP Visayas Service Medal</option>
-                                                    <option>BJMP Mindanao Service Medal</option>
-
-                                                    <option>Training Institute Ribbon</option>
-                                                    <option>BJMP Academic Excellence Medal</option>
-                                                    <option>BJMP Academic Excellence Ribbon</option>
-                                                    <option>BJMP Training Excellence Ribbon</option>
-
-                                                    <option>BJMP’s Best Medal</option>
-                                                    <option>Letter of Commendation</option>
-
-                                                </optgroup>
-
-                                                <optgroup label="BJMP Promotions (Awards)">
-                                                    <option>Meritorious Promotion</option>
-                                                    <option>Special Promotion Based on Awards</option>
-                                                    <option>On-the-Spot Promotion</option>
-                                                    <option>Posthumous Promotion</option>
-                                                </optgroup>
-
-                                            </select>
-                                            <input x-model="a.authority"
-                                                class="w-full px-4 py-2 bg-white border border-gray-300 rounded-lg text-sm text-black"
-                                                placeholder="Authority">
-                                        </div>
-                                        <button type="button" @click="cgAwardsDecorations.splice(i, 1)"
-                                            class="p-2 text-red-500 hover:bg-red-50 rounded-lg transition-colors">
-                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none"
-                                                viewBox="0 0 24 24" stroke="currentColor">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                                    d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-4v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                                            </svg>
-                                        </button>
+                                <h4 class="text-sm font-semibold text-gray-700">a. Awards and Decorations</h4>
+                                <p class="text-xs text-gray-500">Coast Guard awards and decorations are recorded by your unit's Adjutant.</p>
+                                <template x-for="(a,i) in cgAwardsDecorations.filter(x => x.type || x.authority)" :key="'cga' + i">
+                                    <div class="p-3 bg-white border border-gray-300 rounded-lg text-sm text-black grid md:grid-cols-2 gap-x-6 gap-y-1">
+                                        <p><span class="text-gray-500">Award:</span> <span x-text="a.type || '—'"></span></p>
+                                        <p><span class="text-gray-500">Authority:</span> <span x-text="a.authority || '—'"></span></p>
+                                        <p class="md:col-span-2 text-xs text-gray-500" x-text="a.added_by ? 'Recorded by the Adjutant' : 'Entered before Adjutant records began'"></p>
                                     </div>
                                 </template>
+                                <p class="text-sm text-gray-500" x-show="!cgAwardsDecorations.some(x => x.type || x.authority)">No Coast Guard awards recorded yet.</p>
                             </div>
 
                             <div class="space-y-3 border-t border-gray-200 pt-4">

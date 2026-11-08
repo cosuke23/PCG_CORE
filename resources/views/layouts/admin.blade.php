@@ -64,6 +64,11 @@
                     @include('layouts.partials.nav-link', $link('admin.organization.index', 'sitemap', 'Organization', 'admin.organization.*'))
                 @endif
 
+                @if ($can('soi.adjutant'))
+                    <div class="pcg-nav__section">Adjutant</div>
+                    @include('layouts.partials.nav-link', $link('admin.adjutant.index', 'medal', 'CG awards and schooling', 'admin.adjutant.*'))
+                @endif
+
                 @if ($can('reenlistment.view') && $orgWide)
                     <div class="pcg-nav__section">Re-enlistment</div>
                     @include('layouts.partials.nav-link', $link('admin.reenlistment.index', 'calendar-check', 'ETE watchlist', 'admin.reenlistment.*'))
