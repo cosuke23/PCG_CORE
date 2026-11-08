@@ -45,6 +45,7 @@ class RegisterController extends Controller
 
             // ✅ EMAIL CHECK FIRST (POPUP FRIENDLY)
             if (User::where('email', $request->email)->exists()) {
+                Log::info('Registration refused', ['fields' => ['email_exists']]);
                 // never flash the password or the selfie into the session
                 return back()
                     ->withInput($request->except(['password', 'password_confirmation', 'selfie_image']))
@@ -178,6 +179,8 @@ class RegisterController extends Controller
                 ->route('login')
                 ->with('registered', 'Your account is pending admin approval.');
         } catch (\Illuminate\Validation\ValidationException $e) {
+            // field names only, never the values
+            Log::info('Registration refused', ['fields' => array_keys($e->errors())]);
 
             return back()
                 ->withErrors($e->errors())

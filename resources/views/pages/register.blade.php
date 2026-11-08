@@ -3,9 +3,26 @@
 @section('title', 'Register')
 
 @section('content')
+    <style>
+        #registerForm input:focus, #registerForm select:focus { border-color: #3b82f6 !important; box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.3); outline: none; }
+    </style>
     <script nonce="{{ $cspNonce ?? '' }}" src="{{ asset('vendor/sweetalert2/sweetalert2-11.22.0.all.min.js') }}"></script>
 
     @php $isOfficer = $type === 'officer'; @endphp
+    @php
+        // Open on the step that holds the first field the server rejected.
+        $fieldStep = ['rank' => 0, 'serial_number' => 0, 'name' => 0, 'email' => 0, 'registration_type' => 0,
+            'dob' => 1, 'date_of_appointment' => 1, 'ete' => 1,
+            'command' => 2, 'category' => 2, 'unit' => 2, 'sub_unit' => 2,
+            'password' => 3, 'selfie_image' => 3];
+        $startStep = session('email_exists') ? 0 : 3;
+        foreach (array_keys($errors->getMessages()) as $field) {
+            $startStep = min($startStep, $fieldStep[$field] ?? 3);
+        }
+        if (!$errors->any() && !session('email_exists')) {
+            $startStep = 0;
+        }
+    @endphp
     {{-- Intro video. Closes itself if the video file is missing (it is not in git). --}}
     <div x-data="{ open: true }" x-show="open" @keydown.escape.window="open = false"
         role="dialog" aria-modal="true" aria-label="MEPCOM introduction video"
@@ -47,6 +64,22 @@
             <!-- CARD -->
             <div class="bg-white rounded-3xl shadow-2xl p-8">
 
+                {{-- The server's answer when it sends the form back (it used to be silent). --}}
+                @if ($errors->any() || session('email_exists'))
+                    <div id="registerErrors" role="alert" tabindex="-1"
+                        style="border: 1px solid #f5c2c0; background: #fdecea; color: #8a1c13; border-radius: 0.75rem; padding: 0.9rem 1.1rem; margin-bottom: 1.5rem;">
+                        <p style="font-weight: 700; margin: 0 0 0.35rem;">Your registration was not sent. Please fix the following:</p>
+                        <ul style="margin: 0; padding-left: 1.2rem; list-style: disc;">
+                            @if (session('email_exists'))
+                                <li>This email is already registered. Sign in instead, or use another email. If you registered before and are waiting, the administrator still has to approve your account.</li>
+                            @endif
+                            @foreach ($errors->all() as $message)
+                                <li>{{ $message }}</li>
+                            @endforeach
+                        </ul>
+                    </div>
+                @endif
+
                 <!-- STEPPER -->
                 <div class="flex justify-between mb-8">
                     <template x-for="(label, index) in steps" :key="index">
@@ -63,60 +96,52 @@
                 <form id="registerForm" method="POST" enctype="multipart/form-data"
                     action="{{ route('register.submit') }}">
                     @csrf
-                    <input type="hidden" name="registration_type" value="{{ request('type') }}">
+                    <input type="hidden" name="registration_type" value="{{ request('type', old('registration_type')) }}">
                     <!-- STEP 1: BASIC INFO -->
-                    <div x-show="step === 0" class="space-y-5">
+                    <div x-show="step === 0" class="space-y-5" data-reg-step="0">
                         <h3 class="font-semibold text-lg">Basic Information</h3>
 
                         <div class="grid grid-cols-2 gap-4">
                             <select name="rank"
-                                style="width: 100%; padding: 0.5rem 1rem; border: 1px solid #ccc; border-radius: 0.5rem; outline: none; transition: 0.3s; font-size: 1rem;"
-                                onfocus="this.style.borderColor='#3b82f6'; this.style.boxShadow='0 0 0 2px rgba(59, 130, 246, 0.3)'"
-                                onblur="this.style.borderColor='#ccc'; this.style.boxShadow='none'">
+                                style="width: 100%; padding: 0.5rem 1rem; border: 1px solid #ccc; border-radius: 0.5rem; outline: none; transition: 0.3s; font-size: 1rem;">
                                 <option value="">Rank</option>
                                 @if (!$isOfficer)
-                                    <option value="FMCPO">First Master Chief Petty Officer (FMCPO)</option>
-                                    <option value="MCPO">Master Chief Petty Officer (MCPO)</option>
-                                    <option value="SCPO">Senior Chief Petty Officer (SCPO)</option>
-                                    <option value="CPO">Chief Petty Officer (CPO)</option>
-                                    <option value="PO1">Petty Officer First Class (PO1)</option>
-                                    <option value="PO2">Petty Officer Second Class (PO2)</option>
-                                    <option value="PO3">Petty Officer Third Class (PO3)</option>
-                                    <option value="SN1">Seaman/Seawoman First Class (SN1 / SW1)</option>
-                                    <option value="SN2">Seaman/Seawoman Second Class (SN2 / SW2)</option>
-                                    <option value="ASN">Apprentice Seaman/Seawoman (ASN / ASW)</option>
+                                    <option value="FMCPO" @selected(old('rank') === 'FMCPO')>First Master Chief Petty Officer (FMCPO)</option>
+                                    <option value="MCPO" @selected(old('rank') === 'MCPO')>Master Chief Petty Officer (MCPO)</option>
+                                    <option value="SCPO" @selected(old('rank') === 'SCPO')>Senior Chief Petty Officer (SCPO)</option>
+                                    <option value="CPO" @selected(old('rank') === 'CPO')>Chief Petty Officer (CPO)</option>
+                                    <option value="PO1" @selected(old('rank') === 'PO1')>Petty Officer First Class (PO1)</option>
+                                    <option value="PO2" @selected(old('rank') === 'PO2')>Petty Officer Second Class (PO2)</option>
+                                    <option value="PO3" @selected(old('rank') === 'PO3')>Petty Officer Third Class (PO3)</option>
+                                    <option value="SN1" @selected(old('rank') === 'SN1')>Seaman/Seawoman First Class (SN1 / SW1)</option>
+                                    <option value="SN2" @selected(old('rank') === 'SN2')>Seaman/Seawoman Second Class (SN2 / SW2)</option>
+                                    <option value="ASN" @selected(old('rank') === 'ASN')>Apprentice Seaman/Seawoman (ASN / ASW)</option>
                                 @else
-                                    <option value="ENS">Ensign (ENS)</option>
-                                    <option value="LTJG">Lieutenant Junior Grade (LTJG)</option>
-                                    <option value="LT">Lieutenant (LT)</option>
-                                    <option value="LCDR">Lieutenant Commander (LCDR)</option>
-                                    <option value="CDR">Commander (CDR)</option>
-                                    <option value="CAPT">Captain (CAPT)</option>
-                                    <option value="COMMO">Commodore (COMMO)</option>
-                                    <option value="RADM">Rear Admiral (RADM)</option>
-                                    <option value="VADM">Vice Admiral (VADM)</option>
-                                    <option value="ADM">Admiral (ADM)</option>
+                                    <option value="ENS" @selected(old('rank') === 'ENS')>Ensign (ENS)</option>
+                                    <option value="LTJG" @selected(old('rank') === 'LTJG')>Lieutenant Junior Grade (LTJG)</option>
+                                    <option value="LT" @selected(old('rank') === 'LT')>Lieutenant (LT)</option>
+                                    <option value="LCDR" @selected(old('rank') === 'LCDR')>Lieutenant Commander (LCDR)</option>
+                                    <option value="CDR" @selected(old('rank') === 'CDR')>Commander (CDR)</option>
+                                    <option value="CAPT" @selected(old('rank') === 'CAPT')>Captain (CAPT)</option>
+                                    <option value="COMMO" @selected(old('rank') === 'COMMO')>Commodore (COMMO)</option>
+                                    <option value="RADM" @selected(old('rank') === 'RADM')>Rear Admiral (RADM)</option>
+                                    <option value="VADM" @selected(old('rank') === 'VADM')>Vice Admiral (VADM)</option>
+                                    <option value="ADM" @selected(old('rank') === 'ADM')>Admiral (ADM)</option>
                                 @endif
                             </select>
 
-                            <input type="text" name="serial_number" placeholder="Serial Number"
-                                style="width: 100%; padding: 0.5rem 1rem; border: 1px solid #ccc; border-radius: 0.5rem; outline: none; transition: 0.3s; font-size: 1rem;"
-                                onfocus="this.style.borderColor='#3b82f6'; this.style.boxShadow='0 0 0 2px rgba(59, 130, 246, 0.3)'"
-                                onblur="this.style.borderColor='#ccc'; this.style.boxShadow='none'">
+                            <input type="text" name="serial_number" placeholder="Serial Number" value="{{ old('serial_number') }}" maxlength="100"
+                                style="width: 100%; padding: 0.5rem 1rem; border: 1px solid #ccc; border-radius: 0.5rem; outline: none; transition: 0.3s; font-size: 1rem;">
                         </div>
 
-                        <input type="text" name="name" placeholder="Full Name"
-                            style="width: 100%; padding: 0.5rem 1rem; border: 1px solid #ccc; border-radius: 0.5rem; outline: none; transition: 0.3s; font-size: 1rem;"
-                            onfocus="this.style.borderColor='#3b82f6'; this.style.boxShadow='0 0 0 2px rgba(59, 130, 246, 0.3)'"
-                            onblur="this.style.borderColor='#ccc'; this.style.boxShadow='none'">
-                        <input type="email" name="email" placeholder="Email"
-                            style="width: 100%; padding: 0.5rem 1rem; border: 1px solid #ccc; border-radius: 0.5rem; outline: none; transition: 0.3s; font-size: 1rem;"
-                            onfocus="this.style.borderColor='#3b82f6'; this.style.boxShadow='0 0 0 2px rgba(59, 130, 246, 0.3)'"
-                            onblur="this.style.borderColor='#ccc'; this.style.boxShadow='none'">
+                        <input type="text" name="name" placeholder="Full Name" value="{{ old('name') }}" maxlength="255" autocomplete="name"
+                            style="width: 100%; padding: 0.5rem 1rem; border: 1px solid #ccc; border-radius: 0.5rem; outline: none; transition: 0.3s; font-size: 1rem;">
+                        <input type="email" name="email" placeholder="Email" value="{{ old('email') }}" autocomplete="email"
+                            style="width: 100%; padding: 0.5rem 1rem; border: 1px solid #ccc; border-radius: 0.5rem; outline: none; transition: 0.3s; font-size: 1rem;">
                     </div>
 
                     <!-- STEP 2: SERVICE DETAILS -->
-                    <div x-show="step === 1" class="space-y-5">
+                    <div x-show="step === 1" class="space-y-5" data-reg-step="1">
                         <h3 class="font-semibold text-lg">Service Details</h3>
 
                         <div class="grid grid-cols-3 gap-4">
@@ -124,26 +149,22 @@
                             <!-- Date of Birth -->
                             <div class="flex flex-col">
                                 <label for="dob" class="text-sm font-medium mb-1">Date of Birth</label>
-                                <input type="date" id="dob" name="dob"
-                                    style="width: 100%; padding: 0.5rem 1rem; border: 1px solid #ccc; border-radius: 0.5rem; outline: none; transition: 0.3s; font-size: 1rem;"
-                                    onfocus="this.style.borderColor='#3b82f6'; this.style.boxShadow='0 0 0 2px rgba(59, 130, 246, 0.3)'"
-                                    onblur="this.style.borderColor='#ccc'; this.style.boxShadow='none'">
+                                <input type="date" id="dob" name="dob" value="{{ old('dob') }}"
+                                    style="width: 100%; padding: 0.5rem 1rem; border: 1px solid #ccc; border-radius: 0.5rem; outline: none; transition: 0.3s; font-size: 1rem;">
                             </div>
 
                             <!-- Date of Appointment -->
                             <div class="flex flex-col">
                                 <label for="date_of_appointment" class="text-sm font-medium mb-1">Date of
                                     Appointment</label>
-                                <input type="date" id="date_of_appointment" name="date_of_appointment"
-                                    style="width: 100%; padding: 0.5rem 1rem; border: 1px solid #ccc; border-radius: 0.5rem; outline: none; transition: 0.3s; font-size: 1rem;"
-                                    onfocus="this.style.borderColor='#3b82f6'; this.style.boxShadow='0 0 0 2px rgba(59, 130, 246, 0.3)'"
-                                    onblur="this.style.borderColor='#ccc'; this.style.boxShadow='none'">
+                                <input type="date" id="date_of_appointment" name="date_of_appointment" value="{{ old('date_of_appointment') }}"
+                                    style="width: 100%; padding: 0.5rem 1rem; border: 1px solid #ccc; border-radius: 0.5rem; outline: none; transition: 0.3s; font-size: 1rem;">
                             </div>
 
                             <!-- ETE -->
                             <div class="flex flex-col">
                                 <label for="ete" class="text-sm font-medium mb-1">ETE</label>
-                                <input type="date" id="ete" name="ete" readonly
+                                <input type="date" id="ete" name="ete" value="{{ old('ete') }}" readonly
                                     class="input-modern bg-gray-100">
                             </div>
 
@@ -153,7 +174,7 @@
                     </div>
 
                     <!-- STEP 3: UNIT ASSIGNMENT -->
-                    <div x-data="unitDropdown()" x-show="step === 2" class="space-y-5">
+                    <div x-data="unitDropdown()" x-show="step === 2" class="space-y-5" data-reg-step="2">
 
                         <h3 class="font-semibold text-lg">Unit Assignment</h3>
 
@@ -195,18 +216,14 @@
 
                     </div>
                     <!-- STEP 4: SECURITY -->
-                    <div x-show="step === 3" class="space-y-5">
+                    <div x-show="step === 3" class="space-y-5" data-reg-step="3">
                         <h3 class="font-semibold text-lg">Security & Verification</h3>
 
                         <div class="grid grid-cols-2 gap-4">
-                            <input type="password" name="password" placeholder="Password"
-                                style="width: 100%; padding: 0.5rem 1rem; border: 1px solid #ccc; border-radius: 0.5rem; outline: none; transition: 0.3s; font-size: 1rem;"
-                                onfocus="this.style.borderColor='#3b82f6'; this.style.boxShadow='0 0 0 2px rgba(59, 130, 246, 0.3)'"
-                                onblur="this.style.borderColor='#ccc'; this.style.boxShadow='none'">
-                            <input type="password" name="password_confirmation" placeholder="Confirm Password"
-                                style="width: 100%; padding: 0.5rem 1rem; border: 1px solid #ccc; border-radius: 0.5rem; outline: none; transition: 0.3s; font-size: 1rem;"
-                                onfocus="this.style.borderColor='#3b82f6'; this.style.boxShadow='0 0 0 2px rgba(59, 130, 246, 0.3)'"
-                                onblur="this.style.borderColor='#ccc'; this.style.boxShadow='none'">
+                            <input type="password" name="password" placeholder="Password (at least 8 characters)" autocomplete="new-password"
+                                style="width: 100%; padding: 0.5rem 1rem; border: 1px solid #ccc; border-radius: 0.5rem; outline: none; transition: 0.3s; font-size: 1rem;">
+                            <input type="password" name="password_confirmation" placeholder="Confirm Password" autocomplete="new-password"
+                                style="width: 100%; padding: 0.5rem 1rem; border: 1px solid #ccc; border-radius: 0.5rem; outline: none; transition: 0.3s; font-size: 1rem;">
                         </div>
 
                         <!-- CAMERA -->
@@ -246,17 +263,60 @@
 
     <!-- STEP FORM JS -->
     <script nonce="{{ $cspNonce ?? '' }}">
+        // Fields each step must have before the person can move on (the server checks again).
+        const REG_REQUIRED = {
+            0: { rank: 'Rank', serial_number: 'Serial number', name: 'Full name', email: 'Email' },
+            1: { dob: 'Date of birth', date_of_appointment: 'Date of appointment' },
+            2: { command: 'Command' },
+            3: {}
+        };
+
+        // List of problems on one step (empty when the step is complete).
+        function regProblems(step) {
+            const form = document.getElementById('registerForm');
+            const problems = [];
+            Object.entries(REG_REQUIRED[step] || {}).forEach(([name, label]) => {
+                const el = form.elements[name];
+                if (!el || !String(el.value || '').trim()) problems.push(label + ' is required.');
+            });
+            if (step === 0) {
+                const email = form.elements['email'];
+                if (email && email.value && !email.checkValidity()) problems.push('Enter a valid email address.');
+            }
+            if (step === 3) {
+                const pw = form.elements['password'].value;
+                if (pw.length < 8) problems.push('Password must be at least 8 characters.');
+                if (pw !== form.elements['password_confirmation'].value) problems.push('The two passwords do not match.');
+                if (!document.getElementById('selfieImage').value) problems.push('Capture your selfie with the camera first.');
+            }
+            return problems;
+        }
+
+        function regShowProblems(problems) {
+            const list = document.createElement('ul');
+            list.style.textAlign = 'left';
+            problems.forEach(p => { const li = document.createElement('li'); li.textContent = p; list.appendChild(li); });
+            Swal.fire({ icon: 'warning', title: 'Please complete this step', html: list });
+        }
+
         function stepForm() {
             return {
-                step: 0,
+                step: {{ (int) ($startStep ?? 0) }},
                 steps: ['Basic', 'Service', 'Unit', 'Verify'],
                 next() {
+                    const problems = regProblems(this.step);
+                    if (problems.length) { regShowProblems(problems); return; }
                     if (this.step < 3) this.step++;
                 },
                 prev() {
                     if (this.step > 0) this.step--;
                 },
                 goTo(index) {
+                    // moving back is always allowed; moving forward only past complete steps
+                    for (let s = this.step; s < index; s++) {
+                        const problems = regProblems(s);
+                        if (problems.length) { this.step = s; regShowProblems(problems); return; }
+                    }
                     this.step = index;
                 }
             }
@@ -500,6 +560,9 @@
     <script nonce="{{ $cspNonce ?? '' }}">
         document.addEventListener("DOMContentLoaded", () => {
 
+            const errorBox = document.getElementById('registerErrors');
+            if (errorBox) { errorBox.scrollIntoView({ block: 'center' }); errorBox.focus({ preventScroll: true }); }
+
             // AGE
             const dob = document.getElementById('dob');
             const ageSpan = document.getElementById('age');
@@ -538,10 +601,15 @@
                 .catch(err => status.textContent = "Camera error: " + err.message);
 
             btn.addEventListener('click', () => {
-                canvas.width = video.videoWidth;
-                canvas.height = video.videoHeight;
-                canvas.getContext('2d').drawImage(video, 0, 0);
-                const data = canvas.toDataURL('image/png');
+                if (!video.videoWidth) {
+                    Swal.fire('Camera not ready', 'Allow camera access for this site, wait for the picture, then capture again.', 'warning');
+                    return;
+                }
+                const scale = Math.min(1, 1280 / Math.max(video.videoWidth, video.videoHeight));
+                canvas.width = Math.round(video.videoWidth * scale);
+                canvas.height = Math.round(video.videoHeight * scale);
+                canvas.getContext('2d').drawImage(video, 0, 0, canvas.width, canvas.height);
+                const data = canvas.toDataURL('image/jpeg', 0.85);
                 selfie.value = data;
                 preview.src = data;
                 preview.classList.remove('hidden');
@@ -549,7 +617,17 @@
             });
 
             // SUBMIT
-            document.getElementById('registerForm').addEventListener('submit', () => {
+            document.getElementById('registerForm').addEventListener('submit', (event) => {
+                for (let step = 0; step <= 3; step++) {
+                    const problems = regProblems(step);
+                    if (problems.length) {
+                        event.preventDefault();
+                        const root = document.querySelector('[x-data*="stepForm"]');
+                        if (root && window.Alpine && Alpine.$data) Alpine.$data(root).step = step;
+                        regShowProblems(problems);
+                        return;
+                    }
+                }
                 Swal.fire({
                     title: 'Processing...',
                     allowOutsideClick: false,
@@ -559,3 +637,4 @@
 
         });
     </script>
+@endsection
