@@ -47,6 +47,7 @@ Last updated: 2026-10-30 · branch `claude/cool-wozniak-rni95k`
 - ✅ Full re-check 2026-11-06 (SECURITY_AUDIT §0h): Symfony 7.4.23; /files re-checks admin sessions; photos need `documents.view`; checker accounts are created and reset only by admins with `documents.restricted`; member status re-checked per request; maker-checker counts editors; key ring never auto-created; random upload names
 - 👤 Hermes: re-run `deploy/server-setup.sh` as root once (key ring group without nginx)
 - ✅ Reverse-engineering review 2026-11-07 (SECURITY_AUDIT §0i): unit decisions change one row; CSP `strict-dynamic`; dispatcher locked down; member write/upload limits; bounded SOI lists; training rank check; approval lock; selfie re-encode; Apache/nginx deny rules; unused npm build tools removed; `deploy/audit-server.sh`; PHP `open_basedir`
+- ✅ Registration fixed on Hermes (2026-11-08): users.mother_unit/sub_unit/unit_assignment widened to VARCHAR(255) (migration 2026_11_08_000001, reversible, owner request); the page shows every refusal by step; password eye toggle and strength meter; database errors logged without SQL values
 - 👤 Hermes: `update-web-config.sh`, then `sudo bash ~/mepcom-hrmis-deploy/audit-server.sh` and send the output; owner decisions in §0i (email squatting, unique serial index, disciplinary soft delete, watchlist)
 
 ## Phase 5 — UI/UX
