@@ -225,6 +225,8 @@ Route::middleware(['admin.session', 'admin.audit'])->group(function () {
     //      data limited to the admin's command/unit (App\Services\OrgScope) ----
     Route::get('/admin/hrmis', [\App\Http\Controllers\HrmisDashboardController::class, 'index'])
         ->middleware('admin.can:personnel.view')->name('admin.hrmis.index');
+    Route::post('/admin/hrmis/export', [\App\Http\Controllers\HrmisDashboardController::class, 'export'])
+        ->middleware(['admin.can:personnel.view', 'admin.can:reports.view'])->name('admin.hrmis.export');
 
     Route::get('/admin/organization', [\App\Http\Controllers\OrganizationController::class, 'index'])
         ->middleware('admin.can:org.view')->name('admin.organization.index');
