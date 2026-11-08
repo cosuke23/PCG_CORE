@@ -457,7 +457,8 @@ class DashboardController extends Controller
             ]])
             : $otherLetterCommendations;
         // ================= RETURN =================
-        if ($profile) {
+        // A saved profile opens as a summary; "Edit Profile" (?edit=1) opens the form again.
+        if ($profile && !request()->boolean('edit')) {
             return view('applicant.updated_profile', compact(
                 'user',
                 'profile',

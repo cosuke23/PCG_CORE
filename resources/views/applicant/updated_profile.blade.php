@@ -68,13 +68,13 @@
             </div>
 
             <div class="mt-6 text-center">
-                <a href="{{ route('profile.update') }}"
+                <a href="{{ route('profile', ['edit' => 1]) }}"
                    class="bg-blue-600 hover:bg-blue-700 px-6 py-2 rounded-lg font-semibold text-white transition">
                    Edit Profile
                 </a>
             </div>
         @else
-            <p class="text-center text-gray-500">You haven't created a profile yet. <a href="{{ route('profile.edit') }}" class="text-blue-500 underline">Create Profile</a></p>
+            <p class="text-center text-gray-500">You haven't created a profile yet. <a href="{{ route('profile', ['edit' => 1]) }}" class="text-blue-500 underline">Create Profile</a></p>
         @endif
     </div>
 </div>

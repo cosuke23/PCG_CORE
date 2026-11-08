@@ -104,7 +104,9 @@ async function step(name, fn) {
     check('Personnel uploads a 201 file', v.startsWith('201_files/appointment/'), v);
   });
   await step('Personnel saves SOI step 1', async () => {
+    // a saved profile opens as a summary; its Edit Profile button opens the form
     await me.goto(BASE + '/profile');
+    await me.click('a:has-text("Edit Profile")');
     await me.waitForTimeout(500);
     const name = 'Flowtest';
     await me.evaluate(n => { const el = document.querySelector('[x-model="basic.first_name"]'); el.value = n; el.dispatchEvent(new Event('input')); }, name);
