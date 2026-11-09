@@ -595,9 +595,6 @@
                                 <div class="soi-entry">
                                     <div class="soi-entry__head">
                                         <span class="soi-entry__title">Course <span class="pcg-num" x-text="index + 1"></span></span>
-                                        <button type="button" class="pcg-btn pcg-btn--ghost pcg-btn--sm soi-remove" @click="trainings.others_local.splice(index, 1)">
-                                        <i class="fa-solid fa-trash-can" aria-hidden="true"></i> Remove
-                                    </button>
                                     </div>
                                     <div class="soi-grid soi-grid--3">
                                         <label class="soi-field">
@@ -637,9 +634,6 @@
                                 <div class="soi-entry">
                                     <div class="soi-entry__head">
                                         <span class="soi-entry__title">Course <span class="pcg-num" x-text="index + 1"></span></span>
-                                        <button type="button" class="pcg-btn pcg-btn--ghost pcg-btn--sm soi-remove" @click="trainings.others_foreign.splice(index, 1)">
-                                        <i class="fa-solid fa-trash-can" aria-hidden="true"></i> Remove
-                                    </button>
                                     </div>
                                     <div class="soi-grid soi-grid--3">
                                         <label class="soi-field">
@@ -679,9 +673,6 @@
                                 <div class="soi-entry">
                                     <div class="soi-entry__head">
                                         <span class="soi-entry__title">Training <span class="pcg-num" x-text="index + 1"></span></span>
-                                        <button type="button" class="pcg-btn pcg-btn--ghost pcg-btn--sm soi-remove" @click="trainings.military.splice(index, 1)">
-                                        <i class="fa-solid fa-trash-can" aria-hidden="true"></i> Remove
-                                    </button>
                                     </div>
                                     <div class="soi-grid soi-grid--3">
                                         <label class="soi-field">
@@ -731,9 +722,6 @@
                                 <div class="soi-entry">
                                     <div class="soi-entry__head">
                                         <span class="soi-entry__title">Training <span class="pcg-num" x-text="index + 1"></span></span>
-                                        <button type="button" class="pcg-btn pcg-btn--ghost pcg-btn--sm soi-remove" @click="trainings.military_others_local.splice(index, 1)">
-                                        <i class="fa-solid fa-trash-can" aria-hidden="true"></i> Remove
-                                    </button>
                                     </div>
                                     <div class="soi-grid soi-grid--3">
                                         <label class="soi-field">
@@ -773,9 +761,6 @@
                                 <div class="soi-entry">
                                     <div class="soi-entry__head">
                                         <span class="soi-entry__title">Training <span class="pcg-num" x-text="index + 1"></span></span>
-                                        <button type="button" class="pcg-btn pcg-btn--ghost pcg-btn--sm soi-remove" @click="trainings.military_others_foreign.splice(index, 1)">
-                                        <i class="fa-solid fa-trash-can" aria-hidden="true"></i> Remove
-                                    </button>
                                     </div>
                                     <div class="soi-grid soi-grid--3">
                                         <label class="soi-field">
@@ -864,9 +849,6 @@
                                 <div class="soi-entry">
                                     <div class="soi-entry__head">
                                         <span class="soi-entry__title">Shipboard <span class="pcg-num" x-text="i + 1"></span></span>
-                                        <button type="button" class="pcg-btn pcg-btn--ghost pcg-btn--sm soi-remove" @click="duties.shipboard.splice(i, 1)">
-                                        <i class="fa-solid fa-trash-can" aria-hidden="true"></i> Remove
-                                    </button>
                                     </div>
                                     <div class="soi-grid soi-grid--4">
                                         <label class="soi-field">
@@ -902,9 +884,6 @@
                                 <div class="soi-entry">
                                     <div class="soi-entry__head">
                                         <span class="soi-entry__title">Collateral duty <span class="pcg-num" x-text="i + 1"></span></span>
-                                        <button type="button" class="pcg-btn pcg-btn--ghost pcg-btn--sm soi-remove" @click="duties.shipboard_collateral.splice(i, 1)">
-                                        <i class="fa-solid fa-trash-can" aria-hidden="true"></i> Remove
-                                    </button>
                                     </div>
                                     <div class="soi-grid soi-grid--4">
                                         <label class="soi-field">
@@ -940,9 +919,6 @@
                                 <div class="soi-entry">
                                     <div class="soi-entry__head">
                                         <span class="soi-entry__title">Shore based <span class="pcg-num" x-text="i + 1"></span></span>
-                                        <button type="button" class="pcg-btn pcg-btn--ghost pcg-btn--sm soi-remove" @click="duties.shorebased.splice(i, 1)">
-                                        <i class="fa-solid fa-trash-can" aria-hidden="true"></i> Remove
-                                    </button>
                                     </div>
                                     <div class="soi-grid soi-grid--4">
                                         <label class="soi-field">
@@ -978,9 +954,6 @@
                                 <div class="soi-entry">
                                     <div class="soi-entry__head">
                                         <span class="soi-entry__title">Collateral duty <span class="pcg-num" x-text="i + 1"></span></span>
-                                        <button type="button" class="pcg-btn pcg-btn--ghost pcg-btn--sm soi-remove" @click="duties.shorebased_collateral.splice(i, 1)">
-                                        <i class="fa-solid fa-trash-can" aria-hidden="true"></i> Remove
-                                    </button>
                                     </div>
                                     <div class="soi-grid soi-grid--4">
                                         <label class="soi-field">
@@ -1016,9 +989,6 @@
                                 <div class="soi-entry">
                                     <div class="soi-entry__head">
                                         <span class="soi-entry__title">Special duty <span class="pcg-num" x-text="i + 1"></span></span>
-                                        <button type="button" class="pcg-btn pcg-btn--ghost pcg-btn--sm soi-remove" @click="duties.special.splice(i, 1)">
-                                        <i class="fa-solid fa-trash-can" aria-hidden="true"></i> Remove
-                                    </button>
                                     </div>
                                     <div class="soi-grid soi-grid--4">
                                         <label class="soi-field">
@@ -1054,9 +1024,6 @@
                                 <div class="soi-entry">
                                     <div class="soi-entry__head">
                                         <span class="soi-entry__title">Government service <span class="pcg-num" x-text="i + 1"></span></span>
-                                        <button type="button" class="pcg-btn pcg-btn--ghost pcg-btn--sm soi-remove" @click="duties.govt.splice(i, 1)">
-                                        <i class="fa-solid fa-trash-can" aria-hidden="true"></i> Remove
-                                    </button>
                                     </div>
                                     <div class="soi-grid soi-grid--3">
                                         <label class="soi-field">
@@ -1088,9 +1055,6 @@
                                 <div class="soi-entry">
                                     <div class="soi-entry__head">
                                         <span class="soi-entry__title">Non-government service <span class="pcg-num" x-text="i + 1"></span></span>
-                                        <button type="button" class="pcg-btn pcg-btn--ghost pcg-btn--sm soi-remove" @click="duties.non_govt.splice(i, 1)">
-                                        <i class="fa-solid fa-trash-can" aria-hidden="true"></i> Remove
-                                    </button>
                                     </div>
                                     <div class="soi-grid soi-grid--3">
                                         <label class="soi-field">
