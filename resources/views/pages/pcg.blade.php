@@ -112,10 +112,10 @@
                      alt="Official Philippine Coast Guard banner of its three functional commands: MSSC, MEPCOM and MARSLEC">
             </div>
             <div class="ph-hero__band">
-                <div class="ph-wrap ph-hero__in">
+                <div class="ph-wrap ph-hero__in" data-ph-reveal="hero">
                     <div>
                         <p class="ph-eyebrow ph-eyebrow--gold">Philippine Coast Guard · PCG HRMIS</p>
-                        <h1 id="hero-title">Guarding Our Seas.<span>Serving Our Nation.</span></h1>
+                        <h1 id="hero-title" data-ph-words>Guarding Our Seas.<span class="ph-hero__gold">Serving Our Nation.</span></h1>
                     </div>
                     <div>
                         <p class="ph-hero__lead">PCG HRMIS is the human resource gateway of the Philippine Coast Guard: personnel records,
@@ -134,11 +134,11 @@
         <section class="ph-section ph-services" id="services" aria-labelledby="services-title">
             <div class="ph-wrap">
                 <p class="ph-eyebrow">Digital services</p>
-                <h2 id="services-title" data-ph-reveal>Find the right service, sooner.</h2>
+                <h2 id="services-title" data-ph-reveal data-ph-words>Find the right service, sooner.</h2>
                 <p class="ph-lead">MEPCOM HRMIS is the first command system on PCG HRMIS. Access to personnel records always requires signing in.</p>
 
-                <div class="ph-feature">
-                    <article class="ph-card ph-card--azure" data-ph-reveal>
+                <div class="ph-feature" data-ph-reveal data-ph-stagger>
+                    <article class="ph-card ph-card--azure">
                         <div class="ph-card__kicker"><span class="ph-card__icon"><i class="fa-solid fa-id-card" aria-hidden="true"></i></span> Available now</div>
                         <h3>MEPCOM HRMIS</h3>
                         <p>Personnel information system of the Marine Environmental Protection Command: the Statement of Information,
@@ -149,7 +149,7 @@
                         <a class="ph-btn ph-btn--gold" href="{{ route('mepcom') }}">Open MEPCOM HRMIS</a>
                     </article>
 
-                    <article class="ph-card ph-card--light" data-ph-reveal>
+                    <article class="ph-card ph-card--light">
                         <div class="ph-card__kicker ph-card__kicker--gold"><span class="ph-card__icon"><i class="fa-solid fa-user-plus" aria-hidden="true"></i></span> Join the system</div>
                         <h3>New personnel registration</h3>
                         <p>Officers and non-officers of MEPCOM register once. MEPCOM HR reviews every registration before access is granted.</p>
@@ -161,7 +161,7 @@
                     </article>
                 </div>
 
-                <ul class="ph-directory" data-ph-reveal>
+                <ul class="ph-directory" data-ph-reveal data-ph-stagger>
                     <li>
                         <i class="fa-solid fa-right-to-bracket" aria-hidden="true"></i>
                         <h3>Personnel sign in</h3>
@@ -194,7 +194,7 @@
         <section class="ph-section ph-org" id="structure" aria-labelledby="structure-title">
             <div class="ph-wrap">
                 <p class="ph-eyebrow ph-eyebrow--gold">PCG organizational structure</p>
-                <h2 id="structure-title" data-ph-reveal>One Coast Guard, six groups of commands.</h2>
+                <h2 id="structure-title" data-ph-reveal data-ph-words>One Coast Guard, six groups of commands.</h2>
                 <p class="ph-lead ph-lead--inverse">National Headquarters leads every command of the Philippine Coast Guard. MEPCOM, one of the three functional commands, runs MEPCOM HRMIS.</p>
 
                 <div class="ph-org__top" data-ph-reveal>
@@ -205,7 +205,7 @@
                     </div>
                 </div>
 
-                <ol class="ph-org__groups">
+                <ol class="ph-org__groups" data-ph-reveal="line">
                     @foreach ($pcgGroups as $i => [$group, $icon, $commands])
                         <li class="ph-org__group @if ($i === 0) ph-org__group--wide @elseif (count($commands) === 1) ph-org__group--band @endif" data-ph-reveal>
                             <h3>
@@ -213,7 +213,7 @@
                                 {{ $group }}
                                 <span class="ph-org__count">{{ count($commands) }}</span>
                             </h3>
-                            <ul>
+                            <ul data-ph-stagger>
                                 @foreach ($commands as $command)
                                     @if (is_array($command))
                                         @php([$name, $code, $seal] = $command)
@@ -237,10 +237,10 @@
 
         {{-- contact --}}
         <section class="ph-cta" aria-labelledby="cta-title">
-            <div class="ph-wrap ph-cta__in">
+            <div class="ph-wrap ph-cta__in" data-ph-reveal>
                 <div>
                     <p class="ph-eyebrow ph-eyebrow--gold">Contact</p>
-                    <h2 id="cta-title">Questions about your records?</h2>
+                    <h2 id="cta-title" data-ph-words>Questions about your records?</h2>
                     <p>Send a message to the HR office of your command through the contact page.</p>
                 </div>
                 <a class="ph-btn ph-btn--gold" href="{{ route('contact') }}">Contact HR</a>
