@@ -15,6 +15,7 @@ const check = (name, ok, detail = '') => { results.push([ok ? 'PASS' : 'FAIL', n
   const jsErrors = [];
   page.on('pageerror', e => jsErrors.push(e.message.split('\n')[0]));
   page.on('dialog', d => d.accept());
+  await require('./lib').autoConfirm(page);
 
   await require('./lib').adminLogin(page, BASE);
 

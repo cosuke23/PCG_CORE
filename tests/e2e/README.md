@@ -19,6 +19,7 @@ node tests/e2e/flows-admin.js           # approve/reject, unit accounts, courses
 node tests/e2e/flows-users.js           # unit review, disciplinary upload, uploads, SOI save, training apply
 node tests/e2e/flow-register.js         # self-registration with a fake camera
 node tests/e2e/flow-hrmis.js            # registration -> approval -> 201 upload/verify -> promotion -> reports, scope, auditor
+node tests/e2e/flow-soi-admin.js        # admin edits a submitted SOI (steps 1-6, audited), confirm dialog on Reopen, phone width
 node tests/e2e/responsive.js /tmp/shots # every page at 320-1920px: sideways scroll, cut-off content, iOS zoom fields, tap targets
 ```
 

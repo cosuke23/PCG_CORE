@@ -425,3 +425,22 @@ body.pcg-app {
 .pcg-app .pcg-btn--cta { box-shadow: 0 6px 16px var(--c-accent-soft); }
 .pcg-app .pcg-btn--cta:hover { background: var(--c-accent-strong); border-color: var(--c-accent-strong); }
 .pcg-app .pcg-skeleton { background: linear-gradient(90deg, var(--c-surface-2) 25%, var(--c-line-soft) 37%, var(--c-surface-2) 63%); background-size: 400% 100%; }
+
+/* confirmation dialog in the admin console */
+.pcg-app .pcg-confirm { background: var(--c-surface); color: var(--c-text); border: 1px solid var(--c-line); box-shadow: var(--c-shadow-lift); }
+.pcg-app .pcg-confirm p { color: var(--c-muted); }
+
+/* ---------------------------------------- SOI form in the console (admin SOI editor) */
+.pcg-app .soi h3, .pcg-app .soi h4, .pcg-app .soi h5,
+.pcg-app .soi-entry__title { color: var(--c-text); }
+.pcg-app .soi-stepper__btn { color: var(--c-muted); background: var(--c-surface); border-color: var(--c-line); }
+.pcg-app .soi-stepper__btn:hover { color: var(--c-text); border-color: var(--c-accent-line); }
+.pcg-app .soi-stepper__num { color: var(--c-text); background: var(--c-surface-2); border-color: var(--c-line); }
+.pcg-app .soi-stepper__btn[aria-current="step"] { color: var(--c-text); border-color: var(--c-accent); background: var(--c-accent-soft); }
+.pcg-app .soi-stepper__btn[aria-current="step"] .soi-stepper__num { color: var(--c-accent-ink); background: var(--c-accent); border-color: var(--c-accent); }
+.pcg-app .soi-entry { background: var(--c-surface-2); border-color: var(--c-line); }
+.pcg-app .soi-readonly, .pcg-app .soi-readonly:hover { color: var(--c-muted); background: var(--c-surface-2); border-color: var(--c-line); }
+.pcg-app .soi-actions { background: var(--c-surface); border-color: var(--c-line); }
+.pcg-app .swal2-popup { background: var(--c-surface); color: var(--c-text); border: 1px solid var(--c-line); }
+.pcg-app .swal2-title, .pcg-app .swal2-html-container { color: var(--c-text); }
+.pcg-app .swal2-popup .swal2-styled.swal2-confirm { background: var(--c-accent); color: var(--c-accent-ink); }

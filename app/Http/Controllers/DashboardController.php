@@ -51,8 +51,15 @@ class DashboardController extends Controller
 
     public function profile()
     {
-        $user = Auth::user();
+        return $this->soiPage(Auth::user(), request()->boolean('edit'));
+    }
 
+    /**
+     * The SOI page of $user: the summary, or the six-step form when $form is true.
+     * Also used by the admin SOI editor (AdminSoiController) for the member it edits.
+     */
+    public function soiPage($user, bool $form)
+    {
         $profile = Profile::where('user_id', $user->id)->first();
 
         $serialNumber = $user->serial_number;
@@ -465,7 +472,7 @@ class DashboardController extends Controller
             : $otherLetterCommendations;
         // ================= RETURN =================
         // A saved profile opens as a summary; "Edit Profile" (?edit=1) opens the form again.
-        if ($profile && !request()->boolean('edit')) {
+        if ($profile && !$form) {
             return view('applicant.updated_profile', compact(
                 'user',
                 'profile',

@@ -40,4 +40,15 @@ async function adminLogin(page, base, email = 'admin@demo.test') {
   await Promise.all([page.waitForNavigation(), page.click('button[type=submit]')]);
 }
 
-module.exports = { totp, adminLogin, ADMIN_PASSWORD, ADMIN_TOTP_SECRET };
+// The in-page confirmation (pcg-ui.js pcgConfirm, <dialog class="pcg-confirm">) replaced
+// the browser's confirm(): flows that accepted every native dialog accept these too.
+async function autoConfirm(page) {
+  await page.addInitScript(() => {
+    new MutationObserver(() => {
+      const ok = document.querySelector('dialog.pcg-confirm .pcg-confirm__actions button:last-child');
+      if (ok && !ok.dataset.e2eClicked) { ok.dataset.e2eClicked = '1'; setTimeout(() => ok.click(), 50); }
+    }).observe(document, { childList: true, subtree: true }); // documentElement may not exist yet
+  });
+}
+
+module.exports = { totp, adminLogin, autoConfirm, ADMIN_PASSWORD, ADMIN_TOTP_SECRET };

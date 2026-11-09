@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Personnel;
 use App\Services\OrgScope;
 use App\Support\AdminAudit;
+use App\Models\User;
 use App\Support\SoiLock;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -14,6 +15,11 @@ use Illuminate\Support\Facades\DB;
  * the member's command/unit (OrgScope, like the Adjutant module) and the super
  * admin see which members submitted their SOI and can reopen one, with a
  * reason, so the member can correct it and submit again. Audited.
+ *
+ * They can also edit the six SOI steps themselves (edit/save): the member's own
+ * form in the admin layout, saved by the member's step savers (TempRegistrationController)
+ * with the member as the request user. Editing never reopens or locks the SOI,
+ * and every saved step is audited (soi.edited).
  */
 class SoiSubmissionController extends Controller
 {
@@ -75,5 +81,38 @@ class SoiSubmissionController extends Controller
 
         return back()->with('success', 'Reopened the SOI of ' . $m->name . '. They can correct it and must submit it again.')
             ->with('reopened', $m->id);
+    }
+
+    public function edit(int $user)
+    {
+        $m = $this->members()->where('id', $user)->first();
+        abort_unless($m, 404); // unknown, not approved, or outside this admin's command/unit
+        AdminAudit::record('soi.edit_opened', 'users:' . $m->id, []);
+
+        return app(DashboardController::class)->soiPage(User::findOrFail($m->id), true)->with([
+            'soiLayout' => 'layouts.admin',
+            'adminEdit' => [
+                'saveBase' => url('/admin/soi/' . $m->id . '/step'),
+                'back' => route('admin.soi.index', ['show' => 'all', 'q' => $m->serial_number]),
+            ],
+        ]);
+    }
+
+    public function save(Request $request, int $user, int $step)
+    {
+        abort_unless($step >= 1 && $step <= 6, 404);
+        $m = $this->members()->where('id', $user)->first();
+        abort_unless($m, 404);
+        $member = User::findOrFail($m->id);
+
+        // the step savers take the id and serial from $request->user(): here, the member
+        $request->setUserResolver(fn () => $member);
+        $response = app(TempRegistrationController::class)->{'saveStep' . $step}($request);
+
+        if ($response->getStatusCode() < 300) {
+            AdminAudit::record('soi.edited', 'users:' . $m->id, ['step' => $step]);
+        }
+
+        return $response;
     }
 }

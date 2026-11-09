@@ -137,13 +137,55 @@
     });
 
     // Confirmation for consequential actions: <button data-pcg-confirm="Question?">
+    // shown in the page's own dialog (not the browser's "site says" box).
+    // Optional: data-pcg-confirm-title, data-pcg-confirm-ok (button label; default:
+    // the button's own text), data-pcg-confirm-danger (red confirm button).
+    function pcgConfirm(opts) {
+        return new Promise(function (resolve) {
+            var dlg = document.createElement('dialog');
+            dlg.className = 'pcg-confirm';
+            dlg.setAttribute('aria-labelledby', 'pcg-confirm-title');
+            var box = document.createElement('div');
+            box.className = 'pcg-confirm__box';
+            var h = document.createElement('h2'); h.id = 'pcg-confirm-title'; h.textContent = opts.title || 'Please confirm';
+            var p = document.createElement('p'); p.textContent = opts.text;
+            var row = document.createElement('div'); row.className = 'pcg-confirm__actions';
+            var no = document.createElement('button'); no.type = 'button'; no.className = 'pcg-btn pcg-btn--secondary'; no.textContent = opts.cancel || 'Cancel';
+            var yes = document.createElement('button'); yes.type = 'button';
+            yes.className = 'pcg-btn ' + (opts.danger ? 'pcg-btn--danger' : 'pcg-btn--cta');
+            yes.textContent = opts.ok || 'Continue';
+            row.appendChild(no); row.appendChild(yes);
+            box.appendChild(h); box.appendChild(p); box.appendChild(row);
+            dlg.appendChild(box);
+            (document.querySelector('.pcg-app, body.pcg') || document.body).appendChild(dlg);
+            var done = function (v) { if (dlg.open) dlg.close(); dlg.remove(); resolve(v); };
+            no.addEventListener('click', function () { done(false); });
+            yes.addEventListener('click', function () { done(true); });
+            dlg.addEventListener('cancel', function (e) { e.preventDefault(); done(false); }); // Escape
+            dlg.addEventListener('click', function (e) { if (e.target === dlg) done(false); }); // backdrop
+            if (typeof dlg.showModal === 'function') dlg.showModal(); else dlg.setAttribute('open', '');
+            no.focus(); // the safe choice has focus
+        });
+    }
+    window.pcgConfirm = pcgConfirm;
+
     document.addEventListener('submit', function (e) {
-        var submitter = e.submitter;
+        var form = e.target, submitter = e.submitter;
         var question = submitter && submitter.getAttribute('data-pcg-confirm');
-        if (question && !window.confirm(question)) {
-            e.preventDefault();
-            e.stopImmediatePropagation();
-        }
+        if (!question || form.dataset.pcgConfirmed === '1') return;
+        e.preventDefault();
+        e.stopImmediatePropagation();
+        pcgConfirm({
+            title: submitter.getAttribute('data-pcg-confirm-title'),
+            text: question,
+            ok: submitter.getAttribute('data-pcg-confirm-ok') || submitter.textContent.trim() || 'Continue',
+            danger: submitter.hasAttribute('data-pcg-confirm-danger')
+        }).then(function (ok) {
+            if (!ok) return;
+            form.dataset.pcgConfirmed = '1';
+            if (typeof form.requestSubmit === 'function') form.requestSubmit(submitter); else form.submit();
+            setTimeout(function () { delete form.dataset.pcgConfirmed; }, 0);
+        });
     }, true);
 
     // Small screens: wide tables scroll inside their own box instead of

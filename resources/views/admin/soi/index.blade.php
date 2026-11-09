@@ -10,7 +10,7 @@
         <div class="pcg-page__header">
             <div>
                 <h2>{{ number_format($counts['submitted']) }} {{ $counts['submitted'] === 1 ? 'member has' : 'members have' }} submitted their SOI</h2>
-                <p>A submitted SOI is read-only for the member. Reopen one, with the reason, when something must be corrected; the member then corrects it and submits again. Every reopening is in the audit log.</p>
+                <p>A submitted SOI is read-only for the member. Correct it yourself with <strong>Edit SOI</strong> (it stays submitted), or reopen it, with the reason, so the member corrects it and submits again. Every edit and reopening is in the audit log.</p>
             </div>
         </div>
 
@@ -67,18 +67,24 @@
                                             <span class="pcg-badge">Not submitted</span>
                                         @endif
                                     </td>
-                                    <td>
+                                    <td><div class="pcg-actions">
+                                        <a class="pcg-btn pcg-btn--secondary pcg-btn--sm" href="{{ route('admin.soi.edit', $m->id) }}">
+                                            <i class="fa-solid fa-pen" aria-hidden="true"></i> Edit SOI <span class="pcg-visually-hidden">of {{ $m->name }}</span>
+                                        </a>
                                         @if ($m->soi_submitted_at)
                                             <form method="POST" action="{{ route('admin.soi.reopen', $m->id) }}" class="pcg-inline-form">
                                                 @csrf
                                                 <label class="pcg-visually-hidden" for="reason-{{ $m->id }}">Reason for reopening the SOI of {{ $m->name }}</label>
                                                 <input class="pcg-input pcg-input--sm" id="reason-{{ $m->id }}" name="reason" required minlength="5" maxlength="500" placeholder="Reason, e.g. wrong date of appointment">
                                                 <button type="submit" class="pcg-btn pcg-btn--secondary pcg-btn--sm"
-                                                    data-pcg-confirm="Reopen the SOI of {{ $m->name }}? They will be able to edit it and must submit it again.">
+                                                    data-pcg-confirm-title="Reopen this SOI?"
+                                                    data-pcg-confirm="{{ $m->name }} will be able to edit their SOI again and must submit it again. Your reason is recorded in the audit log."
+                                                    data-pcg-confirm-ok="Reopen SOI">
                                                     <i class="fa-solid fa-lock-open" aria-hidden="true"></i> Reopen
                                                 </button>
                                             </form>
                                         @endif
+                                        </div>
                                     </td>
                                 </tr>
                             @endforeach

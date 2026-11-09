@@ -1,6 +1,6 @@
-@extends('layouts.personnel')
+@extends($soiLayout ?? 'layouts.personnel') {{-- the admin SOI editor (SoiSubmissionController::edit) renders this form in layouts.admin --}}
 
-@section('title', 'SOI profile')
+@section('title', empty($adminEdit) ? 'SOI profile' : 'Edit SOI')
 
 @section('styles')
     <link rel="stylesheet" href="{{ \App\Support\Asset::v('css/soi.css') }}">
@@ -22,12 +22,30 @@
     $soiName = trim(($user->rank ?? '') . ' ' . ($user->name ?? ''));
     // submitted SOI: every step read-only (App\Support\SoiLock, owner decision 2026-11-09)
     $soiSubmittedAt = \App\Support\SoiLock::submittedAt($user);
+    // admin editing (Adjutant / HR admin / super admin): never locked, saves to the admin routes
+    $adminEdit = $adminEdit ?? null;
+    $memberSubmittedAt = $soiSubmittedAt;
+    if ($adminEdit) {
+        $soiSubmittedAt = null;
+    }
 @endphp
 
 @section('content')
     <div class="pcg-page soi {{ $soiSubmittedAt ? 'soi--locked' : '' }}" x-data="formData()" id="soi-root"
-        data-soi-locked="{{ $soiSubmittedAt ? '1' : '0' }}" data-soi-message="{{ \App\Support\SoiLock::MESSAGE }}">
+        data-soi-locked="{{ $soiSubmittedAt ? '1' : '0' }}" data-soi-message="{{ \App\Support\SoiLock::MESSAGE }}"
+        data-save-base="{{ $adminEdit ? $adminEdit['saveBase'] : '/temp-save/step' }}" data-admin="{{ $adminEdit ? '1' : '0' }}">
         <div class="pcg-page__header">
+            @if ($adminEdit)
+            <div>
+                <h2>Editing the SOI of {{ $soiName !== '' ? $soiName : $user->name }}</h2>
+                <p><span class="pcg-mono">{{ $user->serial_number }}</span> · {{ $user->mother_unit ?: 'no unit' }} ·
+                    {{ $memberSubmittedAt ? 'Submitted by the member on ' . $memberSubmittedAt->timezone('Asia/Manila')->format('d M Y') . ' (stays locked for them)' : 'Not submitted yet by the member' }}.
+                    Each <strong>Next step</strong> saves that step; every save is in the audit log.</p>
+            </div>
+            <a class="pcg-btn pcg-btn--secondary pcg-btn--sm" href="{{ $adminEdit['back'] }}">
+                <i class="fa-solid fa-arrow-left" aria-hidden="true"></i> SOI submissions
+            </a>
+            @else
             <div>
                 <h2>{{ $soiName !== '' ? $soiName . ': ' : '' }}Statement of Information</h2>
                 @if ($soiSubmittedAt)
@@ -40,6 +58,7 @@
                 <a class="pcg-btn pcg-btn--secondary pcg-btn--sm" href="{{ route('profile') }}">
                     <i class="fa-solid fa-arrow-left" aria-hidden="true"></i> Back to summary
                 </a>
+            @endif
             @endif
         </div>
 
@@ -1608,7 +1627,11 @@
                 <button type="button" x-show="step === 5" x-cloak @click="saveStep5($el)" class="pcg-btn pcg-btn--cta">
                     Next step <i class="fa-solid fa-arrow-right" aria-hidden="true"></i>
                 </button>
-                @if ($soiSubmittedAt)
+                @if ($adminEdit)
+                    <button type="button" x-show="step === 6" x-cloak @click="saveStep6($el)" class="pcg-btn pcg-btn--cta">
+                        <i class="fa-solid fa-check" aria-hidden="true"></i> Save changes
+                    </button>
+                @elseif ($soiSubmittedAt)
                     <span x-show="step === 6" x-cloak class="pcg-badge pcg-badge--success soi-submitted-badge"><i class="fa-solid fa-lock" aria-hidden="true"></i> Submitted</span>
                 @else
                     <button type="button" x-show="step === 6" x-cloak @click="saveStep6($el)" class="pcg-btn pcg-btn--cta">
@@ -1638,6 +1661,9 @@
     <script nonce="{{ $cspNonce ?? '' }}">
         function formData() {
             return {
+                // the member saves to /temp-save/stepN; the admin editor to /admin/soi/{id}/stepN
+                saveUrl(n) { return document.getElementById('soi-root').dataset.saveBase + n; },
+                adminMode: document.getElementById('soi-root').dataset.admin === '1',
 
                 // ================= STEP 1: Basic Information =================
                 step: 1,
@@ -1739,7 +1765,7 @@
                 async saveStep1(btn) {
                     if (btn && window.pcgBusy) window.pcgBusy(btn, true);
                     try {
-                        let res = await fetch('/temp-save/step1', {
+                        let res = await fetch(this.saveUrl(1), {
                             method: 'POST',
                             headers: {
                                 'Content-Type': 'application/json',
@@ -1811,7 +1837,7 @@
                             });
 
 
-                        let res = await fetch('/temp-save/step2', {
+                        let res = await fetch(this.saveUrl(2), {
                             method: 'POST',
                             headers: {
                                 'Content-Type': 'application/json',
@@ -1876,7 +1902,7 @@
                         };
 
 
-                        let res = await fetch('/temp-save/step3', {
+                        let res = await fetch(this.saveUrl(3), {
                             method: 'POST',
                             headers: {
                                 'Content-Type': 'application/json',
@@ -1943,7 +1969,7 @@
                         };
 
 
-                        let res = await fetch('/temp-save/step4', {
+                        let res = await fetch(this.saveUrl(4), {
                             method: 'POST',
                             headers: {
                                 'Content-Type': 'application/json',
@@ -2016,7 +2042,7 @@
                         };
 
 
-                        let res = await fetch('/temp-save/step5', {
+                        let res = await fetch(this.saveUrl(5), {
                             method: 'POST',
                             headers: {
                                 'Content-Type': 'application/json',
@@ -2079,8 +2105,9 @@
                 },
                 // STEP 6 SAVE
                 async saveStep6(btn) {
-                    // last step: the member confirms, then the SOI is saved and submitted (read-only from then on)
-                    const sure = await Swal.fire({
+                    // last step: the member confirms, then the SOI is saved and submitted (read-only from then on);
+                    // an admin editing the SOI only saves
+                    const sure = this.adminMode ? { isConfirmed: true } : await Swal.fire({
                         icon: 'question',
                         title: 'Is the data you entered correct?',
                         text: 'Once you submit, you cannot edit your SOI any more. Only the Adjutant and the HR Admin of your unit can make changes.',
@@ -2115,7 +2142,7 @@
                         };
 
 
-                        let res = await fetch('/temp-save/step6', {
+                        let res = await fetch(this.saveUrl(6), {
 
                             method: 'POST',
 
@@ -2134,6 +2161,10 @@
 
                             if (data.status === 'success') {
 
+                                if (this.adminMode) {
+                                    Swal.fire({ icon: 'success', title: 'Changes saved', text: 'All six steps of this SOI are saved.', confirmButtonText: 'OK' });
+                                    return;
+                                }
                                 // step 6 saved: now submit (locks every step)
                                 const sub = await fetch('/soi/submit', {
                                     method: 'POST',
