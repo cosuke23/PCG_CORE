@@ -77,7 +77,51 @@ body.ph { margin: 0; font: 16px/1.6 var(--ph-sans); color: var(--ph-ink); backgr
 
 /* hero */
 .ph-hero { background: var(--ph-crimson-950); color: var(--ph-white); }
-.ph-hero__banner img { display: block; width: 100%; max-width: 1920px; height: auto; margin-inline: auto; }
+.ph-cmds { position: relative; max-width: 1920px; margin-inline: auto; overflow: hidden; }
+.ph-cmds > img { display: block; width: 100%; height: auto; }
+
+/* ---- command panels: three layers cut from the same 2400x1200 banner.
+   Panel seams at x = 819 and 1623; titles between y = 500 and 710. */
+.ph-cmd { --l: 0%; --w: 34.125%; --bx: 0%; position: absolute; top: 0; bottom: 0; left: var(--l); width: var(--w); overflow: hidden; color: var(--ph-white); text-decoration: none; outline: none; transition: filter .5s ease, box-shadow .4s ease; }
+.ph-cmd--mepcom { --l: 34.125%; --w: 33.5%; --bx: 51.316%; }
+.ph-cmd--marslec { --l: 67.625%; --w: 32.375%; --bx: 100%; }
+.ph-cmd__img, .ph-cmd__title { position: absolute; left: 0; right: 0; background-image: url("../images/pcg/commands-banner-2400.jpg"); background-repeat: no-repeat; }
+.ph-cmd__img { top: 0; bottom: 0; background-size: calc(100% * 100 / var(--wn)) 100%; background-position: var(--bx) 0; transform-origin: 50% 50.4%; transition: transform 1.2s cubic-bezier(.2, .7, .2, 1); }
+.ph-cmd__title { top: 41.667%; height: 17.5%; background-size: calc(100% * 100 / var(--wn)) calc(100% * 100 / 17.5); background-position: var(--bx) 50.505%;
+    -webkit-mask-image: linear-gradient(to bottom, transparent, #000 18%, #000 82%, transparent); mask-image: linear-gradient(to bottom, transparent, #000 18%, #000 82%, transparent);
+    transition: transform .6s cubic-bezier(.2, .7, .2, 1), filter .6s ease; }
+.ph-cmd { --wn: 34.125; }
+.ph-cmd--mepcom { --wn: 33.5; }
+.ph-cmd--marslec { --wn: 32.375; }
+/* a light sweep across the title */
+.ph-cmd__title::after { content: ""; position: absolute; inset: 0; background: linear-gradient(105deg, transparent 30%, rgba(255, 244, 220, .55) 48%, transparent 66%); background-size: 250% 100%; background-position: 130% 0; mix-blend-mode: soft-light; opacity: 0; }
+.ph-cmd__chip { position: absolute; left: 50%; bottom: 7%; display: inline-flex; align-items: center; gap: 8px; padding: 9px 16px; border-radius: 999px; background: rgba(22, 27, 54, .78); box-shadow: inset 0 0 0 1px rgba(245, 182, 114, .7), 0 10px 24px rgba(0, 0, 0, .35); -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px);
+    font: 600 clamp(11px, 1vw, 14px)/1.2 var(--ph-sans); white-space: nowrap; opacity: 0; transform: translate(-50%, 18px); transition: opacity .4s ease .1s, transform .5s cubic-bezier(.2, .7, .2, 1) .1s; }
+.ph-cmd__chip strong { color: var(--ph-gold-300); letter-spacing: .06em; }
+.ph-cmd--mepcom .ph-cmd__chip { background: var(--ph-gold-400); color: var(--ph-crimson-950); box-shadow: 0 10px 24px rgba(0, 0, 0, .35); }
+.ph-cmd--mepcom .ph-cmd__chip strong { color: var(--ph-crimson-900); }
+.ph-cmd::before { content: ""; position: absolute; inset: 0; z-index: 2; pointer-events: none; box-shadow: inset 0 0 0 0 var(--ph-gold-400); transition: box-shadow .4s ease; }
+
+@media (hover: hover) {
+    .ph-cmds:hover .ph-cmd:not(:hover), .ph-cmds:focus-within .ph-cmd:not(:focus-visible):not(:hover) { filter: brightness(.5) saturate(.55); }
+}
+.ph-cmd:hover, .ph-cmd:focus-visible { z-index: 1; filter: brightness(1.08) saturate(1.1); }
+.ph-cmd:hover::before, .ph-cmd:focus-visible::before { box-shadow: inset 0 0 0 3px var(--ph-gold-400); }
+.ph-cmd:hover .ph-cmd__img, .ph-cmd:focus-visible .ph-cmd__img { transform: scale(1.06); }
+.ph-cmd:hover .ph-cmd__title, .ph-cmd:focus-visible .ph-cmd__title { transform: translateY(-6%) scale(1.1); filter: drop-shadow(0 0 14px rgba(255, 214, 150, .55)) brightness(1.18); }
+.ph-cmd:hover .ph-cmd__title::after, .ph-cmd:focus-visible .ph-cmd__title::after { animation: ph-cmd-sweep 1.1s ease .15s both; }
+@keyframes ph-cmd-sweep { 0% { opacity: 0; background-position: 130% 0; } 20% { opacity: 1; } 100% { opacity: 0; background-position: -30% 0; } }
+.ph-cmd:hover .ph-cmd__chip, .ph-cmd:focus-visible .ph-cmd__chip { opacity: 1; transform: translate(-50%, 0); }
+
+/* entrance: the panels rise one after another, then each title glows once */
+.ph-js .ph-cmd { animation: ph-cmd-in .9s cubic-bezier(.2, .7, .2, 1) backwards; }
+.ph-js .ph-cmd--mepcom { animation-delay: .12s; }
+.ph-js .ph-cmd--marslec { animation-delay: .24s; }
+@keyframes ph-cmd-in { from { opacity: 0; transform: translateY(40px); } to { opacity: 1; transform: none; } }
+.ph-js .ph-cmd .ph-cmd__title { animation: ph-cmd-glow 1.6s ease-in-out backwards; animation-delay: calc(.9s + var(--k, 0) * .25s); }
+.ph-cmd--mepcom { --k: 1; } .ph-cmd--marslec { --k: 2; }
+@keyframes ph-cmd-glow { 0%, 100% { filter: none; } 45% { filter: drop-shadow(0 0 16px rgba(255, 214, 150, .65)) brightness(1.2); } }
+@media (max-width: 700px) { .ph-cmd__chip { display: none; } }
 .ph-hero__band { background: linear-gradient(104deg, var(--ph-azure-800) 0%, var(--ph-azure-800) 24%, var(--ph-crimson-800) 36%, var(--ph-crimson-900) 62%, var(--ph-crimson-950) 100%); }
 .ph-hero__in { display: grid; grid-template-columns: minmax(0, 7fr) minmax(0, 5fr); gap: 48px; align-items: end; padding-block: 72px 40px; }
 .ph-hero h1 { margin: 0; font: 600 clamp(40px, 5vw, 64px)/1.05 var(--ph-serif); letter-spacing: -.02em; text-wrap: balance; }
@@ -174,7 +218,7 @@ body.ph { margin: 0; font: 16px/1.6 var(--ph-sans); color: var(--ph-ink); backgr
    and buttons; the gold button glows twice. Sections fade up as they scroll in,
    their cards one after another. Only with JavaScript (.ph-js) and never under
    "reduce motion"; anything already on screen shows at once. */
-.ph-js .ph-hero__banner img { animation: ph-settle 1.6s cubic-bezier(.2, .7, .2, 1) both; }
+.ph-js .ph-cmds > img { animation: ph-settle 1.6s cubic-bezier(.2, .7, .2, 1) both; }
 @keyframes ph-settle { from { opacity: .35; transform: scale(1.05); } to { opacity: 1; transform: none; } }
 
 .ph-js [data-ph-reveal] { opacity: 0; transform: translateY(28px); transition: opacity .8s ease, transform .8s cubic-bezier(.2, .7, .2, 1); }
@@ -252,9 +296,11 @@ body.ph { margin: 0; font: 16px/1.6 var(--ph-sans); color: var(--ph-ink); backgr
     html { scroll-behavior: auto; }
     .ph-js [data-ph-reveal], .ph-js [data-ph-words] .ph-w, .ph-js [data-ph-stagger] > *,
     .ph-js .ph-hero__in .ph-eyebrow, .ph-js .ph-hero__lead, .ph-js .ph-hero__in .ph-btn { opacity: 1; transform: none; filter: none; transition: none; }
-    .ph-js .ph-hero__banner img, .ph-hero__in.is-in .ph-hero__gold .ph-w, .ph-hero__in.is-in .ph-btn--gold, .ph-cta__in.is-in .ph-btn--gold, .ph-org__cmd--here.is-pulse img { animation: none; }
+    .ph-js .ph-cmds > img, .ph-js .ph-cmd, .ph-js .ph-cmd .ph-cmd__title, .ph-cmd__title::after, .ph-hero__in.is-in .ph-hero__gold .ph-w, .ph-hero__in.is-in .ph-btn--gold, .ph-cta__in.is-in .ph-btn--gold, .ph-org__cmd--here.is-pulse img { animation: none; }
     .ph-hero__in.is-in .ph-hero__gold .ph-w { color: var(--ph-gold-300); background: none; }
     .ph-js .ph-org__top::after, .ph-js .ph-org__groups::before { transform: none; transition: none; }
+    .ph-cmd, .ph-cmd__img, .ph-cmd__title, .ph-cmd__chip { transition: none; }
+    .ph-cmd:hover .ph-cmd__img, .ph-cmd:focus-visible .ph-cmd__img, .ph-cmd:hover .ph-cmd__title, .ph-cmd:focus-visible .ph-cmd__title { transform: none; }
     .ph-btn, .ph-card, .ph-nav a::after { transition: none; }
     .ph-btn:hover, .ph-card:hover { transform: none; }
 }
