@@ -57,6 +57,25 @@ class ApplicantDocumentController extends Controller
                 ->where('personnel_id', $userId)
                 ->first();
 
+            // ================= WAITING FOR THE UNIT CHECKER =================
+            // An uploaded document is locked until the checker approves or
+            // returns it (App\Support\DocumentReview); the page hides the
+            // controls, this refuses a hand-made request.
+            $locked = \App\Support\DocumentReview::lockedFields($existing);
+            $refused = [];
+            foreach ($locked as $field) {
+                $expiry = $field . '_expiration';
+                $dateChanged = in_array($field, \App\Support\DocumentReview::EXPIRY_FIELDS, true)
+                    && $request->exists($expiry)
+                    && substr((string) ($request->input($expiry) ?: ''), 0, 10) !== substr((string) ($existing->$expiry ?? ''), 0, 10);
+                if ($request->hasFile($field) || $dateChanged) {
+                    $refused[$field] = 'This document is waiting for your unit checker. You can replace it after the checker approves it or returns it to you.';
+                }
+            }
+            if ($refused) {
+                return back()->withErrors($refused);
+            }
+
             // ================= FILE HANDLER (UPDATED) =================
             $upload = function ($file, $folder) {
 

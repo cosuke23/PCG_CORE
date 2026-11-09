@@ -3,6 +3,7 @@
     --ud-bg: #eef2f7; --ud-surface: #ffffff; --ud-line: #d6dee8; --ud-ink: #0b1626; --ud-muted: #4b5b70;
     --ud-accent: #0e7490; --ud-accent-soft: rgba(14, 116, 144, .10); --ud-navy: #0b2747;
     --ud-ok: #15803d; --ud-ok-soft: #e7f6ec; --ud-warn: #a15c07; --ud-warn-soft: #fdf3e2; --ud-bad: #b42318; --ud-bad-soft: #fdecea;
+    --ud-review: #5b4fc4; --ud-review-soft: #efedfc;
     color: var(--ud-ink);
 }
 .ud [hidden], .ud-overlay[hidden] { display: none !important; }
@@ -23,6 +24,15 @@
 
 .ud-secure { display: flex; gap: 12px; align-items: flex-start; margin: 0; padding: 12px 14px; border: 1px solid #b9dde6; background: #eaf6f9; border-radius: 12px; color: #0b3d4d; font-size: .93rem; }
 .ud-secure i { color: var(--ud-accent); margin-top: 3px; }
+.ud-review { display: flex; gap: 12px; align-items: flex-start; margin: 0; padding: 12px 14px; border: 1px solid #c9c2ef; background: var(--ud-review-soft); border-radius: 12px; color: #2f2a5c; font-size: .93rem; }
+.ud-review i { color: var(--ud-review); margin-top: 3px; }
+
+/* uploaded and waiting for the unit checker: no upload control until the checker acts */
+.ud-locked { display: grid; grid-template-columns: auto 1fr; column-gap: 12px; align-items: center; padding: 12px 14px; border-radius: 10px; background: #f3f5f9; border: 1px solid var(--ud-line); color: var(--ud-muted); }
+.ud-locked i { font-size: 1.15rem; color: var(--ud-review); }
+.ud-locked strong { display: block; color: #24324a; font-size: .95rem; }
+.ud-locked small { display: block; font-size: .82rem; margin-top: 2px; }
+.ud-exp .pcg-input:disabled { background: #f3f5f9; color: var(--ud-muted); cursor: not-allowed; }
 
 .ud-group { display: grid; gap: 12px; }
 .ud-group h2 { margin: 10px 0 0; font-size: 1.05rem; letter-spacing: -.01em; }
@@ -34,6 +44,7 @@
 .ud-doc--soon { border-left: 4px solid var(--ud-warn); }
 .ud-doc--expired { border-left: 4px solid var(--ud-bad); }
 .ud-doc--missing { border-left: 4px solid #c3ccd8; }
+.ud-doc--review { border-left: 4px solid var(--ud-review); }
 .ud-doc__head { display: flex; justify-content: space-between; align-items: flex-start; gap: 8px; }
 .ud-doc__head h3 { margin: 0; font-size: .98rem; }
 .ud-chip { flex: none; font-size: .74rem; font-weight: 700; padding: 4px 9px; border-radius: 999px; white-space: nowrap; }
@@ -41,6 +52,7 @@
 .ud-chip--soon { background: var(--ud-warn-soft); color: var(--ud-warn); }
 .ud-chip--expired { background: var(--ud-bad-soft); color: var(--ud-bad); }
 .ud-chip--missing { background: #eef1f5; color: var(--ud-muted); }
+.ud-chip--review { background: var(--ud-review-soft); color: var(--ud-review); }
 .ud-doc__meta { margin: 0; display: flex; flex-wrap: wrap; gap: 4px 14px; font-size: .88rem; color: var(--ud-muted); }
 .pcg .ud-doc__meta a { color: var(--ud-accent); font-weight: 600; text-decoration: none; }
 .pcg .ud-doc__meta a:hover { text-decoration: underline; }

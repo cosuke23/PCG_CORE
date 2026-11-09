@@ -161,7 +161,7 @@ class DocumentUploadModuleTest extends TestCase
             'nbi_clearance' => 'documents/a.pdf', 'nbi_clearance_expiration' => '2026-10-01',
             'ombudsman_clearance' => 'documents/b.pdf', 'ombudsman_clearance_expiration' => '2026-11-20',
             'sandiganbayan_clearance' => 'documents/c.pdf', 'sandiganbayan_clearance_expiration' => '2027-06-01',
-            'soi' => 'documents/d.pdf']);
+            'soi' => 'documents/d.pdf', 'status' => 'approved']);
 
         $html = $this->actingAs($this->member)->get('/upload-documents')->assertOk()->getContent();
         $this->assertStringContainsString('<strong>4 of 10</strong>', $html, 'progress counts uploaded documents');
@@ -173,6 +173,47 @@ class DocumentUploadModuleTest extends TestCase
         $this->assertStringContainsString('aria-current="page"', $html, 'sidebar marks this page');
         $this->assertMatchesRegularExpression('/upload-documents\.js\?v=[0-9a-f]{10}/', $html, 'versioned script URL');
         $this->assertStringNotContainsString('class="ud-overlay is-on"', $html, 'overlay never starts visible');
+    }
+
+    public function test_uploaded_documents_are_locked_until_the_unit_checker_acts()
+    {
+        DB::table('personnel_data')->insert(['personnel_id' => $this->member->id, 'serial_number' => 'SN-1', 'status' => 'Pending',
+            'soi' => 'documents/soi.pdf', 'nbi_clearance' => 'documents/nbi.pdf', 'nbi_clearance_expiration' => '2027-06-30']);
+        $this->actingAs($this->member);
+
+        // the page: uploaded boxes locked, empty boxes open
+        $html = $this->get('/upload-documents')->assertOk()->getContent();
+        $this->assertStringContainsString('2 documents are waiting for your unit checker', $html);
+        $this->assertStringNotContainsString('id="f-soi"', $html, 'no file control for a document under review');
+        $this->assertStringNotContainsString('id="f-nbi_clearance"', $html);
+        $this->assertStringContainsString('id="f-ofr"', $html, 'empty boxes stay open');
+        $this->assertMatchesRegularExpression('/id="e-nbi_clearance"[^>]*disabled/', $html, 'its date is locked too');
+        $this->assertSame(2, substr_count($html, 'Locked until your unit checker reviews it'));
+
+        // the server refuses a replacement or a new date, and keeps the file
+        $this->post('/documents/upload', ['soi' => $this->pdf()])->assertSessionHasErrors('soi');
+        $this->post('/documents/upload', ['nbi_clearance_expiration' => '2028-01-01'])->assertSessionHasErrors('nbi_clearance');
+        $this->assertSame('documents/soi.pdf', $this->row()->soi);
+        $this->assertSame('2027-06-30', substr((string) $this->row()->nbi_clearance_expiration, 0, 10));
+        // the unchanged date the form sends with every save is not a change
+        $this->post('/documents/upload', ['nbi_clearance_expiration' => '2027-06-30', 'ofr' => $this->pdf()])->assertSessionHasNoErrors();
+        $this->assertNotNull($this->row()->ofr, 'an empty box can still be filled while others wait');
+
+        // older rows without a status count as waiting, as on the checker's list
+        DB::table('personnel_data')->update(['status' => null]);
+        $this->post('/documents/upload', ['soi' => $this->pdf()])->assertSessionHasErrors('soi');
+
+        // the checker returns the SOI (review clears the file): it can be uploaded again
+        DB::table('personnel_data')->update(['status' => 'rejected', 'soi' => null]);
+        $this->assertStringContainsString('id="f-soi"', $this->get('/upload-documents')->getContent());
+        $this->post('/documents/upload', ['soi' => $this->pdf()])->assertSessionHasNoErrors();
+        $this->assertSame('Pending', $this->row()->status, 'and it goes back for review');
+
+        // after an approval, a document can be replaced (e.g. a renewed clearance)
+        DB::table('personnel_data')->update(['status' => 'approved']);
+        $this->post('/documents/upload', ['nbi_clearance' => $this->pdf(), 'nbi_clearance_expiration' => '2028-06-30'])->assertSessionHasNoErrors();
+        $this->assertSame('2028-06-30', substr((string) $this->row()->nbi_clearance_expiration, 0, 10));
+        $this->assertSame('Pending', $this->row()->status);
     }
 
     public function test_201_files_upload_encrypted_with_an_accurate_message()
