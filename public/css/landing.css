@@ -193,38 +193,8 @@ main > section:not(.lp-hero) { position: relative; z-index: 1; }
 .lp-band p strong { color: var(--lp-white); }
 .lp-actions { display: flex; flex-wrap: wrap; gap: 12px; }
 
-/* band entrance: the block itself stays put; its parts arrive one after another */
+/* band: shown at rest (no hidden words, sweeps or glows) */
 .lp-band h2 .lp-line { display: block; }
-.lp-js .lp-band__anim[data-reveal] { opacity: 1; transform: none; }
-.lp-js .lp-band__anim .lp-eyebrow,
-.lp-js .lp-band__anim .lp-band__lead,
-.lp-js .lp-band__anim .lp-btn { opacity: 0; transform: translateY(18px); transition: opacity .7s ease, transform .7s cubic-bezier(.2, .7, .2, 1); }
-.lp-js .lp-band__anim .lp-eyebrow { transform: translateX(-24px); }
-.lp-js .lp-band__anim .lp-w { display: inline-block; opacity: 0; transform: translateY(.55em) rotate(2deg); filter: blur(6px); transition: opacity .6s ease, transform .7s cubic-bezier(.2, .7, .2, 1), filter .6s ease; }
-.lp-js .lp-band__anim.is-in .lp-eyebrow,
-.lp-js .lp-band__anim.is-in .lp-band__lead,
-.lp-js .lp-band__anim.is-in .lp-btn,
-.lp-js .lp-band__anim.is-in .lp-w { opacity: 1; transform: none; filter: none; }
-.lp-band__anim .lp-line:first-child .lp-w:nth-child(1) { transition-delay: .15s; }
-.lp-band__anim .lp-line:first-child .lp-w:nth-child(2) { transition-delay: .27s; }
-.lp-band__anim .lp-line:first-child .lp-w:nth-child(3) { transition-delay: .39s; }
-.lp-band__anim em .lp-w:nth-child(1) { transition-delay: .6s; }
-.lp-band__anim em .lp-w:nth-child(2) { transition-delay: .72s; }
-.lp-band__anim em .lp-w:nth-child(3) { transition-delay: .84s; }
-.lp-js .lp-band__anim .lp-band__lead { transition-delay: 1s; }
-.lp-js .lp-band__anim .lp-btn:nth-child(1) { transition-delay: 1.2s; }
-.lp-js .lp-band__anim .lp-btn:nth-child(2) { transition-delay: 1.32s; }
-/* the gold line gets a light sweep every few seconds once it is in place */
-.lp-band__anim.is-in em .lp-w {
-    background-image: linear-gradient(100deg, var(--lp-gold) 0 42%, #fff1d2 50%, var(--lp-gold) 58% 100%);
-    background-size: 250% 100%; background-repeat: repeat-x; background-position: 100% 0;
-    -webkit-background-clip: text; background-clip: text; color: transparent;
-    animation: lp-shine 5s ease-in-out 1.8s infinite;
-}
-@keyframes lp-shine { 0% { background-position: 100% 0; } 35%, 100% { background-position: 0% 0; } }
-/* the sign-in button glows twice to draw the eye */
-.lp-band__anim.is-in .lp-btn--gold { animation: lp-glow 1.6s ease-in-out 2s 2; }
-@keyframes lp-glow { 0%, 100% { box-shadow: 0 0 0 0 rgba(232, 151, 58, 0); } 50% { box-shadow: 0 0 0 10px rgba(232, 151, 58, .28); } }
 
 /* ------------------------------------------------------------ services */
 .lp-section { padding-block: 72px; }
@@ -328,8 +298,9 @@ html.lp-lightbox-open { overflow: hidden; }
 .lp-foot__base { border-top: 1px solid rgba(255, 255, 255, .12); padding-block: 16px; font-size: 12px; color: rgba(255, 255, 255, .55); display: flex; flex-wrap: wrap; justify-content: space-between; gap: 8px; }
 
 /* ------------------------------------------------------------ reveal on scroll (landing.js) */
-.lp-js [data-reveal] { opacity: 0; transform: translateY(28px); transition: opacity .8s ease, transform .8s cubic-bezier(.2, .7, .2, 1); }
-.lp-js [data-reveal].is-in { opacity: 1; transform: none; }
+/* Content is visible at rest (design rules 2026-11-09): nothing waits for a
+   scroll to appear, so screenshots, slow phones and failed scripts never show
+   empty sections. Only the hero's entrance remains. */
 
 /* ------------------------------------------------------------ responsive */
 @media (max-width: 960px) {
@@ -395,4 +366,42 @@ html.lp-lightbox-open { overflow: hidden; }
     .lp-slice { flex: 1 1 0; }
     .lp-slice--lead { flex: 1.7 1 0; }
     .lp-slice__name { font-size: clamp(9px, 1.5vw, 12px); letter-spacing: .04em; }
+}
+
+/* ------------------------------------------------------------ inner pages (about, MEPTDI) */
+.lp-pagehead { padding-block: 132px 56px; background: linear-gradient(110deg, var(--lp-maroon-800), var(--lp-maroon-950)); color: var(--lp-white); }
+.lp-pagehead h1 { margin: 0 0 14px; max-width: 22ch; font: 700 clamp(30px, 4.4vw, 50px)/1.08 var(--lp-serif); text-wrap: balance; }
+.lp-pagehead__lead { margin: 0; max-width: 62ch; font-size: 17px; color: rgba(255, 255, 255, .86); text-wrap: pretty; }
+.lp-pagehead__row { display: grid; grid-template-columns: auto 1fr; gap: 28px; align-items: start; }
+.lp-pagehead__seal { width: 96px; height: 96px; object-fit: contain; margin-top: 4px; }
+.lp-section--sand { background: var(--lp-sand); }
+.lp-section h2 { text-wrap: balance; }
+.lp-prose { margin: 0 0 14px; max-width: 64ch; color: var(--lp-ink); font-size: 16px; line-height: 1.65; text-wrap: pretty; }
+.lp-split { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 32px 56px; align-items: center; }
+.lp-split--top { grid-template-columns: 1.2fr 1fr; align-items: start; }
+.lp-split .lp-lead { margin-bottom: 0; }
+.lp-cols3 { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0; border-top: 2px solid var(--lp-maroon-700); }
+.lp-col { padding: 22px 24px 4px 0; }
+.lp-col + .lp-col { padding-left: 24px; border-left: 1px solid var(--lp-line); }
+.lp-col h3 { margin: 0 0 8px; font: 700 20px/1.2 var(--lp-serif); color: var(--lp-maroon-800); }
+.lp-col p { margin: 0; color: var(--lp-muted); font-size: 15px; line-height: 1.6; }
+.lp-checks { margin: 0; padding: 0; list-style: none; display: grid; gap: 12px; }
+.lp-checks li { display: grid; grid-template-columns: 22px 1fr; gap: 8px; font-size: 15px; line-height: 1.5; }
+.lp-checks li::before { content: "\f00c"; font: 900 13px/1.7 "Font Awesome 6 Free"; color: var(--lp-maroon-700); }
+.lp-people { margin: 0; padding: 0; list-style: none; display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 380px), 1fr)); gap: 20px; }
+.lp-person { display: grid; grid-template-columns: 120px 1fr; gap: 20px; align-items: start; padding: 20px; background: var(--lp-white); border: 1px solid var(--lp-line); border-radius: 6px; }
+.lp-person__photo { width: 120px; height: 120px; border-radius: 4px; overflow: hidden; } /* 6 - ... nested, square photo */
+.lp-person__photo img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.lp-person h3 { margin: 0; font: 700 20px/1.2 var(--lp-serif); }
+.lp-person__role { margin: 2px 0 10px; font-size: 13px; font-weight: 700; letter-spacing: .04em; color: var(--lp-maroon-700); }
+.lp-person p:last-child { margin: 0; color: var(--lp-muted); font-size: 14px; line-height: 1.55; }
+@media (max-width: 760px) {
+    .lp-pagehead { padding-block: 108px 40px; }
+    .lp-pagehead__row { grid-template-columns: 1fr; }
+    .lp-pagehead__seal { width: 72px; height: 72px; }
+    .lp-split, .lp-split--top { grid-template-columns: 1fr; }
+    .lp-cols3 { grid-template-columns: 1fr; }
+    .lp-col, .lp-col + .lp-col { padding: 18px 0; border-left: 0; border-bottom: 1px solid var(--lp-line); }
+    .lp-person { grid-template-columns: 88px 1fr; gap: 14px; }
+    .lp-person__photo { width: 88px; height: 88px; }
 }

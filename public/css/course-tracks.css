@@ -1,0 +1,70 @@
+/*
+ * Course / training track pages (admin): operational and administrative tracks,
+ * personnel operational and administrative training. Console tokens only, so
+ * both the dark and the light theme stay readable.
+ */
+.ct { display: grid; gap: var(--pcg-space-6); }
+.ct > * { margin: 0; }
+.ct .pcg-page__header { margin-bottom: 0; }
+.ct .pcg-stats { margin-bottom: 0; }
+
+/* quiet cell values: missing data, rows without a requirement */
+.ct-none { color: var(--c-faint); }
+.ct-quiet { color: var(--c-faint); font-size: var(--pcg-text-sm); white-space: nowrap; }
+.ct-rank { font-weight: 600; color: var(--c-text); white-space: nowrap; }
+.ct-name { display: block; font-weight: 600; color: var(--c-text); }
+.ct-sub { display: block; margin-top: 2px; color: var(--c-faint); font-size: var(--pcg-text-xs); }
+.ct-course { font-weight: 600; color: var(--c-text); }
+.ct-count { display: block; margin-top: 4px; color: var(--c-faint); font-size: var(--pcg-text-xs); }
+.ct-select { min-width: 260px; max-width: 420px; }
+
+/* card around the table */
+.ct-card { padding: var(--pcg-space-4) var(--pcg-space-5) var(--pcg-space-5); }
+.ct-card .pcg-empty { padding: var(--pcg-space-8) var(--pcg-space-4); }
+
+/* add-track panel */
+.ct-add > summary { list-style: none; cursor: pointer; }
+.ct-add > summary::-webkit-details-marker { display: none; }
+.ct-add[open] > summary { margin-bottom: var(--pcg-space-4); }
+.ct-add__form { padding: var(--pcg-space-5); }
+.ct-add__form h3 { margin: 0 0 var(--pcg-space-4); font-size: var(--pcg-text-base); color: var(--c-text); }
+.ct-add__wide { grid-column: 1 / -1; }
+.ct-add__actions { display: flex; flex-wrap: wrap; gap: var(--pcg-space-2); margin-top: var(--pcg-space-2); }
+
+/* DataTables on console tokens */
+.pcg-app .ct div.dt-container { color: var(--c-muted); }
+.pcg-app .ct .dt-layout-row { margin: 0 0 10px; }
+.pcg-app .ct div.dt-container .dt-search label,
+.pcg-app .ct div.dt-container .dt-length label { color: var(--c-muted); font-weight: 600; }
+.pcg-app .ct div.dt-container .dt-search input,
+.pcg-app .ct div.dt-container .dt-length select {
+    min-height: 40px; border-radius: 10px; border: 1px solid var(--c-line); background: var(--c-surface-2);
+    color: var(--c-text); font-size: 16px; padding: 6px 12px;
+}
+.pcg-app .ct div.dt-container .dt-search input { margin-left: 8px; min-width: min(280px, 100%); }
+.pcg-app .ct div.dt-container .dt-length select { padding-right: 30px; }
+.pcg-app .ct div.dt-container .dt-search input:focus { outline: 2px solid var(--c-accent-line); border-color: var(--c-accent); }
+.pcg-app .ct table.dataTable { border-collapse: separate; border-spacing: 0; width: 100%; font-size: var(--pcg-text-sm); font-variant-numeric: tabular-nums; }
+.pcg-app .ct table.dataTable thead th {
+    border-bottom: 1px solid var(--c-line) !important; background: transparent; color: var(--c-muted);
+    font-size: var(--pcg-text-xs); font-weight: 700; letter-spacing: .06em; text-transform: uppercase;
+    padding: 10px 12px; text-align: left; white-space: nowrap;
+}
+.pcg-app .ct table.dataTable tbody td {
+    border-top: 1px solid var(--c-line-soft) !important; padding: 10px 12px; color: var(--c-text);
+    vertical-align: middle; background: transparent !important; box-shadow: none !important; text-align: left;
+}
+.pcg-app .ct table.dataTable tbody tr { background: transparent !important; }
+.pcg-app .ct table.dataTable tbody tr:hover td { background: var(--c-accent-soft) !important; }
+.pcg-app .ct table.dataTable td.dt-type-numeric,
+.pcg-app .ct table.dataTable th.dt-type-numeric { text-align: left; }
+.pcg-app .ct div.dt-container .dt-info { color: var(--c-muted); font-size: var(--pcg-text-sm); }
+.pcg-app .ct .dt-paging .dt-paging-button { border-radius: 8px !important; color: var(--c-muted) !important; border: 1px solid transparent !important; background: transparent !important; }
+.pcg-app .ct .dt-paging .dt-paging-button.current { color: var(--c-text) !important; background: var(--c-accent-soft) !important; border-color: var(--c-accent-line) !important; }
+.pcg-app .ct .dt-paging .dt-paging-button:hover:not(.disabled) { color: var(--c-text) !important; background: var(--c-surface-2) !important; border-color: var(--c-line) !important; }
+.pcg-app .ct .dt-paging .dt-paging-button.disabled { opacity: .5; }
+
+@media (max-width: 640px) {
+    .ct-card { padding: var(--pcg-space-3); }
+    .ct-select { min-width: 200px; }
+}

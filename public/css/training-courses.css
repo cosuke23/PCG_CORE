@@ -1,0 +1,73 @@
+/* MEPTDI LMS: training courses and their students (admin console).
+   Console tokens only (var(--c-*) / var(--pcg-*)), so both themes stay readable. */
+
+/* a CTA rendered as a link keeps its ink colour (".pcg a" would paint it with the link colour) */
+.pcg a.pcg-btn--cta,
+.pcg a.pcg-btn--cta:hover { color: var(--pcg-accent-ink); text-decoration: none; }
+
+.tc-lead { max-width: 72ch; }
+.tc-lead .pcg-badge { margin-right: var(--pcg-space-2); }
+
+/* list card header: title left, nothing else competing */
+.tc-card-head { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: var(--pcg-space-2) var(--pcg-space-4); }
+.tc-card-head p { margin: 0; color: var(--c-muted); font-size: var(--pcg-text-sm); }
+
+.tc-table-body { padding: var(--pcg-space-4) var(--pcg-space-5) var(--pcg-space-5); }
+.tc-desc { max-width: 56ch; white-space: normal; }
+.tc-course-link { font-weight: 600; }
+
+/* row actions: one line, compact */
+.tc-row-actions { display: flex; flex-wrap: nowrap; align-items: center; gap: var(--pcg-space-1); }
+.tc-row-actions form { display: inline-flex; margin: 0; }
+.tc-row-actions .pcg-btn { min-height: 36px; min-width: 36px; padding: var(--pcg-space-1) var(--pcg-space-3); }
+
+/* quiet danger: red icon, no fill until hover */
+.pcg.pcg-app .pcg-btn--ghost.tc-remove { color: var(--c-danger); background: transparent; border-color: transparent; }
+.pcg.pcg-app .pcg-btn--ghost.tc-remove:hover,
+.pcg.pcg-app .pcg-btn--ghost.tc-remove:focus-visible { background: var(--c-danger-soft); border-color: var(--c-danger-soft); color: var(--c-danger); }
+
+/* form footer */
+.tc-form-actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--pcg-space-3);
+    margin-top: var(--pcg-space-5);
+    padding-top: var(--pcg-space-4);
+    border-top: 1px solid var(--c-line-soft);
+}
+.tc-form { max-width: 720px; }
+.pcg-app textarea.pcg-input { min-height: 120px; resize: vertical; }
+.tc-required { color: var(--c-danger); }
+
+/* CSV upload dialog (shown/hidden by pcg.show / pcg.hide, which toggle .hidden) */
+.tc-modal {
+    position: fixed;
+    inset: 0;
+    z-index: 60;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: var(--pcg-space-4);
+    background: rgba(5, 15, 38, 0.6);
+}
+.tc-modal.hidden { display: none; }
+.tc-modal__panel { width: 100%; max-width: 32rem; box-shadow: var(--c-shadow-lift); }
+.tc-modal__head { display: flex; align-items: center; justify-content: space-between; gap: var(--pcg-space-3); }
+.tc-modal__close { min-height: 40px; min-width: 40px; padding: 0; }
+
+.tc-steps { margin: 0 0 var(--pcg-space-4); padding-left: 1.25rem; color: var(--c-muted); font-size: var(--pcg-text-sm); }
+.tc-steps li + li { margin-top: var(--pcg-space-1); }
+
+/* DataTables controls on console tokens (light theme too) */
+.pcg-app div.dt-container .dt-search input,
+.pcg-app div.dt-container .dt-length select { background: var(--c-surface-2); color: var(--c-text); border: 1px solid var(--c-line); border-radius: var(--pcg-radius-sm); min-height: 36px; }
+.pcg-app div.dt-container .dt-info,
+.pcg-app div.dt-container .dt-length label,
+.pcg-app div.dt-container .dt-search label { color: var(--c-muted); font-size: var(--pcg-text-sm); }
+.pcg-app table.dataTable.pcg-table > thead > tr > th { border-bottom-color: var(--c-line); }
+.pcg-app table.dataTable.pcg-table > tbody > tr > td { border-bottom: 1px solid var(--c-line-soft); }
+
+@media (max-width: 640px) {
+    .tc-form-actions .pcg-btn { flex: 1 1 auto; }
+}
