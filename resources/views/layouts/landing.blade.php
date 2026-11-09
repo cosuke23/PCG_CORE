@@ -15,6 +15,7 @@
     <link rel="stylesheet" href="{{ asset('vendor/fontawesome/css/all.min.css') }}">
     <link rel="stylesheet" href="{{ \App\Support\Asset::v('css/landing.css') }}">
     <script nonce="{{ $cspNonce ?? '' }}" src="{{ \App\Support\Asset::v('js/landing.js') }}" defer></script>
+    <script nonce="{{ $cspNonce ?? '' }}" src="{{ \App\Support\Asset::v('js/pcg-ui.js') }}" defer></script>{{-- loading state on form submits --}}
 </head>
 <body class="lp @yield('body_class')">
     <a class="lp-skip" href="#main">Skip to content</a>

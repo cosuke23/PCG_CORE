@@ -405,3 +405,37 @@ html.lp-lightbox-open { overflow: hidden; }
     .lp-person { grid-template-columns: 88px 1fr; gap: 14px; }
     .lp-person__photo { width: 88px; height: 88px; }
 }
+
+/* ------------------------------------------------------------ contact form */
+.lp-pagehead--short { padding-bottom: 40px; }
+.lp-section--tight { padding-block: 48px 72px; }
+.lp-contact { display: grid; grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr); gap: 40px; align-items: start; }
+.lp-form { display: grid; gap: 18px; padding: 28px; background: var(--lp-white); border: 1px solid var(--lp-line); border-radius: 6px; }
+.lp-form__row { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
+.lp-field { display: grid; gap: 6px; }
+.lp-field label { font-size: 14px; font-weight: 600; color: var(--lp-ink); }
+.lp-field label span { font-weight: 400; color: var(--lp-muted); margin-left: 4px; }
+.lp-field input, .lp-field textarea {
+    width: 100%; min-height: 46px; padding: 10px 12px; font: 16px/1.4 var(--lp-sans); color: var(--lp-ink);
+    background: var(--lp-white); border: 1px solid #cdbfae; border-radius: 4px; /* 6 outer - card padding: kept small */
+}
+.lp-field textarea { resize: vertical; min-height: 150px; }
+.lp-field input:focus, .lp-field textarea:focus { outline: 3px solid var(--lp-gold-300); outline-offset: 1px; border-color: var(--lp-maroon-700); }
+.lp-form__foot { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px 20px; }
+.lp-form__foot p { margin: 0; font-size: 13px; color: var(--lp-muted); }
+.lp-hp { position: absolute; left: -9999px; width: 1px; height: 1px; overflow: hidden; }
+.lp-note { margin: 0; padding: 12px 14px; border-radius: 4px; font-size: 14px; animation: lp-note-in .24s ease-out both; }
+.lp-note ul { margin: 0; padding-left: 18px; }
+.lp-note--ok { background: #e6f4ea; color: #1d5e33; }
+.lp-note--bad { background: #fbe9ea; color: #8a1c26; }
+@keyframes lp-note-in { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+.lp-contact__aside h2 { margin: 0 0 14px; font: 700 22px/1.2 var(--lp-serif); }
+/* loading state while the form is sent (pcg-ui.js marks the button) */
+.lp-btn[aria-busy="true"] { opacity: .8; cursor: progress; }
+.lp-btn[aria-busy="true"]::before { content: ""; width: 1em; height: 1em; border: 2px solid currentColor; border-right-color: transparent; border-radius: 50%; animation: lp-spin .7s linear infinite; }
+@keyframes lp-spin { to { transform: rotate(360deg); } }
+@media (max-width: 760px) {
+    .lp-contact, .lp-form__row { grid-template-columns: 1fr; }
+    .lp-form { padding: 20px; }
+}
+@media (prefers-reduced-motion: reduce) { .lp-note { animation: none; } }
