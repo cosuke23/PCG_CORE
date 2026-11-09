@@ -39,6 +39,8 @@
     ];
     $total = collect($groups)->flatten(1)->count();
     $done = collect($groups)->map(fn ($g) => array_keys($g))->flatten()->filter(fn ($f) => !empty($docs->$f))->count();
+    // uploaded documents wait for the unit checker before they can be replaced
+    $lockedFields = \App\Support\DocumentReview::lockedFields($docs);
 @endphp
 
 @section('content')
@@ -54,7 +56,7 @@
             <div>
                 <p class="ud-eyebrow">Statement of Information · requirements</p>
                 <h1>Required documents</h1>
-                <p class="ud-lede">Upload each document here. You can upload some now and the rest later; only the files you choose are sent. Your unit checker reviews them and tells you if one needs to be uploaded again.</p>
+                <p class="ud-lede">Upload each document here. You can upload some now and the rest later; only the files you choose are sent. Your unit checker reviews them and tells you if one needs to be uploaded again. An uploaded document is locked until the checker has reviewed it.</p>
             </div>
             <div class="ud-progress" aria-label="{{ $done }} of {{ $total }} documents uploaded">
                 <div class="ud-progress__top"><strong>{{ $done }} of {{ $total }}</strong><span>uploaded</span></div>
@@ -67,6 +69,14 @@
             <span>Every file is encrypted with <strong>AES-256</strong> as soon as it arrives and stored under a random name. Only you, your unit's document checker and authorised HR staff can open it, and each opening is logged.</span>
         </p>
 
+        @if ($lockedFields)
+            <p class="ud-review" role="status">
+                <i class="fa-solid fa-hourglass-half" aria-hidden="true"></i>
+                <span><strong>{{ count($lockedFields) === 1 ? '1 document is' : count($lockedFields) . ' documents are' }} waiting for your unit checker.</strong>
+                    They are locked until the checker approves them or returns one to you. Boxes that are still empty stay open.</span>
+            </p>
+        @endif
+
         <form id="uploadForm" action="/documents/upload" method="POST" enctype="multipart/form-data">
             @csrf
 
@@ -77,20 +87,25 @@
                         @foreach ($fields as $field => [$label, $kind, $hasExpiry])
                             @php
                                 $have = !empty($docs->$field);
+                                $isLocked = in_array($field, $lockedFields, true);
                                 $exp = $hasExpiry && !empty($docs->{$field . '_expiration'}) ? \Carbon\Carbon::parse($docs->{$field . '_expiration'}) : null;
                                 $state = !$have ? 'missing' : ($exp && $exp->lt($today) ? 'expired' : ($exp && $exp->lte($today->copy()->addDays(30)) ? 'soon' : 'ok'));
                                 $t = $types[$kind];
                             @endphp
-                            <article class="ud-doc ud-doc--{{ $state }}">
+                            <article class="ud-doc ud-doc--{{ $isLocked ? 'review' : $state }}">
                                 <div class="ud-doc__head">
                                     <h3 id="lbl-{{ $field }}">{{ $label }}</h3>
-                                    <span class="ud-chip ud-chip--{{ $state }}">
+                                    <span class="ud-chip ud-chip--{{ $isLocked ? 'review' : $state }}">
+                                        @if ($isLocked)
+                                            Waiting for review
+                                        @else
                                         @switch($state)
                                             @case('missing') Not uploaded @break
                                             @case('expired') Expired @break
                                             @case('soon') Expires soon @break
                                             @default Uploaded
                                         @endswitch
+                                        @endif
                                     </span>
                                 </div>
 
@@ -103,6 +118,13 @@
                                     </p>
                                 @endif
 
+                                @if ($isLocked)
+                                    <div class="ud-locked">
+                                        <i class="fa-solid fa-lock" aria-hidden="true"></i>
+                                        <span><strong>Locked until your unit checker reviews it</strong>
+                                            <small>You can replace it after the checker approves it or returns it to you.</small></span>
+                                    </div>
+                                @else
                                 <input class="ud-file" type="file" id="f-{{ $field }}" name="{{ $field }}" accept="{{ $t['accept'] }}"
                                     aria-labelledby="lbl-{{ $field }}" data-on-change="pcg.file-types" data-args='{{ $t['mimes'] }}'>
                                 <label class="ud-drop" for="f-{{ $field }}">
@@ -110,12 +132,13 @@
                                     <span class="ud-drop__text" data-default="{{ $have ? 'Choose a new file to replace it' : 'Choose a file' }}">{{ $have ? 'Choose a new file to replace it' : 'Choose a file' }}</span>
                                     <span class="ud-drop__hint">{{ $t['hint'] }}</span>
                                 </label>
+                                @endif
 
                                 @if ($hasExpiry)
                                     <div class="ud-exp">
                                         <label class="pcg-label" for="e-{{ $field }}">Valid until</label>
                                         <input class="pcg-input" type="date" id="e-{{ $field }}" name="{{ $field }}_expiration"
-                                            value="{{ $docs->{$field . '_expiration'} ?? '' }}">
+                                            value="{{ $docs->{$field . '_expiration'} ?? '' }}" @disabled($isLocked)>
                                     </div>
                                 @endif
                             </article>

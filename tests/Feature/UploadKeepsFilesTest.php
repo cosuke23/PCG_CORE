@@ -101,7 +101,7 @@ class UploadKeepsFilesTest extends TestCase
         DB::table('personnel_data')->insert(['personnel_id' => $this->member->id, 'serial_number' => 'SN-1',
             'nbi_clearance' => 'documents/old_nbi.pdf', 'ombudsman_clearance' => 'documents/old_omb.pdf',
             'ombudsman_clearance_expiration' => '2027-01-31', 'sandiganbayan_clearance_expiration' => '2027-02-28',
-            'latitude' => 14.5, 'longitude' => 121.0]);
+            'latitude' => 14.5, 'longitude' => 121.0, 'status' => 'approved']); // reviewed, so the documents can be replaced
 
         // a form without the Ombudsman/Sandiganbayan section and without a location
         $this->actingAs($this->member)->post('/documents/upload', [
@@ -119,6 +119,7 @@ class UploadKeepsFilesTest extends TestCase
         $this->assertEquals(14.5, (float) $row->latitude);
 
         // a field the form did send empty is still cleared, as before
+        DB::table('personnel_data')->update(['status' => 'approved']);
         $this->actingAs($this->member)->post('/documents/upload', [
             'ombudsman_clearance_expiration' => '',
         ])->assertSessionHas('success');

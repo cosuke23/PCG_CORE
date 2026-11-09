@@ -86,14 +86,19 @@ async function step(name, fn) {
     const res = await me.request.get(BASE + '/files/documents_toupload/' + v);
     check('Personnel can open own uploaded file', res.status() === 200);
   });
+  await step('An uploaded document is locked until the unit checker acts', async () => {
+    await me.goto(BASE + '/upload-documents');
+    const locked = await me.locator('input[name=ombudsman_clearance]').count() === 0 && await me.locator('#e-ombudsman_clearance').isDisabled();
+    check('Uploaded document is locked while waiting for review', locked && (await me.content()).includes('waiting for your unit checker'));
+  });
   await step('Personnel cannot upload a non-PDF as a clearance', async () => {
     const bad = `${S}/evil.php`; fs.writeFileSync(bad, '<?php echo 1;');
     await me.goto(BASE + '/upload-documents');
-    await me.setInputFiles('input[name=ombudsman_clearance]', bad);
+    await me.setInputFiles('input[name=ofr]', bad); // a box that is still empty (filled ones are locked)
     await Promise.all([me.waitForNavigation({ timeout: 15000 }), me.locator('#uploadForm [type=submit]').last().click()]).catch(() => {});
     const html = await me.content();
     const blocked = html.includes('must be a file of type') || me.dialogs.some(m => /pdf/i.test(m)) || (await me.locator('.swal2-popup').count()) > 0;
-    const v = sql("select ombudsman_clearance from personnel_data pd join users u on u.id=pd.personnel_id where u.email='member@demo.test'");
+    const v = sql("select coalesce(ofr, '') from personnel_data pd join users u on u.id=pd.personnel_id where u.email='member@demo.test'");
     check('Non-PDF clearance is refused (client or server)', blocked && !/evil/.test(v), 'dialogs=' + me.dialogs.join(' / ').slice(0, 80));
   });
   await step('Personnel uploads a 201 file', async () => {
