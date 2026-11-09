@@ -10,7 +10,7 @@ use Illuminate\Support\Facades\DB;
  * Serves uploaded personnel files after an access check.
  *
  * Access: admins and M1 checkers see all files; own-unit checkers see the
- * required documents of their unit's personnel; personnel see their own.
+ * required documents and 201 files of their unit's personnel; personnel see their own.
  *
  * Files used to be linked directly (public/documents_toupload/..., etc.), so
  * anyone with the URL could download clearances and 201 files. Links now
@@ -88,8 +88,12 @@ class FileController extends Controller
         $isUnit = $session->has('unit_user_id') && !$isM1;
 
         if ($isUnit && !$isAdmin) {
-            // Own-unit checkers: only the required documents of their unit's personnel.
-            if ($area !== 'documents_toupload' || !$this->inUnit($session->get('unit_name'), $relative)) {
+            // Own-unit checkers: only the required documents and the 201 files of
+            // their unit's personnel (they review both).
+            $unit = $session->get('unit_name');
+            $mine = ($area === 'documents_toupload' && $this->inUnit($unit, $relative))
+                || ($area === '201_files' && $this->inUnit201($unit, $relative));
+            if (!$mine) {
                 abort(404);
             }
         } elseif (!$isAdmin && !$isM1) {
@@ -155,6 +159,22 @@ class FileController extends Controller
             ->where(function ($q) use ($relative) {
                 foreach (self::DOCUMENT_COLUMNS as $column) {
                     $q->orWhere('pd.' . $column, $relative);
+                }
+            })
+            ->exists();
+    }
+
+    /** A 201 file of a member whose mother unit is $unit (the account that owns the record). */
+    private function inUnit201(?string $unit, string $relative): bool
+    {
+        return DB::table('personnel_201_files as p201')
+            ->join('users as u', 'u.serial_number', '=', 'p201.serial_number')
+            ->where('u.mother_unit', $unit)
+            ->where(fn ($q) => $q->whereColumn('p201.personnel_id', 'u.id')
+                ->orWhere(fn ($q) => $q->whereNull('p201.personnel_id')->whereRaw('LOWER(TRIM(u.status)) = ?', ['approved'])))
+            ->where(function ($q) use ($relative) {
+                foreach (self::FILE_201_COLUMNS as $column) {
+                    $q->orWhere('p201.' . $column, '201_files/' . $relative)->orWhere('p201.' . $column, $relative);
                 }
             })
             ->exists();

@@ -410,6 +410,12 @@ Route::middleware(['unit.session'])->group(function () {
     Route::post('/unit/documents/review-final', [UnitDocumentController::class, 'review'])
         ->name('unit.documents.review.final');
 
+    // 201 file review (owner decision 2026-11-09): own-unit checkers for their
+    // unit's members, M1 checkers for all (scoped in the controllers)
+    Route::get('/unit/201-files', [UnitUserController::class, 'index_201'])->name('unit.201files');
+    Route::post('/unit/201-files/review', [UnitDocumentController::class, 'review201'])
+        ->name('unit.201files.review');
+
     // M1 checkers only (all units)
     Route::middleware(['unit.m1'])->group(function () {
         Route::get('/unit/dashboardM1', [UnitUserController::class, 'dashboardM1'])->name('unit.dashboard.m1');
@@ -422,7 +428,6 @@ Route::middleware(['unit.session'])->group(function () {
             ->name('disciplinary.delete');
 
         Route::prefix('unit')->group(function () {
-            Route::get('/201-files', [UnitUserController::class, 'index_201'])->name('unit.201files');
             Route::get('/201-files/{id}', [UnitUserController::class, 'show_201'])->name('unit.201files.show');
         });
     });

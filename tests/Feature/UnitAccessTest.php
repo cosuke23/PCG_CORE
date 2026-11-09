@@ -80,7 +80,8 @@ class UnitAccessTest extends TestCase
     {
         $this->withSession($this->unit);
 
-        foreach (['/unit/dashboardM1', '/unit/201-files', '/unit/201-files/SN-B'] as $uri) {
+        // the 201 review list is open to own-unit checkers (their unit only); the rest stays M1
+        foreach (['/unit/dashboardM1', '/unit/201-files/SN-B'] as $uri) {
             $this->get($uri)->assertRedirect('/unit/dashboard');
         }
         $this->getJson('/unit/search-serial/SN-B')->assertForbidden();

@@ -283,7 +283,7 @@ class DocumentUploadModuleTest extends TestCase
         }
         $this->actingAs($this->member)->post('/upload-201', $post)
             ->assertRedirect(route('upload.201'))
-            ->assertSessionHas('success', '11 files uploaded and encrypted to your 201 file.');
+            ->assertSessionHas('success', '11 files uploaded and encrypted to your 201 file. Your unit checker will review them.');
 
         $row = DB::table('personnel_201_files')->where('personnel_id', $this->member->id)->first();
         foreach (self::SECTIONS_201 as $f) {

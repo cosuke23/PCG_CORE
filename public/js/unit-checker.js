@@ -164,8 +164,10 @@
             st.textContent = { waiting: 'Waiting', returned: 'Returned', approved: 'Approved' }[r.status];
 
             var items = r.items.slice();
-            if (r.pin) items.push({ field: 'location', label: 'Residence location', pin: r.pin, url: true });
-            else items.push({ field: 'location-none', label: 'Residence location', url: null });
+            if (dlg.getAttribute('data-with-location') !== '0') { // the 201 review has no residence pin
+                if (r.pin) items.push({ field: 'location', label: 'Residence location', pin: r.pin, url: true });
+                else items.push({ field: 'location-none', label: 'Residence location', url: null });
+            }
 
             var first = null;
             items.forEach(function (it) {

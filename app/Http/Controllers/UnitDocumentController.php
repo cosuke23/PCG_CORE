@@ -223,4 +223,77 @@ class UnitDocumentController extends Controller
             return back()->with('error', 'Something went wrong.');
         }
     }
+
+    /**
+     * 201 file decision (owner decision 2026-11-09): approve the record, or return
+     * the ticked sections with a comment. Same rules as review(): own-unit
+     * checkers only for their unit's members, M1 for all; one record (the
+     * owner's) changes. Returned sections are cleared and noted in
+     * rejected_documents as "201: <label>".
+     */
+    public function review201(Request $request)
+    {
+        $request->validate([
+            'serial_number' => 'required|string|max:100',
+            'decision'      => 'required|in:approved,rejected',
+            'docs'          => 'nullable|array',
+        ]);
+        abort_unless(\App\Support\Review201::hasStatus(), 409, 'Run the database update (deploy with -Migrate) first.');
+
+        $isM1 = session('unit_role') === \App\Models\UnitUser::ROLE_M1;
+        $row = \App\Support\Review201::queueFor(session('unit_name'), $isM1)
+            ->where('p201.serial_number', $request->serial_number)
+            ->orderByDesc('p201.id')
+            ->first(['p201.*', 'u.name as applicant_name']);
+        abort_unless($row, 403, 'This member is not in your unit.');
+
+        $serial = $row->serial_number;
+        $returned = [];
+        DB::transaction(function () use ($request, $row, $serial, &$returned) {
+            if ($request->decision === 'approved') {
+                DB::table('personnel_201_files')->where('id', $row->id)->update(['status' => 'approved']);
+                return;
+            }
+            $clear = [];
+            foreach ((array) $request->input('docs', []) as $field => $doc) {
+                if (!is_string($field) || !isset(\App\Support\Review201::SECTIONS[$field]) || !is_array($doc) || !isset($doc['checked'])) {
+                    continue;
+                }
+                if (empty($row->$field)) {
+                    continue; // nothing uploaded in that section
+                }
+                $clear[$field] = null;
+                $returned[] = $field;
+                DB::table('rejected_documents')->insert(\App\Support\TableColumns::fit('rejected_documents', [
+                    'serial_number' => $serial,
+                    'doc_type'      => \App\Support\Review201::docType($field),
+                    'file_path'     => $row->$field,
+                    'comment'       => is_string($doc['comment'] ?? null) ? mb_substr($doc['comment'], 0, 2000) : null,
+                    'status'        => 'rejected',
+                    'created_at'    => now(),
+                    'updated_at'    => now(),
+                ]));
+            }
+            DB::table('personnel_201_files')->where('id', $row->id)->update($clear + ['status' => 'rejected']);
+        });
+
+        Log::channel('audit')->info('unit.201_review', [
+            'unit_user_id' => session('unit_user_id'),
+            'unit_role' => session('unit_role'),
+            'serial_number' => $serial,
+            'decision' => $request->decision,
+            'returned' => $returned,
+            'ip' => $request->ip(),
+        ]);
+
+        $name = $row->applicant_name ?: $serial;
+        $n = count($returned);
+
+        return back()
+            ->with('success', $request->decision === 'approved'
+                ? "Approved: the 201 file of {$name}."
+                : ($n ? "Returned {$n} " . ($n === 1 ? 'section' : 'sections') . " of the 201 file to {$name}. They will see your comments on their 201 page."
+                    : "Marked the 201 file of {$name} as returned."))
+            ->with('reviewed', $serial);
+    }
 }

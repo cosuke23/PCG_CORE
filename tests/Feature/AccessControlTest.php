@@ -79,6 +79,7 @@ class AccessControlTest extends TestCase
             ['delete', '/unit/disciplinary/delete/1'],
             ['get', '/unit/201-files'],
             ['get', '/unit/201-files/12345'],
+            ['post', '/unit/201-files/review'],
         ];
     }
 
