@@ -138,6 +138,85 @@
         </section>
 
 
+        {{-- ===================================================== PCG organizational structure --}}
+        @php
+            // PCG organizational structure (from the official PCG chart), top to bottom.
+            $pcgGroups = [
+                ['Functional Commands', 'fa-compass', [
+                    'Maritime Safety Services Command',
+                    'Marine Environmental Protection Command',
+                    'Maritime Security and Law Enforcement Command',
+                ]],
+                ['Admin Support Commands', 'fa-briefcase', [
+                    'Coast Guard Human Resource Management Command',
+                    'Coast Guard Finance Service',
+                    'CG Education, Training and Doctrine Command',
+                    'Coast Guard Logistics Systems Command',
+                ]],
+                ['Operational Support Commands', 'fa-anchor', [
+                    'Coast Guard Special Operations Force',
+                    'Coast Guard Aviation Command',
+                    'Coast Guard Cyber Command',
+                    'Coast Guard Fleet',
+                    'Coast Guard Community Relations Command',
+                    'CG Weapons, Communications, Electronics and Information Systems Command',
+                ]],
+                ['Operating Commands', 'fa-map-location-dot', [
+                    '17 Coast Guard Districts',
+                ]],
+                ['Special Service Commands', 'fa-shield-halved', [
+                    'Coast Guard Strategic Studies and International Affairs Center',
+                    'Coast Guard Internal Audit',
+                    'Coast Guard Inspector General and Internal Affairs Service',
+                    'Coast Guard Intelligence Force',
+                ]],
+                ['Technical Service Commands', 'fa-stethoscope', [
+                    'Coast Guard Legal Service',
+                    'Coast Guard Medical Service',
+                    'Coast Guard Nursing Service',
+                    'Coast Guard Dental Service',
+                    'Coast Guard Veterinary Service',
+                    'Coast Guard Ecumenical Service',
+                ]],
+            ];
+        @endphp
+        <section class="lp-section lp-org" id="structure" aria-labelledby="structure-title">
+            <div class="lp-wrap">
+                <p class="lp-eyebrow lp-eyebrow--dark">PCG organizational structure</p>
+                <h2 id="structure-title" data-reveal>Where MEPCOM stands in the Philippine Coast Guard.</h2>
+                <p class="lp-lead">National Headquarters leads six groups of commands. MEPCOM is one of the three functional commands.</p>
+
+                <div class="lp-org__top" data-reveal>
+                    <img src="{{ asset('images/brand/pcg-logo.webp') }}" alt="" width="56" height="56" loading="lazy">
+                    <div>
+                        <strong>NHQ-PCG</strong>
+                        <span>National Headquarters, Philippine Coast Guard</span>
+                    </div>
+                </div>
+
+                <ol class="lp-org__groups">
+                    @foreach ($pcgGroups as $i => [$group, $icon, $commands])
+                        <li class="lp-org__group @if ($i === 0) lp-org__group--wide @endif" data-reveal>
+                            <h3>
+                                <span class="lp-org__icon"><i class="fa-solid {{ $icon }}" aria-hidden="true"></i></span>
+                                {{ $group }}
+                                <span class="lp-org__count">{{ count($commands) }}</span>
+                            </h3>
+                            <ul>
+                                @foreach ($commands as $command)
+                                    @if ($command === 'Marine Environmental Protection Command')
+                                        <li class="lp-org__here"><img src="{{ asset('images/brand/mepcom-logo.webp') }}" alt="" width="28" height="28" loading="lazy"><span>{{ $command }}</span><em>MEPCOM</em></li>
+                                    @else
+                                        <li><span>{{ $command }}</span></li>
+                                    @endif
+                                @endforeach
+                            </ul>
+                        </li>
+                    @endforeach
+                </ol>
+            </div>
+        </section>
+
         {{-- ===================================================== about --}}
         <section class="lp-section lp-about" id="about" aria-labelledby="about-title">
             <div class="lp-wrap lp-about__in">

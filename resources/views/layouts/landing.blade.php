@@ -41,6 +41,7 @@
                     [route('home'), 'Home', request()->routeIs('home')],
                     [route('about'), 'About', request()->routeIs('about')],
                     [route('home') . '#services', 'Services', false],
+                    [route('home') . '#structure', 'Structure', false],
                     [route('home') . '#units', 'Units', false],
                     [route('meptdi'), 'MEPTDI', request()->routeIs('meptdi')],
                     [route('contact'), 'Contact', request()->routeIs('contact')],

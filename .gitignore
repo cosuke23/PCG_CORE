@@ -66,3 +66,7 @@ desktop.ini
 # deploy target for deploy.ps1 (server address stays out of git)
 /deploy/target.local
 __pycache__/
+
+# walkthrough deck output (screenshots, decks) and its node packages
+/walkthrough-out/
+/tools/walkthrough/node_modules/
