@@ -53,23 +53,34 @@ class ApplicantDocumentController extends Controller
             $serial = $user->serial_number;
 
             // ================= EXISTING =================
-            $existing = DB::table('personnel_data')
-                ->where('personnel_id', $userId)
-                ->first();
+            $existing = \App\Support\DocumentReview::rowFor($user);
 
-            // ================= WAITING FOR THE UNIT CHECKER =================
-            // An uploaded document is locked until the checker approves or
-            // returns it (App\Support\DocumentReview); the page hides the
-            // controls, this refuses a hand-made request.
-            $locked = \App\Support\DocumentReview::lockedFields($existing);
+            // ================= REVIEW LOCKS (App\Support\DocumentReview) =================
+            // Waiting for the unit checker: nothing can change. After the review,
+            // only returned items (cleared by the review), never-filled boxes and
+            // expired clearances can be uploaded. The page hides the controls; this
+            // refuses a hand-made request.
+            $review = \App\Support\DocumentReview::class;
+            $waiting = $review::awaitingReview($existing);
             $refused = [];
-            foreach ($locked as $field) {
+            foreach ($review::lockedFields($existing) as $field) {
                 $expiry = $field . '_expiration';
-                $dateChanged = in_array($field, \App\Support\DocumentReview::EXPIRY_FIELDS, true)
+                $dateChanged = in_array($field, $review::EXPIRY_FIELDS, true)
                     && $request->exists($expiry)
                     && substr((string) ($request->input($expiry) ?: ''), 0, 10) !== substr((string) ($existing->$expiry ?? ''), 0, 10);
                 if ($request->hasFile($field) || $dateChanged) {
-                    $refused[$field] = 'This document is waiting for your unit checker. You can replace it after the checker approves it or returns it to you.';
+                    $refused[$field] = $waiting
+                        ? 'Your documents are waiting for your unit checker. You can upload again after the review.'
+                        : 'This document was accepted by your unit checker and is locked. Ask your unit checker if it must change.';
+                }
+            }
+            if ($review::pinLocked($existing)) {
+                $pinChanged = fn ($k) => $request->exists($k) && (string) ($request->input($k) ?? '') !== ''
+                    && abs((float) $request->input($k) - (float) ($existing->$k ?? 0)) > 0.0000005;
+                if ($pinChanged('latitude') || $pinChanged('longitude')) {
+                    $refused['latitude'] = $waiting
+                        ? 'Your residence location is waiting for your unit checker.'
+                        : 'Your residence location was accepted and is locked. Ask your unit checker if it must change.';
                 }
             }
             if ($refused) {
@@ -204,8 +215,8 @@ class ApplicantDocumentController extends Controller
             if ($existing) {
 
                 DB::table('personnel_data')
-                    ->where('personnel_id', $userId)
-                    ->update($data);
+                    ->where('id', $existing->id)
+                    ->update($data + ['personnel_id' => $userId]); // an older row without an owner becomes this account's
 
                 Log::warning('🟡 UPDATED RECORD');
             } else {

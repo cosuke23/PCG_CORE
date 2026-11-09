@@ -98,10 +98,11 @@ class UploadKeepsFilesTest extends TestCase
 
     public function test_required_document_upload_keeps_dates_the_form_did_not_send()
     {
+        // after a review that returned the NBI clearance (cleared); the Ombudsman one was accepted
         DB::table('personnel_data')->insert(['personnel_id' => $this->member->id, 'serial_number' => 'SN-1',
-            'nbi_clearance' => 'documents/old_nbi.pdf', 'ombudsman_clearance' => 'documents/old_omb.pdf',
+            'ombudsman_clearance' => 'documents/old_omb.pdf',
             'ombudsman_clearance_expiration' => '2027-01-31', 'sandiganbayan_clearance_expiration' => '2027-02-28',
-            'latitude' => 14.5, 'longitude' => 121.0, 'status' => 'approved']); // reviewed, so the documents can be replaced
+            'latitude' => 14.5, 'longitude' => 121.0, 'status' => 'rejected']);
 
         // a form without the Ombudsman/Sandiganbayan section and without a location
         $this->actingAs($this->member)->post('/documents/upload', [
@@ -112,18 +113,17 @@ class UploadKeepsFilesTest extends TestCase
         $row = DB::table('personnel_data')->where('personnel_id', $this->member->id)->first();
         $this->assertSame('documents/old_omb.pdf', $row->ombudsman_clearance);
         $this->assertStringStartsWith('documents/', $row->nbi_clearance);
-        $this->assertNotSame('documents/old_nbi.pdf', $row->nbi_clearance);
         $this->assertSame('2027-06-30', substr((string) $row->nbi_clearance_expiration, 0, 10));
         $this->assertSame('2027-01-31', substr((string) $row->ombudsman_clearance_expiration, 0, 10));
         $this->assertSame('2027-02-28', substr((string) $row->sandiganbayan_clearance_expiration, 0, 10));
         $this->assertEquals(14.5, (float) $row->latitude);
 
-        // a field the form did send empty is still cleared, as before
-        DB::table('personnel_data')->update(['status' => 'approved']);
+        // a field the form did send empty is still cleared (an open box: no file yet)
+        DB::table('personnel_data')->update(['status' => 'rejected']);
         $this->actingAs($this->member)->post('/documents/upload', [
-            'ombudsman_clearance_expiration' => '',
+            'sandiganbayan_clearance_expiration' => '',
         ])->assertSessionHas('success');
-        $this->assertNull(DB::table('personnel_data')->value('ombudsman_clearance_expiration'));
-        $this->assertSame('2027-02-28', substr((string) DB::table('personnel_data')->value('sandiganbayan_clearance_expiration'), 0, 10));
+        $this->assertNull(DB::table('personnel_data')->value('sandiganbayan_clearance_expiration'));
+        $this->assertSame('2027-01-31', substr((string) DB::table('personnel_data')->value('ombudsman_clearance_expiration'), 0, 10));
     }
 }

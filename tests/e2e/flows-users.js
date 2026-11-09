@@ -112,22 +112,6 @@ async function step(name, fn) {
 
   // ---------------- personnel ----------------
   const me = await login(browser, '/login', 'member@demo.test', 'Demo@12345');
-  await step('Personnel uploads a required document', async () => {
-    await me.goto(BASE + '/upload-documents');
-    await me.setInputFiles('input[name=ombudsman_clearance]', PDF);
-    await Promise.all([me.waitForNavigation({ timeout: 15000 }), me.locator('#uploadForm [type=submit]').last().click()]);
-    await me.click('.swal2-confirm').catch(() => {});
-    const v = sql("select ombudsman_clearance from personnel_data pd join users u on u.id=pd.personnel_id where u.email='member@demo.test'");
-    check('Personnel uploads a required document', /^documents\/\d+_[0-9a-f]{24}\.pdf$/.test(v), v);
-    check('Upload success message shown', (await me.content()).includes('uploaded and encrypted'));
-    const res = await me.request.get(BASE + '/files/documents_toupload/' + v);
-    check('Personnel can open own uploaded file', res.status() === 200);
-  });
-  await step('An uploaded document is locked until the unit checker acts', async () => {
-    await me.goto(BASE + '/upload-documents');
-    const locked = await me.locator('input[name=ombudsman_clearance]').count() === 0 && await me.locator('#e-ombudsman_clearance').isDisabled();
-    check('Uploaded document is locked while waiting for review', locked && (await me.content()).includes('waiting for your unit checker'));
-  });
   await step('Personnel cannot upload a non-PDF as a clearance', async () => {
     const bad = `${S}/evil.php`; fs.writeFileSync(bad, '<?php echo 1;');
     await me.goto(BASE + '/upload-documents');
@@ -137,6 +121,25 @@ async function step(name, fn) {
     const blocked = html.includes('must be a file of type') || me.dialogs.some(m => /pdf/i.test(m)) || (await me.locator('.swal2-popup').count()) > 0;
     const v = sql("select coalesce(ofr, '') from personnel_data pd join users u on u.id=pd.personnel_id where u.email='member@demo.test'");
     check('Non-PDF clearance is refused (client or server)', blocked && !/evil/.test(v), 'dialogs=' + me.dialogs.join(' / ').slice(0, 80));
+  });
+  await step('Personnel uploads a required document', async () => {
+    await me.goto(BASE + '/upload-documents');
+    // after the review only returned items open: the NBI clearance the checker returned above
+    check('Returned item open, accepted item locked', await me.locator('input[name=nbi_clearance]').count() === 1
+      && await me.locator('input[name=ombudsman_clearance]').count() === 0 && (await me.content()).includes('Returned by your unit checker'));
+    await me.setInputFiles('input[name=nbi_clearance]', PDF);
+    await Promise.all([me.waitForNavigation({ timeout: 15000 }), me.locator('#uploadForm [type=submit]').last().click()]);
+    await me.click('.swal2-confirm').catch(() => {});
+    const v = sql("select nbi_clearance from personnel_data pd join users u on u.id=pd.personnel_id where u.email='member@demo.test'");
+    check('Personnel uploads a required document', /^documents\/\d+_[0-9a-f]{24}\.pdf$/.test(v), v);
+    check('Upload success message shown', (await me.content()).includes('uploaded and encrypted'));
+    const res = await me.request.get(BASE + '/files/documents_toupload/' + v);
+    check('Personnel can open own uploaded file', res.status() === 200);
+  });
+  await step('An uploaded document is locked until the unit checker acts', async () => {
+    await me.goto(BASE + '/upload-documents');
+    const locked = await me.locator('input[type=file]').count() === 0 && await me.locator('#e-nbi_clearance').isDisabled();
+    check('Everything is locked while waiting for review (incl. Save and upload)', locked && (await me.content()).includes('Your documents are with your unit checker.') && await me.isDisabled('#submitBtn'));
   });
   await step('Personnel uploads a 201 file', async () => {
     await me.goto(BASE + '/upload-201');
