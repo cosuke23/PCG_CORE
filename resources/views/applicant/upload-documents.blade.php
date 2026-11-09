@@ -175,7 +175,14 @@
                                     <div class="ud-exp">
                                         <label class="pcg-label" for="e-{{ $field }}">Valid until</label>
                                         <input class="pcg-input" type="date" id="e-{{ $field }}" name="{{ $field }}_expiration"
-                                            value="{{ $docs->{$field . '_expiration'} ?? '' }}" @disabled($isLocked)>
+                                            value="{{ old($field . '_expiration', $docs->{$field . '_expiration'} ?? '') }}" @disabled($isLocked)
+                                            @unless ($isLocked) min="{{ $today->format('Y-m-d') }}" data-expiry-for="f-{{ $field }}" @endunless
+                                            @error($field . '_expiration') aria-invalid="true" aria-describedby="e-{{ $field }}-err" @enderror>
+                                        @error($field . '_expiration')
+                                            <p class="pcg-error" id="e-{{ $field }}-err">{{ $message }}</p>
+                                        @else
+                                            @unless ($isLocked)<p class="pcg-help">Required when you upload this clearance: the date printed on it.</p>@endunless
+                                        @enderror
                                     </div>
                                 @endif
                             </article>

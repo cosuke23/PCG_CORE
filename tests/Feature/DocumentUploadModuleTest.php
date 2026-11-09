@@ -88,6 +88,9 @@ class DocumentUploadModuleTest extends TestCase
         foreach (self::IMAGE_FIELDS as $f) {
             $post[$f] = UploadedFile::fake()->image($f . '.png', 300, 400);
         }
+        foreach (['nbi_clearance', 'ombudsman_clearance', 'sandiganbayan_clearance'] as $f) {
+            $post[$f . '_expiration'] = now()->addYear()->format('Y-m-d'); // required with a clearance
+        }
 
         $this->actingAs($this->member)->from('/upload-documents')->post('/documents/upload', $post)
             ->assertRedirect('/upload-documents')
@@ -139,10 +142,32 @@ class DocumentUploadModuleTest extends TestCase
         $this->assertSame('documents/old.pdf', $this->row()->soi, 'other documents untouched');
     }
 
+    public function test_a_clearance_needs_a_valid_until_date_that_has_not_passed()
+    {
+        $this->actingAs($this->member);
+        foreach (['nbi_clearance', 'ombudsman_clearance', 'sandiganbayan_clearance'] as $f) {
+            $this->post('/documents/upload', [$f => $this->pdf()])->assertSessionHasErrors($f . '_expiration');
+            $this->post('/documents/upload', [$f => $this->pdf(), $f . '_expiration' => now()->subDay()->format('Y-m-d')])
+                ->assertSessionHasErrors($f . '_expiration');
+        }
+        $this->assertNull($this->row(), 'nothing saved without valid dates');
+        $this->assertStringContainsString('valid until', session('errors')->first('sandiganbayan_clearance_expiration'));
+
+        $this->post('/documents/upload', ['sandiganbayan_clearance' => $this->pdf(), 'sandiganbayan_clearance_expiration' => now()->addMonths(6)->format('Y-m-d')])
+            ->assertSessionHasNoErrors();
+        $this->assertNotNull($this->row()->sandiganbayan_clearance);
+
+        // the page asks for it too
+        DB::table('personnel_data')->update(['status' => 'rejected', 'sandiganbayan_clearance' => null]);
+        $html = $this->get('/upload-documents')->getContent();
+        $this->assertStringContainsString('data-expiry-for="f-sandiganbayan_clearance"', $html);
+        $this->assertStringContainsString('Required when you upload this clearance', $html);
+    }
+
     public function test_reuploading_a_rejected_document_marks_it_complied()
     {
         DB::table('rejected_documents')->insert(['serial_number' => 'SN-1', 'doc_type' => 'NBI Clearance', 'status' => 'rejected']);
-        $this->actingAs($this->member)->post('/documents/upload', ['nbi_clearance' => $this->pdf()])->assertSessionHas('success');
+        $this->actingAs($this->member)->post('/documents/upload', ['nbi_clearance' => $this->pdf(), 'nbi_clearance_expiration' => now()->addYear()->format('Y-m-d')])->assertSessionHas('success');
         $this->assertSame('complied', DB::table('rejected_documents')->value('status'));
     }
 
@@ -219,7 +244,7 @@ class DocumentUploadModuleTest extends TestCase
         $this->assertStringContainsString('id="f-ofr"', $html, 'a never-filled box is open after the review');
         $this->assertStringContainsString('data-locked="0"', $html, 'the returned pin can be set again');
         $this->assertDoesNotMatchRegularExpression('/id="submitBtn"[^>]*disabled/', $html);
-        $this->post('/documents/upload', ['nbi_clearance' => $this->pdf()])->assertSessionHasErrors('nbi_clearance');
+        $this->post('/documents/upload', ['nbi_clearance' => $this->pdf(), 'nbi_clearance_expiration' => '2029-01-01'])->assertSessionHasErrors('nbi_clearance');
         $this->post('/documents/upload', ['soi' => $this->pdf(), 'latitude' => '14.6', 'longitude' => '121.0'])->assertSessionHasNoErrors();
         $this->assertSame('Pending', $this->row()->status, 'and everything goes back for review');
         $this->assertSame('documents/nbi.pdf', $this->row()->nbi_clearance);

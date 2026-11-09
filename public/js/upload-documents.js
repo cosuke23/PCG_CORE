@@ -58,6 +58,14 @@
         });
     });
     tracked.forEach(function (el) { el.addEventListener('change', refresh); });
+    // a clearance file needs its "valid until" date: the browser asks for it before sending
+    form.querySelectorAll('[data-expiry-for]').forEach(function (date) {
+        var file = document.getElementById(date.getAttribute('data-expiry-for'));
+        if (!file) return;
+        var sync = function () { date.required = !!(file.files && file.files.length); };
+        file.addEventListener('change', function () { setTimeout(sync, 0); });
+        sync();
+    });
     form.addEventListener('submit', function (e) {
         if (e.defaultPrevented) return;
         var n = chosen();

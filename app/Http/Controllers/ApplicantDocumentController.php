@@ -37,11 +37,19 @@ class ApplicantDocumentController extends Controller
             'residential_sketch'      => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:10240',
             'whole_body_picture'      => 'nullable|file|mimes:jpg,jpeg,png|max:10240',
             'photo_2x2'               => 'nullable|file|mimes:jpg,jpeg,png|max:10240',
-            'nbi_clearance_expiration'           => 'nullable|date',
-            'ombudsman_clearance_expiration'     => 'nullable|date',
-            'sandiganbayan_clearance_expiration' => 'nullable|date',
+            // a clearance is only accepted with its "valid until" date, and not one already past
+            'nbi_clearance_expiration'           => 'nullable|required_with:nbi_clearance|date|after_or_equal:today',
+            'ombudsman_clearance_expiration'     => 'nullable|required_with:ombudsman_clearance|date|after_or_equal:today',
+            'sandiganbayan_clearance_expiration' => 'nullable|required_with:sandiganbayan_clearance|date|after_or_equal:today',
             'latitude'                => 'nullable|numeric|between:-90,90',
             'longitude'               => 'nullable|numeric|between:-180,180',
+        ], [
+            '*_expiration.required_with' => 'Enter the "valid until" date printed on the :attribute you are uploading.',
+            '*_expiration.after_or_equal' => 'The "valid until" date of the :attribute has already passed. Upload a clearance that is still valid.',
+        ], [
+            'nbi_clearance_expiration' => 'NBI clearance',
+            'ombudsman_clearance_expiration' => 'Ombudsman clearance',
+            'sandiganbayan_clearance_expiration' => 'Sandiganbayan clearance',
         ]);
 
         try {
