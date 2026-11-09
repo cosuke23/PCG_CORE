@@ -115,24 +115,25 @@ class DocumentUploadModuleTest extends TestCase
         $this->assertNull($this->row()->nbi_clearance ?? null);
     }
 
-    public function test_a_save_changes_only_what_changed_and_sends_it_back_for_review()
+    public function test_after_a_return_a_save_changes_only_what_changed_and_goes_back_for_review()
     {
+        // the checker returned the NBI clearance and the pin (both cleared by the review)
         DB::table('personnel_data')->insert(['personnel_id' => $this->member->id, 'serial_number' => 'SN-1', 'soi' => 'documents/old.pdf',
-            'nbi_clearance_expiration' => '2027-01-01', 'latitude' => 14.5995, 'longitude' => 120.9842, 'status' => 'approved']);
+            'nbi_clearance_expiration' => '2027-01-01', 'status' => 'rejected']);
         $this->actingAs($this->member);
 
         // nothing changed: refused politely, decision kept
-        $this->post('/documents/upload', ['nbi_clearance_expiration' => '2027-01-01', 'latitude' => '14.5995000', 'longitude' => '120.9842000'])
+        $this->post('/documents/upload', ['nbi_clearance_expiration' => '2027-01-01', 'latitude' => '', 'longitude' => ''])
             ->assertSessionHas('info');
-        $this->assertSame('approved', $this->row()->status);
+        $this->assertSame('rejected', $this->row()->status);
 
-        // pin moved after approval: the checker reviews the residence again
+        // a new pin: saved and back to the checker
         $this->post('/documents/upload', ['latitude' => '14.6', 'longitude' => '121.0'])->assertSessionHas('success', 'Changes saved. Your unit checker will review them.');
         $this->assertSame('Pending', $this->row()->status);
         $this->assertEqualsWithDelta(14.6, (float) $this->row()->latitude, 0.000001);
 
-        // a clearance date changed: reviewed again
-        DB::table('personnel_data')->update(['status' => 'approved']);
+        // the returned clearance's date: allowed after the review, back to Pending
+        DB::table('personnel_data')->update(['status' => 'rejected', 'latitude' => null, 'longitude' => null]);
         $this->post('/documents/upload', ['nbi_clearance_expiration' => '2028-06-30'])->assertSessionHas('success', 'Changes saved. Your unit checker will review them.');
         $this->assertSame('Pending', $this->row()->status);
         $this->assertSame('documents/old.pdf', $this->row()->soi, 'other documents untouched');
@@ -166,8 +167,10 @@ class DocumentUploadModuleTest extends TestCase
         $html = $this->actingAs($this->member)->get('/upload-documents')->assertOk()->getContent();
         $this->assertStringContainsString('<strong>4 of 10</strong>', $html, 'progress counts uploaded documents');
         $this->assertMatchesRegularExpression('/ud-doc--expired">\s*<div class="ud-doc__head">\s*<h3 id="lbl-nbi_clearance"/', $html);
-        $this->assertMatchesRegularExpression('/ud-doc--soon">\s*<div class="ud-doc__head">\s*<h3 id="lbl-ombudsman_clearance"/', $html);
+        $this->assertMatchesRegularExpression('/ud-doc--ok">\s*<div class="ud-doc__head">\s*<h3 id="lbl-ombudsman_clearance"/', $html, 'accepted (locked) even when it expires soon');
         $this->assertMatchesRegularExpression('/ud-doc--ok">\s*<div class="ud-doc__head">\s*<h3 id="lbl-sandiganbayan_clearance"/', $html);
+        $this->assertStringContainsString('id="f-nbi_clearance"', $html, 'an expired clearance opens for renewal');
+        $this->assertStringNotContainsString('id="f-ombudsman_clearance"', $html);
         $this->assertMatchesRegularExpression('/ud-doc--missing">\s*<div class="ud-doc__head">\s*<h3 id="lbl-ofr"/', $html);
         $this->assertStringContainsString('AES-256', $html);
         $this->assertStringContainsString('aria-current="page"', $html, 'sidebar marks this page');
@@ -175,44 +178,64 @@ class DocumentUploadModuleTest extends TestCase
         $this->assertStringNotContainsString('class="ud-overlay is-on"', $html, 'overlay never starts visible');
     }
 
-    public function test_uploaded_documents_are_locked_until_the_unit_checker_acts()
+    public function test_waiting_for_review_locks_everything_and_a_review_opens_only_returned_items()
     {
         DB::table('personnel_data')->insert(['personnel_id' => $this->member->id, 'serial_number' => 'SN-1', 'status' => 'Pending',
-            'soi' => 'documents/soi.pdf', 'nbi_clearance' => 'documents/nbi.pdf', 'nbi_clearance_expiration' => '2027-06-30']);
+            'soi' => 'documents/soi.pdf', 'nbi_clearance' => 'documents/nbi.pdf', 'nbi_clearance_expiration' => '2027-06-30',
+            'latitude' => 14.5995, 'longitude' => 120.9842]);
         $this->actingAs($this->member);
 
-        // the page: uploaded boxes locked, empty boxes open
+        // waiting: no file control at all, dates and pin locked, Save disabled
         $html = $this->get('/upload-documents')->assertOk()->getContent();
-        $this->assertStringContainsString('2 documents are waiting for your unit checker', $html);
-        $this->assertStringNotContainsString('id="f-soi"', $html, 'no file control for a document under review');
-        $this->assertStringNotContainsString('id="f-nbi_clearance"', $html);
-        $this->assertStringContainsString('id="f-ofr"', $html, 'empty boxes stay open');
-        $this->assertMatchesRegularExpression('/id="e-nbi_clearance"[^>]*disabled/', $html, 'its date is locked too');
-        $this->assertSame(2, substr_count($html, 'Locked until your unit checker reviews it'));
+        $this->assertStringContainsString('Your documents are with your unit checker.', $html);
+        $this->assertStringNotContainsString('type="file"', $html, 'nothing can be uploaded while waiting, not even empty boxes');
+        $this->assertMatchesRegularExpression('/id="e-nbi_clearance"[^>]*disabled/', $html);
+        $this->assertMatchesRegularExpression('/id="submitBtn"[^>]*disabled/', $html, 'Save and upload is locked');
+        $this->assertStringContainsString('data-locked="1"', $html, 'the map pin cannot be moved');
 
-        // the server refuses a replacement or a new date, and keeps the file
+        // the server refuses everything, and keeps the data
         $this->post('/documents/upload', ['soi' => $this->pdf()])->assertSessionHasErrors('soi');
+        $this->post('/documents/upload', ['ofr' => $this->pdf()])->assertSessionHasErrors('ofr');
         $this->post('/documents/upload', ['nbi_clearance_expiration' => '2028-01-01'])->assertSessionHasErrors('nbi_clearance');
+        $this->post('/documents/upload', ['latitude' => '14.7', 'longitude' => '121.1'])->assertSessionHasErrors('latitude');
         $this->assertSame('documents/soi.pdf', $this->row()->soi);
-        $this->assertSame('2027-06-30', substr((string) $this->row()->nbi_clearance_expiration, 0, 10));
-        // the unchanged date the form sends with every save is not a change
-        $this->post('/documents/upload', ['nbi_clearance_expiration' => '2027-06-30', 'ofr' => $this->pdf()])->assertSessionHasNoErrors();
-        $this->assertNotNull($this->row()->ofr, 'an empty box can still be filled while others wait');
+        $this->assertNull($this->row()->ofr);
+        $this->assertEqualsWithDelta(14.5995, (float) $this->row()->latitude, 0.000001);
 
         // older rows without a status count as waiting, as on the checker's list
         DB::table('personnel_data')->update(['status' => null]);
-        $this->post('/documents/upload', ['soi' => $this->pdf()])->assertSessionHasErrors('soi');
+        $this->post('/documents/upload', ['ofr' => $this->pdf()])->assertSessionHasErrors('ofr');
 
-        // the checker returns the SOI (review clears the file): it can be uploaded again
-        DB::table('personnel_data')->update(['status' => 'rejected', 'soi' => null]);
-        $this->assertStringContainsString('id="f-soi"', $this->get('/upload-documents')->getContent());
-        $this->post('/documents/upload', ['soi' => $this->pdf()])->assertSessionHasNoErrors();
-        $this->assertSame('Pending', $this->row()->status, 'and it goes back for review');
+        // the checker returns the SOI and the pin (the review clears both); the NBI was accepted
+        DB::table('personnel_data')->update(['status' => 'rejected', 'soi' => null, 'latitude' => null, 'longitude' => null]);
+        DB::table('rejected_documents')->insert([
+            ['serial_number' => 'SN-1', 'doc_type' => 'SOI', 'status' => 'rejected'],
+            ['serial_number' => 'SN-1', 'doc_type' => 'Residence Location', 'status' => 'rejected'],
+        ]);
+        $html = $this->get('/upload-documents')->getContent();
+        $this->assertStringContainsString('Your unit checker returned 2 items.', $html);
+        $this->assertStringContainsString('id="f-soi"', $html, 'the returned document opens');
+        $this->assertStringNotContainsString('id="f-nbi_clearance"', $html, 'the accepted document stays locked');
+        $this->assertStringContainsString('id="f-ofr"', $html, 'a never-filled box is open after the review');
+        $this->assertStringContainsString('data-locked="0"', $html, 'the returned pin can be set again');
+        $this->assertDoesNotMatchRegularExpression('/id="submitBtn"[^>]*disabled/', $html);
+        $this->post('/documents/upload', ['nbi_clearance' => $this->pdf()])->assertSessionHasErrors('nbi_clearance');
+        $this->post('/documents/upload', ['soi' => $this->pdf(), 'latitude' => '14.6', 'longitude' => '121.0'])->assertSessionHasNoErrors();
+        $this->assertSame('Pending', $this->row()->status, 'and everything goes back for review');
+        $this->assertSame('documents/nbi.pdf', $this->row()->nbi_clearance);
 
-        // after an approval, a document can be replaced (e.g. a renewed clearance)
+        // fully accepted: locked, Save disabled, an expired clearance opens for renewal
         DB::table('personnel_data')->update(['status' => 'approved']);
-        $this->post('/documents/upload', ['nbi_clearance' => $this->pdf(), 'nbi_clearance_expiration' => '2028-06-30'])->assertSessionHasNoErrors();
-        $this->assertSame('2028-06-30', substr((string) $this->row()->nbi_clearance_expiration, 0, 10));
+        foreach (['ofr', 'ombudsman_clearance', 'sandiganbayan_clearance', 'medical_clearance', 'pft_clearance', 'photo_2x2', 'whole_body_picture', 'residential_sketch'] as $f) {
+            DB::table('personnel_data')->update([$f => 'documents/' . $f . '.pdf']);
+        }
+        $html = $this->get('/upload-documents')->getContent();
+        $this->assertStringContainsString('Your unit checker accepted your documents.', $html);
+        $this->assertMatchesRegularExpression('/id="submitBtn"[^>]*disabled/', $html);
+        $this->post('/documents/upload', ['latitude' => '14.7', 'longitude' => '121.1'])->assertSessionHasErrors('latitude');
+        DB::table('personnel_data')->update(['nbi_clearance_expiration' => '2020-01-01']);
+        $this->assertStringContainsString('id="f-nbi_clearance"', $this->get('/upload-documents')->getContent());
+        $this->post('/documents/upload', ['nbi_clearance' => $this->pdf(), 'nbi_clearance_expiration' => '2029-01-01'])->assertSessionHasNoErrors();
         $this->assertSame('Pending', $this->row()->status);
     }
 

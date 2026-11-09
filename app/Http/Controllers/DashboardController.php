@@ -490,10 +490,8 @@ class DashboardController extends Controller
 
         $serial = $user->serial_number;
 
-        // ✅ Get existing record (ONLY ONE)
-        $documents = DB::table('personnel_data')
-            ->where('serial_number', $serial)
-            ->first();
+        // the same record the save uses (App\Support\DocumentReview::rowFor)
+        $documents = \App\Support\DocumentReview::rowFor($user);
 
         $personal = DB::table('reinlist_basic_info')
             ->where('serial_number', $serial)
@@ -502,7 +500,8 @@ class DashboardController extends Controller
         return view('applicant.upload-documents', [
             'user' => $user,
             'documents' => $documents,
-            'personal' => $personal
+            'personal' => $personal,
+            'returned' => \App\Support\DocumentReview::returned((string) $serial),
         ]);
     }
 

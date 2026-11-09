@@ -29,6 +29,7 @@
             }
         });
         count.classList.remove('is-warn');
+        if (count.getAttribute('data-locked-text')) { count.textContent = count.getAttribute('data-locked-text'); return; } // review lock
         var c = changedFields();
         count.textContent = n ? n + (n === 1 ? ' file' : ' files') + ' ready to upload' : (c ? 'Changes ready to save' : 'No new files chosen');
     }
@@ -80,7 +81,8 @@
     window.addEventListener('pageshow', function () {
         overlay.classList.remove('is-on');
         overlay.hidden = true;
-        document.getElementById('submitBtn').disabled = false;
+        var sb = document.getElementById('submitBtn');
+        sb.disabled = sb.hasAttribute('data-locked'); // stays locked while under review or fully accepted
         refresh();
     });
 
@@ -93,7 +95,9 @@
     var lng = saved ? parseFloat(mapEl.getAttribute('data-lng')) : 122.56;
     var map = L.map('map').setView([lat, lng], saved ? 15 : 6);
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '&copy; OpenStreetMap' }).addTo(map);
-    var marker = L.marker([lat, lng], { draggable: true }).addTo(map);
+    var locked = mapEl.getAttribute('data-locked') === '1'; // review lock: show the pin, no moving it
+    var marker = L.marker([lat, lng], { draggable: !locked }).addTo(map);
+    if (!saved && locked) marker.remove();
     function setCoords(a, b) {
         latIn.value = a; lngIn.value = b;
         document.getElementById('coords').textContent = 'Pinned at ' + a.toFixed(6) + ', ' + b.toFixed(6);
@@ -101,6 +105,7 @@
     }
     // show the saved pin without rewriting the saved numbers
     document.getElementById('coords').textContent = saved ? 'Pinned at ' + lat.toFixed(6) + ', ' + lng.toFixed(6) : 'Not pinned yet.';
+    if (locked) return;
     marker.on('dragend', function () { var p = marker.getLatLng(); setCoords(p.lat, p.lng); });
     map.on('click', function (e) { marker.setLatLng(e.latlng); setCoords(e.latlng.lat, e.latlng.lng); });
     if (L.Control.geocoder) {

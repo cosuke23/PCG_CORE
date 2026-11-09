@@ -26,6 +26,14 @@
 .ud-secure i { color: var(--ud-accent); margin-top: 3px; }
 .ud-review { display: flex; gap: 12px; align-items: flex-start; margin: 0; padding: 12px 14px; border: 1px solid #c9c2ef; background: var(--ud-review-soft); border-radius: 12px; color: #2f2a5c; font-size: .93rem; }
 .ud-review i { color: var(--ud-review); margin-top: 3px; }
+.ud-review--returned { border-color: #f5c2bd; background: var(--ud-bad-soft); color: #6d1a12; }
+.ud-review--returned i { color: var(--ud-bad); }
+.ud-review--done { border-color: #b7e0c4; background: var(--ud-ok-soft); color: #14532d; }
+.ud-review--done i { color: var(--ud-ok); }
+/* the checker's reason, on the returned box itself */
+.ud-returned { margin: 0; padding: 10px 12px; border-left: 3px solid var(--ud-bad); border-radius: 0 8px 8px 0; background: var(--ud-bad-soft); color: #6d1a12; font-size: .88rem; overflow-wrap: anywhere; }
+.ud-note .fa-lock { color: var(--ud-review); margin-right: 4px; }
+#submitBtn[disabled] { opacity: .5; cursor: not-allowed; }
 
 /* uploaded and waiting for the unit checker: no upload control until the checker acts */
 .ud-locked { display: grid; grid-template-columns: auto 1fr; column-gap: 12px; align-items: center; padding: 12px 14px; border-radius: 10px; background: #f3f5f9; border: 1px solid var(--ud-line); color: var(--ud-muted); }
