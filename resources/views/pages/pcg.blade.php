@@ -105,11 +105,28 @@
     <main id="main">
         {{-- hero: the official banner shown whole, the headline in the band below --}}
         <section class="ph-hero" id="top" aria-labelledby="hero-title">
+            {{-- The official banner, shown whole. Each command's panel is a layer cut from the
+                 same picture (css/pcg-home.css "command panels"): on hover or focus it zooms,
+                 the other two dim, its title lifts with a glow and a light sweep, and a link
+                 slides up. Without CSS the picture alone remains. --}}
             <div class="ph-hero__banner">
-                <img src="{{ asset('images/pcg/commands-banner-2400.jpg') }}"
-                     srcset="{{ asset('images/pcg/commands-banner-1200.jpg') }} 1200w, {{ asset('images/pcg/commands-banner-2400.jpg') }} 2400w" sizes="100vw"
-                     width="2400" height="1200" fetchpriority="high"
-                     alt="Official Philippine Coast Guard banner of its three functional commands: MSSC, MEPCOM and MARSLEC">
+                <div class="ph-cmds">
+                    <img src="{{ asset('images/pcg/commands-banner-2400.jpg') }}"
+                         srcset="{{ asset('images/pcg/commands-banner-1200.jpg') }} 1200w, {{ asset('images/pcg/commands-banner-2400.jpg') }} 2400w" sizes="100vw"
+                         width="2400" height="1200" fetchpriority="high"
+                         alt="Official Philippine Coast Guard banner of its three functional commands: MSSC, MEPCOM and MARSLEC">
+                    @foreach ([
+                        ['mssc', 'MSSC', 'Maritime Safety Services Command', '#structure', 'View in the structure'],
+                        ['mepcom', 'MEPCOM', 'Marine Environmental Protection Command', route('mepcom'), 'Open MEPCOM HRMIS'],
+                        ['marslec', 'MARSLEC', 'Maritime Security and Law Enforcement Command', '#structure', 'View in the structure'],
+                    ] as [$key, $code, $name, $href, $action])
+                        <a class="ph-cmd ph-cmd--{{ $key }}" href="{{ $href }}" aria-label="{{ $name }} ({{ $code }}): {{ $action }}">
+                            <span class="ph-cmd__img" aria-hidden="true"></span>
+                            <span class="ph-cmd__title" aria-hidden="true"></span>
+                            <span class="ph-cmd__chip" aria-hidden="true"><strong>{{ $code }}</strong> {{ $action }} <i class="fa-solid fa-arrow-right"></i></span>
+                        </a>
+                    @endforeach
+                </div>
             </div>
             <div class="ph-hero__band">
                 <div class="ph-wrap ph-hero__in" data-ph-reveal="hero">
