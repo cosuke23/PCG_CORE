@@ -20,14 +20,21 @@
         6 => 'Awards and career',
     ];
     $soiName = trim(($user->rank ?? '') . ' ' . ($user->name ?? ''));
+    // submitted SOI: every step read-only (App\Support\SoiLock, owner decision 2026-11-09)
+    $soiSubmittedAt = \App\Support\SoiLock::submittedAt($user);
 @endphp
 
 @section('content')
-    <div class="pcg-page soi" x-data="formData()">
+    <div class="pcg-page soi {{ $soiSubmittedAt ? 'soi--locked' : '' }}" x-data="formData()" id="soi-root"
+        data-soi-locked="{{ $soiSubmittedAt ? '1' : '0' }}" data-soi-message="{{ \App\Support\SoiLock::MESSAGE }}">
         <div class="pcg-page__header">
             <div>
                 <h2>{{ $soiName !== '' ? $soiName . ': ' : '' }}Statement of Information</h2>
-                <p>Six steps. <strong>Next step</strong> saves the step you are on; you can open any step again from the list.</p>
+                @if ($soiSubmittedAt)
+                    <p>Submitted on <time class="pcg-num">{{ $soiSubmittedAt->timezone('Asia/Manila')->format('d M Y, h:i A') }}</time>. Read-only: use the list or <strong>Next</strong> to look through the six steps.</p>
+                @else
+                    <p>Six steps. <strong>Next step</strong> saves the step you are on; you can open any step again from the list. The last step submits the SOI.</p>
+                @endif
             </div>
             @if ($profile)
                 <a class="pcg-btn pcg-btn--secondary pcg-btn--sm" href="{{ route('profile') }}">
@@ -35,6 +42,14 @@
                 </a>
             @endif
         </div>
+
+        @if ($soiSubmittedAt)
+            <p class="soi-submitted-note" role="status">
+                <i class="fa-solid fa-lock" aria-hidden="true"></i>
+                <span><strong>Your SOI has been submitted and can no longer be edited.</strong>
+                    To change anything, contact your Adjutant or HR Unit Admin; they can reopen it for you.</span>
+            </p>
+        @endif
 
         <nav class="soi-stepper" aria-label="SOI steps">
             <ol>
@@ -1593,9 +1608,13 @@
                 <button type="button" x-show="step === 5" x-cloak @click="saveStep5($el)" class="pcg-btn pcg-btn--cta">
                     Next step <i class="fa-solid fa-arrow-right" aria-hidden="true"></i>
                 </button>
-                <button type="button" x-show="step === 6" x-cloak @click="saveStep6($el)" class="pcg-btn pcg-btn--cta">
-                    <i class="fa-solid fa-check" aria-hidden="true"></i> Save SOI
-                </button>
+                @if ($soiSubmittedAt)
+                    <span x-show="step === 6" x-cloak class="pcg-badge pcg-badge--success soi-submitted-badge"><i class="fa-solid fa-lock" aria-hidden="true"></i> Submitted</span>
+                @else
+                    <button type="button" x-show="step === 6" x-cloak @click="saveStep6($el)" class="pcg-btn pcg-btn--cta">
+                        <i class="fa-solid fa-check" aria-hidden="true"></i> Save and submit SOI
+                    </button>
+                @endif
             </div>
         </form>
     </div>
@@ -2060,6 +2079,18 @@
                 },
                 // STEP 6 SAVE
                 async saveStep6(btn) {
+                    // last step: the member confirms, then the SOI is saved and submitted (read-only from then on)
+                    const sure = await Swal.fire({
+                        icon: 'question',
+                        title: 'Is the data you entered correct?',
+                        text: 'Once you submit, you cannot edit your SOI any more. Only the Adjutant and the HR Admin of your unit can make changes.',
+                        showCancelButton: true,
+                        confirmButtonText: 'Yes, submit my SOI',
+                        cancelButtonText: 'No, return to my SOI',
+                        reverseButtons: true,
+                        focusCancel: true
+                    });
+                    if (!sure.isConfirmed) return;
                     if (btn && window.pcgBusy) window.pcgBusy(btn, true);
 
                     try {
@@ -2103,15 +2134,21 @@
 
                             if (data.status === 'success') {
 
-                                Swal.fire({
-                                    icon: 'success',
-                                    title: 'Step 6 Saved!',
-                                    text: data.message,
-                                    timer: 1500,
-                                    showConfirmButton: false
-                                }).then(() => {
-                                    window.location.href = '/dashboard';
+                                // step 6 saved: now submit (locks every step)
+                                const sub = await fetch('/soi/submit', {
+                                    method: 'POST',
+                                    headers: {
+                                        'Accept': 'application/json',
+                                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+                                    }
                                 });
+                                const subData = await sub.json().catch(() => ({}));
+                                if (sub.ok && subData.status === 'success') {
+                                    await Swal.fire({ icon: 'success', title: 'SOI submitted', text: subData.message, confirmButtonText: 'View my SOI' });
+                                    window.location.href = '/profile?edit=1';
+                                } else {
+                                    Swal.fire({ icon: 'error', title: 'Not submitted', text: subData.message || 'Your answers were saved, but the SOI could not be submitted. Please try again.' });
+                                }
 
                             } else {
 
@@ -2335,5 +2372,6 @@
         }
     </script>
     {{-- Alpine starts after the component functions above are defined --}}
+    <script nonce="{{ $cspNonce ?? '' }}" src="{{ \App\Support\Asset::v('js/soi-lock.js') }}" defer></script>{{-- read-only when submitted --}}
     <script nonce="{{ $cspNonce ?? '' }}" src="{{ asset('vendor/alpinejs/alpine-3.14.9.min.js') }}" defer></script>
 @endsection

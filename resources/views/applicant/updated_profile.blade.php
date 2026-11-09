@@ -20,15 +20,26 @@
             <div class="pcg-page__header">
                 <div>
                     <h2>{{ $fullName !== '' ? $fullName : $user->name }}: Statement of Information</h2>
-                    <p>Your SOI as saved. Edit it to bring it up to date, or print it for your unit.</p>
+                    @php($soiSubmittedAt = \App\Support\SoiLock::submittedAt($user))
+                    @if ($soiSubmittedAt)
+                        <p>Submitted on <time class="pcg-num">{{ $soiSubmittedAt->timezone('Asia/Manila')->format('d M Y, h:i A') }}</time> and read-only. To change anything, contact your Adjutant or HR Unit Admin.</p>
+                    @else
+                        <p>Your SOI as saved. Complete the six steps and submit it; once submitted it can no longer be edited.</p>
+                    @endif
                 </div>
                 <div class="soi-summary__actions">
                     <a class="pcg-btn pcg-btn--secondary" href="{{ route('generate.soi') }}">
                         <i class="fa-solid fa-print" aria-hidden="true"></i> Print my SOI
                     </a>
-                    <a class="pcg-btn pcg-btn--cta" href="{{ route('profile', ['edit' => 1]) }}">
-                        <i class="fa-solid fa-pen" aria-hidden="true"></i> Edit SOI
-                    </a>
+                    @if ($soiSubmittedAt)
+                        <a class="pcg-btn pcg-btn--cta" href="{{ route('profile', ['edit' => 1]) }}">
+                            <i class="fa-solid fa-eye" aria-hidden="true"></i> View my SOI
+                        </a>
+                    @else
+                        <a class="pcg-btn pcg-btn--cta" href="{{ route('profile', ['edit' => 1]) }}">
+                            <i class="fa-solid fa-pen" aria-hidden="true"></i> Edit SOI
+                        </a>
+                    @endif
                 </div>
             </div>
 

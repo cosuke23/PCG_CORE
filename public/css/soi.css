@@ -232,3 +232,15 @@
     .soi-summary__pair { grid-template-columns: minmax(0, 1fr); }
     .soi-summary__pair > section + section { border-left: 0; border-top: 1px solid var(--pcg-gray-200); }
 }
+
+/* submitted SOI (App\Support\SoiLock): read-only, with a clear note */
+.soi-submitted-note { display: flex; gap: var(--pcg-space-3); align-items: flex-start; margin: 0; padding: var(--pcg-space-3) var(--pcg-space-4);
+    border: 1px solid #b7e0c4; border-radius: 12px; background: var(--pcg-success-50); color: var(--pcg-success-700); }
+.soi-submitted-note i { margin-top: 3px; }
+.soi-submitted-note strong { color: var(--pcg-text); }
+.soi--locked .soi-form input:not([type=hidden]), .soi--locked .soi-form textarea, .soi--locked .soi-form select {
+    background: var(--pcg-gray-100); color: var(--pcg-text); cursor: not-allowed; }
+.soi--locked .soi-form select { appearance: none; -webkit-appearance: none; }
+.soi--locked .soi-form .soi-add, .soi--locked .soi-form .soi-remove,
+.soi--locked .soi-form section button { opacity: .55; cursor: not-allowed; }
+.soi-submitted-badge { min-height: 44px; padding-inline: var(--pcg-space-4); gap: 6px; font-size: var(--pcg-text-sm); }

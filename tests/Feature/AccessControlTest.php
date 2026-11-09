@@ -34,6 +34,8 @@ class AccessControlTest extends TestCase
             ['get', '/admin/hrmis'],
             ['post', '/admin/hrmis/export'],
             ['get', '/admin/adjutant'],
+            ['get', '/admin/soi'],
+            ['post', '/admin/soi/1/reopen'],
             ['get', '/admin/adjutant/1'],
             ['post', '/admin/adjutant/1/awards'],
             ['post', '/admin/adjutant/1/awards/1/delete'],
@@ -93,6 +95,7 @@ class AccessControlTest extends TestCase
             ['get', '/upload-201'],
             ['post', '/upload-201'],
             ['post', '/temp-save/step1'],
+            ['post', '/soi/submit'],
             ['get', '/generate-soi'],
             ['get', '/applicant/operational-training'],
         ];
