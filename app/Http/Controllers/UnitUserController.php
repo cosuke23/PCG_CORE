@@ -128,13 +128,7 @@ class UnitUserController extends Controller
             ->orderBy('pd.created_at', 'desc')
             ->get();
 
-        $stats = [
-            'total' => $documents->count(),
-            'Pending' => $documents->where('status', 'Pending')->count(),
-            'Approved' => $documents->where('status', 'Approved')->count(),
-        ];
-
-        return view('unit.dashboard', compact('documents', 'stats'));
+        return view('unit.dashboard', compact('documents'));
     }
     public function dashboardM1()
     {
@@ -149,8 +143,7 @@ class UnitUserController extends Controller
                 'pd.*',
                 'u.name as applicant_name',
                 'u.serial_number',
-
-                // ✅ ADD THESE
+                'u.mother_unit',
                 'pd.nbi_clearance_expiration',
                 'pd.ombudsman_clearance_expiration',
                 'pd.sandiganbayan_clearance_expiration'
@@ -158,13 +151,7 @@ class UnitUserController extends Controller
             ->orderBy('pd.created_at', 'desc')
             ->get();
 
-        $stats = [
-            'total' => $documents->count(),
-            'Pending' => $documents->where('status', 'Pending')->count(),
-            'Approved' => $documents->where('status', 'Approved')->count(),
-        ];
-
-        return view('unit.dashboard_m1', compact('documents', 'stats'));
+        return view('unit.dashboard_m1', compact('documents'));
     }
     public function searchSerial($serial)
     {

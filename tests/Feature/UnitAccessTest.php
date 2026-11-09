@@ -192,14 +192,19 @@ class UnitAccessTest extends TestCase
 
     public function test_review_windows_list_every_document_and_the_location()
     {
+        // both pages use one review partial and one script
         foreach (['unit/dashboard', 'unit/dashboard_m1'] as $view) {
-            $src = file_get_contents(resource_path("views/$view.blade.php"));
-            foreach (['soi', 'ofr', 'nbi_clearance', 'ombudsman_clearance', 'sandiganbayan_clearance', 'medical_clearance',
-                'pft_clearance', 'photo_2x2', 'whole_body_picture', 'residential_sketch'] as $f) {
-                $this->assertStringContainsString("doc.$f, '$f']", $src, "$view reviews $f");
-            }
-            $this->assertStringContainsString('name="docs[location][checked]"', $src, "$view can return the location");
+            $this->assertStringContainsString("@include('unit.partials.review'", file_get_contents(resource_path("views/$view.blade.php")));
         }
+        $partial = file_get_contents(resource_path('views/unit/partials/review.blade.php'));
+        foreach (['soi', 'ofr', 'nbi_clearance', 'ombudsman_clearance', 'sandiganbayan_clearance', 'medical_clearance',
+            'pft_clearance', 'photo_2x2', 'whole_body_picture', 'residential_sketch'] as $f) {
+            $this->assertStringContainsString("'$f' =>", $partial, "the review lists $f");
+        }
+        $js = file_get_contents(public_path('js/unit-checker.js'));
+        $this->assertStringContainsString("'docs[' + it.field + '][checked]'", $js);
+        $this->assertStringContainsString("field: 'location'", $js, 'the location can be returned');
+        $this->assertStringNotContainsString('innerHTML', $js, 'server data is placed with textContent only');
     }
 
     public function test_m1_checker_can_review_any_unit()

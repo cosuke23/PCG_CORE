@@ -18,7 +18,7 @@ body.pcg-app {
     --c-line-soft: #e6ecf2;
     --c-text: #0b1626;
     --c-muted: #4b5b70;
-    --c-faint: #6b7a8e;
+    --c-faint: #5d6c80; /* 5.4:1 on white (was 4.4:1) */
     --c-accent: #0e7490;
     --c-accent-strong: #0b5f76;
     --c-accent-ink: #ffffff;
@@ -414,3 +414,14 @@ body.pcg-app {
     .pcg-app .pcg-sidebar, .pcg-navbar__collapse i, .pcg-navbar__chev { transition: none !important; }
 }
 .pcg-navbar__menu-head .pcg-navbar__avatar { color: var(--c-accent-ink); font-size: .95rem; overflow-wrap: normal; }
+
+/* design rules (2026-11-09): the console's one accent is its cyan */
+body.pcg-app {
+    --pcg-accent: var(--c-accent);
+    --pcg-accent-soft: var(--c-accent-soft);
+    --pcg-accent-ink: var(--c-accent-ink);
+    --pcg-text-faint: var(--c-faint);
+}
+.pcg-app .pcg-btn--cta { box-shadow: 0 6px 16px var(--c-accent-soft); }
+.pcg-app .pcg-btn--cta:hover { background: var(--c-accent-strong); border-color: var(--c-accent-strong); }
+.pcg-app .pcg-skeleton { background: linear-gradient(90deg, var(--c-surface-2) 25%, var(--c-line-soft) 37%, var(--c-surface-2) 63%); background-size: 400% 100%; }

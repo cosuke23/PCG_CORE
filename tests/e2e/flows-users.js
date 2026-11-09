@@ -34,34 +34,42 @@ async function step(name, fn) {
 
   // ---------------- unit checker: reject + approve documents ----------------
   const unit = await login(browser, '/unit/login', 'unit@demo.test', 'Demo@12345');
+  // open a record in the review dialog (the list starts on "Waiting"; show all first)
+  const openRecord = async (page, serial) => {
+    await page.click('[data-uc-filter="all"]');
+    await page.locator('.uc-table tr', { hasText: serial }).first().getByRole('button', { name: /Review/ }).click();
+    await page.waitForSelector('#uc-dialog[open] #uc-items .uc-item', { timeout: 5000 });
+  };
   await step('Unit checker rejects a document with a comment', async () => {
     const serial = sql("select pd.serial_number from personnel_data pd join users u on u.serial_number=pd.serial_number where u.mother_unit='MEPLEF' order by pd.id limit 1");
     await unit.goto(BASE + '/unit/dashboard');
-    await unit.locator('tr', { hasText: serial }).first().dblclick();
-    await unit.waitForSelector('#doc_box input[name="docs[nbi_clearance][checked]"]', { state: 'visible', timeout: 5000 });
-    await unit.check('#doc_box input[name="docs[nbi_clearance][checked]"]');
-    await unit.fill('#doc_box [name="docs[nbi_clearance][comment]"]', 'Flow test: NBI clearance is blurred');
-    await unit.click('button:has-text("❌ REJECT")');
-    await unit.click('.swal2-confirm').catch(() => {});
-    await unit.waitForLoadState('networkidle'); await unit.waitForTimeout(500);
+    await openRecord(unit, serial);
+    const items = await unit.locator('#uc-items .uc-item').count();
+    check('Own-unit review lists all 10 documents and the location', items === 11, 'items=' + items);
+    check('Approve is the call to action', await unit.isEnabled('#uc-approve-btn') && !(await unit.isEnabled('#uc-return-btn')));
+    await unit.check('#uc-ret-nbi_clearance');
+    check('Ticking an item enables "Return 1 item" and blocks approval',
+      (await unit.textContent('#uc-return-btn')).includes('Return 1 item') && !(await unit.isEnabled('#uc-approve-btn')));
+    // an empty comment is refused in the page: the member must know what to fix
+    await unit.click('#uc-return-btn');
+    check('Returning needs a comment', await unit.locator('#uc-dialog[open]').count() === 1);
+    if (process.env.PCG_E2E_SHOTS) await unit.screenshot({ path: process.env.PCG_E2E_SHOTS + '/unit-review.png' });
+    await unit.fill('#uc-com-nbi_clearance', 'Flow test: NBI clearance is blurred');
+    await Promise.all([unit.waitForNavigation(), unit.click('#uc-return-btn')]);
     const r = sql(`select concat(doc_type,'|',status) from rejected_documents where serial_number='${serial}' and comment like 'Flow test%'`);
     check('Unit checker rejects a document with a comment', r === 'NBI Clearance|rejected', r || 'no row');
+    check('Specific confirmation shown', (await unit.textContent('.pcg-console__flash')).includes('Returned 1 item to'));
   });
   await step('Unit checker returns the residence location', async () => {
     const serial = sql("select pd.serial_number from personnel_data pd join users u on u.serial_number=pd.serial_number where u.mother_unit='MEPLEF' order by pd.id limit 1");
     sql(`update personnel_data set latitude=14.5995, longitude=120.9842 where serial_number='${serial}'`);
     await unit.goto(BASE + '/unit/dashboard');
-    await unit.locator('tr', { hasText: serial }).first().dblclick();
-    await unit.waitForSelector('#coords input[name="docs[location][checked]"]', { state: 'visible', timeout: 5000 });
-    const docs = await unit.locator('#doc_box .doc-check').count();
-    check('Own-unit review lists all 10 documents', docs === 10, 'boxes=' + docs);
-    check('Location card links to Google Maps', (await unit.getAttribute('#coords a', 'href')) === 'https://www.google.com/maps?q=14.5995,120.9842');
-    if (process.env.PCG_E2E_SHOTS) await unit.locator('#coords').screenshot({ path: process.env.PCG_E2E_SHOTS + '/location-review.png' });
-    await unit.check('#coords input[name="docs[location][checked]"]');
-    await unit.fill('#coords [name="docs[location][comment]"]', 'Flow test: pin the house, not the barangay hall');
-    await unit.click('button:has-text("❌ REJECT")');
-    await unit.click('.swal2-confirm').catch(() => {});
-    await unit.waitForLoadState('networkidle'); await unit.waitForTimeout(500);
+    await openRecord(unit, serial);
+    await unit.locator('#uc-items .uc-item', { hasText: 'Residence location' }).locator('.uc-item__pick').click();
+    check('Location links to Google Maps', (await unit.getAttribute('#uc-v-frame a', 'href')) === 'https://www.google.com/maps?q=14.5995,120.9842');
+    await unit.check('#uc-ret-location');
+    await unit.fill('#uc-com-location', 'Flow test: pin the house, not the barangay hall');
+    await Promise.all([unit.waitForNavigation(), unit.click('#uc-return-btn')]);
     const r = sql(`select concat(doc_type,'|',status) from rejected_documents where serial_number='${serial}' and comment like 'Flow test: pin%'`);
     const pin = sql(`select coalesce(latitude,'none') from personnel_data where serial_number='${serial}'`);
     check('Unit checker returns the residence location', r === 'Residence Location|rejected' && pin === 'none', r + ' pin=' + pin);
@@ -69,12 +77,11 @@ async function step(name, fn) {
   await step('Unit checker approves documents', async () => {
     const serial = sql("select pd.serial_number from personnel_data pd join users u on u.serial_number=pd.serial_number where u.mother_unit='MEPLEF' order by pd.id desc limit 1");
     await unit.goto(BASE + '/unit/dashboard');
-    await unit.locator('tr', { hasText: serial }).first().dblclick();
-    await unit.click('button:has-text("✔ ACCEPT")');
-    await unit.click('.swal2-confirm').catch(() => {});
-    await unit.waitForLoadState('networkidle'); await unit.waitForTimeout(500);
+    await openRecord(unit, serial);
+    await Promise.all([unit.waitForNavigation(), unit.click('#uc-approve-btn')]);
     const st = sql(`select status from personnel_data where serial_number='${serial}'`);
     check('Unit checker approves documents', st.toLowerCase() === 'approved', st);
+    check('Decided row is highlighted', await unit.locator('.uc-table tr.pcg-flash-row', { hasText: serial }).count() === 1);
   });
   check('No JS errors (unit)', unit.jsErrors.length === 0, unit.jsErrors.slice(0, 2).join(' | '));
 
@@ -82,13 +89,24 @@ async function step(name, fn) {
   const m1 = await login(browser, '/unit/loginM1', 'm1@demo.test', 'Demo@12345');
   await step('M1 uploads a disciplinary record', async () => {
     await m1.goto(BASE + '/unit/dashboardM1');
-    await m1.fill('#serialInput', 'DEMO-0003');
-    await m1.locator('#serialInput ~ button, #serialInput + * button, button:near(#serialInput)').first().click();
-    await m1.waitForSelector('#serialModal:not(.hidden)', { timeout: 5000 });
-    await m1.setInputFiles('#serialModal input[name="disciplinary_files[]"]', PDF);
-    await Promise.all([m1.waitForNavigation(), m1.locator('#serialModal button[type=submit]').click()]);
+    check('M1 review shows the unit column', (await m1.textContent('.uc-table thead')).includes('Unit'));
+    await m1.fill('#uc-serial-input', 'DEMO-0003');
+    await m1.click('#uc-serial-form button[type=submit]');
+    await m1.waitForSelector('#uc-disc-form:not([hidden])', { timeout: 5000 });
+    await m1.setInputFiles('#uc-disc-form input[name="disciplinary_files[]"]', PDF);
+    await Promise.all([m1.waitForNavigation(), m1.click('#uc-disc-form button[type=submit]')]);
     const n = sql("select count(*) from reinlist_disciplinary_actions where serial_number='DEMO-0003'");
     check('M1 uploads a disciplinary record', n === '1', `rows=${n}`);
+  });
+  await step('M1 opens a 201 file', async () => {
+    await m1.goto(BASE + '/unit/201-files');
+    const first = m1.locator('[data-uf-open]').first();
+    if (await first.count()) {
+      await first.click();
+      await m1.waitForSelector('#uf-dialog[open] #uf-items .uc-item', { timeout: 5000 });
+      check('M1 opens a 201 file', (await m1.locator('#uf-items .uc-item').count()) === 11);
+      await m1.click('#uf-dialog [data-uc-close]');
+    } else check('M1 opens a 201 file', true, 'no 201 files in the seed');
   });
   check('No JS errors (M1)', m1.jsErrors.length === 0, m1.jsErrors.slice(0, 2).join(' | '));
 
