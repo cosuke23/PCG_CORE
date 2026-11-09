@@ -207,6 +207,28 @@ class UnitAccessTest extends TestCase
         $this->assertStringNotContainsString('innerHTML', $js, 'server data is placed with textContent only');
     }
 
+    public function test_queue_leaves_out_records_with_nothing_to_review()
+    {
+        Schema::create('reinlist_personal_info', function (Blueprint $t) {
+            $t->id(); $t->string('serial_number')->nullable();
+        });
+        Schema::table('personnel_data', function (Blueprint $t) {
+            foreach (['nbi_clearance_expiration', 'ombudsman_clearance_expiration', 'sandiganbayan_clearance_expiration'] as $c) {
+                $t->date($c)->nullable();
+            }
+        });
+        // SN-A was cleared (pcg:reset-documents): returned, no documents, no pin
+        DB::table('personnel_data')->where('serial_number', 'SN-A')->update(['nbi_clearance' => null, 'status' => 'rejected']);
+
+        $html = $this->withSession($this->m1)->get('/unit/dashboardM1')->assertOk()->getContent();
+        $this->assertStringContainsString('SN-B', $html, 'a record with documents is listed');
+        $this->assertStringNotContainsString('SN-A', $html, 'an empty record waits for the member, not the checker');
+
+        // once the member uploads again it is back
+        DB::table('personnel_data')->where('serial_number', 'SN-A')->update(['nbi_clearance' => 'documents/a.pdf', 'status' => 'Pending']);
+        $this->assertStringContainsString('SN-A', $this->get('/unit/dashboardM1')->getContent());
+    }
+
     public function test_m1_checker_can_review_any_unit()
     {
         $this->withSession($this->m1)

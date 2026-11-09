@@ -50,7 +50,11 @@
             'items' => $items,
             'pin' => $lat !== null && $lng !== null ? ['lat' => $lat, 'lng' => $lng] : null,
         ];
-    })->values();
+    })
+        // nothing to review: no document and no pin (e.g. cleared with pcg:reset-documents,
+        // or every item returned). The record comes back when the member uploads again.
+        ->filter(fn ($r) => $r['count'] > 0 || $r['pin'] !== null)
+        ->values();
     $counts = ['all' => $rows->count(), 'waiting' => $rows->where('status', 'waiting')->count(),
         'returned' => $rows->where('status', 'returned')->count(), 'approved' => $rows->where('status', 'approved')->count()];
     $statusText = ['waiting' => 'Waiting', 'returned' => 'Returned', 'approved' => 'Approved'];
