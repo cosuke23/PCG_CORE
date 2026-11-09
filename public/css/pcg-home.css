@@ -100,13 +100,13 @@ body.ph { margin: 0; font: 16px/1.6 var(--ph-sans); color: var(--ph-ink); backgr
 .ph-cmd__chip strong { color: var(--ph-gold-300); letter-spacing: .06em; }
 .ph-cmd--mepcom .ph-cmd__chip { background: var(--ph-gold-400); color: var(--ph-crimson-950); box-shadow: 0 10px 24px rgba(0, 0, 0, .35); }
 .ph-cmd--mepcom .ph-cmd__chip strong { color: var(--ph-crimson-900); }
-.ph-cmd::before { content: ""; position: absolute; inset: 0; z-index: 2; pointer-events: none; box-shadow: inset 0 0 0 0 var(--ph-gold-400); transition: box-shadow .4s ease; }
+.ph-cmd::before { content: ""; position: absolute; inset: 0; z-index: 2; pointer-events: none; box-shadow: inset 0 0 0 0 var(--ph-crimson-700); transition: box-shadow .4s ease; }
 
 @media (hover: hover) {
     .ph-cmds:hover .ph-cmd:not(:hover), .ph-cmds:focus-within .ph-cmd:not(:focus-visible):not(:hover) { filter: brightness(.5) saturate(.55); }
 }
 .ph-cmd:hover, .ph-cmd:focus-visible { z-index: 1; filter: brightness(1.08) saturate(1.1); }
-.ph-cmd:hover::before, .ph-cmd:focus-visible::before { box-shadow: inset 0 0 0 3px var(--ph-gold-400); }
+.ph-cmd:hover::before, .ph-cmd:focus-visible::before { box-shadow: inset 0 0 0 4px var(--ph-crimson-700); }
 .ph-cmd:hover .ph-cmd__img, .ph-cmd:focus-visible .ph-cmd__img { transform: scale(1.06); }
 .ph-cmd:hover .ph-cmd__title, .ph-cmd:focus-visible .ph-cmd__title { transform: translateY(-6%) scale(1.1); filter: drop-shadow(0 0 14px rgba(255, 214, 150, .55)) brightness(1.18); }
 .ph-cmd:hover .ph-cmd__title::after, .ph-cmd:focus-visible .ph-cmd__title::after { animation: ph-cmd-sweep 1.1s ease .15s both; }
