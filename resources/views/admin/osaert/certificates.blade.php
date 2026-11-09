@@ -254,49 +254,18 @@
             font-weight: 600;
         }
 
+        /* on-screen toolbar only (hidden in print): design-system buttons from pcg-ui.css */
         .action-bar {
             position: sticky;
             top: 0;
             z-index: 100;
             background: #ffffff;
-            padding: 15px 20px;
+            padding: 12px 20px;
             border-bottom: 1px solid #d1d5db;
             display: flex;
+            flex-wrap: wrap;
             justify-content: center;
-            gap: 10px;
-        }
-
-        .action-button {
-            display: inline-flex;
-            align-items: center;
-            padding: 10px 20px;
-            border: none;
-            border-radius: 8px;
-            color: #ffffff;
-            font-size: 14px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: background 0.2s ease;
-        }
-
-        .print-button {
-            background: #7e22ce;
-        }
-
-        .print-button:hover {
-            background: #6b21a8;
-        }
-
-        .close-button {
-            background: #4b5563;
-        }
-
-        .close-button:hover {
-            background: #374151;
-        }
-
-        .action-button i {
-            margin-right: 8px;
+            gap: 8px;
         }
 
         @media print {
@@ -327,6 +296,7 @@
             }
         }
     </style>
+    <link rel="stylesheet" href="{{ \App\Support\Asset::v('css/pcg-ui.css') }}">
     <script nonce="{{ $cspNonce ?? '' }}" src="{{ \App\Support\Asset::v('js/pcg-ui.js') }}" defer></script>
 </head>
 
@@ -337,15 +307,15 @@
 
             <button type="button"
                     data-on-click="pcg.print"
-                    class="action-button print-button">
-                <i class="fas fa-print"></i>
+                    class="pcg-btn pcg-btn--primary">
+                <i class="fa-solid fa-print" aria-hidden="true"></i>
                 Print / Save as PDF
             </button>
 
             <button type="button"
                     data-on-click="pcg.close"
-                    class="action-button close-button">
-                <i class="fas fa-times"></i>
+                    class="pcg-btn pcg-btn--secondary">
+                <i class="fa-solid fa-xmark" aria-hidden="true"></i>
                 Close
             </button>
 

@@ -1,142 +1,87 @@
-@extends('layouts.app')
+@extends('layouts.landing')
 
-@section('title', 'About Us')
+@section('title', 'About MEPCOM · MEPCOM HRMIS')
+@section('description', 'Who we are: the Philippine Coast Guard and its Marine Environmental Protection Command, the vision and mission, the MEPCOM magazine and the team behind MEPCOM HRMIS.')
 
 @section('content')
-<!-- Hero Section -->
-<section class="relative w-full h-[60vh] bg-cover bg-center flex items-center justify-center"
-         style="background-image: url('{{ asset('images/pcg_ship.jpg') }}');">
-    <div class="absolute inset-0 bg-blue-900/70"></div>
-    <div class="relative z-10 text-center text-white px-6">
-        <h1 class="text-5xl font-extrabold mb-4">About the Philippine Coast Guard</h1>
-        <p class="text-lg max-w-2xl mx-auto">
-            Upholding safety, security, and maritime excellence — serving our nation with honor and integrity.
-        </p>
-    </div>
-</section>
-<!-- News and Magazine Section -->
-<section class="bg-blue-900 py-16">
-    <div class="max-w-6xl mx-auto px-6 lg:px-8 text-center">
-        <h2 class="text-4xl font-bold text-white mb-8">News & Magazine</h2>
-        <p class="text-blue-200 mb-12">
-            Stay updated with the latest news, features, and publications from the Philippine Coast Guard.
-        </p>
+    <section class="lp-pagehead" aria-labelledby="about-title">
+        <div class="lp-wrap">
+            <p class="lp-eyebrow">About</p>
+            <h1 id="about-title">Safety at sea, a protected marine environment, and the people who serve both.</h1>
+            <p class="lp-pagehead__lead">The Philippine Coast Guard is a uniformed service tasked to ensure the safety of lives and property at sea, protect the marine environment, and enforce maritime laws in Philippine waters.</p>
+        </div>
+    </section>
 
-        <a href="https://heyzine.com/flip-book/c35f81ef4f.html" target="_blank"
-            class="block bg-white rounded-2xl shadow-lg p-10 hover:shadow-2xl transition transform hover:-translate-y-2">
-            <h3 class="text-2xl font-semibold text-blue-900 mb-4">Marine Environmental Protection Command Magazine</h3>
-            <p class="text-gray-700">
-                Click here to read our latest magazine online. Explore news, features, and updates about our missions, events, and activities.
-            </p>
-        </a>
-    </div>
-</section>
-<!-- Content Section -->
-<section class="bg-gray-100 py-16">
-    <div class="max-w-6xl mx-auto px-6 lg:px-8 text-center">
-        <h2 class="text-4xl font-bold text-blue-900 mb-8">Who We Are</h2>
-        <p class="text-gray-700 text-lg leading-relaxed mb-12">
-            The <strong>Philippine Coast Guard</strong> is a uniformed service tasked to ensure the safety of lives and property at sea,
-            protect the marine environment, and enforce maritime laws in Philippine waters.
-            We are committed to excellence, discipline, and service to our country and the Filipino people.
-        </p>
-
-        <!-- Mission Vision Cards -->
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-10 mt-10">
-            <!-- Vision -->
-            <div class="bg-white rounded-2xl shadow-lg p-8 hover:shadow-2xl transition transform hover:-translate-y-2">
-                <h3 class="text-2xl font-semibold text-blue-800 mb-4">Our Vision</h3>
-                <p class="text-gray-600">
-                    A world-class Coast Guard dedicated to maritime safety, security, and environmental protection for a strong and resilient nation.
-                </p>
-            </div>
-
-            <!-- Mission -->
-            <div class="bg-white rounded-2xl shadow-lg p-8 hover:shadow-2xl transition transform hover:-translate-y-2">
-                <h3 class="text-2xl font-semibold text-blue-800 mb-4">Our Mission</h3>
-                <p class="text-gray-600">
-                    To safeguard life and property at sea, enforce maritime laws, and protect the marine environment through professional and disciplined service.
-                </p>
-            </div>
-
-            <!-- Team -->
-            <div class="bg-white rounded-2xl shadow-lg p-8 hover:shadow-2xl transition transform hover:-translate-y-2">
-                <h3 class="text-2xl font-semibold text-blue-800 mb-4">Our Team</h3>
-                <p class="text-gray-600">
-                    Composed of dedicated men and women driven by duty and passion,
-                    united under the core values of Honor, Service, and Patriotism.
-                </p>
+    <section class="lp-section" aria-labelledby="values-title">
+        <div class="lp-wrap">
+            <h2 id="values-title">What we stand for</h2>
+            <p class="lp-lead">We are committed to excellence, discipline, and service to our country and the Filipino people.</p>
+            <div class="lp-cols3">
+                <article class="lp-col">
+                    <h3>Vision</h3>
+                    <p>A world-class Coast Guard dedicated to maritime safety, security, and environmental protection for a strong and resilient nation.</p>
+                </article>
+                <article class="lp-col">
+                    <h3>Mission</h3>
+                    <p>To safeguard life and property at sea, enforce maritime laws, and protect the marine environment through professional and disciplined service.</p>
+                </article>
+                <article class="lp-col">
+                    <h3>People</h3>
+                    <p>Dedicated men and women driven by duty and passion, united under the core values of Honor, Service, and Patriotism.</p>
+                </article>
             </div>
         </div>
-    </div>
-</section>
+    </section>
 
-<!-- Contact CTA -->
-<section class="relative bg-gradient-to-r from-blue-900 to-blue-700 py-16 text-center text-white">
-    <h2 class="text-4xl font-bold mb-4">Get in Touch</h2>
-    <p class="text-lg mb-8">Have questions or need assistance? Reach out to us anytime.</p>
-    <a href="{{ route('contact') }}"
-       class="inline-block bg-orange-500 hover:bg-orange-600 text-white font-semibold px-8 py-3 rounded-full shadow-lg transition transform hover:scale-105">
-       Contact Us
-    </a>
-</section>
-
-<!-- 👨‍💻 Developers Section -->
-<section class="bg-gray-50 py-20" x-data="{ open: false, imageSrc: '' }" x-cloak>
-    <style>
-        [x-cloak] { display: none !important; }
-    </style>
-
-    <div class="max-w-6xl mx-auto px-6 lg:px-8 text-center">
-        <h2 class="text-4xl font-bold text-blue-900 mb-10">Meet the Developers</h2>
-        <p class="text-gray-600 text-lg mb-12 max-w-3xl mx-auto">
-            This system was developed by a dedicated team of innovators committed to digital transformation and modernizing the processes of the Philippine Coast Guard.
-        </p>
-
-        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-10">
-            <!-- Developer 1 -->
-            <div class="bg-white rounded-2xl shadow-lg p-8 hover:shadow-2xl transition transform hover:-translate-y-2">
-                <img
-                    src="{{ asset('images/dev-1.jpg') }}"
-                    alt="Developer 1"
-                    class="w-32 h-32 mx-auto rounded-full object-cover border-4 border-blue-700 mb-4 cursor-pointer"
-                    @click="open = true; imageSrc = '{{ asset('images/dev-1.jpg') }}'">
-                <h3 class="text-xl font-semibold text-blue-800">Julius B. Colminas</h3>
-                <p class="text-gray-500 mb-3">Lead Developer</p>
-                <p class="text-gray-600 text-sm">
-                    Full-stack developer passionate about creating efficient and secure systems to improve Coast Guard operations.
-                </p>
+    <section class="lp-section lp-section--sand" aria-labelledby="mag-title">
+        <div class="lp-wrap lp-split">
+            <div>
+                <p class="lp-eyebrow lp-eyebrow--dark">News and features</p>
+                <h2 id="mag-title">The MEPCOM magazine</h2>
+                <p class="lp-lead">News, features and updates about the Command's missions, events and activities, published online.</p>
             </div>
-
-            <!-- Developer 2 -->
-            <div class="bg-white rounded-2xl shadow-lg p-8 hover:shadow-2xl transition transform hover:-translate-y-2">
-                <img
-                    src="{{ asset('images/dev-2.jpg') }}"
-                    alt="Developer 2"
-                    class="w-32 h-32 mx-auto rounded-full object-cover border-4 border-blue-700 mb-4 cursor-pointer"
-                    @click="open = true; imageSrc = '{{ asset('images/dev-2.jpg') }}'">
-                <h3 class="text-xl font-semibold text-blue-800">Adnan N. Jumdail</h3>
-                <p class="text-gray-500 mb-3">Frontend Developer</p>
-                <p class="text-gray-600 text-sm">
-                    Focused on database management and backend logic ensuring reliability and performance across systems.
-                </p>
-            </div>
+            <a class="lp-btn lp-btn--maroon" href="https://heyzine.com/flip-book/c35f81ef4f.html" target="_blank" rel="noopener">
+                Read the magazine <i class="fa-solid fa-arrow-up-right-from-square" aria-hidden="true"></i>
+            </a>
         </div>
-    </div>
+    </section>
 
-    <!-- Fullscreen Modal -->
-    <div
-        x-show="open"
-        x-cloak
-        x-transition.opacity
-        @click.self="open = false"
-        class="fixed inset-0 bg-black bg-opacity-90 flex items-center justify-center z-50">
-        <img :src="imageSrc" class="max-h-[90vh] max-w-[90vw] rounded-lg shadow-2xl transform transition-transform duration-300 ease-out scale-100 hover:scale-105">
-        <button @click="open = false" class="absolute top-6 right-6 text-white text-4xl font-bold">&times;</button>
-    </div>
-</section>
+    <section class="lp-section" aria-labelledby="dev-title">
+        <div class="lp-wrap">
+            <h2 id="dev-title">Who built MEPCOM HRMIS</h2>
+            <p class="lp-lead">This system was developed by a dedicated team committed to digital transformation and modernizing the processes of the Philippine Coast Guard.</p>
+            <ul class="lp-people">
+                <li class="lp-person">
+                    <button type="button" class="lp-zoom lp-person__photo" data-lp-zoom aria-label="View photo full screen: Julius B. Colminas">
+                        <img src="{{ asset('images/dev-1.jpg') }}" alt="Julius B. Colminas" width="120" height="120" loading="lazy">
+                    </button>
+                    <div>
+                        <h3>Julius B. Colminas</h3>
+                        <p class="lp-person__role">Lead Developer</p>
+                        <p>Full-stack developer passionate about creating efficient and secure systems to improve Coast Guard operations.</p>
+                    </div>
+                </li>
+                <li class="lp-person">
+                    <button type="button" class="lp-zoom lp-person__photo" data-lp-zoom aria-label="View photo full screen: Adnan N. Jumdail">
+                        <img src="{{ asset('images/dev-2.jpg') }}" alt="Adnan N. Jumdail" width="120" height="120" loading="lazy">
+                    </button>
+                    <div>
+                        <h3>Adnan N. Jumdail</h3>
+                        <p class="lp-person__role">Frontend Developer</p>
+                        <p>Focused on database management and backend logic ensuring reliability and performance across systems.</p>
+                    </div>
+                </li>
+            </ul>
+        </div>
+    </section>
 
-<!-- Alpine.js CDN -->
-@php(app()->instance('csp.allow_eval', true)) {{-- Alpine.js needs 'unsafe-eval' on this page only --}}
-<script nonce="{{ $cspNonce ?? '' }}" src="{{ asset('vendor/alpinejs/alpine-3.14.9.min.js') }}" defer></script>
+    <section class="lp-cta" aria-labelledby="cta-title">
+        <div class="lp-wrap lp-cta__in">
+            <div>
+                <h2 id="cta-title">Questions about your records?</h2>
+                <p>Send a message to MEPCOM HR through the contact page.</p>
+            </div>
+            <a class="lp-btn lp-btn--gold" href="{{ route('contact') }}">Contact MEPCOM HR</a>
+        </div>
+    </section>
 @endsection

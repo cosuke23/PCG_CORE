@@ -16,7 +16,7 @@
         root.setAttribute('data-theme', next);
         try { localStorage.setItem('pcgTheme', next); } catch (err) { /* storage off: applies to this page only */ }
         sync();
-        document.dispatchEvent(new CustomEvent('pcg:theme', { detail: next }));
+        document.dispatchEvent(new CustomEvent('pcg:theme', { detail: next, bubbles: true })); // bubbles: listeners on window hear it too
     });
     document.addEventListener('DOMContentLoaded', sync);
 })();

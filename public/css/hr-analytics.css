@@ -1,0 +1,12 @@
+/* HR analytics (admin/hr-analytics): page layout only; colours come from the console tokens. */
+.hra-year { display: flex; align-items: center; gap: var(--pcg-space-2); margin: 0; }
+.hra-year .pcg-label { margin: 0; white-space: nowrap; }
+.pcg-app .hra-year .pcg-input { width: auto; min-width: 120px; }
+.hra-grid {
+    display: grid;
+    gap: var(--pcg-space-4);
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 380px), 1fr));
+}
+.hra-wide { grid-column: 1 / -1; }
+.hra-chart { position: relative; height: 280px; }
+.pcg-app .hra-card-note { margin: var(--pcg-space-1) 0 0; font-size: var(--pcg-text-xs); color: var(--c-faint); }

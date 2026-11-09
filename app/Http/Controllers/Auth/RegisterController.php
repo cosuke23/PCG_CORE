@@ -23,7 +23,10 @@ class RegisterController extends Controller
         // Allowed types
         $allowedTypes = ['non_officer', 'officer'];
 
-        abort_unless(in_array($type, $allowedTypes), 404);
+        // no or unknown type: the sign-in page offers "Register as officer / non-officer"
+        if (!in_array($type, $allowedTypes, true)) {
+            return redirect()->route('login');
+        }
 
         return view('pages.register', [
             'type' => $type

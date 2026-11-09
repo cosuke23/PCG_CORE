@@ -1306,6 +1306,10 @@ textarea.pcg-input {
 /* buttons rendered as links keep their own colours (".pcg a" would win otherwise) */
 .pcg a.pcg-btn--primary,
 .pcg a.pcg-btn--primary:hover { color: var(--pcg-white); text-decoration: none; }
+.pcg a.pcg-btn--cta,
+.pcg a.pcg-btn--cta:hover { color: var(--pcg-accent-ink); text-decoration: none; }
+.pcg a.pcg-btn--danger,
+.pcg a.pcg-btn--danger:hover { color: #fff; text-decoration: none; }
 .pcg a.pcg-btn--secondary,
 .pcg a.pcg-btn--ghost { text-decoration: none; }
 

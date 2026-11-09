@@ -1,0 +1,69 @@
+/* OSAERT trainees page (admin/osaert/index). Tokens only: --c-* (console) and --pcg-*. */
+
+.pcg-osaert {
+    display: flex;
+    flex-direction: column;
+    gap: var(--pcg-space-6);
+}
+.pcg-osaert > .pcg-page__header { margin-bottom: 0; order: -2; }
+/* no trainees yet: the upload card comes straight after the headline */
+.pcg-osaert__upload--first { order: -1; }
+
+.pcg-osaert__listhead {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--pcg-space-3) var(--pcg-space-4);
+}
+.pcg-osaert__listhead p {
+    margin: var(--pcg-space-1) 0 0;
+    font-size: var(--pcg-text-sm);
+    color: var(--c-muted);
+}
+
+.pcg-osaert__filters {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    gap: var(--pcg-space-3);
+    padding: var(--pcg-space-4) var(--pcg-space-5);
+    border-bottom: 1px solid var(--c-line-soft);
+}
+.pcg-osaert__filters .pcg-field { margin: 0; min-width: 160px; }
+.pcg-osaert__filter-actions { display: flex; gap: var(--pcg-space-2); }
+
+.pcg-osaert__table td { vertical-align: middle; }
+
+.pcg-osaert__upload-grid {
+    display: grid;
+    gap: var(--pcg-space-4) var(--pcg-space-6);
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    align-items: start;
+}
+.pcg-osaert__upload-grid .pcg-field { margin: 0; }
+.pcg-osaert__columns p {
+    margin: 0 0 var(--pcg-space-2);
+    font-size: var(--pcg-text-sm);
+    color: var(--c-muted);
+}
+.pcg-osaert__columns .pcg-mono { color: var(--c-text); }
+.pcg-osaert__columns .pcg-btn--ghost { padding-inline: 0; }
+.pcg-osaert__upload-actions {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: var(--pcg-space-5);
+    padding-top: var(--pcg-space-4);
+    border-top: 1px solid var(--c-line-soft);
+}
+
+/* SweetAlert dialogs on this page (appended to body, so body tokens apply) */
+.swal2-container .osaert-swal {
+    background: var(--c-surface);
+    border: 1px solid var(--c-line);
+    border-radius: var(--pcg-radius);
+}
+.osaert-swal .swal2-title { color: var(--c-text); font-size: 1.25rem; }
+.osaert-swal .swal2-html-container { color: var(--c-muted); }
+.osaert-swal .swal2-actions { gap: var(--pcg-space-2); flex-wrap: wrap; }
+.osaert-swal .swal2-actions .pcg-btn { min-width: 104px; margin: 0; }

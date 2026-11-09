@@ -1,0 +1,15 @@
+/* Training applications (admin/training-applications): page layout only; colours come from the console tokens. */
+.ta-charts {
+    display: grid;
+    gap: var(--pcg-space-4);
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 340px), 1fr));
+}
+.ta-chart { position: relative; height: 260px; }
+.ta-chart--short { height: 200px; }
+.pcg-app .ta-card-note { margin: var(--pcg-space-1) 0 0; font-size: var(--pcg-text-xs); color: var(--c-faint); }
+.ta-nowrap { white-space: nowrap; }
+.ta-col-action { text-align: right; }
+.ta-decision { display: inline-flex; align-items: center; gap: var(--pcg-space-2); margin: 0; }
+.pcg-app .ta-decision__select { min-height: 36px; width: auto; padding: var(--pcg-space-1) var(--pcg-space-2); font-size: var(--pcg-text-sm); }
+.pcg-app .ta-decision__saving { font-size: var(--pcg-text-xs); color: var(--c-muted); }
+.ta-decision[aria-busy="true"] .ta-decision__select { opacity: 0.6; }

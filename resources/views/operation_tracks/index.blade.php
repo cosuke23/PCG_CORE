@@ -2,571 +2,210 @@
 
 @section('title', 'Operational Course Track')
 
+@php
+    $trackCount = $operationTracks->count();
+    $rankCount = $operationTracks->pluck('rank')->filter()->unique()->count();
+    $providerCount = $operationTracks->pluck('provider')->filter()->unique()->count();
+    $activeCount = $operationTracks->filter(fn ($t) => strtolower(trim($t->status ?? '')) === 'active')->count();
+    $inactiveCount = $operationTracks->filter(fn ($t) => strtolower(trim($t->status ?? '')) === 'inactive')->count();
+    $knownRanks = $operationTracks->pluck('rank')->filter()->unique()->sort()->values();
+    $knownUnits = $operationTracks->pluck('division_unit')->filter()->unique()->sort()->values();
+    $knownProviders = $operationTracks->pluck('provider')->filter()->unique()->sort()->values();
+@endphp
+
 @section('styles')
-    {{-- DataTables CSS --}}
-    <link
-        rel="stylesheet"
-        href="{{ asset('vendor/datatables/dataTables.dataTables-2.3.2.min.css') }}">
-
-    {{-- DataTables Responsive CSS --}}
-    <link
-        rel="stylesheet"
-        href="{{ asset('vendor/datatables/responsive.dataTables-3.0.5.min.css') }}">
-
-    <style>
-        /* =========================
-           DataTables Custom Styling
-        ========================= */
-
-        .dt-container {
-            width: 100%;
-        }
-
-        .dt-search {
-            margin-bottom: 15px;
-        }
-
-        .dt-search label {
-            font-weight: 600;
-            color: #475569;
-        }
-
-        .dt-search input {
-            margin-left: 8px !important;
-            padding: 8px 12px !important;
-            border: 1px solid #cbd5e1 !important;
-            border-radius: 8px !important;
-            outline: none !important;
-        }
-
-        .dt-search input:focus {
-            border-color: #2563eb !important;
-            box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.15);
-        }
-
-        .dt-length {
-            margin-bottom: 15px;
-        }
-
-        .dt-length label {
-            color: #475569;
-        }
-
-        .dt-length select {
-            padding: 6px 30px 6px 10px !important;
-            border: 1px solid #cbd5e1 !important;
-            border-radius: 8px !important;
-        }
-
-        table.dataTable thead th {
-            white-space: nowrap;
-        }
-
-        table.dataTable tbody td {
-            vertical-align: middle;
-        }
-
-        .dt-info {
-            color: #64748b;
-            font-size: 14px;
-        }
-
-        .dt-paging-button {
-            border-radius: 6px !important;
-        }
-
-        .dt-paging-button.current {
-            background: #2563eb !important;
-            color: white !important;
-            border: 1px solid #2563eb !important;
-        }
-
-        .dt-paging-button:hover {
-            background: #dbeafe !important;
-            color: #1d4ed8 !important;
-        }
-    </style>
-    
+    <link rel="stylesheet" href="{{ asset('vendor/datatables/dataTables.dataTables-2.3.2.min.css') }}">
+    <link rel="stylesheet" href="{{ asset('vendor/datatables/responsive.dataTables-3.0.5.min.css') }}">
+    <link rel="stylesheet" href="{{ \App\Support\Asset::v('css/course-tracks.css') }}">
 @endsection
 
 @section('content')
-    <div class="flex min-h-screen">
-
-
-        {{-- Sidebar: provided by layouts/admin --}}
-
-
-        {{-- ================= MAIN CONTENT ================= --}}
-        <main class="flex-1 overflow-y-auto">
-
-            <div class="p-6 lg:p-8">
-
-
-                {{-- ================= PAGE HEADER ================= --}}
-                <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6">
-
-                    <div>
-
-                        <h1 class="text-2xl font-bold text-slate-800">
-
-                            <i class="fas fa-ship text-blue-600 mr-2"></i>
-
-                            Operational Course Track
-
-                        </h1>
-
-                        <p class="text-slate-500 mt-1">
-
-                            Manage operational course and training requirements based on personnel rank and unit.
-
-                        </p>
-
-                    </div>
-
-                </div>
-
-
-                {{-- ================= SUMMARY CARDS ================= --}}
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-
-
-                    {{-- Total Operational Tracks --}}
-                    <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-5">
-
-                        <div class="flex items-center justify-between">
-
-                            <div>
-
-                                <p class="text-sm text-slate-500">
-                                    Total Operational Tracks
-                                </p>
-
-                                <p class="text-2xl font-bold text-slate-800 mt-1">
-
-                                    {{ $operationTracks->count() }}
-
-                                </p>
-
-                            </div>
-
-
-                            <div class="w-12 h-12 rounded-lg bg-blue-100 flex items-center justify-center">
-
-                                <i class="fas fa-ship text-blue-600 text-xl"></i>
-
-                            </div>
-
-                        </div>
-
-                    </div>
-
-
-                    {{-- Ranks Covered --}}
-                    <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-5">
-
-                        <div class="flex items-center justify-between">
-
-                            <div>
-
-                                <p class="text-sm text-slate-500">
-                                    Ranks Covered
-                                </p>
-
-                                <p class="text-2xl font-bold text-slate-800 mt-1">
-
-                                    {{
-                                        $operationTracks
-                                            ->pluck('rank')
-                                            ->filter()
-                                            ->unique()
-                                            ->count()
-                                    }}
-
-                                </p>
-
-                            </div>
-
-
-                            <div class="w-12 h-12 rounded-lg bg-green-100 flex items-center justify-center">
-
-                                <i class="fas fa-user-shield text-green-600 text-xl"></i>
-
-                            </div>
-
-                        </div>
-
-                    </div>
-
-
-                    {{-- Providers --}}
-                    <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-5">
-
-                        <div class="flex items-center justify-between">
-
-                            <div>
-
-                                <p class="text-sm text-slate-500">
-                                    Providers
-                                </p>
-
-                                <p class="text-2xl font-bold text-slate-800 mt-1">
-
-                                    {{
-                                        $operationTracks
-                                            ->pluck('provider')
-                                            ->filter()
-                                            ->unique()
-                                            ->count()
-                                    }}
-
-                                </p>
-
-                            </div>
-
-
-                            <div class="w-12 h-12 rounded-lg bg-purple-100 flex items-center justify-center">
-
-                                <i class="fas fa-building text-purple-600 text-xl"></i>
-
-                            </div>
-
-                        </div>
-
-                    </div>
-
-                </div>
-
-
-                {{-- ================= OPERATIONAL COURSE TABLE ================= --}}
-                <div class="bg-white rounded-xl shadow-sm border border-slate-200">
-
-
-                    {{-- Table Header --}}
-                    <div class="px-6 py-4 bg-slate-900 rounded-t-xl">
-
-                        <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
-
-                            <div>
-
-                                <h2 class="text-lg font-semibold text-white">
-
-                                    <i class="fas fa-ship mr-2"></i>
-
-                                    Operational Course / Training Tracks
-
-                                </h2>
-
-                                <p class="text-slate-400 text-sm mt-1">
-
-                                    Operational training requirements by division, unit, and rank
-
-                                </p>
-
-                            </div>
-
-                        </div>
-
-                    </div>
-
-
-                    {{-- Table Body --}}
-                    <div class="p-6">
-
-                        @if($operationTracks->count() > 0)
-
-                        <div class="overflow-x-auto">
-
-                            <table
-                                id="operationTracksTable"
-                                class="display nowrap w-full text-sm">
-
-                                <thead>
-
-                                    <tr>
-
-                                        <th>No.</th>
-
-                                        <th>Division / Unit</th>
-
-                                        <th>Rank</th>
-
-                                        <th>Year in Grade</th>
-
-                                        <th>Course / Training</th>
-
-                                        <th>Provider</th>
-
-                                        <th>Status</th>
-
-                                        <th>Remarks</th>
-
-                                    </tr>
-
-                                </thead>
-
-
-                                <tbody>
-
-                                    @foreach($operationTracks as $track)
-
-                                    <tr>
-
-
-                                        {{-- No. --}}
-                                        <td>
-
-                                            {{ $track->no ?? $loop->iteration }}
-
-                                        </td>
-
-
-                                        {{-- Division / Unit --}}
-                                        <td>
-
-                                            {{ $track->division_unit ?? 'N/A' }}
-
-                                        </td>
-
-
-                                        {{-- Rank --}}
-                                        <td>
-
-                                            <span
-                                                class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-slate-200 text-slate-800">
-
-                                                {{ $track->rank ?? 'N/A' }}
-
-                                            </span>
-
-                                        </td>
-
-
-                                        {{-- Year in Grade --}}
-                                        <td>
-
-                                            {{ $track->year_in_grade ?? 'N/A' }}
-
-                                        </td>
-
-
-                                        {{-- Course / Training --}}
-                                        <td>
-
-                                            <strong class="text-slate-800">
-
-                                                {{ $track->course_training ?? 'N/A' }}
-
-                                            </strong>
-
-                                        </td>
-
-
-                                        {{-- Provider --}}
-                                        <td>
-
-                                            {{ $track->provider ?? 'N/A' }}
-
-                                        </td>
-
-
-                                        {{-- Status --}}
-                                        <td>
-
-                                            @php
-
-                                            $status = strtolower(
-                                            trim($track->status ?? '')
-                                            );
-
-                                            @endphp
-
-
-                                            @if($status === 'active')
-
-                                            <span
-                                                class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-green-100 text-green-700">
-
-                                                <span
-                                                    class="w-2 h-2 bg-green-500 rounded-full mr-2">
-                                                </span>
-
-                                                Active
-
-                                            </span>
-
-
-                                            @elseif($status === 'inactive')
-
-                                            <span
-                                                class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-red-100 text-red-700">
-
-                                                <span
-                                                    class="w-2 h-2 bg-red-500 rounded-full mr-2">
-                                                </span>
-
-                                                Inactive
-
-                                            </span>
-
-
-                                            @else
-
-                                            <span
-                                                class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-slate-100 text-slate-600">
-
-                                                {{ $track->status ?? 'N/A' }}
-
-                                            </span>
-
-                                            @endif
-
-                                        </td>
-
-
-                                        {{-- Remarks --}}
-                                        <td>
-
-                                            {{ $track->remarks ?? 'N/A' }}
-
-                                        </td>
-
-
-                                    </tr>
-
-                                    @endforeach
-
-                                </tbody>
-
-                            </table>
-
-                        </div>
-
-
-                        @else
-
-                        {{-- No Data --}}
-                        <div class="rounded-lg border border-yellow-200 bg-yellow-50 px-5 py-4">
-
-                            <div class="flex items-start">
-
-                                <i class="fas fa-exclamation-triangle text-yellow-600 mt-1 mr-3"></i>
-
-                                <div>
-
-                                    <p class="font-semibold text-yellow-800">
-
-                                        No Operational Course Track Found
-
-                                    </p>
-
-                                    <p class="text-sm text-yellow-700 mt-1">
-
-                                        There are currently no operational
-                                        course or training records.
-
-                                    </p>
-
-                                </div>
-
-                            </div>
-
-                        </div>
-
-                        @endif
-
-                    </div>
-
-                </div>
-
+    <div class="pcg-page ct">
+
+        <header class="pcg-page__header">
+            <div>
+                <h2>{{ $trackCount }} operational {{ \Illuminate\Support\Str::plural('track', $trackCount) }} across {{ $rankCount }} {{ \Illuminate\Support\Str::plural('rank', $rankCount) }}</h2>
+                <p>The courses each rank must complete. Personnel are matched to these tracks by their rank.</p>
             </div>
+        </header>
 
-        </main>
+        @if (session('success'))
+            <div class="pcg-alert pcg-alert--success" role="status">{{ session('success') }}</div>
+        @endif
 
+        <details class="ct-add" @if ($errors->any()) open @endif>
+            <summary class="pcg-btn pcg-btn--cta"><i class="fa-solid fa-plus" aria-hidden="true"></i> Add track</summary>
+            <form method="POST" action="{{ route('operation_tracks.store') }}" class="pcg-card ct-add__form">
+                @csrf
+                <h3>New operational track</h3>
+
+                @if ($errors->any())
+                    <div class="pcg-alert pcg-alert--danger" role="alert">
+                        <ul>
+                            @foreach ($errors->all() as $error)
+                                <li>{{ $error }}</li>
+                            @endforeach
+                        </ul>
+                    </div>
+                @endif
+
+                <div class="pcg-form-grid">
+                    <div class="pcg-field">
+                        <label class="pcg-label" for="track-division">Division / unit</label>
+                        <input class="pcg-input" type="text" id="track-division" name="division_unit" value="{{ old('division_unit') }}" maxlength="255" list="track-units" required>
+                    </div>
+                    <div class="pcg-field">
+                        <label class="pcg-label" for="track-rank">Rank</label>
+                        <input class="pcg-input" type="text" id="track-rank" name="rank" value="{{ old('rank') }}" maxlength="100" list="track-ranks" required aria-describedby="track-rank-help">
+                        <p class="pcg-help" id="track-rank-help">Write it exactly as the existing tracks do, for example E-4 (PO3), so personnel match.</p>
+                    </div>
+                    <div class="pcg-field">
+                        <label class="pcg-label" for="track-year">Year in grade</label>
+                        <input class="pcg-input" type="number" id="track-year" name="year_in_grade" value="{{ old('year_in_grade') }}" min="0" step="1">
+                    </div>
+                    <div class="pcg-field">
+                        <label class="pcg-label" for="track-no">Order no.</label>
+                        <input class="pcg-input" type="number" id="track-no" name="no" value="{{ old('no') }}" min="0" step="1">
+                    </div>
+                    <div class="pcg-field">
+                        <label class="pcg-label" for="track-course">Course / training</label>
+                        <input class="pcg-input" type="text" id="track-course" name="course_training" value="{{ old('course_training') }}" maxlength="255">
+                    </div>
+                    <div class="pcg-field">
+                        <label class="pcg-label" for="track-provider">Provider</label>
+                        <input class="pcg-input" type="text" id="track-provider" name="provider" value="{{ old('provider') }}" maxlength="255" list="track-providers">
+                    </div>
+                    <div class="pcg-field">
+                        <label class="pcg-label" for="track-status">Status</label>
+                        <select class="pcg-input" id="track-status" name="status">
+                            @foreach (['Active', 'Inactive'] as $option)
+                                <option value="{{ $option }}" @selected(old('status', 'Active') === $option)>{{ $option }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+                    <div class="pcg-field ct-add__wide">
+                        <label class="pcg-label" for="track-remarks">Remarks</label>
+                        <textarea class="pcg-input" id="track-remarks" name="remarks" rows="2">{{ old('remarks') }}</textarea>
+                    </div>
+                </div>
+
+                <datalist id="track-ranks">
+                    @foreach ($knownRanks as $rank)
+                        <option value="{{ $rank }}"></option>
+                    @endforeach
+                </datalist>
+                <datalist id="track-units">
+                    @foreach ($knownUnits as $unit)
+                        <option value="{{ $unit }}"></option>
+                    @endforeach
+                </datalist>
+                <datalist id="track-providers">
+                    @foreach ($knownProviders as $provider)
+                        <option value="{{ $provider }}"></option>
+                    @endforeach
+                </datalist>
+
+                <div class="ct-add__actions">
+                    <button type="submit" class="pcg-btn pcg-btn--primary">Save track</button>
+                </div>
+            </form>
+        </details>
+
+        <div class="pcg-stats">
+            <div class="pcg-stat">
+                <span class="pcg-stat__label">Active</span>
+                <span class="pcg-stat__value">{{ number_format($activeCount) }}</span>
+                <span class="pcg-stat__hint">of {{ number_format($trackCount) }} {{ \Illuminate\Support\Str::plural('track', $trackCount) }}</span>
+            </div>
+            <div class="pcg-stat">
+                <span class="pcg-stat__label">Inactive</span>
+                <span class="pcg-stat__value">{{ number_format($inactiveCount) }}</span>
+            </div>
+            <div class="pcg-stat">
+                <span class="pcg-stat__label">Providers</span>
+                <span class="pcg-stat__value">{{ number_format($providerCount) }}</span>
+                <span class="pcg-stat__hint">schools running these courses</span>
+            </div>
+        </div>
+
+        <section class="pcg-card ct-card" aria-labelledby="tracks-heading">
+            <h3 id="tracks-heading" class="pcg-visually-hidden">Operational tracks</h3>
+
+            @if ($trackCount > 0)
+                <div class="pcg-table-wrap">
+                    <table id="operationTracksTable" class="display nowrap">
+                        <thead>
+                            <tr>
+                                <th scope="col">No.</th>
+                                <th scope="col">Division / unit</th>
+                                <th scope="col">Rank</th>
+                                <th scope="col">Year in grade</th>
+                                <th scope="col">Course / training</th>
+                                <th scope="col">Provider</th>
+                                <th scope="col">Status</th>
+                                <th scope="col">Remarks</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach ($operationTracks as $track)
+                                @php($status = strtolower(trim($track->status ?? '')))
+                                <tr>
+                                    <td>{{ $track->no ?? $loop->iteration }}</td>
+                                    <td>@if (filled($track->division_unit)){{ $track->division_unit }}@else<span class="ct-none">—</span>@endif</td>
+                                    <td><span class="ct-rank">{{ $track->rank ?? '—' }}</span></td>
+                                    <td>@if (filled($track->year_in_grade)){{ $track->year_in_grade }}@else<span class="ct-none">—</span>@endif</td>
+                                    <td>@if (filled($track->course_training))<span class="ct-course">{{ $track->course_training }}</span>@else<span class="ct-none">—</span>@endif</td>
+                                    <td>@if (filled($track->provider)){{ $track->provider }}@else<span class="ct-none">—</span>@endif</td>
+                                    <td>
+                                        @if ($status === 'active')
+                                            <span class="pcg-badge pcg-badge--success">Active</span>
+                                        @elseif ($status === '')
+                                            <span class="ct-none">—</span>
+                                        @else
+                                            <span class="pcg-badge">{{ $track->status }}</span>
+                                        @endif
+                                    </td>
+                                    <td>@if (filled($track->remarks)){{ $track->remarks }}@else<span class="ct-none">—</span>@endif</td>
+                                </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
+                </div>
+            @else
+                <p class="pcg-empty">No operational tracks yet. Use <strong>Add track</strong> to enter the first course for a rank.</p>
+            @endif
+        </section>
     </div>
 
-
-    {{-- ================= JAVASCRIPT ================= --}}
-
-    {{-- jQuery --}}
     <script nonce="{{ $cspNonce ?? '' }}" src="{{ asset('vendor/jquery/jquery-3.7.1.min.js') }}"></script>
-
-
-    {{-- DataTables --}}
-    <script nonce="{{ $cspNonce ?? '' }}"
-        src="{{ asset('vendor/datatables/dataTables-2.3.2.min.js') }}">
-    </script>
-
-
-    {{-- DataTables Responsive --}}
-    <script nonce="{{ $cspNonce ?? '' }}"
-        src="{{ asset('vendor/datatables/dataTables.responsive-3.0.5.min.js') }}">
-    </script>
-
-
+    <script nonce="{{ $cspNonce ?? '' }}" src="{{ asset('vendor/datatables/dataTables-2.3.2.min.js') }}"></script>
+    <script nonce="{{ $cspNonce ?? '' }}" src="{{ asset('vendor/datatables/dataTables.responsive-3.0.5.min.js') }}"></script>
     <script nonce="{{ $cspNonce ?? '' }}">
-        $(document).ready(function() {
-
-            /*
-            |--------------------------------------------------------------------------
-            | Operational Tracks DataTable
-            |--------------------------------------------------------------------------
-            */
-
+        $(document).ready(function () {
             $('#operationTracksTable').DataTable({
-
                 responsive: true,
-
                 pageLength: 10,
-
                 lengthMenu: [
                     [10, 25, 50, 100, -1],
                     [10, 25, 50, 100, 'All']
                 ],
-
                 order: [
                     [2, 'asc'],
                     [3, 'asc']
                 ],
-
                 columnDefs: [
-
-                    {
-                        targets: 0,
-                        searchable: false
-                    }
-
+                    { targets: 0, searchable: false }
                 ],
-
                 language: {
-
-                    search: "Search:",
-
-                    lengthMenu: "Show _MENU_ entries",
-
-                    info: "Showing _START_ to _END_ of _TOTAL_ records",
-
-                    infoEmpty: "Showing 0 to 0 of 0 records",
-
-                    zeroRecords: "No matching operational tracks found",
-
-                    emptyTable: "No operational tracks available",
-
-                    paginate: {
-
-                        first: "First",
-
-                        last: "Last",
-
-                        next: "Next",
-
-                        previous: "Previous"
-
-                    }
-
+                    search: 'Search:',
+                    lengthMenu: 'Show _MENU_ tracks',
+                    info: 'Showing _START_ to _END_ of _TOTAL_ tracks',
+                    infoEmpty: 'No tracks to show',
+                    zeroRecords: 'No track matches that search',
+                    emptyTable: 'No operational tracks yet',
+                    paginate: { first: 'First', last: 'Last', next: 'Next', previous: 'Previous' }
                 }
-
             });
-
         });
     </script>
 @endsection
