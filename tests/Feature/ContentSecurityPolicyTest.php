@@ -26,7 +26,7 @@ class ContentSecurityPolicyTest extends TestCase
 
     public function test_inline_scripts_in_pages_carry_the_nonce()
     {
-        $response = $this->get('/contact'); // layouts/app has inline scripts
+        $response = $this->withSession(['registered' => true])->get('/login'); // after a registration the sign-in page runs an inline script
         preg_match("/'nonce-([^']+)'/", $response->headers->get('Content-Security-Policy'), $m);
 
         preg_match_all('/<script(?![^>]*\bsrc=)([^>]*)>/', $response->getContent(), $scripts);
@@ -69,8 +69,9 @@ class ContentSecurityPolicyTest extends TestCase
         $this->assertStringNotContainsString("'unsafe-eval'", $login);
         $this->assertStringNotContainsString('tile.openstreetmap.org', $login);
 
-        // layouts/app loads Alpine (needs eval); the flag must not leak to the next request
-        $this->assertStringContainsString("'unsafe-eval'", $this->get('/contact')->headers->get('Content-Security-Policy'));
+        // the registration page loads Alpine (needs eval); the flag must not leak to the next request
+        $this->assertStringContainsString("'unsafe-eval'", $this->get('/register?type=officer')->headers->get('Content-Security-Policy'));
+        $this->assertStringNotContainsString("'unsafe-eval'", $this->get('/contact')->headers->get('Content-Security-Policy'));
         $this->assertStringNotContainsString("'unsafe-eval'", $this->get('/unit/login')->headers->get('Content-Security-Policy'));
     }
 

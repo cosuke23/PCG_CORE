@@ -45,7 +45,7 @@ const sql = q => execSync(`${process.env.PCG_E2E_DB_CLI || "mariadb -uroot"} -N 
 
   await p.waitForTimeout(1500); // camera warm-up
   await p.click('#captureBtn'); await p.waitForTimeout(500);
-  await p.click('.swal2-confirm').catch(() => {}); await p.waitForTimeout(300);
+  await p.click('.swal2-confirm', { timeout: 1000 }).catch(() => {}); await p.waitForTimeout(300);
   console.log('selfie captured:', (await p.inputValue('#selfieImage')).slice(0, 22));
   console.log('visible buttons:', (await p.locator('button:visible').allInnerTexts()).map(t => t.trim()).filter(Boolean));
   await p.screenshot({ path: require('path').join(require('os').tmpdir(), 'register-step.png') });
