@@ -122,25 +122,39 @@ const freshStep = () => new Promise(r => setTimeout(r, 31000 - (Date.now() % 300
   const browser = await chromium.launch({ channel: 'chromium', args: ['--use-fake-ui-for-media-stream', '--use-fake-device-for-media-stream'] });
   const S = (section, workflow, role) => ({ section, workflow, role });
   try {
-    // ================= SECTION 2: landing page (guest) =================
+    // ================= SECTION 2: landing pages (guest): PCG HRMIS, then MEPCOM HRMIS =================
     const g = await newPage(browser);
-    let s = S('2', 'Landing page', 'Public visitor');
+    let s = S('2', 'Landing pages', 'Public visitor');
+    await g.goto(BASE + '/', { waitUntil: 'networkidle' }); await g.waitForTimeout(3200);
+    await cap(g, { ...s, id: 'S02-01', title: 'Open PCG HRMIS', action: 'Open the portal address in a web browser. PCG HRMIS, the main landing page, opens with the official banner of the three functional commands.',
+      expected: 'The header shows PCG HRMIS and the links Home, Digital services, Organizational structure, MEPCOM HRMIS and Contact.', noScroll: true,
+      targets: [{ sel: '.ph-brand', kind: 'result', label: 'PCG HRMIS' }, { sel: '.ph-nav', kind: 'field', label: 'Navigation' }] });
+    await g.hover('.ph-cmd--mepcom'); await g.waitForTimeout(1600);
+    await cap(g, { ...s, id: 'S02-02', title: 'Point at a command', action: 'Move the pointer over a command on the banner. The command lights up with a gold frame and a link appears at the bottom.',
+      expected: 'On MEPCOM the link reads "Open MEPCOM HRMIS"; on MSSC and MARSLEC it reads "View in the structure".', noScroll: true, wait: 200,
+      targets: [{ sel: '.ph-cmd--mepcom .ph-cmd__chip', kind: 'click', label: 'Open MEPCOM HRMIS' }, { sel: '.ph-cmd--mepcom', kind: 'result', label: 'MEPCOM panel' }] });
+    await g.mouse.move(5, 5);
+    await g.locator('#services').scrollIntoViewIfNeeded(); await g.waitForTimeout(1800);
+    await cap(g, { ...s, id: 'S02-03', title: 'Digital services', action: 'Select Digital services, or scroll down. "Find the right service, sooner." lists MEPCOM HRMIS, new personnel registration and the sign-in links.',
+      expected: 'Each card or link opens that service.', wait: 1800,
+      targets: [{ sel: '#services-title', kind: 'result', label: 'Digital services' }, { sel: '.ph-card--azure .ph-btn', kind: 'click', label: 'Open MEPCOM HRMIS' }, { sel: '.ph-card--light .ph-actions', kind: 'click', label: 'Officer / Non-officer' }] });
+    // the heading, NHQ and the functional commands together, below the sticky header
+    await g.evaluate(() => { const el = document.querySelector('#structure'); window.scrollTo({ top: el.getBoundingClientRect().top + window.scrollY + 30, behavior: 'instant' }); });
+    await g.waitForTimeout(2400);
+    await cap(g, { ...s, id: 'S02-04', title: 'The PCG organizational structure', action: 'Select Organizational structure. National Headquarters sits on top, then the six groups of commands in the order of the official chart.',
+      expected: 'MEPCOM, one of the three functional commands, has a link to MEPCOM HRMIS.', wait: 600, noScroll: true,
+      targets: [{ sel: '.ph-org__top', kind: 'result', label: 'NHQ-PCG' }, { sel: '.ph-org__cmd--here a', kind: 'click', label: 'MEPCOM HRMIS' }] });
     await g.goto(BASE + '/mepcom', { waitUntil: 'networkidle' }); await g.waitForTimeout(2500);
-    await cap(g, { ...s, id: 'S02-01', title: 'Open the portal', action: 'Open the portal address in a web browser.',
-      expected: 'The MEPCOM HRMIS home page opens with the navigation bar at the top.', targets: [{ sel: 'header', kind: 'result', label: 'Navigation bar' }], noScroll: true });
-    await cap(g, { ...s, id: 'S02-02', title: 'Know the navigation bar', action: 'Use Home, About, Services, Units, MEPTDI and Contact to move around the public site.',
-      expected: 'Each link scrolls to, or opens, that part of the site.', zoom: true, zoomPad: 60, noScroll: true,
-      targets: [{ sel: 'header nav', kind: 'field', label: 'Public links' }, { sel: 'header a:has-text("Sign in")', kind: 'click', label: 'Sign in' }] });
+    await cap(g, { ...s, id: 'S02-05', title: 'Open MEPCOM HRMIS', action: 'Select "Open MEPCOM HRMIS". This is the personnel system of the Marine Environmental Protection Command. "PCG HRMIS" in its menu brings you back.',
+      expected: 'The MEPCOM HRMIS home page opens.', noScroll: true,
+      targets: [{ sel: 'header nav a:has-text("PCG HRMIS")', kind: 'field', label: 'Back to PCG HRMIS' }, { sel: 'header a:has-text("Sign in")', kind: 'click', label: 'Sign in' }] });
     await g.locator('header a:has-text("Services")').first().click(); await g.waitForTimeout(1500);
-    await cap(g, { ...s, id: 'S02-03', title: 'See the public services', action: 'Select Services in the navigation bar.',
-      expected: 'The "Find the right service, sooner." section lists sign-in, registration, unit checkers, MEPTDI and certificate check.',
-      targets: [{ sel: 'h2:has-text("Find the right service")', kind: 'result', label: 'Services' }], noScroll: true });
     const regCard = g.locator('a:has-text("Non-officer")').first();
-    await cap(g, { ...s, id: 'S02-04', title: 'Begin registration or sign in', action: 'Under "New personnel registration", select Officer or Non-officer. Members with an account select "Sign in to the portal".',
+    await cap(g, { ...s, id: 'S02-06', title: 'Begin registration or sign in', action: 'Under "New personnel registration", select Officer or Non-officer. Members with an account select "Sign in to the portal".',
       expected: 'The registration form for that type opens (or the sign-in page).',
       targets: [{ loc: regCard, kind: 'click', label: 'Non-officer' }, { sel: 'a:has-text("Officer") >> nth=0', kind: 'click', label: 'Officer' }, { sel: 'a:has-text("Sign in to the portal")', kind: 'click', label: 'Sign in to the portal' }] });
     await g.goto(BASE + '/login');
-    await cap(g, { ...s, id: 'S02-05', title: 'The personnel sign-in page', action: 'Members sign in with their email address and password. New personnel choose Officer or Non-Officer under "No account yet? Register as:".',
+    await cap(g, { ...s, id: 'S02-07', title: 'The personnel sign-in page', action: 'Members sign in with their email address and password. New personnel choose Officer or Non-Officer under "No account yet? Register as:".',
       expected: 'The registration form opens for the type you chose.',
       targets: [{ sel: 'a:has-text("Non-Officer")', kind: 'click', label: 'Non-Officer' }, { sel: 'a:has-text("Officer Commissioned")', kind: 'click', label: 'Officer' }] });
 
@@ -199,7 +213,7 @@ const freshStep = () => new Promise(r => setTimeout(r, 31000 - (Date.now() % 300
     await freshStep();
     await Promise.all([a.waitForNavigation(), a.click('button[type=submit]')]);
     await cap(a, { ...s, id: 'S05-02', title: 'Enter the second-step code', action: 'Type the six-digit code (sent by email, or from your authenticator app if your account uses one) and select Verify.',
-      expected: 'The administration console opens on the page for your role.', kind: 'caution', warning: 'Every admin role except the re-enlistment admin must pass this step. Codes expire; request a new one if needed.',
+      expected: 'The administration console opens on the page for your role.', kind: 'caution', warning: 'Every admin role except the re-enlistment admin has this step. Codes expire; ask for a new one.',
       targets: [{ sel: '#code', kind: 'field', label: 'Code' }, { sel: 'button[type=submit]', kind: 'click', label: 'Confirm' }] });
     await a.fill('#code', lib.totp(lib.ADMIN_TOTP_SECRET));
     await Promise.all([a.waitForNavigation(), a.click('button[type=submit]')]);
@@ -566,8 +580,8 @@ const freshStep = () => new Promise(r => setTimeout(r, 31000 - (Date.now() % 300
     // ================= mobile (390x844) =================
     const ph = await newPage(browser, PHONE, { isMobile: true, hasTouch: true, deviceScaleFactor: 2, permissions: ['camera'] });
     s = S('M', 'Phone screens', 'All roles');
-    await ph.goto(BASE + '/mepcom', { waitUntil: 'networkidle' }); await ph.waitForTimeout(2000);
-    await cap(ph, { ...s, id: 'M-01', title: 'Home page on a phone', action: 'Open the menu button for the navigation links.', expected: 'The links open in a menu.', noScroll: true, targets: [{ sel: 'summary[aria-label="Open menu"]', kind: 'click', label: 'Menu' }] });
+    await ph.goto(BASE + '/', { waitUntil: 'networkidle' }); await ph.waitForTimeout(3000);
+    await cap(ph, { ...s, id: 'M-01', title: 'PCG HRMIS on a phone', action: 'Select Menu for the navigation links.', expected: 'The links open below the header.', noScroll: true, targets: [{ sel: '[data-ph-menu]', kind: 'click', label: 'Menu' }] });
     await ph.goto(BASE + '/login');
     await cap(ph, { ...s, id: 'M-02', title: 'Sign in on a phone', action: 'Type your Email address and Password, then select Sign in.', expected: 'The dashboard opens.', targets: [{ sel: 'button[type=submit]', kind: 'click', label: 'Sign in' }] });
     await ph.goto(BASE + '/register?type=non_officer'); await settle(ph, 600);

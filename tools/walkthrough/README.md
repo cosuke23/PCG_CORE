@@ -1,4 +1,4 @@
-# End-to-end user walkthrough (ROAP deck) — how to update it
+# End-to-end user walkthrough deck — how to update it
 
 The deck and its companion files are generated from the **running application**.
 Nothing is drawn by hand: `capture.js` performs every step in a real browser on the
@@ -6,16 +6,19 @@ development database and records where each control is on screen; `build_deck.js
 places those screenshots in PowerPoint and draws the arrows, outlines and numbered
 markers as editable shapes on top.
 
-> The system names itself **MEPCOM HRMIS**. The deck was requested as "ROAP"
-> (Recruitment Online Application Platform); that name does not appear in the code
-> or the screens, so the deck says so instead of rebranding the screens.
+> The deck starts at **PCG HRMIS** (`/`, the main landing page) and continues in
+> **MEPCOM HRMIS** (`/mepcom` and the member, checker and admin pages).
+
+The presenter script lives in `script.js`: one entry per step id (`S02-01` …) and
+per overview slide (`cover`, `roles`, `div3` …). When a step changes in `capture.js`,
+update its script entry too; `build_deck.js` warns about any slide without one.
 
 ## What gets produced
 
 | File | What it is |
 |---|---|
-| `ROAP_End_to_End_User_Walkthrough.pptx` | The editable deck (16:9). Screenshots are pictures; every arrow, outline, marker, card and table is a PowerPoint shape. Speaker notes hold the route, role and evidence file of each step. |
-| `ROAP_End_to_End_User_Manual.pdf` | The same deck as a PDF (rendered with LibreOffice). |
+| `PCG_HRMIS_End_to_End_Walkthrough.pptx` | The editable deck (16:9) in the design of the PCG HRMIS website (crimson / azure / gold / sand, Cambria headings, the hero's diagonal band), from the PCG HRMIS landing page to re-enlistment. Screenshots are pictures; every arrow, outline, marker, card and table is a PowerPoint shape. The speaker notes of every slide hold the presenter script (`script.js`), then the route, role and evidence file. |
+| `PCG_HRMIS_End_to_End_Walkthrough.pdf` | The same deck as a PDF (rendered with LibreOffice). |
 | `ROAP_Workflow_Inventory.xlsx` | Coverage of the requested storyboard (Verified / NOT IMPLEMENTED / NOT VERIFIED), every captured step with its exact labels and source code, all routes with their roles, the permission matrix, the admin roles. |
 | `ROAP_QA_Validation.xlsx` | One row per screenshot: slide, workflow, role, route, screenshot, target found, error/loading state, personal data and secret checks, status. |
 | `ROAP_Screenshot_Evidence/original/` | Untouched captures (1920×1080 desktop, 390×844 phone at 2× pixels). |
@@ -47,8 +50,10 @@ node tools/walkthrough/capture.js walkthrough-out
 ```
 
 ```bash
-node tools/walkthrough/build_deck.js walkthrough-out
+DECK_COMPACT=1 node tools/walkthrough/build_deck.js walkthrough-out
 ```
+
+(`DECK_COMPACT=1` stores the screenshots as quality-88 JPEG: about 8 MB instead of 18 MB, easier to download and email. Leave it out for lossless PNG.)
 
 ```bash
 php artisan route:list --json > walkthrough-out/routes.json
@@ -59,10 +64,10 @@ python3 tools/walkthrough/build_docs.py walkthrough-out walkthrough-out/routes.j
 ```
 
 ```bash
-bash tools/walkthrough/render.sh walkthrough-out/ROAP_End_to_End_User_Walkthrough.pptx walkthrough-out/render
+bash tools/walkthrough/render.sh walkthrough-out/PCG_HRMIS_End_to_End_Walkthrough.pptx walkthrough-out/render
 ```
 
-The last command writes `render/deck.pdf` (copy it to `ROAP_End_to_End_User_Manual.pdf`)
+The last command writes `render/deck.pdf` (copy it to `PCG_HRMIS_End_to_End_Walkthrough.pdf`)
 and `render/grid-NN.jpg` contact sheets for a visual check. `walkthrough-out/` is
 ignored by git: never commit screenshots.
 
