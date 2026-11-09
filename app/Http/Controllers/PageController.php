@@ -6,6 +6,13 @@ use Illuminate\Http\Request;
 
 class PageController extends Controller
 {
+    /** PCG HRMIS main landing page (/). */
+    public function pcg()
+    {
+        return view('pages.pcg');
+    }
+
+    /** MEPCOM HRMIS home (/mepcom). */
     public function home()
     {
         return view('pages.home');

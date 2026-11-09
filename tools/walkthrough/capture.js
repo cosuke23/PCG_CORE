@@ -125,7 +125,7 @@ const freshStep = () => new Promise(r => setTimeout(r, 31000 - (Date.now() % 300
     // ================= SECTION 2: landing page (guest) =================
     const g = await newPage(browser);
     let s = S('2', 'Landing page', 'Public visitor');
-    await g.goto(BASE + '/', { waitUntil: 'networkidle' }); await g.waitForTimeout(2500);
+    await g.goto(BASE + '/mepcom', { waitUntil: 'networkidle' }); await g.waitForTimeout(2500);
     await cap(g, { ...s, id: 'S02-01', title: 'Open the portal', action: 'Open the portal address in a web browser.',
       expected: 'The MEPCOM HRMIS home page opens with the navigation bar at the top.', targets: [{ sel: 'header', kind: 'result', label: 'Navigation bar' }], noScroll: true });
     await cap(g, { ...s, id: 'S02-02', title: 'Know the navigation bar', action: 'Use Home, About, Services, Units, MEPTDI and Contact to move around the public site.',
@@ -566,7 +566,7 @@ const freshStep = () => new Promise(r => setTimeout(r, 31000 - (Date.now() % 300
     // ================= mobile (390x844) =================
     const ph = await newPage(browser, PHONE, { isMobile: true, hasTouch: true, deviceScaleFactor: 2, permissions: ['camera'] });
     s = S('M', 'Phone screens', 'All roles');
-    await ph.goto(BASE + '/', { waitUntil: 'networkidle' }); await ph.waitForTimeout(2000);
+    await ph.goto(BASE + '/mepcom', { waitUntil: 'networkidle' }); await ph.waitForTimeout(2000);
     await cap(ph, { ...s, id: 'M-01', title: 'Home page on a phone', action: 'Open the menu button for the navigation links.', expected: 'The links open in a menu.', noScroll: true, targets: [{ sel: 'summary[aria-label="Open menu"]', kind: 'click', label: 'Menu' }] });
     await ph.goto(BASE + '/login');
     await cap(ph, { ...s, id: 'M-02', title: 'Sign in on a phone', action: 'Type your Email address and Password, then select Sign in.', expected: 'The dashboard opens.', targets: [{ sel: 'button[type=submit]', kind: 'click', label: 'Sign in' }] });
