@@ -125,7 +125,10 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/upload-documents', [DashboardController::class, 'uploadDocuments'])
         ->name('upload.documents');
     Route::post('/profile/update', [DashboardController::class, 'updateProfile'])
-        ->middleware('throttle:member-uploads')->name('profile.update');
+        ->middleware(['throttle:member-uploads', 'soi.open'])->name('profile.update');
+    // submit the SOI: from then on every step is read-only (App\Support\SoiLock)
+    Route::post('/soi/submit', [\App\Http\Controllers\SoiController::class, 'submit'])
+        ->middleware(['throttle:member-writes', 'soi.open'])->name('soi.submit');
 
     Route::post('/documents/upload', [ApplicantDocumentController::class, 'store'])
         ->middleware('throttle:member-uploads')->name('documents.store');
@@ -138,12 +141,12 @@ Route::middleware(['auth'])->group(function () {
 
 
     // Multi-step profile (SOI) form
-    Route::post('/temp-save/step1', [TempRegistrationController::class, 'saveStep1'])->middleware('throttle:member-writes')->name('temp.save.step1');
-    Route::post('/temp-save/step2', [TempRegistrationController::class, 'saveStep2'])->middleware('throttle:member-writes')->name('temp.save.step2');
-    Route::post('/temp-save/step3', [TempRegistrationController::class, 'saveStep3'])->middleware('throttle:member-writes')->name('temp.save.step3');
-    Route::post('/temp-save/step4', [TempRegistrationController::class, 'saveStep4'])->middleware('throttle:member-writes')->name('temp.save.step4');
-    Route::post('/temp-save/step5', [TempRegistrationController::class, 'saveStep5'])->middleware('throttle:member-writes')->name('temp.save.step5');
-    Route::post('/temp-save/step6', [TempRegistrationController::class, 'saveStep6'])->middleware('throttle:member-writes')->name('temp.save.step6');
+    Route::post('/temp-save/step1', [TempRegistrationController::class, 'saveStep1'])->middleware(['throttle:member-writes', 'soi.open'])->name('temp.save.step1');
+    Route::post('/temp-save/step2', [TempRegistrationController::class, 'saveStep2'])->middleware(['throttle:member-writes', 'soi.open'])->name('temp.save.step2');
+    Route::post('/temp-save/step3', [TempRegistrationController::class, 'saveStep3'])->middleware(['throttle:member-writes', 'soi.open'])->name('temp.save.step3');
+    Route::post('/temp-save/step4', [TempRegistrationController::class, 'saveStep4'])->middleware(['throttle:member-writes', 'soi.open'])->name('temp.save.step4');
+    Route::post('/temp-save/step5', [TempRegistrationController::class, 'saveStep5'])->middleware(['throttle:member-writes', 'soi.open'])->name('temp.save.step5');
+    Route::post('/temp-save/step6', [TempRegistrationController::class, 'saveStep6'])->middleware(['throttle:member-writes', 'soi.open'])->name('temp.save.step6');
 
     // /reinlist/store (one-shot SOI save) was retired 2026-11-08: no page used it and it
     // replaced Adjutant-recorded rows; the SOI saves through /temp-save/step1..6.
@@ -279,6 +282,13 @@ Route::middleware(['admin.session', 'admin.audit'])->group(function () {
         });
 
     // ---- Re-enlistment: non-officers whose ETE is near (read-only; views and exports audited)
+    // ---- SOI submissions: Adjutant, HR admin (own command/unit) and super admin reopen a submitted SOI ----
+    Route::middleware('admin.can:soi.reopen')->prefix('admin/soi')->name('admin.soi.')
+        ->controller(\App\Http\Controllers\SoiSubmissionController::class)->group(function () {
+            Route::get('/', 'index')->name('index');
+            Route::post('/{user}/reopen', 'reopen')->whereNumber('user')->name('reopen');
+        });
+
     // ---- Adjutant: Coast Guard awards and decorations, Coast Guard schooling (members' SOI) ----
     Route::middleware('admin.can:soi.adjutant')->prefix('admin/adjutant')->name('admin.adjutant.')
         ->controller(\App\Http\Controllers\AdjutantController::class)->group(function () {
