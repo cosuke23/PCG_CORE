@@ -1,81 +1,106 @@
-@extends('layouts.app') <!-- Adjust if your layout file is different -->
+@extends('layouts.personnel')
+
+@section('title', 'SOI profile')
+
+@section('styles')
+    <link rel="stylesheet" href="{{ \App\Support\Asset::v('css/soi.css') }}">
+@endsection
+
+@php
+    $dash = '—';
+    $show = fn ($v) => filled($v) ? $v : $dash;
+    $fullName = $profile
+        ? trim(preg_replace('/\s+/', ' ', implode(' ', [$profile->first_name, $profile->middle_name, $profile->last_name, $profile->extension_name])))
+        : '';
+@endphp
 
 @section('content')
-<div class="container mx-auto py-10 px-6">
-    <div class="max-w-4xl mx-auto bg-white shadow-lg rounded-2xl p-8">
-
-        <h2 class="text-3xl font-bold mb-6 text-center">Your Profile</h2>
-
-        @if($profile)
-            <div class="flex flex-col md:flex-row items-center md:items-start space-y-6 md:space-y-0 md:space-x-8">
-                <!-- Photo -->
-                <div class="flex-shrink-0">
-                    <img src="{{ $profile->photo ? \App\Support\Uploads::url($profile->photo) : asset('images/default-2x2.png') }}"
-                         alt="Profile Photo" class="w-32 h-32 rounded-lg object-cover border-2 border-gray-300">
+    <div class="pcg-page soi-summary">
+        @if ($profile)
+            <div class="pcg-page__header">
+                <div>
+                    <h2>{{ $fullName !== '' ? $fullName : $user->name }}: Statement of Information</h2>
+                    <p>Your SOI as saved. Edit it to bring it up to date, or print it for your unit.</p>
                 </div>
-
-                <!-- Personal Info -->
-                <div class="flex-1 space-y-2">
-                    <p><strong>Profile Code:</strong> {{ $profile->profile_code ?? '-' }}</p>
-                    <p><strong>District:</strong> {{ $profile->district ?? '-' }}</p>
-                    <p><strong>Full Name:</strong> {{ $profile->first_name }} {{ $profile->middle_name }} {{ $profile->last_name }} {{ $profile->extension_name }}</p>
-                    <p><strong>Birthday:</strong> {{ $profile->birthday ? \Carbon\Carbon::parse($profile->birthday)->format('F d, Y') : '-' }}</p>
-                    <p><strong>Sex:</strong> {{ $profile->sex ?? '-' }}</p>
+                <div class="soi-summary__actions">
+                    <a class="pcg-btn pcg-btn--secondary" href="{{ route('generate.soi') }}">
+                        <i class="fa-solid fa-print" aria-hidden="true"></i> Print my SOI
+                    </a>
+                    <a class="pcg-btn pcg-btn--cta" href="{{ route('profile', ['edit' => 1]) }}">
+                        <i class="fa-solid fa-pen" aria-hidden="true"></i> Edit SOI
+                    </a>
                 </div>
             </div>
 
-            <hr class="my-6 border-gray-300">
+            <div class="soi-summary__grid">
+                <figure class="pcg-card soi-photo">
+                    <img src="{{ $profile->photo ? \App\Support\Uploads::url($profile->photo) : asset('images/no-photo.svg') }}"
+                        alt="{{ $profile->photo ? '2x2 photo of ' . $fullName : 'No photo uploaded' }}" width="192" height="192">
+                    <figcaption>{{ $profile->photo ? '2x2 photo' : 'No 2x2 photo yet' }}</figcaption>
+                </figure>
 
-            <!-- Permanent Address -->
-            <div class="mb-6">
-                <h3 class="text-xl font-semibold mb-2">Permanent Address</h3>
-                <p><strong>Street:</strong> {{ $profile->perm_street ?? '-' }}</p>
-                <p><strong>City/Municipality:</strong> {{ $profile->perm_city ?? '-' }}</p>
-                <p><strong>Province:</strong> {{ $profile->perm_province ?? '-' }}</p>
-                <p><strong>Zip Code:</strong> {{ $profile->perm_zipcode ?? '-' }}</p>
-                <p><strong>Years of Residency:</strong> {{ $profile->perm_years_residency ?? '-' }}</p>
-            </div>
+                <div class="pcg-stack">
+                    <section class="pcg-card" aria-labelledby="soi-personal">
+                        <div class="pcg-card__header"><h3 id="soi-personal">Personal details</h3></div>
+                        <dl class="pcg-dl">
+                            <div><dt>Profile code</dt><dd class="pcg-mono">{{ $show($profile->profile_code) }}</dd></div>
+                            <div><dt>District</dt><dd>{{ $show($profile->district) }}</dd></div>
+                            <div><dt>Full name</dt><dd>{{ $show($fullName) }}</dd></div>
+                            <div><dt>Birthday</dt><dd><time class="pcg-num">{{ $profile->birthday ? \Carbon\Carbon::parse($profile->birthday)->format('F d, Y') : $dash }}</time></dd></div>
+                            <div><dt>Sex</dt><dd>{{ $show($profile->sex) }}</dd></div>
+                        </dl>
+                    </section>
 
-            <!-- Present Address -->
-            <div class="mb-6">
-                <h3 class="text-xl font-semibold mb-2">Present Address</h3>
-                <p><strong>Street:</strong> {{ $profile->pres_street ?? '-' }}</p>
-                <p><strong>City/Municipality:</strong> {{ $profile->pres_city ?? '-' }}</p>
-                <p><strong>Province:</strong> {{ $profile->pres_province ?? '-' }}</p>
-                <p><strong>Zip Code:</strong> {{ $profile->pres_zipcode ?? '-' }}</p>
-                <p><strong>Years of Residency:</strong> {{ $profile->pres_years_residency ?? '-' }}</p>
-            </div>
+                    <section class="pcg-card" aria-labelledby="soi-addresses">
+                        <div class="pcg-card__header"><h3 id="soi-addresses">Addresses</h3></div>
+                        <div class="soi-summary__pair">
+                            @foreach (['perm' => 'Permanent address', 'pres' => 'Present address'] as $prefix => $heading)
+                                <section>
+                                    <h4>{{ $heading }}</h4>
+                                    <dl class="pcg-dl">
+                                        <div><dt>Street</dt><dd>{{ $show($profile->{$prefix . '_street'}) }}</dd></div>
+                                        <div><dt>City / municipality</dt><dd>{{ $show($profile->{$prefix . '_city'}) }}</dd></div>
+                                        <div><dt>Province</dt><dd>{{ $show($profile->{$prefix . '_province'}) }}</dd></div>
+                                        <div><dt>ZIP code</dt><dd class="pcg-num">{{ $show($profile->{$prefix . '_zipcode'}) }}</dd></div>
+                                        <div><dt>Years of residency</dt><dd class="pcg-num">{{ $show($profile->{$prefix . '_years_residency'}) }}</dd></div>
+                                    </dl>
+                                </section>
+                            @endforeach
+                        </div>
+                    </section>
 
-            <!-- Education -->
-            <div>
-                <h3 class="text-xl font-semibold mb-2">Educational Background</h3>
-                <p><strong>Highest Education Level:</strong> {{ $profile->education_level ?? '-' }}</p>
-
-                @if($profile->education_level == 'Tertiary')
-                    <p><strong>Tertiary Course:</strong> {{ $profile->tertiary_course ?? '-' }}</p>
-                    <p><strong>Tertiary School:</strong> {{ $profile->tertiary_school ?? '-' }}</p>
-                    <p><strong>Tertiary Year Graduated:</strong> {{ $profile->tertiary_year_graduated ?? '-' }}</p>
-                @endif
-
-                @if(in_array($profile->education_level, ['Secondary', 'Tertiary']))
-                    <p><strong>Secondary School:</strong> {{ $profile->secondary_school ?? '-' }}</p>
-                    <p><strong>Track / Strand:</strong> {{ $profile->secondary_strand ?? '-' }}</p>
-                    <p><strong>Secondary Year Graduated:</strong> {{ $profile->secondary_year_graduated ?? '-' }}</p>
-                @endif
-
-                <p><strong>Elementary School:</strong> {{ $profile->elementary_school ?? '-' }}</p>
-                <p><strong>Elementary Year Graduated:</strong> {{ $profile->elementary_year_graduated ?? '-' }}</p>
-            </div>
-
-            <div class="mt-6 text-center">
-                <a href="{{ route('profile', ['edit' => 1]) }}"
-                   class="bg-blue-600 hover:bg-blue-700 px-6 py-2 rounded-lg font-semibold text-white transition">
-                   Edit Profile
-                </a>
+                    <section class="pcg-card" aria-labelledby="soi-education">
+                        <div class="pcg-card__header"><h3 id="soi-education">Education</h3></div>
+                        <dl class="pcg-dl">
+                            <div><dt>Highest level</dt><dd>{{ $show($profile->education_level) }}</dd></div>
+                            @if ($profile->education_level == 'Tertiary')
+                                <div><dt>Tertiary course</dt><dd>{{ $show($profile->tertiary_course) }}</dd></div>
+                                <div><dt>Tertiary school</dt><dd>{{ $show($profile->tertiary_school) }}</dd></div>
+                                <div><dt>Tertiary year graduated</dt><dd class="pcg-num">{{ $show($profile->tertiary_year_graduated) }}</dd></div>
+                            @endif
+                            @if (in_array($profile->education_level, ['Secondary', 'Tertiary']))
+                                <div><dt>Secondary school</dt><dd>{{ $show($profile->secondary_school) }}</dd></div>
+                                <div><dt>Track / strand</dt><dd>{{ $show($profile->secondary_strand) }}</dd></div>
+                                <div><dt>Secondary year graduated</dt><dd class="pcg-num">{{ $show($profile->secondary_year_graduated) }}</dd></div>
+                            @endif
+                            <div><dt>Elementary school</dt><dd>{{ $show($profile->elementary_school) }}</dd></div>
+                            <div><dt>Elementary year graduated</dt><dd class="pcg-num">{{ $show($profile->elementary_year_graduated) }}</dd></div>
+                        </dl>
+                    </section>
+                </div>
             </div>
         @else
-            <p class="text-center text-gray-500">You haven't created a profile yet. <a href="{{ route('profile', ['edit' => 1]) }}" class="text-blue-500 underline">Create Profile</a></p>
+            <div class="pcg-page__header">
+                <div>
+                    <h2>You have not started your Statement of Information</h2>
+                    <p>The SOI has six short steps. Each step is saved as you go.</p>
+                </div>
+            </div>
+            <div class="pcg-card pcg-empty">
+                <a class="pcg-btn pcg-btn--cta" href="{{ route('profile', ['edit' => 1]) }}">
+                    <i class="fa-solid fa-pen" aria-hidden="true"></i> Start my SOI
+                </a>
+            </div>
         @endif
     </div>
-</div>
 @endsection
