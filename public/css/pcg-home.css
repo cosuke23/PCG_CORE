@@ -81,7 +81,7 @@ body.ph { margin: 0; font: 16px/1.6 var(--ph-sans); color: var(--ph-ink); backgr
 .ph-hero__band { background: linear-gradient(104deg, var(--ph-azure-800) 0%, var(--ph-azure-800) 24%, var(--ph-crimson-800) 36%, var(--ph-crimson-900) 62%, var(--ph-crimson-950) 100%); }
 .ph-hero__in { display: grid; grid-template-columns: minmax(0, 7fr) minmax(0, 5fr); gap: 48px; align-items: end; padding-block: 72px 40px; }
 .ph-hero h1 { margin: 0; font: 600 clamp(40px, 5vw, 64px)/1.05 var(--ph-serif); letter-spacing: -.02em; text-wrap: balance; }
-.ph-hero h1 span { display: block; color: var(--ph-gold-300); }
+.ph-hero h1 .ph-hero__gold { display: block; color: var(--ph-gold-300); }
 .ph-hero__lead { margin: 0 0 28px; font-size: 18px; line-height: 1.7; color: rgba(255, 255, 255, .85); text-wrap: pretty; }
 .ph-credit { margin-block: 0; padding-bottom: 20px; font-size: 11px; color: var(--ph-crimson-200); opacity: .8; text-align: right; }
 
@@ -168,9 +168,60 @@ body.ph { margin: 0; font: 16px/1.6 var(--ph-sans); color: var(--ph-ink); backgr
 .ph-foot a:hover { color: var(--ph-white); text-decoration: underline; }
 .ph-foot__base { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 8px 24px; padding-block: 18px 28px; border-top: 1px solid rgba(255, 255, 255, .1); font-size: 12px; }
 
-/* reveal on scroll (pcg-home.js adds .ph-js; nothing is hidden without JavaScript) */
-.ph-js [data-ph-reveal] { opacity: 0; transform: translateY(18px); transition: opacity .6s ease, transform .6s ease; }
+/* ------------------------------------------------------------ motion (pcg-home.js)
+   Same entrance as the MEPCOM HRMIS band: eyebrow slides in, the headline rises
+   word by word out of a blur, the gold line gets a light sweep, then the text
+   and buttons; the gold button glows twice. Sections fade up as they scroll in,
+   their cards one after another. Only with JavaScript (.ph-js) and never under
+   "reduce motion"; anything already on screen shows at once. */
+.ph-js .ph-hero__banner img { animation: ph-settle 1.6s cubic-bezier(.2, .7, .2, 1) both; }
+@keyframes ph-settle { from { opacity: .35; transform: scale(1.05); } to { opacity: 1; transform: none; } }
+
+.ph-js [data-ph-reveal] { opacity: 0; transform: translateY(28px); transition: opacity .8s ease, transform .8s cubic-bezier(.2, .7, .2, 1); }
 .ph-js [data-ph-reveal].is-in { opacity: 1; transform: none; }
+/* groups whose parts animate on their own: the block itself stays put */
+.ph-js [data-ph-reveal="hero"], .ph-js [data-ph-reveal="line"], .ph-js [data-ph-stagger][data-ph-reveal] { opacity: 1; transform: none; }
+
+/* words */
+.ph-js [data-ph-words] .ph-w { display: inline-block; opacity: 0; transform: translateY(.55em) rotate(2deg); filter: blur(6px);
+    transition: opacity .6s ease, transform .7s cubic-bezier(.2, .7, .2, 1), filter .6s ease; transition-delay: calc(var(--d, 0ms) + var(--i, 0) * 110ms); }
+.ph-js .is-in [data-ph-words] .ph-w, .ph-js [data-ph-words].is-in .ph-w { opacity: 1; transform: none; filter: none; }
+.ph-js .ph-hero h1 { --d: 150ms; }
+
+/* hero parts */
+.ph-js .ph-hero__in .ph-eyebrow, .ph-js .ph-hero__lead, .ph-js .ph-hero__in .ph-btn { opacity: 0; transform: translateY(18px); transition: opacity .7s ease, transform .7s cubic-bezier(.2, .7, .2, 1); }
+.ph-js .ph-hero__in .ph-eyebrow { transform: translateX(-24px); }
+.ph-js .ph-hero__in.is-in .ph-eyebrow, .ph-js .ph-hero__in.is-in .ph-hero__lead, .ph-js .ph-hero__in.is-in .ph-btn { opacity: 1; transform: none; }
+.ph-js .ph-hero__lead { transition-delay: 1s; }
+.ph-js .ph-hero__in .ph-btn:nth-child(1) { transition-delay: 1.2s; }
+.ph-js .ph-hero__in .ph-btn:nth-child(2) { transition-delay: 1.32s; }
+/* the gold line gets a light sweep every few seconds once it is in place */
+.ph-hero__in.is-in .ph-hero__gold .ph-w {
+    background-image: linear-gradient(100deg, var(--ph-gold-300) 0 42%, #fff1d2 50%, var(--ph-gold-300) 58% 100%);
+    background-size: 250% 100%; background-repeat: repeat-x; background-position: 100% 0;
+    -webkit-background-clip: text; background-clip: text; color: transparent;
+    animation: ph-shine 5s ease-in-out 1.8s infinite;
+}
+@keyframes ph-shine { 0% { background-position: 100% 0; } 35%, 100% { background-position: 0% 0; } }
+.ph-hero__in.is-in .ph-btn--gold { animation: ph-glow 1.6s ease-in-out 2s 2; }
+.ph-cta__in.is-in .ph-btn--gold { animation: ph-glow 1.6s ease-in-out 1s 2; }
+@keyframes ph-glow { 0%, 100% { box-shadow: 0 0 0 0 rgba(235, 148, 64, 0); } 50% { box-shadow: 0 0 0 10px rgba(235, 148, 64, .3); } }
+
+/* cards and lists, one after another */
+.ph-js [data-ph-stagger] > * { opacity: 0; transform: translateY(22px); transition: opacity .6s ease, transform .7s cubic-bezier(.2, .7, .2, 1); transition-delay: calc(var(--i, 0) * 90ms); }
+.ph-js .is-in [data-ph-stagger] > *, .ph-js [data-ph-stagger].is-in > * { opacity: 1; transform: none; }
+.ph-js .ph-org__group [data-ph-stagger] > * { transform: translateX(-12px); transition-delay: calc(200ms + var(--i, 0) * 60ms); }
+.ph-js .ph-org__group.is-in [data-ph-stagger] > * { transform: none; }
+
+/* structure: the line from NHQ down, then across, then the groups */
+.ph-js .ph-org__top::after { transform: scaleY(0); transform-origin: top; transition: transform .5s ease .5s; }
+.ph-js .ph-org__top.is-in::after { transform: none; }
+.ph-org__groups { border-top: 0; position: relative; }
+.ph-org__groups::before { content: ""; position: absolute; left: 0; right: 0; top: 0; height: 2px; background: var(--ph-gold-400); }
+.ph-js .ph-org__groups::before { transform: scaleX(0); transition: transform .9s cubic-bezier(.2, .7, .2, 1) .2s; }
+.ph-js .ph-org__groups.is-in::before { transform: none; }
+.ph-org__cmd--here.is-pulse img { animation: ph-ring 1.8s ease-out 2; }
+@keyframes ph-ring { 0% { box-shadow: 0 0 0 0 rgba(245, 182, 114, .7); } 100% { box-shadow: 0 0 0 14px rgba(245, 182, 114, 0); } }
 
 @media (min-width: 1081px) { .ph-mobile { display: none; } }
 @media (max-width: 1080px) {
@@ -199,7 +250,11 @@ body.ph { margin: 0; font: 16px/1.6 var(--ph-sans); color: var(--ph-ink); backgr
 }
 @media (prefers-reduced-motion: reduce) {
     html { scroll-behavior: auto; }
-    .ph-js [data-ph-reveal] { opacity: 1; transform: none; transition: none; }
+    .ph-js [data-ph-reveal], .ph-js [data-ph-words] .ph-w, .ph-js [data-ph-stagger] > *,
+    .ph-js .ph-hero__in .ph-eyebrow, .ph-js .ph-hero__lead, .ph-js .ph-hero__in .ph-btn { opacity: 1; transform: none; filter: none; transition: none; }
+    .ph-js .ph-hero__banner img, .ph-hero__in.is-in .ph-hero__gold .ph-w, .ph-hero__in.is-in .ph-btn--gold, .ph-cta__in.is-in .ph-btn--gold, .ph-org__cmd--here.is-pulse img { animation: none; }
+    .ph-hero__in.is-in .ph-hero__gold .ph-w { color: var(--ph-gold-300); background: none; }
+    .ph-js .ph-org__top::after, .ph-js .ph-org__groups::before { transform: none; transition: none; }
     .ph-btn, .ph-card, .ph-nav a::after { transition: none; }
     .ph-btn:hover, .ph-card:hover { transform: none; }
 }
