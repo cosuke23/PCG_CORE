@@ -216,6 +216,17 @@ class DocumentUploadModuleTest extends TestCase
         $this->assertSame('Pending', $this->row()->status);
     }
 
+    public function test_a_new_pin_answers_a_returned_location()
+    {
+        DB::table('personnel_data')->insert(['personnel_id' => $this->member->id, 'serial_number' => 'SN-1', 'status' => 'rejected',
+            'soi' => 'documents/soi.pdf', 'latitude' => null, 'longitude' => null]);
+        DB::table('rejected_documents')->insert(['serial_number' => 'SN-1', 'doc_type' => 'Residence Location', 'status' => 'rejected']);
+
+        $this->actingAs($this->member)->post('/documents/upload', ['latitude' => '14.6', 'longitude' => '121.0'])->assertSessionHasNoErrors();
+        $this->assertSame('complied', DB::table('rejected_documents')->value('status'));
+        $this->assertSame('Pending', $this->row()->status, 'the new pin goes to the checker');
+    }
+
     public function test_201_files_upload_encrypted_with_an_accurate_message()
     {
         $post = [];

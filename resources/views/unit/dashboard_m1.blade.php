@@ -526,7 +526,7 @@
                     <!-- LOCATION -->
                     <div class="mt-6">
 
-                        <p id="coords" class="text-indigo-500 font-medium"></p>
+                        <div id="coords"></div>
 
                     </div>
 
@@ -704,6 +704,31 @@
                 '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
             })[c]);
         }
+        // Residence location: reviewed like a document (tick it and add a comment to return it;
+        // returning clears the member's pin so they set it again)
+        function locationCard(doc) {
+            const lat = Number(doc.latitude), lng = Number(doc.longitude);
+            if (!doc.latitude || !doc.longitude || !isFinite(lat) || !isFinite(lng)) {
+                return `<div class="bg-white border border-gray-200 rounded-3xl p-5 shadow-sm">
+                    <h3 class="font-bold text-lg text-black">Residence location</h3>
+                    <p class="text-yellow-500 text-sm mt-2">No location pinned</p>
+                </div>`;
+            }
+            const q = encodeURIComponent(lat) + ',' + encodeURIComponent(lng);
+            return `<div class="bg-white border border-gray-200 rounded-3xl p-5 shadow-sm">
+                <div class="flex items-center gap-3 mb-4">
+                    <input type="checkbox" class="doc-check w-5 h-5" id="loc-check" name="docs[location][checked]">
+                    <label for="loc-check" class="font-bold text-lg text-black">Residence location</label>
+                </div>
+                <p class="text-sm text-gray-500">Pinned at ${escapeHtml(lat.toFixed(6))}, ${escapeHtml(lng.toFixed(6))}</p>
+                <p class="mt-2">📍 <a href="https://www.google.com/maps?q=${escapeHtml(q)}" target="_blank" rel="noopener" class="text-indigo-500 underline font-medium">Open in Google Maps</a></p>
+                <div class="mt-4">
+                    <textarea name="docs[location][comment]" placeholder="Write comment (e.g. wrong house, pin the gate)..." rows="3"
+                        class="w-full border border-gray-300 rounded-2xl p-4 outline-none focus:ring-2 focus:ring-indigo-300"></textarea>
+                </div>
+            </div>`;
+        }
+
         function openModal(doc) {
 
             const modal = document.getElementById('modal');
@@ -813,13 +838,8 @@
 
             document.getElementById('doc_box').innerHTML = html;
 
-            // LOCATION
-            if (doc.latitude && doc.longitude) {
-                document.getElementById('coords').innerHTML =
-                    `📍 <a href="https://www.google.com/maps?q=${encodeURIComponent(doc.latitude)},${encodeURIComponent(doc.longitude)}" target="_blank" class="underline">Open in Google Maps</a>`;
-            } else {
-                document.getElementById('coords').innerText = "No location available";
-            }
+            // LOCATION (reviewed like a document)
+            document.getElementById('coords').innerHTML = locationCard(doc);
 
             document.getElementById('checkAll').checked = false;
         }

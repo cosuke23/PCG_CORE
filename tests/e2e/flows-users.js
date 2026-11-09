@@ -47,6 +47,25 @@ async function step(name, fn) {
     const r = sql(`select concat(doc_type,'|',status) from rejected_documents where serial_number='${serial}' and comment like 'Flow test%'`);
     check('Unit checker rejects a document with a comment', r === 'NBI Clearance|rejected', r || 'no row');
   });
+  await step('Unit checker returns the residence location', async () => {
+    const serial = sql("select pd.serial_number from personnel_data pd join users u on u.serial_number=pd.serial_number where u.mother_unit='MEPLEF' order by pd.id limit 1");
+    sql(`update personnel_data set latitude=14.5995, longitude=120.9842 where serial_number='${serial}'`);
+    await unit.goto(BASE + '/unit/dashboard');
+    await unit.locator('tr', { hasText: serial }).first().dblclick();
+    await unit.waitForSelector('#coords input[name="docs[location][checked]"]', { state: 'visible', timeout: 5000 });
+    const docs = await unit.locator('#doc_box .doc-check').count();
+    check('Own-unit review lists all 10 documents', docs === 10, 'boxes=' + docs);
+    check('Location card links to Google Maps', (await unit.getAttribute('#coords a', 'href')) === 'https://www.google.com/maps?q=14.5995,120.9842');
+    if (process.env.PCG_E2E_SHOTS) await unit.locator('#coords').screenshot({ path: process.env.PCG_E2E_SHOTS + '/location-review.png' });
+    await unit.check('#coords input[name="docs[location][checked]"]');
+    await unit.fill('#coords [name="docs[location][comment]"]', 'Flow test: pin the house, not the barangay hall');
+    await unit.click('button:has-text("❌ REJECT")');
+    await unit.click('.swal2-confirm').catch(() => {});
+    await unit.waitForLoadState('networkidle'); await unit.waitForTimeout(500);
+    const r = sql(`select concat(doc_type,'|',status) from rejected_documents where serial_number='${serial}' and comment like 'Flow test: pin%'`);
+    const pin = sql(`select coalesce(latitude,'none') from personnel_data where serial_number='${serial}'`);
+    check('Unit checker returns the residence location', r === 'Residence Location|rejected' && pin === 'none', r + ' pin=' + pin);
+  });
   await step('Unit checker approves documents', async () => {
     const serial = sql("select pd.serial_number from personnel_data pd join users u on u.serial_number=pd.serial_number where u.mother_unit='MEPLEF' order by pd.id desc limit 1");
     await unit.goto(BASE + '/unit/dashboard');

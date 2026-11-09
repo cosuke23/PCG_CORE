@@ -181,6 +181,15 @@ class ApplicantDocumentController extends Controller
                 return (string) $old !== (string) $value;
             }, ARRAY_FILTER_USE_BOTH);
 
+            // a new pin answers a returned residence location
+            if (array_intersect_key($changed, ['latitude' => 1, 'longitude' => 1]) && !empty($data['latitude'] ?? $existing->latitude ?? null)) {
+                DB::table('rejected_documents')
+                    ->where('serial_number', $serial)
+                    ->where('doc_type', \App\Http\Controllers\UnitDocumentController::LOCATION_LABEL)
+                    ->where('status', 'rejected')
+                    ->update(['status' => 'complied', 'updated_at' => now()]);
+            }
+
             if (!$uploaded && !$changed) {
                 return back()->with('info', 'Nothing to save: no file was chosen and no date or pin changed.');
             }

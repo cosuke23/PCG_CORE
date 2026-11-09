@@ -8,6 +8,9 @@ use Illuminate\Support\Facades\DB;
 
 class UnitDocumentController extends Controller
 {
+    /** rejected_documents.doc_type for a returned residence pin */
+    public const LOCATION_LABEL = 'Residence Location';
+
     public function review(Request $request)
     {
         Log::info('=== UNIT DOCUMENT REVIEW START ===', [
@@ -92,6 +95,24 @@ class UnitDocumentController extends Controller
                 Log::warning('🔴 REJECTED FLOW START');
 
                 foreach ($docs as $column => $doc) {
+
+                    // the residence pin (latitude/longitude) is reviewed like a document:
+                    // returning it clears the pin so the member sets it again
+                    if ($column === 'location' && is_array($doc) && isset($doc['checked'])) {
+                        $pin = DB::table('personnel_data')->where('id', $rowId)->first(['latitude', 'longitude']);
+                        DB::table('personnel_data')->where('id', $rowId)->update(['latitude' => null, 'longitude' => null, 'updated_at' => now()]);
+                        DB::table('rejected_documents')->insert([
+                            'serial_number' => $serial,
+                            'doc_type'      => self::LOCATION_LABEL,
+                            'file_path'     => null,
+                            'comment'       => is_string($doc['comment'] ?? null) ? mb_substr($doc['comment'], 0, 2000) : null,
+                            'status'        => 'rejected',
+                            'created_at'    => now(),
+                            'updated_at'    => now(),
+                        ]);
+                        Log::warning('Residence location returned', ['had_pin' => $pin && $pin->latitude !== null]);
+                        continue;
+                    }
 
                     if (!is_string($column) || !isset($docMap[$column]) || !is_array($doc)) continue;
 

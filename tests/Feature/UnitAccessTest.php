@@ -157,6 +157,51 @@ class UnitAccessTest extends TestCase
         $this->assertSame('Medical', DB::table('rejected_documents')->value('doc_type'));
     }
 
+    public function test_returning_the_residence_location_clears_the_pin()
+    {
+        Schema::create('rejected_documents', function (Blueprint $t) {
+            $t->id(); $t->string('serial_number'); $t->string('doc_type'); $t->string('file_path')->nullable();
+            $t->text('comment')->nullable(); $t->string('status')->nullable(); $t->timestamps();
+        });
+        Schema::table('personnel_data', function (Blueprint $t) {
+            $t->decimal('latitude', 10, 7)->nullable(); $t->decimal('longitude', 10, 7)->nullable();
+        });
+        DB::table('personnel_data')->update(['latitude' => 14.5995, 'longitude' => 120.9842]);
+
+        $this->withSession($this->unit)->post('/unit/documents/review', [
+            'serial_number' => 'SN-A',
+            'decision' => 'rejected',
+            'docs' => ['location' => ['checked' => '1', 'comment' => 'Pin the house, not the barangay hall']],
+        ])->assertRedirect();
+
+        $a = DB::table('personnel_data')->where('serial_number', 'SN-A')->first();
+        $this->assertNull($a->latitude);
+        $this->assertNull($a->longitude);
+        $this->assertSame('documents/a.pdf', $a->nbi_clearance, 'documents are untouched');
+        $this->assertSame('rejected', $a->status);
+        $ret = DB::table('rejected_documents')->first();
+        $this->assertSame(['Residence Location', 'Pin the house, not the barangay hall', 'rejected'], [$ret->doc_type, $ret->comment, $ret->status]);
+        $this->assertNotNull(DB::table('personnel_data')->where('serial_number', 'SN-B')->value('latitude'), 'other members keep their pin');
+
+        // an unticked location box changes nothing
+        DB::table('personnel_data')->where('serial_number', 'SN-A')->update(['latitude' => 14.6, 'longitude' => 121.0]);
+        $this->post('/unit/documents/review', ['serial_number' => 'SN-A', 'decision' => 'rejected',
+            'docs' => ['location' => ['comment' => 'not ticked']]])->assertRedirect();
+        $this->assertNotNull(DB::table('personnel_data')->where('serial_number', 'SN-A')->value('latitude'));
+    }
+
+    public function test_review_windows_list_every_document_and_the_location()
+    {
+        foreach (['unit/dashboard', 'unit/dashboard_m1'] as $view) {
+            $src = file_get_contents(resource_path("views/$view.blade.php"));
+            foreach (['soi', 'ofr', 'nbi_clearance', 'ombudsman_clearance', 'sandiganbayan_clearance', 'medical_clearance',
+                'pft_clearance', 'photo_2x2', 'whole_body_picture', 'residential_sketch'] as $f) {
+                $this->assertStringContainsString("doc.$f, '$f']", $src, "$view reviews $f");
+            }
+            $this->assertStringContainsString('name="docs[location][checked]"', $src, "$view can return the location");
+        }
+    }
+
     public function test_m1_checker_can_review_any_unit()
     {
         $this->withSession($this->m1)
