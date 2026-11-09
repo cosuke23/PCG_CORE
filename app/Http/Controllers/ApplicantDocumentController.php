@@ -257,9 +257,8 @@ class ApplicantDocumentController extends Controller
         $user = Auth::user();
         $serial = $user->serial_number;
 
-        $documents = DB::table('personnel_201_files')
-            ->where('serial_number', $serial)
-            ->first();
+        // the same record the upload uses (App\Support\Review201::rowFor)
+        $documents = \App\Support\Review201::rowFor($user);
 
         $personal = DB::table('reinlist_basic_info')
             ->where('serial_number', $serial)
@@ -296,7 +295,8 @@ class ApplicantDocumentController extends Controller
             'user' => $user,
             'documents' => $documents,
             'personal' => $personal,
-            'hasDocuments' => $hasDocuments
+            'hasDocuments' => $hasDocuments,
+            'returned' => \App\Support\Review201::returned((string) $serial),
         ]);
     }
 
@@ -321,6 +321,24 @@ class ApplicantDocumentController extends Controller
             'retirement'     => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:10240',
             'body_picture'   => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:10240',
         ]);
+
+        // ================= REVIEW LOCKS (App\Support\Review201) =================
+        // Waiting for the checker: nothing can be uploaded. After the review only
+        // returned and never-filled sections open. The page hides the controls;
+        // this refuses a hand-made request.
+        $existing = \App\Support\Review201::rowFor($user);
+        $waiting = \App\Support\Review201::awaitingReview($existing);
+        $refused = [];
+        foreach (\App\Support\Review201::lockedFields($existing) as $field) {
+            if ($request->hasFile($field)) {
+                $refused[$field] = $waiting
+                    ? 'Your 201 file is waiting for your unit checker. You can upload again after the review.'
+                    : 'This 201 section was accepted by your unit checker and is locked. Ask your unit checker if it must change.';
+            }
+        }
+        if ($refused) {
+            return redirect()->route('upload.201')->withErrors($refused);
+        }
 
         $folders = [
             'soi'          => '201_files/soi',
@@ -389,32 +407,40 @@ class ApplicantDocumentController extends Controller
                 );
             }
         }
-        $existing = DB::table('personnel_201_files')
-            ->where('personnel_id', $userId)
-            ->first();
-
         if (!$uploadedFiles) {
             return redirect()->route('upload.201')->withErrors(['files' => 'Choose at least one file to upload.']);
         }
+
+        // every upload goes to the checker (once the review column exists)
+        $review = \App\Support\Review201::hasStatus() ? ['status' => 'Pending'] : [];
 
         if ($existing) {
             // Only the files uploaded now: the other 201 files stay linked
             // (setting every column used to erase the ones not re-uploaded).
             DB::table('personnel_201_files')
-                ->where('personnel_id', $userId)
-                ->update($uploadedFiles);
+                ->where('id', $existing->id)
+                ->update($uploadedFiles + $review + ['personnel_id' => $userId]);
         } else {
             DB::table('personnel_201_files')->insert(array_merge(
                 array_fill_keys(array_keys($folders), null),
                 $uploadedFiles,
+                $review,
                 ['user_id' => $userId, 'personnel_id' => $userId, 'serial_number' => $serial]
             ));
+        }
+
+        // a re-upload answers a returned section
+        if (\Illuminate\Support\Facades\Schema::hasTable('rejected_documents')) {
+            DB::table('rejected_documents')->where('serial_number', $serial)
+                ->whereIn('doc_type', array_map([\App\Support\Review201::class, 'docType'], array_keys($uploadedFiles)))
+                ->whereRaw('LOWER(status) = ?', ['rejected'])
+                ->update(['status' => 'complied']);
         }
         // OPTIONAL: Save to database
         // DB::table('personnel_201_files')->insert($uploadedFiles);
 
         return redirect()
             ->route('upload.201')
-            ->with('success', (count($uploadedFiles) === 1 ? '1 file' : count($uploadedFiles) . ' files') . ' uploaded and encrypted to your 201 file.');
+            ->with('success', (count($uploadedFiles) === 1 ? '1 file' : count($uploadedFiles) . ' files') . ' uploaded and encrypted to your 201 file. Your unit checker will review ' . (count($uploadedFiles) === 1 ? 'it.' : 'them.'));
     }
 }

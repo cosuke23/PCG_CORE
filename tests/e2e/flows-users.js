@@ -83,6 +83,15 @@ async function step(name, fn) {
     check('Unit checker approves documents', st.toLowerCase() === 'approved', st);
     check('Decided row is highlighted', await unit.locator('.uc-table tr.pcg-flash-row', { hasText: serial }).count() === 1);
   });
+  await step('Unit checker approves a 201 file', async () => {
+    const serial = sql("select p.serial_number from personnel_201_files p join users u on u.id=p.personnel_id where u.email='member@demo.test'");
+    await unit.goto(BASE + '/unit/201-files');
+    await openRecord(unit, serial);
+    const items = await unit.locator('#uc-items .uc-item').count();
+    await Promise.all([unit.waitForNavigation(), unit.click('#uc-approve-btn')]);
+    const st = sql(`select status from personnel_201_files where serial_number='${serial}'`);
+    check('Unit checker approves a 201 file (11 sections, own unit)', items === 11 && st === 'approved', `items=${items} status=${st}`);
+  });
   check('No JS errors (unit)', unit.jsErrors.length === 0, unit.jsErrors.slice(0, 2).join(' | '));
 
   // ---------------- M1: disciplinary upload ----------------
@@ -98,15 +107,17 @@ async function step(name, fn) {
     const n = sql("select count(*) from reinlist_disciplinary_actions where serial_number='DEMO-0003'");
     check('M1 uploads a disciplinary record', n === '1', `rows=${n}`);
   });
-  await step('M1 opens a 201 file', async () => {
+  await step('M1 opens the 201 review for every unit', async () => {
     await m1.goto(BASE + '/unit/201-files');
-    const first = m1.locator('[data-uf-open]').first();
+    check('M1 201 review shows the unit column', (await m1.textContent('.uc-table thead')).includes('Unit'));
+    await m1.click('[data-uc-filter="all"]');
+    const first = m1.locator('[data-uc-open]').first();
     if (await first.count()) {
       await first.click();
-      await m1.waitForSelector('#uf-dialog[open] #uf-items .uc-item', { timeout: 5000 });
-      check('M1 opens a 201 file', (await m1.locator('#uf-items .uc-item').count()) === 11);
-      await m1.click('#uf-dialog [data-uc-close]');
-    } else check('M1 opens a 201 file', true, 'no 201 files in the seed');
+      await m1.waitForSelector('#uc-dialog[open] #uc-items .uc-item', { timeout: 5000 });
+      check('M1 201 review lists the 11 sections (no residence pin)', (await m1.locator('#uc-items .uc-item').count()) === 11);
+      await m1.click('#uc-dialog [data-uc-close]');
+    } else check('M1 201 review lists the 11 sections (no residence pin)', false, 'no 201 files in the seed');
   });
   check('No JS errors (M1)', m1.jsErrors.length === 0, m1.jsErrors.slice(0, 2).join(' | '));
 
@@ -145,10 +156,13 @@ async function step(name, fn) {
   });
   await step('Personnel uploads a 201 file', async () => {
     await me.goto(BASE + '/upload-201');
+    // after the checker's approval: the accepted SOI section is locked, a never-filled section is open
+    check('Accepted 201 section locked, empty section open', await me.locator('input[name=soi]').count() === 0 && await me.locator('input[name=appointment]').count() === 1);
     await me.setInputFiles('input[name=appointment]', PDF);
     await Promise.all([me.waitForNavigation({ timeout: 15000 }), me.locator('form[action$="/upload-201"] [type=submit]').first().click()]);
     const v = sql("select appointment from personnel_201_files p join users u on u.id=p.personnel_id where u.email='member@demo.test'");
     check('Personnel uploads a 201 file', v.startsWith('201_files/appointment/'), v);
+    check('The 201 file waits for review again (everything locked)', await me.locator('input[type=file]').count() === 0 && await me.isDisabled('#submitBtn'));
   });
   await step('Personnel saves SOI step 1', async () => {
     // a saved profile opens as a summary; its Edit Profile button opens the form

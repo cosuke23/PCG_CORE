@@ -4,9 +4,12 @@
     applicant_name, serial_number, optionally mother_unit) and $allUnits (bool).
     The dialog posts to /unit/documents/review exactly as before:
     serial_number, decision (approved|rejected), docs[<column>|location][checked|comment].
+    The 201 review (unit.201_files_index) passes $mode = '201': its sections, file
+    links, /unit/201-files/review, and no residence location.
 --}}
 @php
-    $fields = [
+    $is201 = ($mode ?? 'documents') === '201';
+    $fields = $is201 ? \App\Support\Review201::SECTIONS : [
         'soi' => 'Statement of Information (SOI)',
         'ofr' => 'OFR / NOPER',
         'nbi_clearance' => 'NBI clearance',
@@ -18,7 +21,9 @@
         'whole_body_picture' => 'Whole-body photo',
         'residential_sketch' => 'Residential sketch',
     ];
-    $fileUrl = function ($path) {
+    $fileUrl = $is201
+        ? fn ($path) => \App\Support\Uploads::url(preg_replace('#^(/+|storage/)+#', '', (string) $path))
+        : function ($path) {
         $path = preg_replace('#^(/+|storage/)+#', '', (string) $path);
         if (!str_contains($path, '/')) {
             $path = 'documents/' . $path; // very old rows kept the bare file name
@@ -26,7 +31,7 @@
         return \App\Support\Uploads::url('documents_toupload/' . $path);
     };
     $statusOf = fn ($s) => match (strtolower(trim((string) $s))) { 'approved' => 'approved', 'rejected' => 'returned', default => 'waiting' };
-    $rows = collect($documents)->map(function ($d) use ($fields, $fileUrl, $statusOf) {
+    $rows = collect($documents)->map(function ($d) use ($fields, $fileUrl, $statusOf, $is201) {
         $items = [];
         foreach ($fields as $f => $label) {
             $path = $d->$f ?? null;
@@ -38,14 +43,14 @@
                 'expires' => !empty($d->{$f . '_expiration'}) ? \Carbon\Carbon::parse($d->{$f . '_expiration'})->format('d M Y') : null,
             ];
         }
-        $lat = is_numeric($d->latitude ?? null) ? (float) $d->latitude : null;
+        $lat = !$is201 && is_numeric($d->latitude ?? null) ? (float) $d->latitude : null;
         $lng = is_numeric($d->longitude ?? null) ? (float) $d->longitude : null;
         return [
             'name' => $d->applicant_name ?? 'Name not given',
             'serial' => $d->serial_number,
             'unit' => $d->mother_unit ?? null,
             'status' => $statusOf($d->status ?? null),
-            'uploaded' => $d->created_at ? \Carbon\Carbon::parse($d->created_at)->timezone('Asia/Manila')->format('d M Y') : null,
+            'uploaded' => !empty($d->created_at ?? null) ? \Carbon\Carbon::parse($d->created_at)->timezone('Asia/Manila')->format('d M Y') : null,
             'count' => collect($items)->whereNotNull('url')->count(),
             'items' => $items,
             'pin' => $lat !== null && $lng !== null ? ['lat' => $lat, 'lng' => $lng] : null,
@@ -71,7 +76,7 @@
                     {{ $counts['waiting'] }} {{ $counts['waiting'] === 1 ? 'record is' : 'records are' }} waiting for your review
                 @endif
             </h2>
-            <p class="uc-lede">{{ $allUnits ? 'Required documents from every unit.' : 'Required documents of members whose mother unit is ' . session('unit_name') . '.' }}
+            <p class="uc-lede">{{ $is201 ? '201 files' : 'Required documents' }}{{ $allUnits ? ' from every unit.' : ' of members whose mother unit is ' . session('unit_name') . '.' }}
                 Open a record to see each document, then approve it or return the items that need to be uploaded again.</p>
         </div>
     </header>
@@ -113,8 +118,8 @@
                         </td>
                         @if ($allUnits)<td>{{ $r['unit'] ?? '—' }}</td>@endif
                         <td>
-                            <span class="uc-meter" aria-hidden="true"><span style="width: {{ $r['count'] * 10 }}%"></span></span>
-                            <span class="pcg-num">{{ $r['count'] }} of 10</span>
+                            <span class="uc-meter" aria-hidden="true"><span style="width: {{ round($r['count'] / count($fields) * 100) }}%"></span></span>
+                            <span class="pcg-num">{{ $r['count'] }} of {{ count($fields) }}</span>
                         </td>
                         <td><time class="pcg-num">{{ $r['uploaded'] ?? '—' }}</time></td>
                         <td><span class="uc-status uc-status--{{ $r['status'] }}">{{ $statusText[$r['status']] }}</span></td>
@@ -128,14 +133,14 @@
             </tbody>
         </table>
         <p class="uc-empty" id="uc-empty" @if ($rows->isNotEmpty()) hidden @endif>
-            {{ $rows->isEmpty() ? 'No member has uploaded required documents yet.' : 'No record matches.' }}
+            {{ $rows->isEmpty() ? ($is201 ? 'No member has uploaded a 201 file yet.' : 'No member has uploaded required documents yet.') : 'No record matches.' }}
         </p>
     </section>
 </div>
 
 {{-- review dialog --}}
-<dialog class="uc-dialog" id="uc-dialog" aria-labelledby="uc-d-name">
-    <form method="POST" action="/unit/documents/review" id="uc-form" class="uc-dialog__form">
+<dialog class="uc-dialog" id="uc-dialog" aria-labelledby="uc-d-name" data-with-location="{{ $is201 ? '0' : '1' }}">
+    <form method="POST" action="{{ $is201 ? route('unit.201files.review') : '/unit/documents/review' }}" id="uc-form" class="uc-dialog__form">
         @csrf
         <input type="hidden" name="serial_number" id="uc-d-serial-input">
 

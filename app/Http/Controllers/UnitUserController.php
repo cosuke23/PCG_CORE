@@ -353,22 +353,14 @@ class UnitUserController extends Controller
 
     public function index_201()
     {
-        $personnel = DB::table('personnel_201_files as p201')
-            ->leftJoin('reinlist_basic_info as pi', 'p201.serial_number', '=', 'pi.serial_number')
-            ->leftJoin('users as u', 'p201.serial_number', '=', 'u.serial_number')
-            ->select(
-                'p201.*',
-                'pi.first_name',
-                'pi.middle_name',
-                'pi.last_name',
-                'pi.rank',
-                'pi.class',
-                'u.mother_unit'
-            )
-            ->orderBy('pi.last_name')
+        // review queue: own-unit checkers see their unit's members, M1 checkers all
+        $isM1 = session('unit_role') === \App\Models\UnitUser::ROLE_M1;
+        $documents = \App\Support\Review201::queueFor(session('unit_name'), $isM1)
+            ->select('p201.*', 'u.name as applicant_name', 'u.serial_number', 'u.mother_unit')
+            ->orderByDesc('p201.id')
             ->get();
 
-        return view('unit.201_files_index', compact('personnel'));
+        return view('unit.201_files_index', ['documents' => $documents, 'allUnits' => $isM1]);
     }
 
     public function show_201($id)
