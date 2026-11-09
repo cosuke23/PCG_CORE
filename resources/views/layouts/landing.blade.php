@@ -24,7 +24,7 @@
     {{-- ===================================================== header --}}
     <header class="lp-top">
         <div class="lp-wrap lp-top__in">
-            <a class="lp-brand" href="{{ route('home') }}">
+            <a class="lp-brand" href="{{ route('mepcom') }}">
                 <span class="lp-brand__logos">
                     <img class="lp-brand__bp" src="{{ asset('images/brand/bagong-pilipinas.webp') }}" alt="Bagong Pilipinas" width="44" height="41">
                     <img src="{{ asset('images/brand/pcg-logo.webp') }}" alt="Philippine Coast Guard" width="40" height="40">
@@ -38,11 +38,11 @@
 
             @php
                 $links = [
-                    [route('home'), 'Home', request()->routeIs('home')],
+                    [route('home'), 'PCG HRMIS', false],
+                    [route('mepcom'), 'Home', request()->routeIs('mepcom')],
                     [route('about'), 'About', request()->routeIs('about')],
-                    [route('home') . '#services', 'Services', false],
-                    [route('home') . '#structure', 'Structure', false],
-                    [route('home') . '#units', 'Units', false],
+                    [route('mepcom') . '#services', 'Services', false],
+                    [route('mepcom') . '#units', 'Units', false],
                     [route('meptdi'), 'MEPTDI', request()->routeIs('meptdi')],
                     [route('contact'), 'Contact', request()->routeIs('contact')],
                 ];
@@ -85,7 +85,7 @@
                 <h3>Services</h3>
                 <ul>
                     <li><a href="{{ route('login') }}">Personnel sign in</a></li>
-                    <li><a href="{{ route('home') }}#join">Register</a></li>
+                    <li><a href="{{ route('mepcom') }}#join">Register</a></li>
                     <li><a href="{{ url('/unit/login') }}">Unit sign in</a></li>
                     <li><a href="{{ route('osaert.verify') }}">OSAERT certificate check</a></li>
                 </ul>

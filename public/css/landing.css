@@ -440,29 +440,3 @@ html.lp-lightbox-open { overflow: hidden; }
 }
 @media (prefers-reduced-motion: reduce) { .lp-note { animation: none; } }
 
-/* ---------------------------------------------------- PCG organizational structure */
-.lp-org { background: var(--lp-sand); }
-.lp-org__top { position: relative; display: flex; align-items: center; gap: 16px; width: fit-content; max-width: 100%; margin: 0 auto 36px; padding: 16px 24px; border-radius: 6px; background: var(--lp-maroon-900); color: var(--lp-white); box-shadow: 0 10px 30px rgba(44, 10, 17, .2); }
-.lp-org__top img { width: 56px; height: 56px; object-fit: contain; flex: none; }
-.lp-org__top strong { display: block; font: 700 22px/1.1 var(--lp-serif); letter-spacing: .02em; }
-.lp-org__top span { display: block; margin-top: 2px; font-size: 13px; color: var(--lp-gold-300); }
-.lp-org__top::after { content: ""; position: absolute; left: 50%; top: 100%; width: 2px; height: 36px; background: var(--lp-gold); }
-.lp-org__groups { columns: 2; column-gap: 16px; margin: 0; padding: 18px 0 0; list-style: none; border-top: 2px solid var(--lp-gold); }
-.lp-org__group { break-inside: avoid; margin-bottom: 16px; padding: 20px 22px; border: 1px solid var(--lp-line); border-radius: 6px; background: var(--lp-white); }
-.lp-org__group--wide { column-span: all; }
-.lp-org__group h3 { display: flex; align-items: center; gap: 10px; margin: 0 0 12px; font: 700 18px/1.2 var(--lp-serif); color: var(--lp-maroon-800); text-wrap: balance; }
-.lp-org__icon { display: inline-grid; place-items: center; flex: none; width: 32px; height: 32px; border-radius: 50%; background: var(--lp-maroon-800); color: var(--lp-gold-300); font-size: 14px; }
-.lp-org__count { margin-left: auto; padding: 2px 9px; border-radius: 999px; background: var(--lp-cream); color: var(--lp-muted); font: 600 12px/1.6 var(--lp-sans); font-variant-numeric: tabular-nums; }
-.lp-org__group ul { display: grid; gap: 6px; margin: 0; padding: 0; list-style: none; }
-.lp-org__group--wide ul { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
-.lp-org__group li { display: flex; align-items: center; gap: 10px; min-height: 40px; padding: 8px 12px; border-radius: 4px; background: var(--lp-cream); font-size: 14px; color: var(--lp-ink); }
-.lp-org__group li span { flex: 1; }
-.lp-org__here { background: var(--lp-maroon-800) !important; color: var(--lp-white) !important; font-weight: 600; box-shadow: inset 0 0 0 2px var(--lp-gold); }
-.lp-org__here img { width: 28px; height: 28px; object-fit: contain; flex: none; }
-.lp-org__here em { flex: none; padding: 2px 8px; border-radius: 999px; background: var(--lp-gold); color: var(--lp-maroon-950); font: 700 10px/1.5 var(--lp-sans); letter-spacing: .08em; font-style: normal; }
-@media (max-width: 760px) {
-    .lp-org__groups { columns: 1; }
-    .lp-org__group--wide ul { grid-template-columns: minmax(0, 1fr); }
-    .lp-org__top { padding: 14px 18px; }
-    .lp-org__top strong { font-size: 19px; }
-}

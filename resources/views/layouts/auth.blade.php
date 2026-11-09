@@ -44,7 +44,7 @@
 
         <main class="pcg-auth__main" id="main">
             <nav class="pcg-auth__topbar" aria-label="Site">
-                <a href="{{ route('home') }}">Home</a>
+                <a href="{{ route('mepcom') }}">Home</a>
                 <a href="{{ route('about') }}">About</a>
                 <a href="{{ route('contact') }}">Contact</a>
             </nav>

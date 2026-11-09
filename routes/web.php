@@ -62,7 +62,9 @@ use App\Http\Controllers\OsaertController;
 |--------------------------------------------------------------------------
 */
 
-Route::get('/', [PageController::class, 'home'])->name('home');
+// PCG HRMIS main landing page; the MEPCOM HRMIS home (its command system) is /mepcom
+Route::get('/', [PageController::class, 'pcg'])->name('home');
+Route::get('/mepcom', [PageController::class, 'home'])->name('mepcom');
 Route::get('/about', [PageController::class, 'about'])->name('about');
 Route::get('/contact', [\App\Http\Controllers\ContactController::class, 'show'])->name('contact');
 Route::post('/contact', [\App\Http\Controllers\ContactController::class, 'store'])
