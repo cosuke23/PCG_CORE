@@ -128,6 +128,8 @@ async function step(name, fn) {
     check('Returned item open, accepted item locked', await me.locator('input[name=nbi_clearance]').count() === 1
       && await me.locator('input[name=ombudsman_clearance]').count() === 0 && (await me.content()).includes('Returned by your unit checker'));
     await me.setInputFiles('input[name=nbi_clearance]', PDF);
+    check('A clearance asks for its valid-until date', await me.evaluate(() => document.getElementById('e-nbi_clearance').required));
+    await me.fill('#e-nbi_clearance', new Date(Date.now() + 365 * 864e5).toISOString().slice(0, 10));
     await Promise.all([me.waitForNavigation({ timeout: 15000 }), me.locator('#uploadForm [type=submit]').last().click()]);
     await me.click('.swal2-confirm').catch(() => {});
     const v = sql("select nbi_clearance from personnel_data pd join users u on u.id=pd.personnel_id where u.email='member@demo.test'");
