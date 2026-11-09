@@ -50,8 +50,10 @@ node tools/walkthrough/capture.js walkthrough-out
 ```
 
 ```bash
-node tools/walkthrough/build_deck.js walkthrough-out
+DECK_COMPACT=1 node tools/walkthrough/build_deck.js walkthrough-out
 ```
+
+(`DECK_COMPACT=1` stores the screenshots as quality-88 JPEG: about 8 MB instead of 18 MB, easier to download and email. Leave it out for lossless PNG.)
 
 ```bash
 php artisan route:list --json > walkthrough-out/routes.json

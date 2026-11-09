@@ -20,6 +20,10 @@ const DECK = path.join(OUT, 'PCG_HRMIS_End_to_End_Walkthrough.pptx');
 const SCRIPT = require('./script');
 const BAND = path.join(OUT, 'deck-band.png');
 const APP = path.resolve(__dirname, '../..');
+// DECK_COMPACT=1: screenshots go in as high-quality JPEG (a much smaller file)
+const COMPACT = process.env.DECK_COMPACT === '1';
+const JPG = path.join(OUT, 'deck-jpg');
+const media = p => COMPACT ? path.join(JPG, path.basename(path.dirname(p)) + '-' + path.basename(p).replace(/\.png$/, '.jpg')) : p;
 const SKILL_THEME = process.env.PPTX_APPLY_THEME; // optional path to apply_theme.js
 
 const BRAND = 'Philippine Coast Guard';
@@ -136,7 +140,7 @@ function placeImage(s, step, ax, ay, aw, ah) {
   // frame
   s.addShape(pres.shapes.RECTANGLE, { x: x - 0.04, y: y - 0.04, w: w + 0.08, h: h + 0.08, fill: { color: 'FFFFFF' }, line: { color: COL.line, width: 0.75 },
     shadow: { type: 'outer', color: '3D0F13', opacity: 0.18, blur: 10, offset: 3, angle: 90 }, objectName: 'Screenshot frame' });
-  s.addImage({ path: step.zoomedFile ? path.join(ORIG, '..', step.zoomedFile) : path.join(ORIG, step.file), x, y, w, h, altText: `Screenshot: ${step.title} (${step.url}, ${step.role})`, objectName: 'Screenshot ' + step.id });
+  s.addImage({ path: media(step.zoomedFile ? path.join(ORIG, '..', step.zoomedFile) : path.join(ORIG, step.file)), x, y, w, h, altText: `Screenshot: ${step.title} (${step.url}, ${step.role})`, objectName: 'Screenshot ' + step.id });
   return { x, y, w, h, sc: w / step.image.w };
 }
 
@@ -360,6 +364,13 @@ function flow(s, nodes, edges, opts = {}) {
     ['eye', 'FaEye'], ['mobile', 'FaMobileScreen'], ['id', 'FaIdCard'], ['globe', 'FaGlobe'], ['user1', 'FaUser'],
   ]) I[k] = await icon(n, c || 'F5B672');
   for (const st of steps) await autoZoom(st);
+  if (COMPACT) {
+    fs.mkdirSync(JPG, { recursive: true });
+    for (const st of steps.concat(phone)) {
+      const src = st.zoomedFile ? path.join(ORIG, '..', st.zoomedFile) : path.join(ORIG, st.file);
+      await sharp(src).flatten({ background: '#ffffff' }).jpeg({ quality: 88, chromaSubsampling: '4:4:4', mozjpeg: true }).toFile(media(src));
+    }
+  }
   const shot = id => DATA.steps.find(s => s.id === id);
 
   // the hero band of the website: azure on the left meets crimson, as a 16:9 picture
