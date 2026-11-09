@@ -1558,3 +1558,14 @@ button[aria-busy="true"]:not(.pcg-btn)::before {
     .pcg-alert, .pcg-flash-row, .pcg-skeleton { animation: none; }
     .pcg-btn[aria-busy="true"]::before, button[aria-busy="true"]:not(.pcg-btn)::before { animation-duration: 2s; }
 }
+
+/* confirmation dialog (pcg-ui.js pcgConfirm / data-pcg-confirm): the page's own modal */
+.pcg-confirm { max-width: min(460px, calc(100vw - 32px)); width: 100%; padding: 0; border: 0; border-radius: var(--pcg-radius-lg);
+    background: var(--pcg-surface); color: var(--pcg-text); box-shadow: var(--pcg-shadow-lg); }
+.pcg-confirm::backdrop { background: rgba(5, 15, 38, 0.6); }
+.pcg-confirm[open] { animation: pcg-rise 180ms ease-out both; }
+.pcg-confirm__box { display: grid; gap: var(--pcg-space-3); padding: var(--pcg-space-6); }
+.pcg-confirm h2 { margin: 0; font-size: var(--pcg-text-lg); line-height: 1.3; }
+.pcg-confirm p { margin: 0; color: var(--pcg-text-muted); }
+.pcg-confirm__actions { display: flex; justify-content: flex-end; flex-wrap: wrap; gap: var(--pcg-space-2); margin-top: var(--pcg-space-2); }
+@media (prefers-reduced-motion: reduce) { .pcg-confirm[open] { animation: none; } }

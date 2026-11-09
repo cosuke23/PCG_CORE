@@ -36,6 +36,8 @@ class AccessControlTest extends TestCase
             ['get', '/admin/adjutant'],
             ['get', '/admin/soi'],
             ['post', '/admin/soi/1/reopen'],
+            ['get', '/admin/soi/1/edit'],
+            ['post', '/admin/soi/1/step1'],
             ['get', '/admin/adjutant/1'],
             ['post', '/admin/adjutant/1/awards'],
             ['post', '/admin/adjutant/1/awards/1/delete'],

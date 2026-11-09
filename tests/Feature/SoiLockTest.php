@@ -37,7 +37,11 @@ class SoiLockTest extends TestCase
             $t->rememberToken(); $t->timestamps();
         });
         (require base_path('database/migrations/2026_11_09_000002_add_soi_submitted_at_to_users.php'))->up();
-        Schema::create('reinlist_basic_info', function (Blueprint $t) { $t->id(); $t->string('serial_number')->nullable(); $t->string('first_name')->nullable(); });
+        Schema::create('reinlist_basic_info', function (Blueprint $t) {
+            $t->id(); $t->string('serial_number')->nullable(); $t->string('first_name')->nullable(); $t->string('last_name')->nullable();
+            $t->string('middle_name')->nullable(); $t->string('extension_name')->nullable(); $t->string('rank')->nullable(); $t->string('class')->nullable();
+            $t->date('birthday')->nullable(); $t->string('birth_place')->nullable(); $t->timestamps();
+        });
 
         $mepcom = OrgUnit::where('code', 'MEPCOM')->first();
         $mssc = OrgUnit::where('code', 'MSSC')->first();
@@ -111,5 +115,44 @@ class SoiLockTest extends TestCase
         $session = ['admin_logged_in' => true, 'admin_role' => 'records_reviewer', 'admin_user_id' => $rev->id, 'admin_org_unit_id' => $mepcom->id, 'admin_email' => 'rev@x.test'];
         $this->withSession($session)->get('/admin/soi')->assertForbidden();
         $this->post("/admin/soi/{$this->ana->id}/reopen", ['reason' => 'Trying anyway'])->assertForbidden();
+    }
+
+    public function test_hr_admin_and_adjutant_edit_a_submitted_soi_within_their_scope()
+    {
+        DB::table('users')->where('id', $this->ana->id)->update(['soi_submitted_at' => now()]);
+        $step1 = ['last_name' => 'Inside', 'first_name' => 'Anabel', 'rank' => 'SN1', 'birthday' => '1995-02-03', 'serial_number' => 'SN-OUT'];
+
+        $this->withSession($this->adjutant)->postJson("/admin/soi/{$this->ana->id}/step1", $step1)->assertOk()->assertJson(['status' => 'success']);
+        // saved for the member (the serial in the input is ignored), still submitted, audited
+        $this->assertSame('Anabel', DB::table('reinlist_basic_info')->where('serial_number', 'SN-IN')->value('first_name'));
+        $this->assertFalse(DB::table('reinlist_basic_info')->where('serial_number', 'SN-OUT')->exists());
+        $this->assertNotNull($this->submittedAt($this->ana->id), 'editing does not reopen the SOI');
+        $this->assertDatabaseHas('admin_audit_logs', ['action' => 'soi.edited', 'subject' => 'users:' . $this->ana->id]);
+
+        // invalid input: the member's validation answers, nothing audited
+        $before = DB::table('admin_audit_logs')->where('action', 'soi.edited')->count();
+        $this->postJson("/admin/soi/{$this->ana->id}/step1", ['first_name' => 'X'])->assertStatus(422);
+        $this->assertSame($before, DB::table('admin_audit_logs')->where('action', 'soi.edited')->count());
+
+        // outside the admin's command: not found
+        $this->postJson("/admin/soi/{$this->ben}/step1", $step1)->assertNotFound();
+        $this->get("/admin/soi/{$this->ben}/edit")->assertNotFound();
+        $this->postJson("/admin/soi/{$this->ana->id}/step7", $step1)->assertNotFound();
+
+        $this->flushSession();
+        $this->withSession($this->hr)->postJson("/admin/soi/{$this->ana->id}/step1", ['first_name' => 'Ana'] + $step1)->assertOk();
+        $this->assertSame('Ana', DB::table('reinlist_basic_info')->where('serial_number', 'SN-IN')->value('first_name'));
+    }
+
+    public function test_other_admin_roles_and_members_cannot_edit_an_soi()
+    {
+        $mepcom = OrgUnit::where('code', 'MEPCOM')->first();
+        $rev = \App\Models\AdminUser::create(['name' => 'Rev', 'email' => 'rev@x.test', 'password' => 'x', 'role' => 'records_reviewer', 'org_unit_id' => $mepcom->id, 'is_active' => true]);
+        $session = ['admin_logged_in' => true, 'admin_role' => 'records_reviewer', 'admin_user_id' => $rev->id, 'admin_org_unit_id' => $mepcom->id, 'admin_email' => 'rev@x.test'];
+        $this->withSession($session)->get("/admin/soi/{$this->ana->id}/edit")->assertForbidden();
+        $this->postJson("/admin/soi/{$this->ana->id}/step1", ['first_name' => 'X'])->assertForbidden();
+
+        $this->flushSession();
+        $this->actingAs($this->ana)->postJson("/admin/soi/{$this->ana->id}/step1", ['first_name' => 'X'])->assertUnauthorized(); // a member is not an admin
     }
 }

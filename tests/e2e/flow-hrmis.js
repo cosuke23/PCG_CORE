@@ -19,6 +19,7 @@ async function session(browser, email) {
   page.errors = [];
   page.on('pageerror', e => page.errors.push(e.message.split('\n')[0]));
   page.on('dialog', d => d.accept());
+  await require('./lib').autoConfirm(page);
   await adminLogin(page, BASE, email);
   return page;
 }

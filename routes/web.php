@@ -287,6 +287,8 @@ Route::middleware(['admin.session', 'admin.audit'])->group(function () {
         ->controller(\App\Http\Controllers\SoiSubmissionController::class)->group(function () {
             Route::get('/', 'index')->name('index');
             Route::post('/{user}/reopen', 'reopen')->whereNumber('user')->name('reopen');
+            Route::get('/{user}/edit', 'edit')->whereNumber('user')->name('edit');
+            Route::post('/{user}/step{step}', 'save')->whereNumber('user')->where('step', '[1-6]')->name('save');
         });
 
     // ---- Adjutant: Coast Guard awards and decorations, Coast Guard schooling (members' SOI) ----
