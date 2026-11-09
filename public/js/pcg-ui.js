@@ -2,7 +2,8 @@
  * PCG_CORE UI behaviours (no dependencies). Loaded with `defer`.
  *
  *  - <button data-pcg-toggle-password="inputId">  show / hide a password field
- *  - <form data-pcg-busy>                          disable submit while sending
+ *  - <form data-pcg-busy>                          disable submit while sending ("Signing in…")
+ *  - every other form: the sending button shows a spinner (opt out: data-pcg-no-busy)
  *  - wide <table>s get a horizontal scroll box on small screens
  */
 (function () {
@@ -162,8 +163,31 @@
         });
     });
 
+    // Loading state for every form (design rules 2026-11-09): the button that sent
+    // the form shows a spinner and cannot be pressed twice. Runs after the
+    // confirmation handler above, and only if nothing cancelled the submit.
+    // Opt out with data-pcg-no-busy on the form; forms that already use
+    // data-pcg-busy keep their own wording.
+    document.addEventListener('submit', function (e) {
+        var form = e.target;
+        if (!(form instanceof HTMLFormElement) || form.hasAttribute('data-pcg-no-busy') || form.hasAttribute('data-pcg-busy')) return;
+        var btn = e.submitter || form.querySelector('[type="submit"]');
+        setTimeout(function () { // after the browser has read the submitter's name/value
+            if (e.defaultPrevented || !btn || btn.getAttribute('aria-busy') === 'true') return;
+            pcgBusy(btn, true);
+            // downloads and same-page answers never navigate: give the button back
+            setTimeout(function () { pcgBusy(btn, false); }, 8000);
+        }, 0);
+    });
+    function pcgBusy(btn, on) {
+        if (on) { btn.setAttribute('aria-busy', 'true'); btn.disabled = true; }
+        else { btn.removeAttribute('aria-busy'); btn.disabled = false; }
+    }
+    window.pcgBusy = pcgBusy; // page scripts that submit with form.submit() or fetch use it too
+
     // Restore the button when the page is shown again from the back/forward cache.
     window.addEventListener('pageshow', function () {
+        document.querySelectorAll('[aria-busy="true"]').forEach(function (b) { if (!b.closest('form[data-pcg-busy]')) pcgBusy(b, false); });
         document.querySelectorAll('form[data-pcg-busy] [type="submit"][aria-busy="true"]').forEach(function (submit) {
             submit.disabled = false;
             submit.removeAttribute('aria-busy');

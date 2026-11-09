@@ -1469,3 +1469,88 @@ textarea.pcg-input {
 @media print {
     .pcg-re__row td:first-child { box-shadow: none; }
 }
+
+/* ===================================================================
+ * Design rules (2026-11-09), shared by every module
+ *  - one accent: gold on member and public pages (the admin console
+ *    re-points it to its cyan in pcg-console.css)
+ *  - headings wrap in balanced lines; numbers line up (tabular)
+ *  - monospace only for codes people copy: serial numbers, reference
+ *    and certificate numbers (.pcg-mono)
+ *  - nested corners: inner radius = outer radius - padding (--pcg-radius-inner)
+ *  - every submit shows that it is working (spinner on the button)
+ *  - short feedback motion only, and none when reduced motion is asked for
+ * =================================================================== */
+:root {
+    --pcg-accent: var(--pcg-gold-500);
+    --pcg-accent-soft: var(--pcg-gold-100);
+    --pcg-accent-ink: var(--pcg-navy-950);
+    --pcg-text-muted: #45505f;          /* 8:1 on white (was 7:1) */
+    --pcg-text-faint: #5b6574;          /* captions and hints: 5.9:1 */
+    --pcg-radius-inner: max(4px, calc(var(--pcg-radius-lg) - var(--pcg-space-3)));
+    --pcg-mono: ui-monospace, "SFMono-Regular", "Cascadia Mono", Menlo, Consolas, monospace;
+}
+
+.pcg h1, .pcg h2, .pcg h3, .pcg h4,
+.pcg-app h1, .pcg-app h2, .pcg-app h3, .pcg-app h4 { text-wrap: balance; }
+.pcg p, .pcg li, .pcg-app p, .pcg-app li { text-wrap: pretty; }
+
+.pcg table, .pcg-app table,
+.pcg-stat__value, .pcg-num, .pcg time, .pcg-app time,
+.pcg input[type="date"], .pcg input[type="number"],
+.pcg-app input[type="date"], .pcg-app input[type="number"] { font-variant-numeric: tabular-nums; }
+
+.pcg-mono { font-family: var(--pcg-mono); font-size: 0.92em; letter-spacing: 0; }
+
+/* the call to action on a screen: the one solid accent-backed button */
+.pcg-btn--cta {
+    color: var(--pcg-accent-ink);
+    background: var(--pcg-accent);
+    border-color: var(--pcg-accent);
+    min-height: 48px;
+    padding-inline: var(--pcg-space-6);
+    font-size: var(--pcg-text-base);
+    box-shadow: 0 1px 0 rgba(255, 255, 255, 0.35) inset, 0 6px 16px rgba(201, 162, 39, 0.28);
+}
+.pcg-btn--cta:hover { background: var(--pcg-gold-400); border-color: var(--pcg-gold-400); }
+.pcg-btn--danger { color: #fff; background: var(--pcg-danger-700); border-color: var(--pcg-danger-700); }
+.pcg-btn--danger:hover { background: #912018; border-color: #912018; }
+
+/* loading state: any submit button pcg-ui.js marks busy gets a spinner and keeps its label */
+.pcg-btn[aria-busy="true"]::before,
+button[aria-busy="true"]:not(.pcg-btn)::before {
+    content: "";
+    flex: none;
+    width: 1em;
+    height: 1em;
+    margin-right: 0.4em;
+    display: inline-block;
+    vertical-align: -0.15em;
+    border: 2px solid currentColor;
+    border-right-color: transparent;
+    border-radius: 50%;
+    animation: pcg-spin 0.7s linear infinite;
+}
+.pcg-btn[aria-busy="true"] > i { display: none; } /* the spinner stands in for the icon */
+@keyframes pcg-spin { to { transform: rotate(360deg); } }
+
+/* useful feedback: messages arrive, a saved row flashes once */
+.pcg-alert { animation: pcg-rise 240ms ease-out both; }
+.pcg-flash-row { animation: pcg-flash 1.6s ease-out 1; }
+@keyframes pcg-flash { from { background: var(--pcg-accent-soft); } to { background: transparent; } }
+
+/* skeleton for content that is still loading */
+.pcg-skeleton {
+    display: block;
+    min-height: 1em;
+    border-radius: var(--pcg-radius-sm);
+    background: linear-gradient(90deg, var(--pcg-gray-100) 25%, var(--pcg-gray-200) 37%, var(--pcg-gray-100) 63%);
+    background-size: 400% 100%;
+    animation: pcg-shimmer 1.4s ease infinite;
+}
+@keyframes pcg-shimmer { from { background-position: 100% 50%; } to { background-position: 0 50%; } }
+
+@media (prefers-reduced-motion: reduce) {
+    .pcg-alert, .pcg-flash-row, .pcg-skeleton { animation: none; }
+    .pcg-btn[aria-busy="true"]::before, button[aria-busy="true"]:not(.pcg-btn)::before { animation-duration: 2s; }
+}

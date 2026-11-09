@@ -1,214 +1,84 @@
-<!DOCTYPE html>
-<html lang="en">
+@extends('layouts.unit')
 
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>201 Files</title>
-    <link rel="stylesheet" href="{{ \App\Support\Asset::v('css/tailwind.css') }}">
-    <script nonce="{{ $cspNonce ?? '' }}" src="{{ \App\Support\Asset::v('js/pcg-ui.js') }}" defer></script>
-</head>
+@section('title', '201 files')
 
-<body class="bg-[#f5f5f7] min-h-screen overflow-hidden">
-
-    <div class="flex h-screen">
-
-        <!-- SIDEBAR -->
-        <aside class="w-[250px] bg-white border-r flex flex-col justify-between">
-
+@section('content')
+    <div class="pcg-page uc">
+        <header class="uc-head">
             <div>
-
-                <div class="flex justify-center py-8">
-                    <img src="{{ asset('images/brand/mepcom-logo.webp') }}" class="w-24 h-24">
-                </div>
-
-                @include('unit.partials.nav')
-
+                <h2 class="uc-title">{{ $personnel->count() }} {{ $personnel->count() === 1 ? 'member has' : 'members have' }} a 201 file</h2>
+                <p class="uc-lede">Open a member to read their 201 documents. Every opening is logged.</p>
             </div>
+        </header>
 
-            <div class="p-4">
-                <form method="POST" action="{{ route('unit.logout') }}">
-                    @csrf
-                    <button type="submit" class="block bg-red-500 text-white text-center py-4 rounded-2xl">Logout</button>
-                </form>
-            </div>
-
-        </aside>
-
-        <!-- MAIN -->
-        <main class="flex-1 overflow-y-auto p-10">
-            @include('unit.partials.flash')
-
-            <h1 class="text-4xl font-bold mb-6">201 Files</h1>
-
-            <input id="tableSearch" class="w-full p-4 border rounded-xl mb-6" placeholder="Search personnel...">
-
-            <div class="bg-white rounded-2xl border overflow-hidden">
-
-                <table class="w-full">
-
-                    <thead class="bg-gray-50 text-left">
-                        <tr>
-                            <th class="p-4">Name</th>
-                            <th class="p-4">Rank</th>
-                            <th class="p-4">Serial</th>
-                            <th class="p-4">Class</th>
-                            <th class="p-4">Action</th>
-                        </tr>
-                    </thead>
-
-                    <tbody>
-                        @foreach ($personnel as $p)
-                            <tr data-on-click="openModal" data-args='@json([$p->serial_number])'
-                                class="border-t hover:bg-indigo-50 cursor-pointer">
-
-                                <td class="p-4">
-                                    {{ $p->last_name }}, {{ $p->first_name }} {{ $p->middle_name }}
-                                </td>
-
-                                <td class="p-4">{{ $p->rank }}</td>
-                                <td class="p-4">{{ $p->serial_number }}</td>
-                                <td class="p-4">{{ $p->class }}</td>
-
-                                <td class="p-4 text-indigo-600 font-semibold">View</td>
-
-                            </tr>
-                        @endforeach
-                    </tbody>
-
-                </table>
-
-            </div>
-
-        </main>
-
-    </div>
-
-    <!-- MODAL -->
-    <div id="modal" class="fixed inset-0 hidden items-center justify-center bg-black/50 p-6">
-
-        <div class="bg-white w-full max-w-6xl rounded-3xl max-h-[90vh] overflow-hidden flex flex-col">
-
-            <div class="flex justify-between p-6 border-b">
-
-                <div>
-                    <h2 id="personnel_name" class="text-2xl font-bold"></h2>
-                    <p id="serial_number" class="text-gray-500"></p>
-                </div>
-
-                <button data-on-click="closeModal">✕</button>
-
-            </div>
-
-            <div class="p-6 overflow-y-auto bg-gray-50">
-
-                <div id="documents_grid" class="grid md:grid-cols-2 gap-6"></div>
-
-            </div>
-
+        <div class="uc-tools">
+            <label class="uc-search">
+                <i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i>
+                <span class="pcg-visually-hidden">Search by name, rank or serial number</span>
+                <input type="search" id="uf-search" placeholder="Search name, rank or serial number" autocomplete="off">
+            </label>
         </div>
 
+        <section class="uc-queue" aria-label="Members">
+            <table class="uc-table uf-table">
+                <thead>
+                    <tr>
+                        <th scope="col">Member</th>
+                        <th scope="col">Rank</th>
+                        <th scope="col">Class</th>
+                        <th scope="col">Unit</th>
+                        <th scope="col"><span class="pcg-visually-hidden">Action</span></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach ($personnel as $p)
+                        @php($name = trim(($p->last_name ?? '') . ', ' . ($p->first_name ?? '') . ' ' . ($p->middle_name ?? ''), ', '))
+                        <tr data-search="{{ strtolower($name . ' ' . $p->rank . ' ' . $p->serial_number) }}">
+                            <td><strong class="uc-name">{{ $name ?: 'Name not given' }}</strong><span class="uc-serial pcg-mono">{{ $p->serial_number }}</span></td>
+                            <td>{{ $p->rank ?: '—' }}</td>
+                            <td>{{ $p->class ?: '—' }}</td>
+                            <td>{{ $p->mother_unit ?: '—' }}</td>
+                            <td class="uc-action">
+                                <button type="button" class="pcg-btn pcg-btn--secondary pcg-btn--sm" data-uf-open="{{ $p->serial_number }}">
+                                    Open <span class="pcg-visually-hidden">{{ $name }}</span>
+                                </button>
+                            </td>
+                        </tr>
+                    @endforeach
+                </tbody>
+            </table>
+            <p class="uc-empty" id="uf-empty" @if ($personnel->isNotEmpty()) hidden @endif>
+                {{ $personnel->isEmpty() ? 'No member has uploaded a 201 file yet.' : 'No member matches.' }}
+            </p>
+        </section>
     </div>
 
-    <script nonce="{{ $cspNonce ?? '' }}">
-        // Escape server data before inserting it with innerHTML.
-        function escapeHtml(value) {
-            return String(value ?? '').replace(/[&<>"']/g, c => ({
-                '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
-            })[c]);
-        }
-        const BASE_URL = @json(\App\Support\Uploads::baseUrl());
+    <dialog class="uc-dialog" id="uf-dialog" aria-labelledby="uf-name" data-base="{{ \App\Support\Uploads::baseUrl() }}">
+        <div class="uc-dialog__form">
+            <header class="uc-dialog__head">
+                <div>
+                    <h2 id="uf-name"></h2>
+                    <p class="uc-dialog__sub"><span class="pcg-mono" id="uf-serial"></span></p>
+                </div>
+                <button type="button" class="pcg-btn pcg-btn--ghost pcg-btn--sm" data-uc-close aria-label="Close">
+                    <i class="fa-solid fa-xmark" aria-hidden="true"></i>
+                </button>
+            </header>
+            <div class="uc-dialog__body">
+                <aside class="uc-items" aria-label="201 documents"><ul id="uf-items"></ul></aside>
+                <section class="uc-viewer" aria-live="polite">
+                    <header class="uc-viewer__head">
+                        <h3 id="uf-title"></h3>
+                        <a id="uf-open" class="uc-viewer__open" target="_blank" rel="noopener" hidden>
+                            <i class="fa-solid fa-arrow-up-right-from-square" aria-hidden="true"></i> Open in a new tab</a>
+                    </header>
+                    <div class="uc-viewer__frame" id="uf-frame"></div>
+                </section>
+            </div>
+        </div>
+    </dialog>
+@endsection
 
-        // SEARCH
-        document.getElementById('tableSearch').addEventListener('keyup', function() {
-            let value = this.value.toLowerCase();
-
-            document.querySelectorAll('tbody tr').forEach(row => {
-                row.style.display = row.innerText.toLowerCase().includes(value) ? '' : 'none';
-            });
-        });
-
-        // OPEN MODAL
-        function openModal(serial) {
-
-            fetch(`/unit/201-files/${encodeURIComponent(serial)}`)
-                .then(res => res.json())
-                .then(data => {
-
-                    document.getElementById('modal').classList.remove('hidden');
-                    document.getElementById('modal').classList.add('flex');
-
-                    document.getElementById('personnel_name').innerText =
-                        `${data.personnel.last_name}, ${data.personnel.first_name}`;
-
-                    document.getElementById('serial_number').innerText =
-                        data.personnel.serial_number;
-
-                    const docs = {
-                        'SOI': data.documents.soi,
-                        'Appointment': data.documents.appointment,
-                        'Leave': data.documents.leave,
-                        'Awards': data.documents.awards,
-                        'Disciplinary': data.documents.disciplinary,
-                        'Performance': data.documents.performance,
-                        'Legal': data.documents.legal,
-                        'Academic': data.documents.academic,
-                        'Financial': data.documents.financial,
-                        'Retirement': data.documents.retirement,
-                        'Body Picture': data.documents.body_picture,
-                    };
-
-                    let html = '';
-
-                    Object.entries(docs).forEach(([label, file]) => {
-
-                        let preview = `<span class="text-yellow-500">No file uploaded</span>`;
-
-                        if (file) {
-
-                            let cleanPath = file.replace(/^\/+/, '');
-                            let url = BASE_URL + cleanPath;
-
-                            let isImg = /\.(jpg|jpeg|png|gif|webp)$/i.test(cleanPath);
-                            let isPdf = /\.pdf$/i.test(cleanPath);
-
-                            if (isImg) {
-                                preview = `<img src="${escapeHtml(url)}" class="w-full max-h-[400px] object-contain">`;
-                            } else if (isPdf) {
-                                preview = `
-                            <iframe 
-                                src="${escapeHtml(url)}" 
-                                class="w-full h-[500px] bg-white">
-                            </iframe>`;
-                            } else {
-                                preview = `
-                            <a href="${escapeHtml(url)}" target="_blank" class="text-indigo-600 font-semibold">
-                                Open File
-                            </a>`;
-                            }
-                        }
-
-                        html += `
-                    <div class="bg-white border rounded-2xl p-5">
-                        <div class="font-bold mb-3">${label}</div>
-                        <div class="bg-gray-50 rounded-xl p-3">
-                            ${preview}
-                        </div>
-                    </div>
-                `;
-                    });
-
-                    document.getElementById('documents_grid').innerHTML = html;
-
-                });
-        }
-
-        function closeModal() {
-            document.getElementById('modal').classList.add('hidden');
-            document.getElementById('modal').classList.remove('flex');
-        }
-    </script>
-
-</body>
-
-</html>
+@section('scripts')
+    <script nonce="{{ $cspNonce ?? '' }}" src="{{ \App\Support\Asset::v('js/unit-checker.js') }}"></script>
+@endsection

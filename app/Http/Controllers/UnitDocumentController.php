@@ -200,7 +200,17 @@ class UnitDocumentController extends Controller
                 'ip' => request()->ip(),
             ]);
 
-            return back()->with('success', 'Review completed.');
+            $name = DB::table('personnel_data as pd')->join('users as u', 'u.serial_number', '=', 'pd.serial_number')
+                ->where('pd.id', $rowId)->where(fn ($q) => \App\Models\UnitUser::recordOwner($q))->value('u.name') ?? $serial;
+            $returned = $decision === 'rejected' ? count(array_filter($docs, fn ($d) => is_array($d) && isset($d['checked']))) : 0;
+
+            return back()
+                ->with('success', $decision === 'approved'
+                    ? "Approved: the required documents of {$name}."
+                    : ($returned
+                        ? "Returned {$returned} " . ($returned === 1 ? 'item' : 'items') . " to {$name}. They will see your comments on their dashboard."
+                        : "Marked the record of {$name} as returned."))
+                ->with('reviewed', $serial);
         } catch (\Exception $e) {
 
             Log::error('REVIEW FAILED', [
