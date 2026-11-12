@@ -25,7 +25,7 @@ class AdminUser extends Model
         self::ROLE_ADJUTANT => 'Adjutant — records Coast Guard awards and decorations and Coast Guard schooling in members\' SOI (own command/unit); nothing else',
     ];
 
-    protected $fillable = ['name', 'email', 'password', 'role', 'org_unit_id', 'is_active'];
+    protected $fillable = ['name', 'email', 'password', 'role', 'org_unit_id', 'is_active', 'must_change_password'];
 
     /** Organisational scope (HR admins only). NULL = organisation-wide. */
     public function orgUnit()
@@ -37,6 +37,7 @@ class AdminUser extends Model
 
     protected $casts = [
         'is_active' => 'boolean',
+        'must_change_password' => 'boolean',
         'two_factor_secret' => 'encrypted',
         'two_factor_recovery_codes' => 'encrypted:array',
         'two_factor_confirmed_at' => 'datetime',

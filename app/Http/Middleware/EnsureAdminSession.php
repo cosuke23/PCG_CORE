@@ -26,6 +26,16 @@ class EnsureAdminSession
             return redirect()->route('admin.login')->withErrors(['email' => $message]);
         }
 
+        // Signed in with an emailed temporary password: nothing opens until the
+        // account has chosen its own (ChoosePasswordController).
+        if ($request->session()->get('admin_must_change_password') && !$request->routeIs('admin.password.*')) {
+            if ($request->expectsJson()) {
+                return response()->json(['message' => 'Choose your own password first.'], 403);
+            }
+
+            return redirect()->route('admin.password.edit');
+        }
+
         return $next($request);
     }
 
@@ -51,7 +61,11 @@ class EnsureAdminSession
         // Database accounts: re-read role, scope and status on every request so
         // a change by a super admin (or a deactivation) applies immediately.
         if ($id = $session->get('admin_user_id')) {
-            $admin = \App\Models\AdminUser::query()->whereKey($id)->first(['id', 'role', 'org_unit_id', 'is_active']);
+            $columns = ['id', 'role', 'org_unit_id', 'is_active'];
+            if (\App\Support\TemporaryPassword::flagReady('admin_users')) {
+                $columns[] = 'must_change_password';
+            }
+            $admin = \App\Models\AdminUser::query()->whereKey($id)->first($columns);
 
             if (!$admin || !$admin->is_active) {
                 $session->forget(['admin_logged_in', 'admin_user_id', 'admin_email', 'admin_name', 'admin_role', 'admin_org_unit_id']);
@@ -66,7 +80,8 @@ class EnsureAdminSession
                 return 'Your role has changed. Please sign in again.';
             }
 
-            $session->put(['admin_role' => $admin->role, 'admin_org_unit_id' => $admin->org_unit_id]);
+            $session->put(['admin_role' => $admin->role, 'admin_org_unit_id' => $admin->org_unit_id,
+                'admin_must_change_password' => (bool) ($admin->must_change_password ?? false)]);
         } elseif ($session->get('admin_bootstrap') && \App\Http\Controllers\AdminLoginController::accountsEnabled()) {
             // The .env setup admin (no 2FA) only works until the first real
             // account exists; end any such session that is still open.

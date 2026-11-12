@@ -194,10 +194,18 @@ class AdminAccountsTest extends TestCase
         [$me] = $this->admin();
         $this->withSession(['admin_logged_in' => true, 'admin_role' => 'super_admin', 'admin_user_id' => $me->id, 'admin_email' => $me->email]);
 
-        $this->post('/admin/accounts', ['name' => 'LMS Person', 'email' => 'LMS@Example.test', 'role' => 'lms_admin', 'password' => 'a-long-password-1'])
+        \Illuminate\Support\Facades\Mail::fake();
+        // no password in the form: a temporary one is generated and emailed
+        $this->post('/admin/accounts', ['name' => 'LMS Person', 'email' => 'LMS@Example.test', 'role' => 'lms_admin'])
             ->assertSessionHas('success');
         $new = AdminUser::where('email', 'lms@example.test')->firstOrFail();
-        $this->assertTrue(Hash::check('a-long-password-1', $new->password));
+        $sent = null;
+        \Illuminate\Support\Facades\Mail::assertSent(\App\Mail\AccountPassword::class, function ($mail) use (&$sent) {
+            $sent = $mail;
+            return $mail->hasTo('lms@example.test');
+        });
+        $this->assertTrue(Hash::check($sent->password, $new->password));
+        $this->assertTrue($new->must_change_password);
 
         // cannot deactivate yourself or demote the last super admin
         $this->post("/admin/accounts/{$me->id}/status", ['is_active' => 0])->assertSessionHas('error');
@@ -208,7 +216,7 @@ class AdminAccountsTest extends TestCase
         $this->assertNotNull($entry);
         $this->assertSame($me->email, $entry->admin_email);
         $this->assertSame(302, (int) $entry->status);
-        $this->assertStringNotContainsString('a-long-password-1', (string) $entry->details);
+        $this->assertStringNotContainsString($sent->password, (string) $entry->details);
     }
 
     public function test_failed_sign_ins_are_audited()

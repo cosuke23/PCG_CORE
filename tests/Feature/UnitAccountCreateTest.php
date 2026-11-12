@@ -22,12 +22,13 @@ class UnitAccountCreateTest extends TestCase
             $t->id(); $t->unsignedBigInteger('user_id'); $t->string('personnel_id', 100); $t->string('serial_number', 100)->nullable();
             $t->string('full_name')->nullable(); $t->string('email'); $t->string('username')->nullable(); $t->string('password');
             $t->string('role')->nullable(); $t->string('unit_name')->nullable(); $t->string('unit_code')->nullable();
-            $t->boolean('is_active')->default(true); $t->timestamps();
+            $t->boolean('is_active')->default(true); $t->boolean('must_change_password')->default(false); $t->timestamps();
         });
+        \Illuminate\Support\Facades\Mail::fake();
 
         $super = ['admin_logged_in' => true, 'admin_role' => 'super_admin'];
         $this->withSession($super)->post('/unit-users/store', [
-            'full_name' => 'Eumica Checker', 'email' => 'checker@example.test', 'password' => 'chosen-pass-123', 'unit_name' => 'MEPCOM',
+            'full_name' => 'Eumica Checker', 'email' => 'checker@example.test', 'unit_name' => 'MEPCOM',
         ])->assertRedirect()->assertSessionHas('success');
 
         $row = DB::table('unit_users')->where('email', 'checker@example.test')->first();
@@ -35,7 +36,13 @@ class UnitAccountCreateTest extends TestCase
         $this->assertSame(0, (int) $row->user_id);
         $this->assertSame('', $row->personnel_id);
         $this->assertSame('MEPCOM', $row->unit_name);
-        $this->assertTrue(Hash::check('chosen-pass-123', $row->password));
+        $sent = null;
+        \Illuminate\Support\Facades\Mail::assertSent(\App\Mail\AccountPassword::class, function ($mail) use (&$sent) {
+            $sent = $mail;
+            return $mail->hasTo('checker@example.test');
+        });
+        $this->assertTrue(Hash::check($sent->password, $row->password), 'the emailed temporary password works');
+        $this->assertSame(1, (int) $row->must_change_password);
     }
 
     public function test_m1_access_password_and_status_work_on_a_table_without_timestamps()
@@ -43,8 +50,9 @@ class UnitAccountCreateTest extends TestCase
         $this->withoutMiddleware(\App\Http\Middleware\VerifyCsrfToken::class);
         Schema::create('unit_users', function (Blueprint $t) {
             $t->id(); $t->string('email'); $t->string('password'); $t->string('role')->nullable();
-            $t->string('unit_name')->nullable(); $t->boolean('is_active')->default(true);
+            $t->string('unit_name')->nullable(); $t->boolean('is_active')->default(true); $t->boolean('must_change_password')->default(false);
         });
+        \Illuminate\Support\Facades\Mail::fake();
         DB::table('unit_users')->insert(['email' => 'c@example.test', 'password' => 'x', 'role' => 'unit_checker', 'unit_name' => 'MEPTDI']);
         $super = ['admin_logged_in' => true, 'admin_role' => 'super_admin'];
 
@@ -53,8 +61,15 @@ class UnitAccountCreateTest extends TestCase
         // granting again (nothing changes) is not a "not found"
         $this->withSession($super)->post('/admin/unit-users/1/role', ['role' => 'm1_checker'])->assertRedirect();
 
-        $this->withSession($super)->post('/admin/unit-users/1/password', ['password' => 'new-password-123'])->assertRedirect();
-        $this->assertTrue(Hash::check('new-password-123', DB::table('unit_users')->value('password')));
+        // "Email new password": a temporary password is emailed and must be changed at the next sign-in
+        $this->withSession($super)->post('/admin/unit-users/1/password')->assertRedirect()->assertSessionHas('success');
+        $sent = null;
+        \Illuminate\Support\Facades\Mail::assertSent(\App\Mail\AccountPassword::class, function ($mail) use (&$sent) {
+            $sent = $mail;
+            return $mail->hasTo('c@example.test') && $mail->reset;
+        });
+        $this->assertTrue(Hash::check($sent->password, DB::table('unit_users')->value('password')));
+        $this->assertSame(1, (int) DB::table('unit_users')->value('must_change_password'));
 
         $this->withSession($super)->post('/admin/unit-users/1/status', ['is_active' => 0])->assertRedirect();
         $this->assertSame(0, (int) DB::table('unit_users')->value('is_active'));

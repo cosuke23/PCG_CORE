@@ -15,7 +15,7 @@
         @php $canManage = \App\Support\AdminPermissions::can('documents.restricted'); $withoutPassword = $accounts->where('is_active', 1)->where('has_password', false)->count(); @endphp
         @if ($withoutPassword)
             <div class="pcg-alert pcg-alert--warning" role="status">
-                {{ $withoutPassword }} active {{ \Illuminate\Support\Str::plural('account', $withoutPassword) }} ha{{ $withoutPassword === 1 ? 's' : 've' }} no password and cannot sign in. Set one below.
+                {{ $withoutPassword }} active {{ \Illuminate\Support\Str::plural('account', $withoutPassword) }} ha{{ $withoutPassword === 1 ? 's' : 've' }} no password and cannot sign in. Use "Email new password" below.
             </div>
         @endif
 
@@ -65,6 +65,8 @@
                                                 <span class="pcg-badge">Inactive</span>
                                             @elseif (!$account->has_password)
                                                 <span class="pcg-badge pcg-badge--warning">No password</span>
+                                            @elseif (!empty($account->must_change_password))
+                                                <span class="pcg-badge pcg-badge--warning">Must choose a password</span>
                                             @else
                                                 <span class="pcg-badge pcg-badge--success">Active</span>
                                             @endif
@@ -74,10 +76,12 @@
                                                 @if ($canManage)
                                                 <form method="POST" action="{{ route('admin.unit-users.password', $account->id) }}">
                                                     @csrf
-                                                    <label class="pcg-visually-hidden" for="pw-{{ $account->id }}">New password for {{ $account->email }}</label>
-                                                    <input class="pcg-input" type="password" id="pw-{{ $account->id }}" name="password"
-                                                        minlength="8" required autocomplete="new-password" placeholder="New password">
-                                                    <button type="submit" class="pcg-btn pcg-btn--secondary pcg-btn--sm">Set password</button>
+                                                    <button type="submit" class="pcg-btn pcg-btn--secondary pcg-btn--sm"
+                                                        data-pcg-confirm-title="Email a new password?"
+                                                        data-pcg-confirm="A new temporary password will be emailed to {{ $account->email }}. Their current password stops working, and they must choose their own at their next sign-in."
+                                                        data-pcg-confirm-ok="Email new password">
+                                                        <i class="fa-solid fa-envelope" aria-hidden="true"></i> Email new password <span class="pcg-visually-hidden">to {{ $account->email }}</span>
+                                                    </button>
                                                 </form>
                                                 <form method="POST" action="{{ route('admin.unit-users.role', $account->id) }}">
                                                     @csrf
@@ -134,11 +138,10 @@
                             <label class="pcg-label" for="serial_number">Serial number <span class="pcg-table__muted" style="display:inline">(optional)</span></label>
                             <input class="pcg-input" id="serial_number" name="serial_number" value="{{ old('serial_number') }}" maxlength="100">
                         </div>
-                        <div class="pcg-field">
-                            <label class="pcg-label" for="new_password">Password</label>
-                            <input class="pcg-input" type="password" id="new_password" name="password" minlength="8" required autocomplete="new-password">
-                            <p class="pcg-help">At least 8 characters.</p>
-                        </div>
+                        <p class="pcg-help">
+                            <i class="fa-solid fa-envelope" aria-hidden="true"></i>
+                            A temporary password is created and emailed to the checker. At their first sign-in they must choose their own password.
+                        </p>
                         <input type="hidden" name="is_active" value="1">
                         <button type="submit" class="pcg-btn pcg-btn--primary pcg-btn--block" data-busy-label="Creating…">Create account</button>
                     </form>

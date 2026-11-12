@@ -7,7 +7,7 @@
         <div class="pcg-page__header">
             <div>
                 <h2>Administrator accounts</h2>
-                <p>Every account signs in with a password and a code from an authenticator app. All changes are recorded in the <a href="{{ route('admin.accounts.audit') }}">audit log</a>.</p>
+                <p>New accounts get a temporary password by email and must choose their own at their first sign-in; every sign-in also needs the second step. All changes are recorded in the <a href="{{ route('admin.accounts.audit') }}">audit log</a>.</p>
             </div>
         </div>
 
@@ -73,14 +73,20 @@
                                             @else
                                                 <span class="pcg-badge pcg-badge--warning">2FA at next sign-in</span>
                                             @endif
+                                            @if ($admin->must_change_password)
+                                                <span class="pcg-badge pcg-badge--warning">Must choose a password</span>
+                                            @endif
                                         </td>
                                         <td>
                                             <div class="pcg-actions">
                                                 <form method="POST" action="{{ route('admin.accounts.password', $admin) }}">
                                                     @csrf
-                                                    <label class="pcg-visually-hidden" for="apw-{{ $admin->id }}">New password for {{ $admin->email }}</label>
-                                                    <input class="pcg-input" type="password" id="apw-{{ $admin->id }}" name="password" minlength="12" required autocomplete="new-password" placeholder="New password">
-                                                    <button type="submit" class="pcg-btn pcg-btn--secondary pcg-btn--sm">Set password</button>
+                                                    <button type="submit" class="pcg-btn pcg-btn--secondary pcg-btn--sm"
+                                                        data-pcg-confirm-title="Email a new password?"
+                                                        data-pcg-confirm="A new temporary password will be emailed to {{ $admin->email }}. Their current password stops working, and they must choose their own at their next sign-in."
+                                                        data-pcg-confirm-ok="Email new password">
+                                                        <i class="fa-solid fa-envelope" aria-hidden="true"></i> Email new password <span class="pcg-visually-hidden">to {{ $admin->email }}</span>
+                                                    </button>
                                                 </form>
                                                 @if ($admin->hasTwoFactor())
                                                     <form method="POST" action="{{ route('admin.accounts.two-factor.reset', $admin) }}">
@@ -137,11 +143,11 @@
                             </select>
                             <p class="pcg-help">HR, records and audit roles and Adjutants. A command-scoped account (e.g. MEPCOM) sees and works only on personnel assigned there; an Adjutant records awards and schooling for those members only.</p>
                         </div>
-                        <div class="pcg-field">
-                            <label class="pcg-label" for="password">Temporary password</label>
-                            <input class="pcg-input" type="password" id="password" name="password" minlength="12" required autocomplete="new-password">
-                            <p class="pcg-help">At least 12 characters. Share it securely; two-factor setup happens at first sign-in.</p>
-                        </div>
+                        <p class="pcg-help">
+                            <i class="fa-solid fa-envelope" aria-hidden="true"></i>
+                            A temporary password is created for them and emailed to the address above. Nobody else sees it.
+                            At their first sign-in they must choose their own password.
+                        </p>
                         <button type="submit" class="pcg-btn pcg-btn--primary pcg-btn--block" data-busy-label="Creating…">Create account</button>
                     </form>
                 </div>

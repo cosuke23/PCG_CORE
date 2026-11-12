@@ -22,6 +22,16 @@ class EnsureUnitSession
             return redirect('/unit/login');
         }
 
+        // Signed in with an emailed temporary password: nothing opens until the
+        // checker has chosen their own (ChoosePasswordController).
+        if ($request->session()->get('unit_must_change_password') && !$request->routeIs('unit.password.*')) {
+            if ($request->expectsJson()) {
+                return response()->json(['message' => 'Choose your own password first.'], 403);
+            }
+
+            return redirect()->route('unit.password.edit');
+        }
+
         return $next($request);
     }
 }

@@ -200,6 +200,11 @@ Route::prefix('admin/two-factor')->name('admin.two-factor.')->group(function () 
 */
 Route::middleware(['admin.session', 'admin.audit'])->group(function () {
 
+    // ---- first sign-in with an emailed temporary password: choose your own (every role) ----
+    Route::get('/admin/password', [\App\Http\Controllers\ChoosePasswordController::class, 'adminEdit'])->name('admin.password.edit');
+    Route::post('/admin/password', [\App\Http\Controllers\ChoosePasswordController::class, 'adminUpdate'])
+        ->middleware('throttle:member-writes')->name('admin.password.update');
+
     // ---- super admin + HR admin, organisation-wide pages ----
     Route::middleware(['admin.role:super_admin,hr_admin', 'admin.orgwide'])->group(function () {
         Route::get('/admin/dashboard', [AdminController::class, 'dashboard'])->name('admin.dashboard');
@@ -413,6 +418,11 @@ Route::post('/unit/loginM1', [UnitUserController::class, 'loginM1'])->middleware
 Route::post('/unit/logout', [UnitUserController::class, 'logout'])->name('unit.logout');
 
 Route::middleware(['unit.session'])->group(function () {
+
+    // first sign-in with an emailed temporary password: choose your own
+    Route::get('/unit/password', [\App\Http\Controllers\ChoosePasswordController::class, 'unitEdit'])->name('unit.password.edit');
+    Route::post('/unit/password', [\App\Http\Controllers\ChoosePasswordController::class, 'unitUpdate'])
+        ->middleware('throttle:member-writes')->name('unit.password.update');
 
     Route::get('/unit/dashboard', [UnitUserController::class, 'dashboard'])->name('unit.dashboard');
 

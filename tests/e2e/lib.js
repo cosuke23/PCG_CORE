@@ -51,4 +51,15 @@ async function autoConfirm(page) {
   });
 }
 
-module.exports = { totp, adminLogin, autoConfirm, ADMIN_PASSWORD, ADMIN_TOTP_SECRET };
+// Dev copy only (MAIL_MAILER=log): the latest temporary password emailed to an address,
+// read from storage/logs/laravel.log, where the log mailer writes each email.
+function emailedPassword(email) {
+  const fs = require('fs');
+  const log = fs.readFileSync(require('path').resolve(__dirname, '../../storage/logs/laravel.log'), 'utf8');
+  const at = log.lastIndexOf('To: ' + email);
+  if (at < 0) return null;
+  const m = /Temporary password: ([A-Za-z0-9]+)/.exec(log.slice(at));
+  return m ? m[1] : null;
+}
+
+module.exports = { totp, adminLogin, autoConfirm, emailedPassword, ADMIN_PASSWORD, ADMIN_TOTP_SECRET };

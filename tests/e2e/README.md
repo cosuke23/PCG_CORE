@@ -23,7 +23,7 @@ node tests/e2e/flow-soi-admin.js        # admin edits a submitted SOI (steps 1-6
 node tests/e2e/responsive.js /tmp/shots # every page at 320-1920px: sideways scroll, cut-off content, iOS zoom fields, tap targets
 ```
 
-`.env` for the run: `APP_ENV=local`, `DB_DATABASE=pcg_core_dev`, `PCG_ADMIN_2FA=totp` (the scripts compute authenticator codes). The seeder
+`.env` for the run: `APP_ENV=local`, `DB_DATABASE=pcg_core_dev`, `PCG_ADMIN_2FA=totp` (the scripts compute authenticator codes). Add `MAIL_MAILER=log` too: new accounts get their temporary password by email, and `flows-admin.js` reads it from `storage/logs/laravel.log` (`emailedPassword()` in `lib.js`). The seeder
 creates admin@ / hr@ / lms@demo.test (password `Admin@Demo12345`) with two-factor
 enrolled on a fixed dev-only key; `lib.js` computes the codes. Admin sign-in is
 limited to 5 attempts/min per email, so wait a minute between repeated runs.

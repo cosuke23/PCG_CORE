@@ -77,6 +77,11 @@ class FileController extends Controller
         if ($session->get('admin_logged_in') && \App\Http\Middleware\EnsureAdminSession::revalidate($session) !== null) {
             abort(404);
         }
+        // an account still on its emailed temporary password opens nothing until it chooses its own
+        if (($session->get('admin_logged_in') && $session->get('admin_must_change_password'))
+            || ($session->has('unit_user_id') && $session->get('unit_must_change_password'))) {
+            abort(404);
+        }
         // command/unit-scoped admins have no file access until the scoped 201 module exists
         $isAdmin = (bool) $session->get('admin_logged_in') && !$session->get('admin_org_unit_id');
         if ($isAdmin && !$this->adminMayOpen($session->get('admin_role'), $area, $relative)) {
