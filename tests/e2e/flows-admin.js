@@ -34,19 +34,20 @@ const check = (name, ok, detail = '') => { results.push([ok ? 'PASS' : 'FAIL', n
     check(`${action} pending registration`, status === (action === 'Approve' ? 'Approved' : 'Rejected'), `status=${status}`);
   }
 
-  // 3. Unit account: create, set password, deactivate
+  // 3. Unit account: create (password emailed), email a new password, deactivate
   await page.goto(BASE + '/admin/unit-users');
+  check('Unit account form has no password field', (await page.locator('form:has(#full_name) input[type=password]').count()) === 0);
   await page.fill('#full_name', 'Flow Test Checker'); await page.fill('#email', 'flow.checker@demo.test');
-  await page.selectOption('#unit_name', 'NOCOP'); await page.fill('#new_password', 'FlowPass123');
+  await page.selectOption('#unit_name', 'NOCOP');
   await Promise.all([page.waitForNavigation(), page.click('button:has-text("Create account")')]);
-  const created = sql("select concat(unit_name,'|',is_active,'|',password like '\\$2y\\$%') from unit_users where email='flow.checker@demo.test'");
-  check('Create unit account', created === 'NOCOP|1|1', created);
+  const created = sql("select concat(unit_name,'|',is_active,'|',password like '\\$2y\\$%','|',must_change_password) from unit_users where email='flow.checker@demo.test'");
+  check('Create unit account (password emailed, must change)', created === 'NOCOP|1|1|1', created);
+  check('Temporary password emailed to the checker', !!require('./lib').emailedPassword('flow.checker@demo.test'));
   check('Success message shown after create', await page.isVisible('.pcg-alert--success'));
   const uid = sql("select id from unit_users where email='flow.checker@demo.test'");
   const before = sql(`select password from unit_users where id=${uid}`);
-  await page.fill(`#pw-${uid}`, 'ChangedPass456');
-  await Promise.all([page.waitForNavigation(), page.locator('tr', { hasText: 'flow.checker@demo.test' }).locator('button:has-text("Set password")').click()]);
-  check('Set unit account password', sql(`select password from unit_users where id=${uid}`) !== before);
+  await Promise.all([page.waitForNavigation(), page.locator('tr', { hasText: 'flow.checker@demo.test' }).locator('button:has-text("Email new password")').click()]);
+  check('Email a new unit account password', sql(`select password from unit_users where id=${uid}`) !== before);
   await Promise.all([page.waitForNavigation(), page.locator('tr', { hasText: 'flow.checker@demo.test' }).locator('button:has-text("Deactivate")').click()]);
   check('Deactivate unit account', sql(`select is_active from unit_users where id=${uid}`) === '0');
 
@@ -118,18 +119,21 @@ const check = (name, ok, detail = '') => { results.push([ok ? 'PASS' : 'FAIL', n
   } else { await page.waitForNavigation({ timeout: 5000 }).catch(() => {}); }
   check('Update training application status', sql(`select status from training_applications where id=${appId}`) === 'Approved');
 
-  // 8. Admin accounts: create an HR admin, who must enrol two-factor sign-in
+  // 8. Admin accounts: create an HR admin (password emailed); first sign-in: two-factor, then their own password
   await page.goto(BASE + '/admin/accounts');
+  check('Admin account form has no password field', (await page.locator('form:has(#name) input[type=password]').count()) === 0);
   await page.fill('#name', 'Flow HR Admin'); await page.fill('#email', 'flow.hr@demo.test');
-  await page.check('input[name=role][value=hr_admin]'); await page.fill('#password', 'FlowAdminPass123');
+  await page.check('input[name=role][value=hr_admin]');
   await Promise.all([page.waitForNavigation(), page.click('button:has-text("Create account")')]);
-  check('Create admin account', sql("select role from admin_users where email='flow.hr@demo.test'") === 'hr_admin');
+  check('Create admin account', sql("select concat(role,'|',must_change_password) from admin_users where email='flow.hr@demo.test'") === 'hr_admin|1');
+  const tempPassword = require('./lib').emailedPassword('flow.hr@demo.test');
+  check('Temporary password emailed to the new admin', !!tempPassword && tempPassword.length === 16);
 
   const ctx2 = await browser.newContext({ viewport: { width: 1366, height: 900 } });
   const p2 = await ctx2.newPage();
   p2.on('pageerror', e => jsErrors.push(e.message.split('\n')[0]));
   await p2.goto(BASE + '/admin/login');
-  await p2.fill('#email', 'flow.hr@demo.test'); await p2.fill('#password', 'FlowAdminPass123');
+  await p2.fill('#email', 'flow.hr@demo.test'); await p2.fill('#password', tempPassword);
   await Promise.all([p2.waitForNavigation(), p2.click('button[type=submit]')]);
   check('New admin is sent to two-factor setup', p2.url().endsWith('/admin/two-factor/setup'));
   await p2.waitForTimeout(500);
@@ -139,6 +143,12 @@ const check = (name, ok, detail = '') => { results.push([ok ? 'PASS' : 'FAIL', n
   await Promise.all([p2.waitForNavigation(), p2.click('button[type=submit]')]);
   check('Recovery codes shown after enrolment', (await p2.locator('.pcg-codes li').count()) === 8);
   await Promise.all([p2.waitForNavigation(), p2.click('a:has-text("continue")')]);
+  check('First sign-in: must choose a password before anything opens', p2.url().endsWith('/admin/password'));
+  const blocked = await p2.goto(BASE + '/admin/hrmis');
+  check('Other pages send back to "Choose your password"', p2.url().endsWith('/admin/password'));
+  await p2.fill('#password', 'FlowOwnPass2026'); await p2.fill('#password_confirmation', 'FlowOwnPass2026');
+  await Promise.all([p2.waitForNavigation(), p2.click('button:has-text("Save and continue")')]);
+  check('Own password saved (flag cleared)', sql("select must_change_password from admin_users where email='flow.hr@demo.test'") === '0');
   check('HR admin lands on dashboard; no LMS/admin-account menu', p2.url().endsWith('/admin/dashboard')
     && (await p2.locator('.pcg-nav a:has-text("Training courses")').count()) === 0
     && (await p2.locator('.pcg-nav a:has-text("Admin accounts")').count()) === 0);

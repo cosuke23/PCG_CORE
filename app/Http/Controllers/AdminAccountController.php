@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\AdminUser;
+use App\Support\TemporaryPassword;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
@@ -30,25 +31,42 @@ class AdminAccountController extends Controller
             'name' => 'required|string|max:255',
             'email' => 'required|email|max:255|unique:admin_users,email',
             'role' => ['required', Rule::in(array_keys(AdminUser::ROLES))],
-            'password' => ['required', Password::min(12)],
             'org_unit_id' => $this->scopeRule(),
         ]);
+        if ($problem = TemporaryPassword::mailProblem()) {
+            return back()->withInput()->with('error', $problem);
+        }
+        if (!TemporaryPassword::flagReady('admin_users')) {
+            return back()->withInput()->with('error', 'Run the database update first (deploy with -Migrate): accounts need the "must change password" setting.');
+        }
         if ($error = $this->scopeError($data['role'], $data['org_unit_id'] ?? null)) {
             return back()->withInput()->withErrors(['org_unit_id' => $error]);
         }
 
         $wasBootstrap = !AdminLoginController::accountsEnabled();
 
-        AdminUser::create([
-            'name' => $data['name'],
-            'email' => strtolower($data['email']),
-            'password' => Hash::make($data['password']),
-            'role' => $data['role'],
-            'org_unit_id' => $data['org_unit_id'] ?? null,
-            'is_active' => true,
-        ]);
+        // Nobody types the password: it is generated, emailed to the account
+        // holder and must be changed at the first sign-in. If the email cannot
+        // be sent, the account is not created (the transaction rolls back).
+        $password = TemporaryPassword::generate();
+        try {
+            DB::transaction(function () use ($data, $password) {
+                $admin = AdminUser::create([
+                    'name' => $data['name'],
+                    'email' => strtolower($data['email']),
+                    'password' => Hash::make($password),
+                    'role' => $data['role'],
+                    'org_unit_id' => $data['org_unit_id'] ?? null,
+                    'is_active' => true,
+                    'must_change_password' => true,
+                ]);
+                TemporaryPassword::send($admin->email, $admin->name, $password, self::signInUrl($admin->role), 'PCG HRMIS Administration');
+            });
+        } catch (\RuntimeException $e) {
+            return back()->withInput()->with('error', 'The account was not created. ' . $e->getMessage());
+        }
 
-        $message = 'Admin account created. On first sign-in they must set up two-factor sign-in with an authenticator app.';
+        $message = "Admin account created. A temporary password was emailed to {$data['email']}; they must choose their own password when they first sign in.";
         if ($wasBootstrap) {
             $message .= ' The setup account from .env no longer works — sign in with the new account.';
         }
@@ -93,12 +111,36 @@ class AdminAccountController extends Controller
         return back()->with('success', $active ? "{$admin->email} activated." : "{$admin->email} deactivated.");
     }
 
-    public function resetPassword(Request $request, AdminUser $admin)
+    /** Emails a new temporary password; the account must change it at its next sign-in. */
+    public function resetPassword(AdminUser $admin)
     {
-        $request->validate(['password' => ['required', Password::min(12)]]);
-        $admin->update(['password' => Hash::make($request->password)]);
+        if ($problem = TemporaryPassword::mailProblem()) {
+            return back()->with('error', $problem);
+        }
+        if (!TemporaryPassword::flagReady('admin_users')) {
+            return back()->with('error', 'Run the database update first (deploy with -Migrate).');
+        }
+        $password = TemporaryPassword::generate();
+        try {
+            DB::transaction(function () use ($admin, $password) {
+                $admin->update(['password' => Hash::make($password), 'must_change_password' => true]);
+                TemporaryPassword::send($admin->email, $admin->name, $password, self::signInUrl($admin->role), 'PCG HRMIS Administration', true);
+            });
+        } catch (\RuntimeException $e) {
+            return back()->with('error', 'The password was not changed. ' . $e->getMessage());
+        }
 
-        return back()->with('success', "Password of {$admin->email} changed. Share it securely.");
+        return back()->with('success', "A new temporary password was emailed to {$admin->email}. They must choose their own password at their next sign-in.");
+    }
+
+    /** The sign-in page an account of this role uses. */
+    public static function signInUrl(string $role): string
+    {
+        return match ($role) {
+            AdminUser::ROLE_ADJUTANT => route('adjutant.login'),
+            AdminUser::ROLE_REENLISTMENT => route('reenlistment.login'),
+            default => route('admin.login'),
+        };
     }
 
     public function resetTwoFactor(AdminUser $admin)

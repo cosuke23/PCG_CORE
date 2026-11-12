@@ -27,6 +27,7 @@ class UnitUser extends Model
         'unit_code',
         'permissions',
         'is_active',
+        'must_change_password',
     ];
 
     protected $hidden = [
@@ -36,6 +37,7 @@ class UnitUser extends Model
     protected $casts = [
         'permissions' => 'array',
         'is_active' => 'boolean',
+        'must_change_password' => 'boolean',
     ];
 
     /**
@@ -53,7 +55,7 @@ class UnitUser extends Model
 
         $user = static::query()->find($id);
         if (!$user || !$user->is_active) {
-            $session->forget(['unit_user_id', 'unit_full_name', 'unit_email', 'unit_role', 'unit_name']);
+            $session->forget(['unit_user_id', 'unit_full_name', 'unit_email', 'unit_role', 'unit_name', 'unit_must_change_password']);
             return false;
         }
 
@@ -61,6 +63,7 @@ class UnitUser extends Model
             'unit_role' => $user->role,
             'unit_name' => $user->unit_name,
             'unit_full_name' => $user->full_name,
+            'unit_must_change_password' => (bool) ($user->must_change_password ?? false),
         ]);
 
         return true;

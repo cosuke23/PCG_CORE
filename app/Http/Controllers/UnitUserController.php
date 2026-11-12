@@ -189,13 +189,22 @@ class UnitUserController extends Controller
             'full_name'     => 'required|string|max:255',
             'email'         => 'required|email|max:255|unique:unit_users,email',
             'username'      => 'nullable|string|max:100',
-            'password'      => 'required|string|min:8',
             'unit_name'     => 'nullable|required_without:role|string|max:255',
             'role'          => 'nullable|string|max:255',
             'unit_code'     => 'nullable|string|max:50',
             'is_active'     => 'nullable|boolean',
         ]);
 
+        if ($problem = \App\Support\TemporaryPassword::mailProblem()) {
+            return back()->withInput()->with('error', $problem);
+        }
+        if (!\App\Support\TemporaryPassword::flagReady('unit_users')) {
+            return back()->withInput()->with('error', 'Run the database update first (deploy with -Migrate): accounts need the "must change password" setting.');
+        }
+
+        // Nobody types the password: it is generated, emailed to the checker and
+        // must be changed at the first sign-in. No email, no account.
+        $password = \App\Support\TemporaryPassword::generate();
         $row = [
             'user_id' => $request->personnel_id,
             'personnel_id' => $request->personnel_id,
@@ -203,7 +212,8 @@ class UnitUserController extends Controller
             'full_name' => $request->full_name,
             'email' => $request->email,
             'username' => $request->username,
-            'password' => Hash::make($request->password),
+            'password' => Hash::make($password),
+            'must_change_password' => true,
             'role' => UnitUser::ROLE_UNIT,
             // The admin form's "role" dropdown actually lists units
             // (MEPLEF, NOCOP, ...); use it when the free-text unit is empty.
@@ -215,9 +225,18 @@ class UnitUserController extends Controller
             'updated_at' => now(),
         ];
 
-        DB::table('unit_users')->insert(\App\Support\TableColumns::fit('unit_users', $row, true));
+        try {
+            DB::transaction(function () use ($row, $password, $request) {
+                DB::table('unit_users')->insert(\App\Support\TableColumns::fit('unit_users', $row, true));
+                \App\Support\TemporaryPassword::send($request->email, $request->full_name, $password,
+                    UnitAccountController::signInUrl(UnitUser::ROLE_UNIT), 'MEPCOM HRMIS Unit checker');
+            });
+        } catch (\RuntimeException $e) {
+            return back()->withInput()->with('error', 'The account was not created. ' . $e->getMessage());
+        }
+        Log::channel('audit')->info('Unit account created (password emailed)', ['email' => $request->email, 'admin_id' => session('admin_user_id')]);
 
-        return back()->with('success', 'Unit account created successfully.');
+        return back()->with('success', "Unit account created. A temporary password was emailed to {$request->email}; they must choose their own password when they first sign in.");
     }
     public function storeDisciplinary(Request $request)
     {
