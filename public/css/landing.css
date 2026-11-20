@@ -647,3 +647,11 @@ body.lp #services, body.lp #units { background-color: var(--g-canvas); backgroun
 }
 /* flag colours (2026-11-20): the band's eyebrow in the flag's yellow */
 .lp-band .lp-eyebrow { color: #fcd116; }
+/* privacy notice (pages/privacy) */
+.lp-privacy { max-width: 72ch; color: var(--lp-ink); font-size: 16px; line-height: 1.65; }
+.lp-privacy h2 { margin: 32px 0 10px; font-size: 1.3rem; text-wrap: balance; }
+.lp-privacy h2:first-child { margin-top: 0; }
+.lp-privacy p, .lp-privacy ul { margin: 0 0 14px; text-wrap: pretty; }
+.lp-privacy ul { padding-left: 1.2em; }
+.lp-privacy li { margin: 4px 0; }
+.lp-privacy a { color: inherit; text-decoration: underline; text-underline-offset: 3px; }

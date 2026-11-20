@@ -23,6 +23,12 @@ class PageController extends Controller
         return view('pages.about');
     }
 
+    /** Data Privacy Act notice (config('pcg.privacy')). */
+    public function privacy()
+    {
+        return view('pages.privacy');
+    }
+
     public function contact()
     {
         return view('pages.contact');

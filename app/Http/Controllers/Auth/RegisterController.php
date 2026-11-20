@@ -75,7 +75,10 @@ class RegisterController extends Controller
 
                 // camera capture as a data URL; about 4 MB of image at most
                 'selfie_image'        => 'required|string|max:5600000',
-            ]);
+
+                // Data Privacy Act: consent to the privacy notice (/privacy)
+                'privacy_consent'     => 'accepted',
+            ], ['privacy_consent.accepted' => 'Please read the privacy notice and tick the box to agree before you register.']);
 
             // One account per serial number: every record is joined on it, so
             // a second account with someone else's serial would see and
@@ -175,6 +178,9 @@ class RegisterController extends Controller
 
                 'status'              => 'Pending',
             ]);
+            if (\Illuminate\Support\Facades\Schema::hasColumn('users', 'privacy_consent_at')) {
+                $user->forceFill(['privacy_consent_at' => now(), 'privacy_notice_version' => (string) config('pcg.privacy.notice_version')])->save();
+            }
 
             Log::info('User created successfully', ['user_id' => $user->id]);
 

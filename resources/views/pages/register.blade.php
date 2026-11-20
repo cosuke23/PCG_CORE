@@ -285,6 +285,15 @@
                         </div>
                         <p id="regPwMatch" class="pcg-help reg-pw-match" aria-live="polite"></p>
                     </div>
+
+                    <div class="pcg-field reg-consent">
+                        <label class="pcg-check" for="regPrivacy">
+                            <input type="checkbox" id="regPrivacy" name="privacy_consent" value="1" @checked(old('privacy_consent'))
+                                @error('privacy_consent') aria-invalid="true" @enderror>
+                            <span>I have read the <a href="{{ route('privacy') }}" target="_blank" rel="noopener">privacy notice</a> and agree that MEPCOM HRMIS processes my personal information, my selfie and my residence location as it describes.</span>
+                        </label>
+                        @error('privacy_consent')<p class="pcg-error">{{ $message }}</p>@enderror
+                    </div>
                 </div>
             </section>
 

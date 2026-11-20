@@ -21,6 +21,21 @@ return [
     // the release (Hermes: /srv/mepcom-hrmis/backups).
     // Clearance expiry reminders (pcg:clearance-reminders): days before the valid-until
     // date on which the member is emailed (0 = on the day). PCG_CLEARANCE_REMINDER_DAYS=30,7,0
+    // Data Privacy Act (pages/privacy, pcg:retention-report, docs/PRIVACY_RECORD.md).
+    // Raise notice_version when the notice changes; registration stores it with the consent.
+    'privacy' => [
+        'notice_version' => env('PCG_PRIVACY_NOTICE_VERSION', '1.0'),
+        'notice_date' => env('PCG_PRIVACY_NOTICE_DATE', '2026-11-20'),
+        'dpo_name' => env('PCG_DPO_NAME', 'MEPCOM Data Protection Officer'),
+        'dpo_email' => env('PCG_DPO_EMAIL', ''),
+        'retention' => [
+            'pending_registration_days' => (int) env('PCG_RETAIN_PENDING_DAYS', 180),
+            'audit_days' => (int) env('LOG_AUDIT_DAYS', 400),
+            'contact_message_days' => (int) env('PCG_RETAIN_CONTACT_DAYS', 365),
+            'leave_days' => (int) env('PCG_RETAIN_LEAVE_DAYS', 1825),
+        ],
+    ],
+
     'clearance' => [
         'reminder_days' => array_values(array_filter(array_map('trim', explode(',', (string) env('PCG_CLEARANCE_REMINDER_DAYS', '30,7,0'))), 'is_numeric')),
     ],

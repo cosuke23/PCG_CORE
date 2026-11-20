@@ -96,6 +96,7 @@
                     <li><a href="{{ route('about') }}">About MEPCOM</a></li>
                     <li><a href="{{ route('meptdi') }}">MEPTDI</a></li>
                     <li><a href="{{ route('contact') }}">Contact</a></li>
+                    <li><a href="{{ route('privacy') }}">Privacy notice</a></li>
                     <li><a href="{{ route('admin.login') }}">HR administration</a></li>
                 </ul>
             </div>
