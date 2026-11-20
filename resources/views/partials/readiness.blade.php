@@ -20,6 +20,7 @@
     <li class="lcr-card"><span class="lcr-card__label">Strength</span><strong class="lcr-card__value">{{ number_format($totals['strength']) }}</strong><span class="lcr-card__unit">approved members</span></li>
     <li class="lcr-card"><span class="lcr-card__label">Available</span><strong class="lcr-card__value">{{ number_format($totals['available']) }}</strong><span class="lcr-card__unit">{{ $totals['percent'] }}% of strength</span></li>
     <li class="lcr-card"><span class="lcr-card__label">On leave</span><strong class="lcr-card__value">{{ number_format($totals['leave']) }}</strong><span class="lcr-card__unit">approved leave</span></li>
+    <li class="lcr-card"><span class="lcr-card__label">Deployed</span><strong class="lcr-card__value">{{ number_format($totals['deployed'] ?? 0) }}</strong><span class="lcr-card__unit">sea duty and deployments</span></li>
     <li class="lcr-card"><span class="lcr-card__label">In training</span><strong class="lcr-card__value">{{ number_format($totals['training']) }}</strong><span class="lcr-card__unit">MEPTDI classes</span></li>
 </ul>
 
@@ -29,12 +30,13 @@
         <p class="pcg-empty">No approved members found.</p>
     @else
         <table class="pcg-table">
-            <thead><tr><th scope="col">Unit</th><th scope="col" class="lcr-num">Strength</th><th scope="col" class="lcr-num">On leave</th><th scope="col" class="lcr-num">In training</th><th scope="col" class="lcr-num">Available</th><th scope="col">Readiness</th></tr></thead>
+            <thead><tr><th scope="col">Unit</th><th scope="col" class="lcr-num">Strength</th><th scope="col" class="lcr-num">Deployed</th><th scope="col" class="lcr-num">On leave</th><th scope="col" class="lcr-num">In training</th><th scope="col" class="lcr-num">Available</th><th scope="col">Readiness</th></tr></thead>
             <tbody>
                 @foreach ($units as $r)
                     <tr>
                         <td><strong>{{ $r->unit }}</strong></td>
                         <td class="lcr-num">{{ $r->strength }}</td>
+                        <td class="lcr-num">{{ $r->deployed ?? 0 }}</td>
                         <td class="lcr-num">{{ $r->leave }}</td>
                         <td class="lcr-num">{{ $r->training }}</td>
                         <td class="lcr-num"><strong>{{ $r->available }}</strong></td>
@@ -58,8 +60,8 @@
                     <tr>
                         <td><strong>{{ trim(($p->rank ?? '') . ' ' . $p->name) }}</strong> <span class="lc-muted pcg-mono">{{ $p->serial }}</span></td>
                         <td>{{ $p->unit }}</td>
-                        <td><span class="pcg-badge pcg-badge--{{ $p->state === 'leave' ? 'warning' : 'info' }}">{{ $p->state === 'leave' ? 'Leave' : 'Training' }}</span> {{ $p->detail }}</td>
-                        <td class="lcr-nowrap">{{ $p->until ? \Illuminate\Support\Carbon::parse($p->until)->format('M j, Y') : '—' }}</td>
+                        <td><span class="pcg-badge pcg-badge--{{ ['leave' => 'warning', 'deployed' => 'success'][$p->state] ?? 'info' }}">{{ ['leave' => 'Leave', 'deployed' => 'Deployed'][$p->state] ?? 'Training' }}</span> {{ $p->detail }}</td>
+                        <td class="lcr-nowrap">{{ $p->until ? \Illuminate\Support\Carbon::parse($p->until)->format('M j, Y') : ($p->state === 'deployed' ? 'ongoing' : '—') }}</td>
                     </tr>
                 @endforeach
             </tbody>

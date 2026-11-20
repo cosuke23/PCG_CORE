@@ -10,7 +10,9 @@ use Illuminate\Support\Facades\Schema;
  * Manpower readiness on a day: per unit (users.mother_unit) the strength
  * (approved members with a serial number), who is on approved leave, who is in a
  * MEPTDI class (course_students with that day inside date_attended..date_ended),
- * and how many are available (strength minus everyone away, each person once).
+ * who is deployed (personnel_deployments covering the day, App\Support\Deployments),
+ * and how many are available (strength minus everyone away, each person once:
+ * deployed first, then leave, then training).
  */
 class Readiness
 {
@@ -50,15 +52,27 @@ class Readiness
             }
         }
 
+        $deployed = Deployments::on($date, $ids);
+
         $people = collect();
         foreach ($members as $m) {
-            $state = $leave->has($m->id) ? 'leave' : ($training->has($m->id) ? 'training' : 'available');
+            $state = $deployed->has($m->id) ? 'deployed' : ($leave->has($m->id) ? 'leave' : ($training->has($m->id) ? 'training' : 'available'));
             $people->push((object) [
                 'id' => $m->id, 'name' => $m->name, 'rank' => $m->rank, 'serial' => $m->serial_number,
                 'unit' => trim((string) $m->mother_unit) !== '' ? trim((string) $m->mother_unit) : 'No unit',
                 'state' => $state,
-                'detail' => $state === 'leave' ? LeaveTypes::label($leave[$m->id]->leave_type) : ($state === 'training' ? (string) ($training[$m->id]->course_name ?? 'MEPTDI class') : null),
-                'until' => $state === 'leave' ? $leave[$m->id]->end_date : ($state === 'training' ? $training[$m->id]->date_ended : null),
+                'detail' => match ($state) {
+                    'deployed' => $deployed[$m->id]->assignment,
+                    'leave' => LeaveTypes::label($leave[$m->id]->leave_type),
+                    'training' => (string) ($training[$m->id]->course_name ?? 'MEPTDI class'),
+                    default => null,
+                },
+                'until' => match ($state) {
+                    'deployed' => $deployed[$m->id]->end_date,
+                    'leave' => $leave[$m->id]->end_date,
+                    'training' => $training[$m->id]->date_ended,
+                    default => null,
+                },
             ]);
         }
 
@@ -66,12 +80,13 @@ class Readiness
             $strength = $g->count();
             $onLeave = $g->where('state', 'leave')->count();
             $inTraining = $g->where('state', 'training')->count();
-            $available = $strength - $onLeave - $inTraining;
-            return (object) ['unit' => $g->first()->unit, 'strength' => $strength, 'leave' => $onLeave, 'training' => $inTraining,
+            $out = $g->where('state', 'deployed')->count();
+            $available = $strength - $onLeave - $inTraining - $out;
+            return (object) ['unit' => $g->first()->unit, 'strength' => $strength, 'leave' => $onLeave, 'training' => $inTraining, 'deployed' => $out,
                 'available' => $available, 'percent' => $strength ? (int) round($available * 100 / $strength) : 0];
         })->sortBy('unit')->values();
 
-        $t = ['strength' => $units->sum('strength'), 'leave' => $units->sum('leave'), 'training' => $units->sum('training'), 'available' => $units->sum('available')];
+        $t = ['strength' => $units->sum('strength'), 'leave' => $units->sum('leave'), 'training' => $units->sum('training'), 'deployed' => $units->sum('deployed'), 'available' => $units->sum('available')];
         $t['percent'] = $t['strength'] ? (int) round($t['available'] * 100 / $t['strength']) : 0;
 
         return ['units' => $units, 'people' => $people->where('state', '!=', 'available')->sortBy([['unit', 'asc'], ['state', 'asc'], ['name', 'asc']])->values(), 'totals' => $t];

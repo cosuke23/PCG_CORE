@@ -26,6 +26,9 @@ class AccessControlTest extends TestCase
             ['get', '/admin/leave/1/print'],
             ['get', '/admin/leave/readiness'],
             ['get', '/admin/leave/summary'],
+            ['get', '/admin/deployments'],
+            ['post', '/admin/deployments'],
+            ['post', '/admin/deployments/1/end'],
             ['get', '/admin/leave/export'],
             ['post', '/admin/approve/1'],
             ['post', '/admin/reject/1'],
@@ -112,6 +115,9 @@ class AccessControlTest extends TestCase
             ['get', '/unit/leave/1/print'],
             ['get', '/unit/leave/readiness'],
             ['get', '/unit/leave/summary'],
+            ['get', '/unit/deployments'],
+            ['post', '/unit/deployments'],
+            ['post', '/unit/deployments/1/end'],
             ['get', '/unit/leave/export'],
         ];
     }

@@ -150,6 +150,20 @@ class AdminLeaveTest extends TestCase
         $this->assertStringContainsString('Ben Outside', $all);
     }
 
+    public function test_admins_record_deployments_in_their_scope_and_auditors_only_view()
+    {
+        $this->withSession($this->hr)->post('/admin/deployments', ['user_id' => $this->ben, 'kind' => 'sea_duty', 'assignment' => 'BRP X', 'start_date' => '2026-11-01'])
+            ->assertForbidden();
+        $this->post('/admin/deployments', ['user_id' => $this->ana, 'kind' => 'sea_duty', 'assignment' => 'BRP Gabriela Silang', 'start_date' => '2026-11-01'])
+            ->assertSessionHas('success');
+        $this->get('/admin/deployments')->assertOk()->assertSee('1 member is deployed today')->assertSee('Record a deployment');
+        $this->get('/admin/leave/readiness')->assertOk()->assertSee('Deployed');
+
+        $this->withSession($this->auditor)->get('/admin/deployments')->assertOk()->assertSee('BRP Gabriela Silang')
+            ->assertSee('can view these records but not change them')->assertDontSee('Record a deployment');
+        $this->post('/admin/deployments', ['user_id' => $this->ana, 'kind' => 'sea_duty', 'assignment' => 'BRP Y', 'start_date' => '2026-11-01'])->assertForbidden();
+    }
+
     public function test_the_adjutant_handles_leave_of_their_command()
     {
         $mepcom = OrgUnit::where('code', 'MEPCOM')->first();

@@ -36,6 +36,12 @@ return [
         ],
     ],
 
+    // Deployments / sea duty (App\Support\Deployments): RNR days suggested per 30 days
+    // deployed when a deployment ends (0 = no suggestion; the checker types the days).
+    'deployment' => [
+        'rnr_days_per_30' => (float) env('PCG_RNR_DAYS_PER_30', 0),
+    ],
+
     'clearance' => [
         'reminder_days' => array_values(array_filter(array_map('trim', explode(',', (string) env('PCG_CLEARANCE_REMINDER_DAYS', '30,7,0'))), 'is_numeric')),
     ],

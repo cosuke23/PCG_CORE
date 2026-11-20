@@ -328,6 +328,14 @@ Route::middleware(['admin.session', 'admin.audit'])->group(function () {
             });
         });
 
+    // ---- Deployments / sea duty (owner request 2026-11-20): leave.view sees, leave.credits records (DeploymentController) ----
+    Route::middleware('admin.can:leave.view')->prefix('admin/deployments')->name('admin.deployments')
+        ->controller(\App\Http\Controllers\DeploymentController::class)->group(function () {
+            Route::get('/', 'adminIndex')->name('');
+            Route::post('/', 'adminStore')->middleware('admin.can:leave.credits')->name('.store');
+            Route::post('/{id}/end', 'adminEnd')->whereNumber('id')->middleware('admin.can:leave.credits')->name('.end');
+        });
+
     // ---- SOI submissions: Adjutant, HR admin (own command/unit) and super admin reopen a submitted SOI ----
     Route::middleware('admin.can:soi.reopen')->prefix('admin/soi')->name('admin.soi.')
         ->controller(\App\Http\Controllers\SoiSubmissionController::class)->group(function () {
@@ -488,6 +496,9 @@ Route::middleware(['unit.session'])->group(function () {
     Route::get('/unit/leave/{id}/print', [\App\Http\Controllers\LeavePrintController::class, 'unit'])->whereNumber('id')->name('unit.leave.print');
     Route::get('/unit/leave/readiness', [\App\Http\Controllers\ReadinessController::class, 'unit'])->name('unit.leave.readiness');
     Route::get('/unit/leave/summary', [\App\Http\Controllers\LeaveReportController::class, 'unitSummary'])->name('unit.leave.summary');
+    Route::get('/unit/deployments', [\App\Http\Controllers\DeploymentController::class, 'unitIndex'])->name('unit.deployments');
+    Route::post('/unit/deployments', [\App\Http\Controllers\DeploymentController::class, 'unitStore'])->middleware('throttle:member-writes')->name('unit.deployments.store');
+    Route::post('/unit/deployments/{id}/end', [\App\Http\Controllers\DeploymentController::class, 'unitEnd'])->whereNumber('id')->middleware('throttle:member-writes')->name('unit.deployments.end');
     Route::get('/unit/leave/export', [\App\Http\Controllers\LeaveReportController::class, 'unitExport'])->name('unit.leave.export');
     Route::post('/unit/leave/{id}/review', [\App\Http\Controllers\UnitLeaveController::class, 'review'])
         ->whereNumber('id')->middleware('throttle:member-writes')->name('unit.leave.review');

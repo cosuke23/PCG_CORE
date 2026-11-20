@@ -48,6 +48,7 @@
                     @include('layouts.partials.nav-link', ['href' => route('unit.leave.credits'), 'icon' => 'scale-balanced', 'label' => 'Leave credits', 'active' => request()->routeIs('unit.leave.credits*')])
                     @include('layouts.partials.nav-link', ['href' => route('unit.leave.readiness'), 'icon' => 'people-group', 'label' => 'Readiness', 'active' => request()->routeIs('unit.leave.readiness')])
                     @include('layouts.partials.nav-link', ['href' => route('unit.leave.summary'), 'icon' => 'chart-column', 'label' => 'Leave summary', 'active' => request()->routeIs('unit.leave.summary')])
+                    @include('layouts.partials.nav-link', ['href' => route('unit.deployments'), 'icon' => 'ship', 'label' => 'Deployments', 'active' => request()->routeIs('unit.deployments*')])
                 @else
                     @include('layouts.partials.nav-link', ['href' => route('unit.dashboard'), 'icon' => 'clipboard-check', 'label' => 'Document review', 'active' => request()->routeIs('unit.dashboard')])
                     @include('layouts.partials.nav-link', ['href' => route('unit.201files'), 'icon' => 'folder-open', 'label' => '201 file review', 'active' => request()->routeIs('unit.201files')])
@@ -55,6 +56,7 @@
                     @include('layouts.partials.nav-link', ['href' => route('unit.leave.credits'), 'icon' => 'scale-balanced', 'label' => 'Leave credits', 'active' => request()->routeIs('unit.leave.credits*')])
                     @include('layouts.partials.nav-link', ['href' => route('unit.leave.readiness'), 'icon' => 'people-group', 'label' => 'Readiness', 'active' => request()->routeIs('unit.leave.readiness')])
                     @include('layouts.partials.nav-link', ['href' => route('unit.leave.summary'), 'icon' => 'chart-column', 'label' => 'Leave summary', 'active' => request()->routeIs('unit.leave.summary')])
+                    @include('layouts.partials.nav-link', ['href' => route('unit.deployments'), 'icon' => 'ship', 'label' => 'Deployments', 'active' => request()->routeIs('unit.deployments*')])
                 @endif
             </nav>
         </aside>

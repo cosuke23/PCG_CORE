@@ -149,3 +149,10 @@ body.pcg-glass .lcr-num.is-minus { color: #fca5a5; }
 .rd-bar::before { content: ""; position: absolute; inset: 0 auto 0 0; width: var(--rd, 0%); background: #15803d; border-radius: inherit; }
 .rd-bar.is-low::before { background: #c2410c; }
 .rd-bar span { position: relative; display: block; text-align: center; font-size: 11px; font-weight: 700; line-height: 18px; color: #fff; font-variant-numeric: tabular-nums; }
+/* deployments (partials/deployments): the End / Grant RNR form opens under its button */
+.dp-end summary { list-style: none; cursor: pointer; }
+.dp-end summary::-webkit-details-marker { display: none; }
+.dp-end[open] summary { margin-bottom: 8px; }
+.dp-end .lc-form { min-width: 200px; }
+/* readiness: deployed */
+.lcr-deployed { color: var(--pcg-accent); }

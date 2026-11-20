@@ -251,6 +251,51 @@ class LeaveExtrasTest extends TestCase
         $this->assertSame(2, substr_count($m1, ',Approved,'));
     }
 
+    // ---------------------------------------------------------------- deployments / sea duty
+
+    private function withDeployments(): void
+    {
+        (require base_path('database/migrations/2026_11_20_000004_create_personnel_deployments_table.php'))->up();
+    }
+
+    public function test_checkers_record_deployments_of_their_unit_and_end_them_with_rnr()
+    {
+        $this->withDeployments();
+        $this->withSession($this->unit)->post('/unit/deployments', ['user_id' => $this->ben->id, 'kind' => 'sea_duty',
+            'assignment' => 'BRP Teresa Magbanua', 'start_date' => '2026-11-01'])->assertForbidden();   // other unit
+
+        $this->post('/unit/deployments', ['user_id' => $this->ana->id, 'kind' => 'sea_duty', 'assignment' => 'BRP Gabriela Silang',
+            'start_date' => '2026-11-01', 'end_date' => '2026-10-01'])->assertSessionHasErrors('end_date');
+        $this->post('/unit/deployments', ['user_id' => $this->ana->id, 'kind' => 'sea_duty', 'assignment' => 'BRP Gabriela Silang',
+            'start_date' => '2026-11-01'])->assertSessionHas('success');
+        $dep = DB::table('personnel_deployments')->first();
+        $this->assertNull($dep->end_date);
+        $this->assertSame('MEPLEF', $dep->unit_name);
+
+        $this->get('/unit/deployments')->assertOk()->assertSee('1 member is deployed today in MEPLEF')->assertSee('BRP Gabriela Silang');
+        $this->get('/unit/leave/readiness')->assertSee('1 of 2 members of MEPLEF are available today')->assertSee('Deployed');
+
+        $this->withSession($this->otherUnit)->post("/unit/deployments/{$dep->id}/end", ['end_date' => '2026-11-20', 'rnr_days' => 5])->assertForbidden();
+        $this->withSession($this->unit)->post("/unit/deployments/{$dep->id}/end", ['end_date' => '2026-11-19', 'rnr_days' => 5])->assertSessionHas('success');
+        $this->assertSame(5.0, LeaveCredits::balances($this->ana->id)['rnr']['available']);
+        $this->assertSame('2026-11-19', DB::table('personnel_deployments')->value('end_date'));
+        $this->assertStringContainsString('BRP Gabriela Silang', (string) DB::table('leave_credit_entries')->value('note'));
+
+        // no second grant
+        $this->post("/unit/deployments/{$dep->id}/end", ['end_date' => '2026-11-19', 'rnr_days' => 5])->assertSessionHas('error');
+        $this->assertSame(5.0, LeaveCredits::balances($this->ana->id)['rnr']['available']);
+        $this->get('/unit/leave/readiness')->assertSee('2 of 2 members of MEPLEF are available today');
+    }
+
+    public function test_m1_records_any_unit_and_a_finished_deployment_grants_at_once()
+    {
+        $this->withDeployments();
+        $this->withSession($this->m1)->post('/unit/deployments', ['user_id' => $this->ben->id, 'kind' => 'deployment', 'assignment' => 'Kalayaan patrol',
+            'start_date' => '2026-09-01', 'end_date' => '2026-10-30', 'rnr_days' => 10])->assertSessionHas('success');
+        $this->assertSame(10.0, LeaveCredits::balances($this->ben->id)['rnr']['available']);
+        $this->get('/unit/deployments')->assertOk()->assertSee('Kalayaan patrol')->assertSee('Ended');
+    }
+
     // ---------------------------------------------------------------- 3D model
 
     public function test_the_ship_model_is_sent_compressed_and_cached()
