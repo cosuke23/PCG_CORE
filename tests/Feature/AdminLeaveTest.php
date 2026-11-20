@@ -137,6 +137,26 @@ class AdminLeaveTest extends TestCase
         $this->withSession($this->auditor)->get('/admin/leave/credits')->assertDontSee('leave requests waiting');   // cannot approve
     }
 
+    public function test_the_adjutant_handles_leave_of_their_command()
+    {
+        $mepcom = OrgUnit::where('code', 'MEPCOM')->first();
+        $adj = AdminUser::create(['name' => 'Adjutant', 'email' => 'adj@x.test', 'password' => 'x', 'role' => 'adjutant', 'org_unit_id' => $mepcom->id, 'is_active' => true]);
+        $session = ['admin_logged_in' => true, 'admin_role' => 'adjutant', 'admin_user_id' => $adj->id, 'admin_org_unit_id' => $mepcom->id, 'admin_email' => 'adj@x.test', 'admin_name' => 'Adjutant'];
+
+        $this->withSession($session)->get('/admin/leave')->assertOk()
+            ->assertSee('Ana Inside')->assertDontSee('Ben Outside')
+            ->assertSee('1 leave request waiting')                      // navbar count
+            ->assertSee('Leave requests');                              // sidebar section
+
+        $this->post('/admin/leave/' . $this->leaveOf($this->ben)->id . '/review', ['decision' => 'approve'])->assertForbidden();
+        $this->post('/admin/leave/' . $this->leaveOf($this->ana)->id . '/review', ['decision' => 'approve'])->assertSessionHas('success');
+        $this->assertSame('Adjutant (admin)', $this->leaveOf($this->ana)->reviewer_name);
+
+        $this->post('/admin/leave/credits/' . $this->ana, ['action' => 'grant', 'days' => 5, 'effective_date' => '2026-11-20', 'note' => 'Patrol'])->assertRedirect();
+        $this->assertSame(11.0, LeaveCredits::balances($this->ana)['rnr']['available']);       // 10 - 4 + 5
+        $this->get('/admin/leave/credits/' . $this->ben)->assertForbidden();
+    }
+
     public function test_other_roles_do_not_see_leave()
     {
         $lms = AdminUser::create(['name' => 'LMS', 'email' => 'lms@x.test', 'password' => 'x', 'role' => 'lms_admin', 'is_active' => true]);

@@ -34,9 +34,10 @@ class AdminPermissions
         'soi.adjutant'         => ['super_admin', 'adjutant'],
         'soi.reopen'           => ['super_admin', 'hr_admin', 'adjutant'],
         // Leave (owner request 2026-11-20): see requests and the calendar, decide requests, manage credits
-        'leave.view'           => ['super_admin', 'hr_admin', 'auditor'],
-        'leave.approve'        => ['super_admin', 'hr_admin'],
-        'leave.credits'        => ['super_admin', 'hr_admin'],
+        // (the Adjutant too, for the members of their command/unit: owner request 2026-11-20)
+        'leave.view'           => ['super_admin', 'hr_admin', 'auditor', 'adjutant'],
+        'leave.approve'        => ['super_admin', 'hr_admin', 'adjutant'],
+        'leave.credits'        => ['super_admin', 'hr_admin', 'adjutant'],
     ];
 
     public static function allows(?string $role, string $capability): bool

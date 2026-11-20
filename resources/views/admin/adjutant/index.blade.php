@@ -14,6 +14,8 @@
             </div>
         </div>
 
+        @include('admin.leave.partials.summary')
+
         <section class="pcg-card">
             <div class="pcg-card__body">
                 <form method="GET" action="{{ route('admin.adjutant.index') }}" class="pcg-filters" role="search">
