@@ -28,6 +28,7 @@ class DatabaseSeeder extends DevOnlySeeder
             ReenlistmentFormSeeder::class,  // every re-enlistment (SOI) section, profiles, applicants
             HrmisRecordsSeeder::class,      // registrations, history, 201 documents, promotions, trainings
             ActivitySeeder::class,          // contact messages and audit log entries
+            LeaveSeeder::class,             // leave requests on the leave calendars
         ]);
     }
 }

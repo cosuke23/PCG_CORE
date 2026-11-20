@@ -43,9 +43,11 @@
                 @if ($isM1)
                     @include('layouts.partials.nav-link', ['href' => route('unit.dashboard.m1'), 'icon' => 'clipboard-check', 'label' => 'Document review', 'active' => request()->routeIs('unit.dashboard.m1')])
                     @include('layouts.partials.nav-link', ['href' => route('unit.201files'), 'icon' => 'folder-open', 'label' => '201 file review', 'active' => request()->routeIs('unit.201files')])
+                    @include('layouts.partials.nav-link', ['href' => route('unit.leave'), 'icon' => 'calendar-days', 'label' => 'Leave approval', 'active' => request()->routeIs('unit.leave*')])
                 @else
                     @include('layouts.partials.nav-link', ['href' => route('unit.dashboard'), 'icon' => 'clipboard-check', 'label' => 'Document review', 'active' => request()->routeIs('unit.dashboard')])
                     @include('layouts.partials.nav-link', ['href' => route('unit.201files'), 'icon' => 'folder-open', 'label' => '201 file review', 'active' => request()->routeIs('unit.201files')])
+                    @include('layouts.partials.nav-link', ['href' => route('unit.leave'), 'icon' => 'calendar-days', 'label' => 'Leave approval', 'active' => request()->routeIs('unit.leave*')])
                 @endif
             </nav>
         </aside>

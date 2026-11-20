@@ -88,6 +88,8 @@ class AccessControlTest extends TestCase
             ['post', '/unit/password'],
             ['get', '/unit/201-files/12345'],
             ['post', '/unit/201-files/review'],
+            ['get', '/unit/leave'],
+            ['post', '/unit/leave/1/review'],
         ];
     }
 
@@ -105,6 +107,9 @@ class AccessControlTest extends TestCase
             ['get', '/generate-soi'],
             ['get', '/mobile-app'],
             ['get', '/mobile-app/download'],
+            ['get', '/leave'],
+            ['post', '/leave'],
+            ['post', '/leave/1/cancel'],
             ['get', '/applicant/operational-training'],
         ];
     }

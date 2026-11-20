@@ -41,6 +41,7 @@
                 @include('layouts.partials.nav-link', ['href' => route('upload.documents'), 'icon' => 'file-arrow-up', 'label' => 'Required documents', 'active' => request()->routeIs('upload.documents')])
                 @include('layouts.partials.nav-link', ['href' => route('upload.201'), 'icon' => 'folder-open', 'label' => '201 files', 'active' => request()->routeIs('upload.201')])
                 @include('layouts.partials.nav-link', ['href' => route('generate.soi'), 'icon' => 'print', 'label' => 'Print my SOI', 'active' => false])
+                @include('layouts.partials.nav-link', ['href' => route('leave.index'), 'icon' => 'calendar-days', 'label' => 'Leave', 'active' => request()->routeIs('leave.*')])
                 @include('layouts.partials.nav-link', ['href' => route('mobile.app'), 'icon' => 'mobile-screen-button', 'label' => 'Android app', 'active' => request()->routeIs('mobile.app')])
 
                 <div class="pcg-nav__section">Training</div>

@@ -162,6 +162,13 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/mobile-app/download', [\App\Http\Controllers\MobileAppController::class, 'download'])
         ->middleware('throttle:member-writes')->name('mobile.app.download');
 
+    // Leave (owner request 2026-11-20): file on the calendar, the unit checker approves (LeaveController)
+    Route::get('/leave', [\App\Http\Controllers\LeaveController::class, 'index'])->name('leave.index');
+    Route::post('/leave', [\App\Http\Controllers\LeaveController::class, 'store'])
+        ->middleware('throttle:member-writes')->name('leave.store');
+    Route::post('/leave/{id}/cancel', [\App\Http\Controllers\LeaveController::class, 'cancel'])
+        ->whereNumber('id')->middleware('throttle:member-writes')->name('leave.cancel');
+
     Route::get('/applicant/administrative-training', [ApplicantTrainingController::class, 'administrative'])
         ->name('applicant.administrative.training');
     Route::get('/applicant/operational-training', [ApplicantTrainingController::class, 'operational'])
@@ -445,6 +452,11 @@ Route::middleware(['unit.session'])->group(function () {
     Route::get('/unit/201-files', [UnitUserController::class, 'index_201'])->name('unit.201files');
     Route::post('/unit/201-files/review', [UnitDocumentController::class, 'review201'])
         ->name('unit.201files.review');
+
+    // Leave approval (owner request 2026-11-20): own-unit checkers for their unit, M1 for all (UnitLeaveController)
+    Route::get('/unit/leave', [\App\Http\Controllers\UnitLeaveController::class, 'index'])->name('unit.leave');
+    Route::post('/unit/leave/{id}/review', [\App\Http\Controllers\UnitLeaveController::class, 'review'])
+        ->whereNumber('id')->middleware('throttle:member-writes')->name('unit.leave.review');
 
     // M1 checkers only (all units)
     Route::middleware(['unit.m1'])->group(function () {
