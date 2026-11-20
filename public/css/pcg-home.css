@@ -423,28 +423,26 @@ body.ph {
 /* flag colours (2026-11-20): the band's eyebrow in the flag's yellow */
 .ph-hero__band .ph-eyebrow { color: #fcd116; }
 
-/* ------------------------------------------------------------ the PCG seal in 3D (#seal, js/pcg-seal-3d.js) */
-.ph-seal__in { display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 6fr); gap: 48px; align-items: center; }
-.ph-seal__text .ph-lead { margin-bottom: 0; }
-.ph-seal__stage { position: relative; margin: 0; width: 100%; max-width: 520px; aspect-ratio: 1; justify-self: center; isolation: isolate; }
-.ph-seal__stage::before { /* golden sun glow behind the seal */
-    content: ""; position: absolute; inset: 6%; z-index: -1; border-radius: 50%;
-    background: radial-gradient(circle, rgba(252, 209, 22, 0.28), rgba(206, 17, 38, 0.12) 45%, rgba(0, 56, 168, 0.10) 62%, transparent 72%);
-    filter: blur(8px);
-}
-.ph-seal__img { position: absolute; inset: 9%; width: 82%; height: 82%; object-fit: contain; transition: opacity .6s ease; filter: drop-shadow(0 24px 40px rgba(0, 0, 0, 0.45)); }
-.ph-seal__canvas { position: absolute; inset: 0; width: 100% !important; height: 100% !important; opacity: 0; transition: opacity .8s ease; cursor: grab; touch-action: pan-y; }
-.ph-seal__canvas:active { cursor: grabbing; }
-.ph-seal__stage.is-3d .ph-seal__canvas { opacity: 1; }
-.ph-seal__stage.is-3d .ph-seal__img { opacity: 0; }
-.ph-seal__hint { position: absolute; left: 50%; bottom: 0; transform: translateX(-50%); display: inline-flex; align-items: center; gap: 8px;
-    padding: 6px 14px; border-radius: 999px; background: rgba(255, 255, 255, 0.07); border: 1px solid rgba(255, 255, 255, 0.14);
-    color: var(--ph-muted); font-size: 13px; white-space: nowrap; opacity: 0; transition: opacity .6s ease .6s; pointer-events: none; }
-.ph-seal__stage.is-3d .ph-seal__hint { opacity: 1; }
+/* ------------------------------------------------------------ BRP Gabriela Silang in 3D (#ship, js/pcg-ship-3d.js) */
+.ph-ship__in { display: grid; grid-template-columns: minmax(0, 4fr) minmax(0, 7fr); gap: 40px; align-items: center; }
+.ph-ship__text .ph-lead { margin-bottom: 0; }
+.ph-ship__stage { position: relative; margin: 0; width: 100%; aspect-ratio: 16 / 10; overflow: hidden; isolation: isolate;
+    border-radius: 22px; border: 1px solid rgba(255, 255, 255, 0.12);
+    background: radial-gradient(120% 90% at 60% 30%, rgba(0, 56, 168, 0.35), rgba(7, 11, 24, 0.2) 70%), rgba(255, 255, 255, 0.03);
+    box-shadow: 0 1px 0 rgba(255, 255, 255, 0.05) inset, 0 30px 60px rgba(0, 0, 0, 0.4); }
+.ph-ship__img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; transition: opacity .7s ease; }
+.ph-ship__canvas { position: absolute; inset: 0; width: 100% !important; height: 100% !important; opacity: 0; transition: opacity .9s ease; cursor: grab; }
+.ph-ship__canvas:active { cursor: grabbing; }
+.ph-ship__stage.is-3d .ph-ship__canvas { opacity: 1; }
+.ph-ship__stage.is-3d .ph-ship__img { opacity: 0; }
+.ph-ship__hint { position: absolute; left: 50%; bottom: 14px; transform: translateX(-50%); display: inline-flex; align-items: center; gap: 8px;
+    padding: 6px 14px; border-radius: 999px; background: rgba(7, 11, 24, 0.55); border: 1px solid rgba(255, 255, 255, 0.16);
+    color: #ccd5e4; font-size: 13px; white-space: nowrap; opacity: 0; transition: opacity .6s ease .8s; pointer-events: none;
+    -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px); }
+.ph-ship__stage.is-3d .ph-ship__hint { opacity: 1; }
 @media (max-width: 860px) {
-    .ph-seal__in { grid-template-columns: minmax(0, 1fr); gap: 24px; }
-    .ph-seal__stage { max-width: 380px; }
+    .ph-ship__in { grid-template-columns: minmax(0, 1fr); gap: 24px; }
 }
 @media (prefers-reduced-motion: reduce) {
-    .ph-seal__img, .ph-seal__canvas, .ph-seal__hint { transition: none; }
+    .ph-ship__img, .ph-ship__canvas, .ph-ship__hint { transition: none; }
 }

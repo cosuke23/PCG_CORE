@@ -62,9 +62,9 @@
     <link rel="stylesheet" href="{{ asset('vendor/fontawesome/css/all.min.css') }}">
     <link rel="stylesheet" href="{{ \App\Support\Asset::v('css/pcg-home.css') }}">
     <script nonce="{{ $cspNonce ?? '' }}" src="{{ \App\Support\Asset::v('js/pcg-home.js') }}" defer></script>
-    {{-- 3D seal (section #seal): three.js is self-hosted (public/vendor/three-0.160.0) and mapped here --}}
+    {{-- 3D ship (section #ship): three.js is self-hosted (public/vendor/three-0.160.0) and mapped here --}}
     <script type="importmap" nonce="{{ $cspNonce ?? '' }}">@json(['imports' => ['three' => asset('vendor/three-0.160.0/three.module.min.js'), 'three/addons/' => asset('vendor/three-0.160.0/addons') . '/']], JSON_UNESCAPED_SLASHES)</script>
-    <script type="module" nonce="{{ $cspNonce ?? '' }}" src="{{ \App\Support\Asset::v('js/pcg-seal-3d.js') }}"></script>
+    <script type="module" nonce="{{ $cspNonce ?? '' }}" src="{{ \App\Support\Asset::v('js/pcg-ship-3d.js') }}"></script>
 </head>
 <body class="ph">
     <a class="ph-skip" href="#main">Skip to content</a>
@@ -150,17 +150,17 @@
             </div>
         </section>
 
-        {{-- the PCG seal in 3D (js/pcg-seal-3d.js); the seal image stays until the 3D seal is ready, or if it cannot run --}}
-        <section class="ph-section ph-seal" id="seal" aria-labelledby="seal-title">
-            <div class="ph-wrap ph-seal__in">
-                <div class="ph-seal__text" data-ph-reveal>
-                    <p class="ph-eyebrow">The seal of the Philippine Coast Guard</p>
-                    <h2 id="seal-title" data-ph-words>Turn the PCG seal in 3D.</h2>
-                    <p class="ph-lead">The life ring, the navy triangle with its three stars, the anchor and the dolphin of the Philippine Coast Guard seal, built in three dimensions. Drag the seal to turn it.</p>
+        {{-- BRP Gabriela Silang in 3D (js/pcg-ship-3d.js); the photo stays until the 3D ship is ready, or if it cannot run --}}
+        <section class="ph-section ph-ship" id="ship" aria-labelledby="ship-title">
+            <div class="ph-wrap ph-ship__in">
+                <div class="ph-ship__text" data-ph-reveal>
+                    <p class="ph-eyebrow">Philippine Coast Guard fleet</p>
+                    <h2 id="ship-title" data-ph-words>BRP Gabriela Silang, in 3D.</h2>
+                    <p class="ph-lead">BRP Gabriela Silang (OPV-8301), an offshore patrol vessel of the Philippine Coast Guard, at sea with the flag flying. Drag the view to see her from every side.</p>
                 </div>
-                <figure class="ph-seal__stage" data-pcg-seal-3d>
-                    <img class="ph-seal__img" src="{{ asset('images/brand/pcg-logo.webp') }}" alt="Seal of the Philippine Coast Guard" width="512" height="512" loading="lazy">
-                    <figcaption class="ph-seal__hint"><i class="fa-solid fa-hand-pointer" aria-hidden="true"></i> Drag to turn</figcaption>
+                <figure class="ph-ship__stage" data-pcg-ship-3d>
+                    <img class="ph-ship__img" src="{{ asset('images/pcg/brp-gabriela-silang.webp') }}" alt="BRP Gabriela Silang, hull number 8301, at sea" width="1600" height="1066" loading="lazy">
+                    <figcaption class="ph-ship__hint"><i class="fa-solid fa-hand-pointer" aria-hidden="true"></i> Drag to turn the view</figcaption>
                 </figure>
             </div>
         </section>
