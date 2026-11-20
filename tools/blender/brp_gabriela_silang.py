@@ -366,11 +366,10 @@ misc = Builder("Fittings")
 # blue roof decks
 misc.box(-13.5, -9.0, -SW + 0.25, SW - 0.25, L1, L1 + 0.15, "BlueDeck")
 misc.box(6.6, 8.6, -SW + 0.4, SW - 0.4, L1, L1 + 0.15, "BlueDeck")
-misc.box(8.8, 10.4, -SW + 0.6, SW - 0.6, L1, L1 + 0.15, "BlueDeck")
 # side windows (slightly proud dark panes)
 for s in (1, -1):
     yy = s * (SW + 0.02)
-    for x in (3.4, 5.2, 7.0):
+    for x in (7.0,):
         misc.box(x, x + 1.2, yy - 0.03, yy + 0.03, 10.0, 10.8, "Glass")
 # hangar door with ribs
 misc.box(-13.85, -13.72, -2.5, 2.5, 7.3, 10.8, "HangarDoor")
@@ -539,20 +538,6 @@ for s in (1, -1):
         y = s * (yy + 0.02)
         det.box(x0, x0 + 0.9, y - 0.04, y + 0.04, DECK + 0.2, DECK + 2.1, "Steel")
         det.box(x0 + 0.65, x0 + 0.78, y + s * 0.03, y + s * 0.09, DECK + 1.0, DECK + 1.15, "Dark")
-    for x in (4.2, 5.4, 6.6, 7.8):
-        y = s * (SW + 0.01)
-        det.cylinder((x, y, 8.4), (x, y + s * 0.05, 8.4), 0.2, None, 12, "Glass")
-# life-raft canister racks on the 01-deck roof, both sides
-for s in (1, -1):
-    det.box(9.0, 14.6, s * 6.3 - 0.45, s * 6.3 + 0.45, L1 + 0.15, L1 + 0.3, "Steel")
-    for x in (9.6, 11.0, 12.4, 13.8):
-        det.cylinder((x - 0.55, s * 6.3, L1 + 0.85), (x + 0.55, s * 6.3, L1 + 0.85), 0.5, None, 18, "White")
-        det.cylinder((x - 0.05, s * 6.3, L1 + 0.85), (x + 0.05, s * 6.3, L1 + 0.85), 0.52, None, 18, "Dark")
-# fire-fighting monitors on the forward deckhouse roof
-for s in (1, -1):
-    det.cylinder((15.2, s * 2.4, L1 + 0.15), (15.2, s * 2.4, L1 + 1.2), 0.22, 0.18, 14, "Red")
-    det.sphere((15.2, s * 2.4, L1 + 1.3), 0.26, "Red", 14, 8)
-    det.cylinder((15.2, s * 2.4, L1 + 1.35), (16.3, s * 2.4, L1 + 1.7), 0.09, 0.06, 10, "Red")
 # helideck: perimeter safety nets outboard of the edge, landing lights
 for s in (1, -1):
     det.box(-33.0, -14.0, min(s * 7.6, s * 8.6), max(s * 7.6, s * 8.6), DECK + 0.42, DECK + 0.48, "Net")
@@ -717,7 +702,7 @@ for s in (1, -1):
 for x, y in ((-12.6, 1.6), (-12.6, -1.6), (7.4, 3.8), (7.4, -3.8)):
     sd.box(x - 0.6, x + 0.6, y - 0.45, y + 0.45, L1 + 0.15, L1 + 0.95, "White")
     sd.cylinder((x, y, L1 + 0.95), (x, y, L1 + 1.0), 0.36, None, 16, "Dark")
-for x, y in ((11.0, 1.2), (11.0, -1.2), (13.5, 0.0), (-6.0, 3.2), (-6.0, -3.2), (2.0, 0.0)):
+for x, y in ((-6.0, 3.2), (-6.0, -3.2), (2.0, 0.0)):
     z0 = L1 + 0.15 if x > 9 else L2 + 0.15
     sd.cylinder((x, y, z0), (x, y, z0 + 0.6), 0.14, None, 10, "White")
     sd.cylinder((x, y, z0 + 0.6), (x, y, z0 + 0.72), 0.3, 0.22, 14, "White")
