@@ -440,3 +440,112 @@ html.lp-lightbox-open { overflow: hidden; }
 }
 @media (prefers-reduced-motion: reduce) { .lp-note { animation: none; } }
 
+
+/* ======================================================================
+ * Glass theme (owner request 2026-11-20): the MEPCOM public pages take the
+ * look of the HRMIS portal (public/css/pcg-glass.css): deep navy canvas with
+ * blue, crimson and gold glows, translucent panels, gradient banners and pill
+ * buttons. The hero photo, motto and seals stay; the accent stays gold.
+ * ==================================================================== */
+body.lp {
+    --lp-ink: #eef2fb;
+    --lp-muted: #b3bdd0;
+    --lp-line: rgba(255, 255, 255, 0.12);
+    --g-canvas: #070b18;
+    --g-panel: rgba(255, 255, 255, 0.055);
+    --g-panel-hover: rgba(255, 255, 255, 0.09);
+    --g-blur: saturate(160%) blur(18px);
+    --g-banner: linear-gradient(115deg, #1c3f96 0%, #4b2b98 38%, #b8285a 72%, #ef9f3a 100%);
+    --g-glows:
+        radial-gradient(900px 520px at 8% -8%, rgba(37, 84, 180, 0.40), transparent 62%),
+        radial-gradient(760px 520px at 100% 4%, rgba(170, 32, 64, 0.30), transparent 60%),
+        radial-gradient(900px 600px at 55% 115%, rgba(214, 170, 50, 0.10), transparent 60%);
+    color-scheme: dark;
+    background: var(--g-canvas);
+}
+.lp-skip { background: #0f172b; color: #fff; }
+
+/* header: dark glass instead of maroon */
+.lp-top { background: rgba(7, 11, 24, 0.72); -webkit-backdrop-filter: var(--g-blur); backdrop-filter: var(--g-blur); border-bottom: 1px solid rgba(255, 255, 255, 0.08); box-shadow: none; }
+.lp-js .lp-top:not(.is-solid) { background: linear-gradient(180deg, rgba(7, 11, 24, 0.85) 0%, rgba(7, 11, 24, 0.35) 70%, rgba(7, 11, 24, 0) 100%); border-bottom-color: transparent; -webkit-backdrop-filter: none; backdrop-filter: none; }
+.lp-nav a[aria-current="page"] { border-bottom-color: var(--lp-gold); }
+.lp-menu > summary { border-radius: 999px; }
+@media (max-width: 960px) {
+    .lp-menu[open] .lp-nav { background: rgba(10, 15, 30, 0.96); -webkit-backdrop-filter: var(--g-blur); backdrop-filter: var(--g-blur); border-radius: 14px; }
+}
+
+/* buttons: pills */
+.lp-btn { border-radius: 999px; }
+.lp-btn--gold { box-shadow: 0 8px 22px rgba(232, 151, 58, 0.28); }
+.lp-btn--maroon { background: rgba(255, 255, 255, 0.06); color: #fff; border-color: rgba(255, 255, 255, 0.28); }
+.lp-btn--maroon:hover { background: rgba(255, 255, 255, 0.14); }
+
+/* the band under the hero: gradient banner */
+.lp-band { background: var(--g-banner); position: relative; isolation: isolate; overflow: hidden; }
+.lp-band::after {
+    content: ""; position: absolute; z-index: -1; right: -60px; top: -120px; width: 320px; height: 320px; border-radius: 50%;
+    background: radial-gradient(circle at 35% 35%, rgba(255, 255, 255, 0.45), rgba(255, 255, 255, 0.05) 55%, transparent 70%); pointer-events: none;
+}
+.lp-band h2 em { color: #ffd98a; }
+
+/* sections sit on the canvas (they scroll over the sticky hero, so they stay opaque) */
+.lp-section, .lp-section--sand { background-color: var(--g-canvas); background-image: var(--g-glows); }
+.lp-section--sand { background-image: radial-gradient(800px 500px at 90% 0%, rgba(37, 84, 180, 0.28), transparent 62%), radial-gradient(700px 480px at 0% 100%, rgba(170, 32, 64, 0.22), transparent 60%); }
+.lp-section h2, .lp-card h3, .lp-units strong, .lp-col h3, .lp-person h3, .lp-contact__aside h2, .lp-cta h2 { font-family: var(--lp-sans); letter-spacing: -0.02em; }
+.lp-section h2 { color: #fff; }
+.lp-eyebrow--dark { color: var(--lp-gold-300); }
+
+/* cards and panels: glass */
+.lp-card, .lp-grid4, .lp-units li, .lp-person, .lp-form {
+    background: var(--g-panel);
+    border: 1px solid var(--lp-line);
+    border-radius: 16px;
+    -webkit-backdrop-filter: var(--g-blur);
+    backdrop-filter: var(--g-blur);
+    box-shadow: 0 1px 0 rgba(255, 255, 255, 0.04) inset, 0 18px 40px rgba(0, 0, 0, 0.3);
+}
+.lp-card--navy { background: linear-gradient(140deg, rgba(28, 63, 150, 0.85), rgba(75, 43, 152, 0.75) 60%, rgba(184, 40, 90, 0.6)); border-color: rgba(255, 255, 255, 0.16); }
+.lp-card:not(.lp-card--navy) .lp-card__icon { background: rgba(232, 151, 58, 0.16); color: var(--lp-gold-300); }
+.lp-card:not(.lp-card--navy) .lp-card__kicker { color: var(--lp-gold-300); }
+.lp-card h3 { color: #fff; }
+.lp-tags li { border-radius: 999px; }
+.lp-grid4 { overflow: hidden; }
+.lp-mini__icon { color: var(--lp-gold-300); }
+.lp-mini h3 { color: #fff; }
+.lp-link { color: var(--lp-gold-300); }
+.lp-pill { border-color: var(--lp-gold-300); color: var(--lp-gold-300); }
+.lp-units li { border-top: 1px solid var(--lp-line); position: relative; overflow: hidden; }
+.lp-units li::before { content: ""; position: absolute; inset: 0 0 auto; height: 3px; background: var(--g-banner); }
+.lp-units li:hover, .lp-card:not(.lp-card--navy):hover { background: var(--g-panel-hover); }
+.lp-units strong { color: #fff; }
+.lp-units small { color: var(--lp-gold-300); }
+
+/* about block and AHEAD list */
+.lp-about { background: rgba(10, 15, 32, 0.9); }
+.lp-ahead li { border-radius: 0 12px 12px 0; }
+
+/* contact band and footer */
+.lp-cta { background: var(--g-banner); }
+.lp-foot { background: #05080f; }
+
+/* inner pages (about, MEPTDI, contact) */
+.lp-pagehead { background: var(--g-banner); position: relative; isolation: isolate; overflow: hidden; }
+.lp-pagehead::after {
+    content: ""; position: absolute; z-index: -1; right: -40px; top: -60px; width: 300px; height: 300px; border-radius: 50%;
+    background: radial-gradient(circle at 35% 35%, rgba(255, 255, 255, 0.4), rgba(255, 255, 255, 0.04) 55%, transparent 70%); pointer-events: none;
+}
+.lp-prose { color: var(--lp-ink); }
+.lp-cols3 { border-top: 2px solid var(--lp-gold); }
+.lp-col h3 { color: #fff; }
+.lp-checks li::before { color: var(--lp-gold-300); }
+.lp-person__role { color: var(--lp-gold-300); }
+.lp-person__photo { border-radius: 10px; }
+.lp-field label { color: var(--lp-ink); }
+.lp-field input, .lp-field textarea { background: rgba(255, 255, 255, 0.06); color: var(--lp-ink); border-color: rgba(255, 255, 255, 0.22); border-radius: 12px; }
+.lp-field input::placeholder, .lp-field textarea::placeholder { color: #8d99b0; }
+.lp-field input:focus, .lp-field textarea:focus { border-color: var(--lp-gold); }
+.lp-note--ok { background: rgba(94, 227, 160, 0.13); color: #d4f8e5; }
+.lp-note--bad { background: rgba(255, 143, 134, 0.13); color: #ffe0dc; }
+.lp-note { border-radius: 12px; }
+/* the ID rule above (#services, #units) set them cream; same canvas as the other sections */
+body.lp #services, body.lp #units { background-color: var(--g-canvas); background-image: var(--g-glows); }
