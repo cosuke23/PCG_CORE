@@ -48,7 +48,7 @@ class SerialNumberTest extends TestCase
             'serial_number' => 'SN-100', 'email' => 'new@x.test',
             'password' => 'Secret-pass-1', 'password_confirmation' => 'Secret-pass-1',
             'dob' => '1990-01-01', 'date_of_appointment' => '2015-01-01', 'command' => 'MEPCOM',
-            'selfie_image' => 'data:image/png;base64,AAAA',
+            'selfie_image' => 'data:image/png;base64,AAAA', 'privacy_consent' => '1',
         ])->assertSessionHasErrors('serial_number');
 
         $this->assertSame(0, DB::table('users')->where('email', 'new@x.test')->count());
