@@ -371,6 +371,10 @@ for s in (1, -1):
     yy = s * (SW + 0.02)
     for x in (7.0,):
         misc.box(x, x + 1.2, yy - 0.03, yy + 0.03, 10.0, 10.8, "Glass")
+# white boxes under the bridge, one each side, carrying the Bagong Pilipinas logo (photos)
+for s in (1, -1):
+    misc.box(0.4, 2.4, min(s * SW, s * (SW + 0.35)), max(s * SW, s * (SW + 0.35)), 9.9, L1, "White")
+    misc.box(0.3, 2.5, min(s * SW, s * (SW + 0.42)), max(s * SW, s * (SW + 0.42)), L1 - 0.08, L1 + 0.02, "White")
 # hangar door with ribs
 misc.box(-13.85, -13.72, -2.5, 2.5, 7.3, 10.8, "HangarDoor")
 for k in range(9):

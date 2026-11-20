@@ -448,7 +448,7 @@ async function start() {
     sideDecal(textTex('GABRIELA SILANG', '700 {s}px Inter, Arial, sans-serif', '#e9edf1', 10, '#1b1f25'), { width: 0.5, height: 0.05, x: -0.39, y: 1.06, z: 0.764 });   // black name board under the bridge
     const bagong = new THREE.TextureLoader().load(new URL('../images/brand/bagong-pilipinas.webp', import.meta.url).href);
     bagong.colorSpace = THREE.SRGBColorSpace;
-    sideDecal(bagong, { width: 0.12, height: 0.112, x: 0.15, y: 1.05, z: 0.764 });   // Bagong Pilipinas logo, both sides, forward of the name board
+    sideDecal(bagong, { width: 0.11, height: 0.103, x: 0.14, y: 1.05, z: 0.7955 });   // Bagong Pilipinas logo on the box under the bridge, both sides
     const sternName = new THREE.Mesh(new THREE.PlaneGeometry(0.6, 0.06), new THREE.MeshStandardMaterial({ map: textTex('GABRIELA SILANG', '700 {s}px Inter, Arial, sans-serif', '#1b1f25', 10), transparent: true, polygonOffset: true, polygonOffsetFactor: -2 }));
     sternName.position.set(X0 - 0.004, 0.42, 0); sternName.rotation.y = -Math.PI / 2; ship.add(sternName);
     const homePort = new THREE.Mesh(new THREE.PlaneGeometry(0.26, 0.04), new THREE.MeshStandardMaterial({ map: textTex('MANILA', '700 {s}px Inter, Arial, sans-serif', '#1b1f25', 6.5), transparent: true, polygonOffset: true, polygonOffsetFactor: -2 }));
