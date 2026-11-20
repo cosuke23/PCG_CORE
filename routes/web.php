@@ -258,6 +258,13 @@ Route::middleware(['admin.session', 'admin.audit'])->group(function () {
         ->middleware('admin.can:personnel.view')->name('admin.hrmis.index');
     Route::post('/admin/hrmis/export', [\App\Http\Controllers\HrmisDashboardController::class, 'export'])
         ->middleware(['admin.can:personnel.view', 'admin.can:reports.view'])->name('admin.hrmis.export');
+    // one unit per member: sign-up unit vs HRMIS assignment (App\Support\UnitMismatch)
+    Route::get('/admin/unit-check', [\App\Http\Controllers\UnitMismatchController::class, 'index'])
+        ->middleware('admin.can:personnel.view')->name('admin.unit-check');
+    Route::post('/admin/unit-check/{user}/use-assignment', [\App\Http\Controllers\UnitMismatchController::class, 'useAssignment'])
+        ->whereNumber('user')->middleware('admin.can:personnel.edit')->name('admin.unit-check.use-assignment');
+    Route::post('/admin/unit-check/{user}/use-mother-unit', [\App\Http\Controllers\UnitMismatchController::class, 'useMotherUnit'])
+        ->whereNumber('user')->middleware('admin.can:personnel.edit')->name('admin.unit-check.use-mother-unit');
 
     Route::get('/admin/organization', [\App\Http\Controllers\OrganizationController::class, 'index'])
         ->middleware('admin.can:org.view')->name('admin.organization.index');
