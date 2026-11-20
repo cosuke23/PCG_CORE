@@ -52,7 +52,7 @@ for name, hexc, r, m in [
     ("Dark", "#353c46", 0.75, 0), ("Glass", "#17212c", 0.08, 0.6), ("BridgeGlass", "#17212c", 0.08, 0.6),
     ("Mast", "#eef1f4", 0.4, 0), ("Rail", "#e6eaee", 0.35, 0.5), ("Orange", "#d9822b", 0.6, 0),
     ("RhibGrey", "#5a636d", 0.75, 0), ("Rubber", "#2c3238", 0.8, 0), ("Helideck", "#c3c9d1", 0.8, 0),
-    ("HangarDoor", "#aeb6c0", 0.55, 0.3), ("Steel", "#9aa3ad", 0.4, 0.6), ("Radar", "#f4f6f8", 0.5, 0), ("Red", "#c8102e", 0.5, 0), ("Net", "#2a2f36", 0.9, 0),
+    ("HangarDoor", "#aeb6c0", 0.55, 0.3), ("Steel", "#9aa3ad", 0.4, 0.6), ("Radar", "#f4f6f8", 0.5, 0), ("Red", "#c8102e", 0.5, 0), ("Green", "#2fbf5a", 0.3, 0), ("Lamp", "#fff6d8", 0.2, 0), ("Net", "#2a2f36", 0.9, 0),
 ]:
     material(name, srgb(hexc), r, m)
 
@@ -319,8 +319,6 @@ misc.box(-33.1, -13.8, -7.6, 7.6, DECK + 0.25, DECK + 0.55, "Helideck",
          uvfn=lambda co, f: ((co.x + 33.1) / 19.3, (co.y + 7.6) / 15.2))
 misc.box(-41.8, -33.1, -7.5, 7.5, DECK + 0.02, DECK + 0.2, "BlueDeck")
 # deck crane (orange) and life-raft canisters at the stern
-misc.cylinder((-37.6, -3.6, DECK), (-37.6, -3.6, DECK + 2.2), 0.6, 0.5, 16, "Orange")
-misc.cylinder((-37.6, -3.6, DECK + 2.2), (-33.4, -3.6, DECK + 3.8), 0.22, 0.16, 10, "Orange")
 for y in (-5.2, -3.8, 5.5, 4.1):
     misc.cylinder((-40.6, y, DECK + 0.9), (-38.8, y, DECK + 0.9), 0.55, None, 18, "White")
     misc.box(-40.4, -39.0, y - 0.5, y + 0.5, DECK + 0.2, DECK + 0.4, "Steel")
@@ -464,8 +462,6 @@ for s in (1, -1):
 # helideck: perimeter safety nets outboard of the edge, landing lights
 for s in (1, -1):
     det.box(-33.0, -14.0, min(s * 7.6, s * 8.6), max(s * 7.6, s * 8.6), DECK + 0.42, DECK + 0.48, "Net")
-    for x in (-32.0, -28.0, -24.0, -20.0, -16.0):
-        det.cylinder((x, s * 7.4, DECK + 0.55), (x, s * 7.4, DECK + 0.68), 0.09, None, 8, "Orange")
 # mooring gear: stern bitts, fairleads and capstans; forecastle fairleads
 for s in (1, -1):
     for x in (-40.2, -35.0):
@@ -537,6 +533,69 @@ for s in (1, -1):
         z = 1.2 + k * 0.6
         det.box(-6.4, -5.6, s * 8.02 - 0.03, s * 8.02 + 0.03, z, z + 0.06, "Steel")
 det.finish(smooth_angle=35)
+
+# ------------------------------------------------------------------ stern and helideck detail
+st = Builder("SternDetails")
+HD = DECK + 0.55            # helideck surface
+# helideck: raised edge coaming with a drain gutter, green perimeter lights all round
+for s in (1, -1):
+    st.box(-33.1, -13.8, min(s * 7.45, s * 7.6), max(s * 7.45, s * 7.6), HD - 0.02, HD + 0.06, "Steel")
+    for k in range(9):
+        x = -32.6 + k * 2.3
+        st.cylinder((x, s * 7.3, HD), (x, s * 7.3, HD + 0.12), 0.1, 0.09, 10, "Green")
+for k in range(6):
+    y = -6.0 + k * 2.4
+    st.cylinder((-32.95, y, HD), (-32.95, y, HD + 0.12), 0.1, 0.09, 10, "Green")
+st.box(-33.25, -33.05, -7.6, 7.6, HD - 0.02, HD + 0.06, "Steel")
+# hangar front: door frame, wing doors, control-room window, floodlights, foam monitors
+st.box(-13.95, -13.7, -2.75, -2.5, DECK + 0.55, 11.0, "White")
+st.box(-13.95, -13.7, 2.5, 2.75, DECK + 0.55, 11.0, "White")
+st.box(-13.95, -13.7, -2.75, 2.75, 10.8, 11.05, "White")
+for s in (1, -1):
+    st.box(-13.82, -13.72, s * 4.2 - 0.5, s * 4.2 + 0.5, HD, HD + 2.0, "Steel")            # personnel door
+    st.box(-13.84, -13.8, s * 4.2 + 0.25 * s - 0.06, s * 4.2 + 0.25 * s + 0.06, HD + 0.9, HD + 1.05, "Dark")
+    st.box(-13.8, -13.72, s * 5.6 - 0.6, s * 5.6 + 0.6, 10.1, 10.9, "Glass")                # flight-control window
+    for z in (10.95, 9.3):
+        st.box(-14.15, -13.75, s * 3.4 - 0.25, s * 3.4 + 0.25, z, z + 0.3, "Dark")          # floodlights
+        st.box(-14.17, -14.13, s * 3.4 - 0.2, s * 3.4 + 0.2, z + 0.05, z + 0.25, "Lamp")
+    # foam monitors at the helideck corners
+    st.cylinder((-14.6, s * 6.6, HD), (-14.6, s * 6.6, HD + 0.9), 0.18, 0.15, 12, "Red")
+    st.sphere((-14.6, s * 6.6, HD + 1.0), 0.22, "Red", 12, 8)
+    st.cylinder((-14.6, s * 6.6, HD + 1.05), (-15.6, s * 6.3, HD + 1.3), 0.08, 0.05, 8, "Red")
+# windsock on the hangar roof corner: mast and an orange/white striped cone streaming aft
+ws_x, ws_y, ws_z = -13.3, -7.2, L1 + 0.15
+st.cylinder((ws_x, ws_y, ws_z), (ws_x, ws_y, ws_z + 4.0), 0.05, 0.04, 8, "Mast")
+for k in range(5):
+    xa = ws_x - 0.1 - k * 0.32
+    ra = 0.32 - k * 0.04
+    st.cylinder((xa, ws_y, ws_z + 3.9 - k * 0.05), (xa - 0.32, ws_y, ws_z + 3.9 - (k + 1) * 0.05), ra, ra - 0.04, 14,
+                "Orange" if k % 2 == 0 else "White", caps=(k == 4), smooth=True)
+# deck crane: pedestal, slewing house, knuckle boom with hydraulic ram, hook block
+cx, cy = -37.6, -3.6
+st.box(cx - 0.7, cx + 0.7, cy - 0.7, cy + 0.7, DECK + 0.2, DECK + 0.5, "Steel")
+st.cylinder((cx, cy, DECK + 0.5), (cx, cy, DECK + 1.9), 0.42, 0.42, 18, "Orange")
+st.box(cx - 0.55, cx + 0.55, cy - 0.5, cy + 0.5, DECK + 1.9, DECK + 2.6, "Orange")
+st.box(cx - 0.75, cx - 0.5, cy - 0.35, cy + 0.35, DECK + 2.0, DECK + 2.5, "Dark")        # operator panel
+st.cylinder((cx + 0.2, cy, DECK + 2.4), (cx + 3.4, cy, DECK + 4.0), 0.2, 0.15, 10, "Orange")  # main boom
+st.cylinder((cx + 3.4, cy, DECK + 4.0), (cx + 5.0, cy, DECK + 3.0), 0.14, 0.1, 10, "Orange")  # jib (knuckle)
+st.cylinder((cx + 0.3, cy, DECK + 1.7), (cx + 1.9, cy, DECK + 3.05), 0.1, None, 8, "Steel")   # ram
+st.cylinder((cx + 5.0, cy, DECK + 3.0), (cx + 5.0, cy, DECK + 1.5), 0.015, None, 4, "Dark")   # wire
+st.box(cx + 4.85, cx + 5.15, cy - 0.12, cy + 0.12, DECK + 1.2, DECK + 1.5, "Orange")         # hook block
+# life-raft canister cradles
+for y in (-5.2, -3.8, 5.5, 4.1):
+    for x in (-40.3, -39.1):
+        st.box(x - 0.08, x + 0.08, y - 0.55, y + 0.55, DECK + 0.4, DECK + 0.75, "Steel")
+# aft deck hatches, mooring winches, stern fairleads, lights and an ensign staff
+st.box(-37.0, -35.4, 2.0, 3.6, DECK + 0.2, DECK + 0.3, "Steel")
+st.box(-34.5, -33.6, -1.0, 1.0, DECK + 0.2, DECK + 0.3, "Steel")
+for s in (1, -1):
+    st.cylinder((-36.2, s * 4.7, DECK + 0.6), (-36.2, s * 4.7 + s * 1.0, DECK + 0.6), 0.4, None, 16, "Dark")
+    st.box(-36.6, -35.8, s * 4.5 - 0.2, s * 4.5 + 0.2, DECK + 0.2, DECK + 0.6, "Steel")
+    st.box(-42.05, -41.85, s * 3.6 - 0.45, s * 3.6 + 0.45, DECK - 0.55, DECK - 0.15, "Dark")   # transom fairleads
+    st.box(-42.08, -41.9, s * 6.2 - 0.18, s * 6.2 + 0.18, DECK - 1.1, DECK - 0.9, "Lamp")     # stern lights
+st.cylinder((-41.5, 0.0, DECK + 0.2), (-41.5, 0.0, DECK + 3.4), 0.05, 0.035, 8, "Mast")
+st.sphere((-41.5, 0.0, DECK + 3.45), 0.08, "Mast", 8, 6)
+st.finish(smooth_angle=35)
 
 # ------------------------------------------------------------------ gaff for the flag (the flag itself is cloth in the web scene)
 gaff = Builder("Gaff")

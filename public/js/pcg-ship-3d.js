@@ -331,11 +331,43 @@ async function start() {
         [[-2.95, 0.6], [-2.84, 0.6], [-0.95, 0.6], [-0.84, 0.6]].forEach(([x, y]) => { const [a, b] = px(x, y); g.fillRect(a - 9, b - 6, 18, 12); });
     });
     hullTex.flipY = false;
-    const heliTex = canvasTex(1024, 512, (g, w, h) => {
-        g.fillStyle = '#c3c9d1'; g.fillRect(0, 0, w, h);
-        g.strokeStyle = '#f7f8fa'; g.lineWidth = 16; g.beginPath(); g.arc(w / 2, h / 2, 170, 0, Math.PI * 2); g.stroke();
-        g.lineWidth = 10; g.strokeRect(24, 24, w - 48, h - 48);
-        g.strokeStyle = '#f2c94c'; g.lineWidth = 8; g.beginPath(); g.arc(w / 2, h / 2, 118, 0, Math.PI * 2); g.stroke();
+    // helideck paint (UV u = aft -> forward over 19.3 m, v = starboard -> port over 15.2 m):
+    // dark non-slip deck with wear, white perimeter line, yellow touchdown circle, white H with its
+    // legs along the centreline, tie-down points, and a yellow/black hatched strip at the hangar
+    const heliTex = canvasTex(1280, 1008, (g, w, h) => {
+        const k = w / 19.3;                                   // pixels per metre
+        g.fillStyle = '#4f565c'; g.fillRect(0, 0, w, h);
+        for (let i = 0; i < 9000; i++) {                      // non-slip grit
+            const v = Math.random() < 0.5 ? 'rgba(255,255,255,0.035)' : 'rgba(0,0,0,0.05)';
+            g.fillStyle = v; g.fillRect(Math.random() * w, Math.random() * h, 2, 2);
+        }
+        g.lineCap = 'round';
+        for (let i = 0; i < 26; i++) {                        // tyre scuffs and stains
+            const cx = w * (0.3 + Math.random() * 0.4), cy = h * (0.25 + Math.random() * 0.5), r = k * (1 + Math.random() * 3);
+            g.strokeStyle = `rgba(20,22,24,${(0.08 + Math.random() * 0.1).toFixed(2)})`; g.lineWidth = k * (0.15 + Math.random() * 0.2);
+            const a = Math.random() * Math.PI * 2; g.beginPath(); g.arc(cx, cy, r, a, a + 0.4 + Math.random()); g.stroke();
+        }
+        for (let i = 0; i < 6; i++) {
+            const grd = g.createRadialGradient(0, 0, 0, 0, 0, k * 1.2); grd.addColorStop(0, 'rgba(25,25,20,0.16)'); grd.addColorStop(1, 'rgba(25,25,20,0)');
+            g.save(); g.translate(w * Math.random(), h * Math.random()); g.fillStyle = grd; g.fillRect(-k * 1.2, -k * 1.2, k * 2.4, k * 2.4); g.restore();
+        }
+        // hatched no-landing strip along the forward edge (hangar side)
+        g.save(); g.beginPath(); g.rect(w - k * 0.85, k * 0.4, k * 0.5, h - k * 0.8); g.clip();
+        g.fillStyle = '#f2c230'; g.fillRect(0, 0, w, h); g.fillStyle = '#1b1d20';
+        for (let y = -w; y < h + w; y += k * 0.6) { g.beginPath(); g.moveTo(w - k, y); g.lineTo(w, y - k); g.lineTo(w, y - k + k * 0.3); g.lineTo(w - k, y + k * 0.3); g.fill(); }
+        g.restore();
+        const cx = w * 0.47, cy = h / 2;
+        g.strokeStyle = '#eef0f2'; g.lineWidth = k * 0.3; g.strokeRect(k * 0.3, k * 0.3, w - k * 0.6, h - k * 0.6);       // perimeter line
+        g.strokeStyle = '#f2c230'; g.lineWidth = k * 0.75; g.beginPath(); g.arc(cx, cy, k * 4.0, 0, Math.PI * 2); g.stroke(); // touchdown circle
+        g.fillStyle = '#eef0f2';                                                                                              // H: legs along x
+        g.fillRect(cx - k * 2.0, cy - k * 1.5, k * 4.0, k * 0.75);
+        g.fillRect(cx - k * 2.0, cy + k * 0.75, k * 4.0, k * 0.75);
+        g.fillRect(cx - k * 0.375, cy - k * 1.5, k * 0.75, k * 3.0);
+        g.fillStyle = '#25292d';                                                                                              // tie-down points
+        for (let ring = 1; ring <= 3; ring++) {
+            const r = k * (ring * 1.6 + (ring === 3 ? 0.7 : 0)), n = ring * 8;
+            for (let i = 0; i < n; i++) { const a = (i / n) * Math.PI * 2; g.beginPath(); g.arc(cx + Math.cos(a) * r, cy + Math.sin(a) * r, k * 0.09, 0, Math.PI * 2); g.fill(); }
+        }
     });
     heliTex.flipY = false;
     const mullionTex = canvasTex(512, 64, (g, w, h) => {
@@ -364,6 +396,8 @@ async function start() {
         Helideck: mat('#ffffff', { map: heliTex, roughness: 0.8 }),
         HangarDoor: mat('#aeb6c0', { roughness: 0.55, metalness: 0.3 }),
         Red: paint('#c8102e'),
+        Green: mat('#2fbf5a', { emissive: '#2fbf5a', emissiveIntensity: 0.7 }),
+        Lamp: mat('#fff6d8', { emissive: '#fff1c4', emissiveIntensity: 0.8, roughness: 0.2 }),
         Net: mat('#2a2f36', { roughness: 0.95, transparent: true, opacity: 0.75 }),
     };
     const deckGrey = mat(C.deck, { roughness: 0.85 });
@@ -414,6 +448,8 @@ async function start() {
     sideDecal(textTex('GABRIELA SILANG', '700 {s}px Inter, Arial, sans-serif', '#1b1f25', 10, '#f7f8f9'), { width: 0.5, height: 0.05, x: -0.45, y: 1.06, z: 0.764 });
     const sternName = new THREE.Mesh(new THREE.PlaneGeometry(0.6, 0.06), new THREE.MeshStandardMaterial({ map: textTex('GABRIELA SILANG', '700 {s}px Inter, Arial, sans-serif', '#1b1f25', 10), transparent: true, polygonOffset: true, polygonOffsetFactor: -2 }));
     sternName.position.set(X0 - 0.004, 0.42, 0); sternName.rotation.y = -Math.PI / 2; ship.add(sternName);
+    const homePort = new THREE.Mesh(new THREE.PlaneGeometry(0.26, 0.04), new THREE.MeshStandardMaterial({ map: textTex('MANILA', '700 {s}px Inter, Arial, sans-serif', '#1b1f25', 6.5), transparent: true, polygonOffset: true, polygonOffsetFactor: -2 }));
+    homePort.position.set(X0 - 0.004, 0.35, 0); homePort.rotation.y = -Math.PI / 2; ship.add(homePort);
 
     // ------------------------------------------------------------ Philippine flag on the gaff (cloth)
     const flagTex = canvasTex(512, 256, (g) => {
