@@ -15,10 +15,15 @@
     <link rel="icon" href="{{ asset('favicon.ico') }}">
     <link rel="stylesheet" href="{{ asset('vendor/inter/inter.css') }}">
     <link rel="stylesheet" href="{{ \App\Support\Asset::v('css/pcg-ui.css') }}">
+    @hasSection('glass')
+        {{-- member theme (pages set @section('glass', '1')): same look as the personnel portal --}}
+        <link rel="stylesheet" href="{{ \App\Support\Asset::v('css/pcg-glass.css') }}">
+        <meta name="theme-color" content="#070b18">
+    @endif
     <script nonce="{{ $cspNonce ?? '' }}" src="{{ \App\Support\Asset::v('js/pcg-ui.js') }}" defer></script>
 </head>
 
-<body class="pcg">
+<body class="pcg @hasSection('glass') pcg-glass @endif">
     <a class="pcg-skip-link" href="#main">Skip to sign-in form</a>
 
     <div class="pcg-auth">

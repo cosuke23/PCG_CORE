@@ -5,7 +5,16 @@
 @section('headline', 'Securing Marine Life Through Action and Integrity')
 @section('intro', 'Welcome to the MEPCOM Human Resource Management Integrated System. Your gateway to efficient and professional service.')
 
+@section('glass', '1')
+
 @section('content')
+    <div class="pcg-auth__app">
+        <img src="{{ asset('images/brand/pcg-logo.webp') }}" alt="" width="44" height="44">
+        <div>
+            <strong>PCG HRMIS</strong>
+            <span>MEPCOM personnel</span>
+        </div>
+    </div>
     <span class="pcg-auth__role">Personnel</span>
     <h2>Sign in</h2>
     <p class="pcg-auth__lead">Use the email and password you registered with. New accounts must be approved by the administrator first.</p>

@@ -3,128 +3,150 @@
 @section('title', 'Dashboard')
 
 @section('content')
+    @php
+        $soiSubmitted = \App\Support\SoiLock::locked($user);
+        $s = strtolower((string) $documentStatus);
+        $docsMissing = max(0, $documentsTotal - $documentsUploaded);
+
+        if ($rejectedCount > 0) {
+            $hero = [
+                'title' => $rejectedCount . ' ' . \Illuminate\Support\Str::plural('document', $rejectedCount) . ' ' . ($rejectedCount === 1 ? 'needs' : 'need') . ' your attention',
+                'text' => "Your unit's document checker returned them. Read the remarks below and upload a corrected copy.",
+                'cta' => 'Fix my documents', 'href' => route('upload.documents'), 'icon' => 'file-arrow-up',
+            ];
+        } elseif (!$soiSubmitted) {
+            $hero = [
+                'title' => 'Your SOI is not submitted yet',
+                'text' => 'Complete all six steps of your Statement of Information, then submit it on the last step.',
+                'cta' => 'Continue my SOI', 'href' => route('profile'), 'icon' => 'id-card',
+            ];
+        } elseif ($docsMissing > 0) {
+            $hero = [
+                'title' => $docsMissing . ' required ' . \Illuminate\Support\Str::plural('document', $docsMissing) . ' still to upload',
+                'text' => 'Your SOI is submitted. Upload the remaining clearances and records for your unit to review.',
+                'cta' => 'Upload documents', 'href' => route('upload.documents'), 'icon' => 'file-arrow-up',
+            ];
+        } else {
+            $hero = [
+                'title' => 'Your records are up to date',
+                'text' => 'Your SOI is submitted and every required document is in. Take PCG HRMIS with you on your phone.',
+                'cta' => 'Get the Android app', 'href' => route('mobile.app'), 'icon' => 'mobile-screen-button',
+            ];
+        }
+
+        if ($rejectedCount > 0) {
+            $docState = ['danger', 'Action needed: ' . $rejectedCount . ' returned'];
+        } elseif ($s === 'approved') {
+            $docState = ['ok', 'Approved'];
+        } elseif ($s === 'pending') {
+            $docState = ['warn', 'Under review'];
+        } else {
+            $docState = ['', 'Not submitted'];
+        }
+    @endphp
+
     <div class="pcg-page">
-        <div class="pcg-page__header">
-            <div>
-                <h2>Welcome aboard, {{ $user->name }}</h2>
-                <p>{{ $user->unit_assignment ?: $user->mother_unit }} · Serial {{ $user->serial_number }}</p>
-            </div>
-        </div>
+        <section class="pcg-hero" aria-labelledby="hero-heading">
+            <img class="pcg-hero__seal" src="{{ asset('images/brand/pcg-logo.webp') }}" alt="" width="170" height="170">
+            <p class="pcg-hero__eyebrow">
+                <img src="{{ asset('images/brand/mepcom-logo.webp') }}" alt="" width="28" height="28">
+                Welcome aboard, {{ $user->name }}
+            </p>
+            <h2 id="hero-heading">{{ $hero['title'] }}</h2>
+            <p>{{ $hero['text'] }}</p>
+            <span class="pcg-hero__meta">{{ $user->unit_assignment ?: $user->mother_unit }} · Serial <span class="pcg-mono">{{ $user->serial_number }}</span></span>
+            <a class="pcg-btn pcg-btn--cta" href="{{ $hero['href'] }}">
+                <i class="fa-solid fa-{{ $hero['icon'] }}" aria-hidden="true"></i> {{ $hero['cta'] }}
+            </a>
+        </section>
+
+        <h3 class="pcg-section-title" id="records-heading">My records</h3>
+        <ul class="pcg-rows" aria-labelledby="records-heading">
+            <li class="pcg-row">
+                <span class="pcg-row__icon pcg-row__icon--blue" aria-hidden="true"><i class="fa-solid fa-id-card"></i></span>
+                <span class="pcg-row__name">SOI profile<small>Statement of Information, six steps</small></span>
+                @if ($soiSubmitted)
+                    <span class="pcg-row__status pcg-row__status--ok">Submitted</span>
+                    <a class="pcg-btn pcg-btn--secondary" href="{{ route('profile') }}">Open</a>
+                @else
+                    <span class="pcg-row__status pcg-row__status--info">In progress</span>
+                    <a class="pcg-btn pcg-btn--action" href="{{ route('profile') }}">Continue</a>
+                @endif
+            </li>
+            <li class="pcg-row">
+                <span class="pcg-row__icon pcg-row__icon--gold" aria-hidden="true"><i class="fa-solid fa-file-arrow-up"></i></span>
+                <span class="pcg-row__name">Required documents<small>{{ $documentsUploaded }} of {{ $documentsTotal }} uploaded</small></span>
+                <span class="pcg-row__status {{ $docState[0] ? 'pcg-row__status--' . $docState[0] : '' }}">{{ $docState[1] }}</span>
+                @if ($rejectedCount > 0 || $docsMissing > 0)
+                    <a class="pcg-btn pcg-btn--action" href="{{ route('upload.documents') }}">{{ $rejectedCount > 0 ? 'Fix documents' : 'Upload' }}</a>
+                @else
+                    <a class="pcg-btn pcg-btn--secondary" href="{{ route('upload.documents') }}">Open</a>
+                @endif
+            </li>
+            <li class="pcg-row">
+                <span class="pcg-row__icon pcg-row__icon--rose" aria-hidden="true"><i class="fa-solid fa-folder-open"></i></span>
+                <span class="pcg-row__name">201 files<small>Appointment, leave, awards and other records</small></span>
+                <span class="pcg-row__status">Reviewed by your unit</span>
+                <a class="pcg-btn pcg-btn--secondary" href="{{ route('upload.201') }}">Open</a>
+            </li>
+            <li class="pcg-row">
+                <span class="pcg-row__icon pcg-row__icon--teal" aria-hidden="true"><i class="fa-solid fa-print"></i></span>
+                <span class="pcg-row__name">Print my SOI<small>Ready-to-print Statement of Information</small></span>
+                <span class="pcg-row__status {{ $soiSubmitted ? 'pcg-row__status--ok' : '' }}">{{ $soiSubmitted ? 'Final copy' : 'Draft copy' }}</span>
+                <a class="pcg-btn pcg-btn--secondary" href="{{ route('generate.soi') }}">Open</a>
+            </li>
+        </ul>
 
         @if ($rejectedCount > 0)
-            <div class="pcg-alert pcg-alert--danger" role="alert">
-                <strong>{{ $rejectedCount }} {{ \Illuminate\Support\Str::plural('document', $rejectedCount) }} {{ $rejectedCount === 1 ? 'needs' : 'need' }} your attention.</strong>
-                See the reviewer's remarks below and upload a corrected copy under <a href="{{ route('upload.documents') }}">Required documents</a>.
-            </div>
+            <section class="pcg-card pcg-mb" aria-labelledby="rejected-heading">
+                <div class="pcg-card__header"><h3 id="rejected-heading">Documents returned by the reviewer</h3></div>
+                <ul class="pcg-list pcg-returned">
+                    @foreach ($rejectedDocs as $doc)
+                        <li>
+                            <strong>{{ $doc->doc_type }}</strong>
+                            <span>{{ $doc->comment ?: 'No comment provided' }}</span>
+                        </li>
+                    @endforeach
+                </ul>
+            </section>
         @endif
 
-        <div class="pcg-stats">
-            <div class="pcg-stat">
-                <span class="pcg-stat__label">Required documents</span>
-                <span class="pcg-stat__value">{{ $documentsUploaded }} / {{ $documentsTotal }}</span>
-                <span class="pcg-stat__hint">uploaded</span>
-            </div>
-            <div class="pcg-stat">
-                <span class="pcg-stat__label">Review status</span>
-                <span class="pcg-stat__value">
-                    @php $s = strtolower((string) $documentStatus); @endphp
-                    @if ($s === 'approved')
-                        <span class="pcg-badge pcg-badge--success">Approved</span>
-                    @elseif ($rejectedCount > 0)
-                        <span class="pcg-badge pcg-badge--danger">Action needed</span>
-                    @elseif ($s === 'pending')
-                        <span class="pcg-badge pcg-badge--warning">Under review</span>
-                    @else
-                        <span class="pcg-badge">Not submitted</span>
-                    @endif
-                </span>
-                <span class="pcg-stat__hint">by your unit's document checker</span>
-            </div>
-            <div class="pcg-stat">
-                <span class="pcg-stat__label">MEPTDI classes</span>
-                <span class="pcg-stat__value">{{ $classes->count() }}</span>
-                <span class="pcg-stat__hint">enrolled</span>
-            </div>
+        <h3 class="pcg-section-title" id="more-heading">Training and services</h3>
+        <div class="pcg-appgrid" role="list" aria-labelledby="more-heading">
+            <a class="pcg-appcard" href="{{ route('applicant.administrative.training') }}" role="listitem">
+                <span class="pcg-row__icon pcg-row__icon--violet" aria-hidden="true"><i class="fa-solid fa-graduation-cap"></i></span>
+                <strong>Administrative track</strong>
+                <span>Courses for your rank and year in grade.</span>
+            </a>
+            <a class="pcg-appcard" href="{{ route('applicant.operational.training') }}" role="listitem">
+                <span class="pcg-row__icon pcg-row__icon--blue" aria-hidden="true"><i class="fa-solid fa-ship"></i></span>
+                <strong>Operational track</strong>
+                <span>Operational career track courses.</span>
+            </a>
+            <a class="pcg-appcard" href="{{ route('mobile.app') }}" role="listitem">
+                <span class="pcg-row__icon pcg-row__icon--gold" aria-hidden="true"><i class="fa-solid fa-mobile-screen-button"></i></span>
+                <strong>Android app</strong>
+                <span>{{ $soiSubmitted ? 'Your records on your phone. Download it now.' : 'Available once your SOI is submitted.' }}</span>
+            </a>
         </div>
 
-        <div class="pcg-grid">
-            <div>
-                @if ($rejectedCount > 0)
-                    <section class="pcg-card pcg-mb" aria-labelledby="rejected-heading">
-                        <div class="pcg-card__header"><h3 id="rejected-heading">Documents returned by the reviewer</h3></div>
-                        <ul class="pcg-list">
-                            @foreach ($rejectedDocs as $doc)
-                                <li>
-                                    <strong>{{ $doc->doc_type }}</strong>
-                                    <span class="pcg-table__muted">{{ $doc->comment ?: 'No comment provided' }}</span>
-                                </li>
-                            @endforeach
-                        </ul>
-                    </section>
-                @endif
-
-                <section class="pcg-card" aria-labelledby="tasks-heading">
-                    <div class="pcg-card__header"><h3 id="tasks-heading">What would you like to do?</h3></div>
-                    <div class="pcg-card__body pcg-tiles">
-                        <a class="pcg-tile" href="{{ route('profile') }}">
-                            <i class="fa-solid fa-id-card" aria-hidden="true"></i>
-                            <strong>Update my SOI profile</strong>
-                            <span>Personal details, education, assignments and awards.</span>
-                        </a>
-                        <a class="pcg-tile" href="{{ route('upload.documents') }}">
-                            <i class="fa-solid fa-file-arrow-up" aria-hidden="true"></i>
-                            <strong>Upload required documents</strong>
-                            <span>Clearances, medical, PFT and photos.</span>
-                        </a>
-                        <a class="pcg-tile" href="{{ route('upload.201') }}">
-                            <i class="fa-solid fa-folder-open" aria-hidden="true"></i>
-                            <strong>Upload 201 files</strong>
-                            <span>Appointment, leave, awards and other records.</span>
-                        </a>
-                        <a class="pcg-tile" href="{{ route('applicant.administrative.training') }}">
-                            <i class="fa-solid fa-graduation-cap" aria-hidden="true"></i>
-                            <strong>Administrative training</strong>
-                            <span>Courses for your rank and year in grade.</span>
-                        </a>
-                        <a class="pcg-tile" href="{{ route('applicant.operational.training') }}">
-                            <i class="fa-solid fa-ship" aria-hidden="true"></i>
-                            <strong>Operational training</strong>
-                            <span>Operational career track courses.</span>
-                        </a>
-                        <a class="pcg-tile" href="{{ route('generate.soi') }}">
-                            <i class="fa-solid fa-print" aria-hidden="true"></i>
-                            <strong>Print my SOI</strong>
-                            <span>Statement of Information, ready to print.</span>
-                        </a>
-                        @if (\App\Support\SoiLock::locked($user))
-                            <a class="pcg-tile" href="{{ route('mobile.app') }}">
-                                <i class="fa-solid fa-mobile-screen-button" aria-hidden="true"></i>
-                                <strong>Get the Android app</strong>
-                                <span>Your records on your phone; your SOI is submitted.</span>
-                            </a>
-                        @endif
-                    </div>
-                </section>
-            </div>
-
-            <section class="pcg-card" aria-labelledby="classes-heading">
-                <div class="pcg-card__header"><h3 id="classes-heading">My MEPTDI classes</h3></div>
-                @if ($classes->isEmpty())
-                    <p class="pcg-empty">You are not enrolled in a MEPTDI class yet.</p>
-                @else
-                    <ul class="pcg-list">
-                        @foreach ($classes as $class)
-                            <li>
-                                <strong>{{ $class->course_name ?? 'Course' }}</strong>
-                                <span class="pcg-table__muted">
-                                    {{ $class->date_attended ? \Illuminate\Support\Carbon::parse($class->date_attended)->format('M d, Y') : '—' }}
-                                    @if ($class->date_ended) – {{ \Illuminate\Support\Carbon::parse($class->date_ended)->format('M d, Y') }}@endif
-                                </span>
-                            </li>
-                        @endforeach
-                    </ul>
-                @endif
-            </section>
-        </div>
+        <section class="pcg-card" aria-labelledby="classes-heading">
+            <div class="pcg-card__header"><h3 id="classes-heading">My MEPTDI classes · {{ $classes->count() }}</h3></div>
+            @if ($classes->isEmpty())
+                <p class="pcg-empty">You are not enrolled in a MEPTDI class yet.</p>
+            @else
+                <ul class="pcg-list">
+                    @foreach ($classes as $class)
+                        <li>
+                            <strong>{{ $class->course_name ?? 'Course' }}</strong>
+                            <span class="pcg-table__muted">
+                                {{ $class->date_attended ? \Illuminate\Support\Carbon::parse($class->date_attended)->format('M d, Y') : '—' }}
+                                @if ($class->date_ended) – {{ \Illuminate\Support\Carbon::parse($class->date_ended)->format('M d, Y') }}@endif
+                            </span>
+                        </li>
+                    @endforeach
+                </ul>
+            @endif
+        </section>
     </div>
 @endsection

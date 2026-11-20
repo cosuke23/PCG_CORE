@@ -15,11 +15,13 @@
     <link rel="stylesheet" href="{{ asset('vendor/inter/inter.css') }}">
     <link rel="stylesheet" href="{{ asset('vendor/fontawesome/css/all.min.css') }}">
     <link rel="stylesheet" href="{{ \App\Support\Asset::v('css/pcg-ui.css') }}">
+    <link rel="stylesheet" href="{{ \App\Support\Asset::v('css/pcg-glass.css') }}">
+    <meta name="theme-color" content="#070b18">
     <script nonce="{{ $cspNonce ?? '' }}" src="{{ \App\Support\Asset::v('js/pcg-ui.js') }}" defer></script>
     @yield('styles')
 </head>
 
-<body class="pcg">
+<body class="pcg pcg-glass">
     <a class="pcg-skip-link" href="#content">Skip to content</a>
 
     <div class="pcg-console" data-nav-open="false">
@@ -56,6 +58,8 @@
                 </button>
                 <h1 class="pcg-topbar__title">@yield('title', 'Dashboard')</h1>
                 <div class="pcg-topbar__user">
+                    @php($pcgInitials = collect(preg_split('/\s+/', trim((string) auth()->user()->name)))->filter()->map(fn ($w) => mb_substr($w, 0, 1))->take(2)->implode(''))
+                    <span class="pcg-avatar" aria-hidden="true">{{ mb_strtoupper($pcgInitials) }}</span>
                     <span><strong>{{ auth()->user()->name }}</strong> · {{ auth()->user()->rank }} {{ auth()->user()->serial_number }}</span>
                     <form action="{{ route('logout') }}" method="POST">
                         @csrf
