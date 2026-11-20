@@ -16,6 +16,17 @@ return [
     // hash, generated with:  php artisan pcg:hash-password
     // Unit and M1 checkers: second sign-in step. 'email' = one-time code to the
     // checker's email (owner request 2026-11-20), 'off' = password only.
+    // Monitoring and alerts (App\Support\Monitor). alert_to: comma-separated emails;
+    // empty = the active super_admin accounts. backup_dir empty = ../../backups next to
+    // the release (Hermes: /srv/mepcom-hrmis/backups).
+    'monitor' => [
+        'alert_to' => env('PCG_ALERT_EMAIL', ''),
+        'error_alerts' => (bool) env('PCG_ERROR_ALERTS', true),
+        'backup_dir' => env('PCG_BACKUP_DIR', ''),
+        'backup_max_age_hours' => (int) env('PCG_BACKUP_MAX_AGE_HOURS', 30),
+        'disk_min_free_percent' => (float) env('PCG_DISK_MIN_FREE_PERCENT', 10),
+    ],
+
     'unit' => [
         'two_factor' => env('PCG_UNIT_2FA', 'email'),
         'email_code_minutes' => (int) env('PCG_UNIT_EMAIL_CODE_MINUTES', 10),

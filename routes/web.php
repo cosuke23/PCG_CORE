@@ -67,6 +67,8 @@ Route::get('/', [PageController::class, 'pcg'])->name('home');
 Route::get('/mepcom', [PageController::class, 'home'])->name('mepcom');
 // 3D ship of the landing page, gzip-compressed by the app (ShipModelController)
 Route::get('/3d/ship-model', [\App\Http\Controllers\ShipModelController::class, 'show'])->name('ship.model');
+// uptime probe: {"status":"ok"} or 503, no details (App\Support\Monitor)
+Route::get('/health', \App\Http\Controllers\HealthController::class)->middleware('throttle:60,1')->name('health');
 Route::get('/about', [PageController::class, 'about'])->name('about');
 Route::get('/contact', [\App\Http\Controllers\ContactController::class, 'show'])->name('contact');
 Route::post('/contact', [\App\Http\Controllers\ContactController::class, 'store'])

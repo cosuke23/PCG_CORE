@@ -43,6 +43,12 @@ class Handler extends ExceptionHandler
      */
     public function register()
     {
+        // error alert email to the administrators (App\Support\Monitor, throttled); runs
+        // first because the database callback below stops the chain
+        $this->reportable(function (Throwable $e) {
+            \App\Support\Monitor::reportError($e);
+        });
+
         // A database error's message holds the whole SQL with its values
         // (password hashes, names, emails, birth dates). Log the database's
         // own reason, with any quoted value blanked, and where it happened.
