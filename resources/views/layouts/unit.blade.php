@@ -49,6 +49,7 @@
                     @include('layouts.partials.nav-link', ['href' => route('unit.leave.readiness'), 'icon' => 'people-group', 'label' => 'Readiness', 'active' => request()->routeIs('unit.leave.readiness')])
                     @include('layouts.partials.nav-link', ['href' => route('unit.leave.summary'), 'icon' => 'chart-column', 'label' => 'Leave summary', 'active' => request()->routeIs('unit.leave.summary')])
                     @include('layouts.partials.nav-link', ['href' => route('unit.deployments'), 'icon' => 'ship', 'label' => 'Deployments', 'active' => request()->routeIs('unit.deployments*')])
+                    @include('layouts.partials.nav-link', ['href' => route('unit.recall'), 'icon' => 'bullhorn', 'label' => 'Recall', 'active' => request()->routeIs('unit.recall*')])
                 @else
                     @include('layouts.partials.nav-link', ['href' => route('unit.dashboard'), 'icon' => 'clipboard-check', 'label' => 'Document review', 'active' => request()->routeIs('unit.dashboard')])
                     @include('layouts.partials.nav-link', ['href' => route('unit.201files'), 'icon' => 'folder-open', 'label' => '201 file review', 'active' => request()->routeIs('unit.201files')])
@@ -57,6 +58,7 @@
                     @include('layouts.partials.nav-link', ['href' => route('unit.leave.readiness'), 'icon' => 'people-group', 'label' => 'Readiness', 'active' => request()->routeIs('unit.leave.readiness')])
                     @include('layouts.partials.nav-link', ['href' => route('unit.leave.summary'), 'icon' => 'chart-column', 'label' => 'Leave summary', 'active' => request()->routeIs('unit.leave.summary')])
                     @include('layouts.partials.nav-link', ['href' => route('unit.deployments'), 'icon' => 'ship', 'label' => 'Deployments', 'active' => request()->routeIs('unit.deployments*')])
+                    @include('layouts.partials.nav-link', ['href' => route('unit.recall'), 'icon' => 'bullhorn', 'label' => 'Recall', 'active' => request()->routeIs('unit.recall*')])
                 @endif
             </nav>
         </aside>

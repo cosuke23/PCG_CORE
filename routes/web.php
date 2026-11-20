@@ -133,6 +133,8 @@ Route::post('/login/code/resend', [LoginController::class, 'codeResend'])->middl
 
 Route::middleware(['auth', 'member.device'])->group(function () {
     Route::get('/security', [\App\Http\Controllers\SecurityController::class, 'index'])->name('security');
+    Route::get('/recall/{id}', [\App\Http\Controllers\RecallController::class, 'member'])->whereNumber('id')->name('recall.show');
+    Route::post('/recall/{id}', [\App\Http\Controllers\RecallController::class, 'answer'])->whereNumber('id')->middleware('throttle:member-writes')->name('recall.answer');
     Route::get('/certificates', [\App\Http\Controllers\ServiceCertificateController::class, 'index'])->name('certificates');
     Route::post('/certificates', [\App\Http\Controllers\ServiceCertificateController::class, 'store'])->middleware('throttle:member-writes')->name('certificates.store');
     Route::get('/certificates/{id}/print', [\App\Http\Controllers\ServiceCertificateController::class, 'memberPrint'])->whereNumber('id')->name('certificates.print');
@@ -532,6 +534,10 @@ Route::middleware(['unit.session'])->group(function () {
     Route::get('/unit/leave/readiness', [\App\Http\Controllers\ReadinessController::class, 'unit'])->name('unit.leave.readiness');
     Route::get('/unit/leave/summary', [\App\Http\Controllers\LeaveReportController::class, 'unitSummary'])->name('unit.leave.summary');
     Route::get('/unit/deployments', [\App\Http\Controllers\DeploymentController::class, 'unitIndex'])->name('unit.deployments');
+    Route::get('/unit/recall', [\App\Http\Controllers\RecallController::class, 'unitIndex'])->name('unit.recall');
+    Route::post('/unit/recall', [\App\Http\Controllers\RecallController::class, 'unitSend'])->middleware('throttle:member-writes')->name('unit.recall.send');
+    Route::get('/unit/recall/{id}', [\App\Http\Controllers\RecallController::class, 'unitShow'])->whereNumber('id')->name('unit.recall.show');
+    Route::post('/unit/recall/{id}/close', [\App\Http\Controllers\RecallController::class, 'unitClose'])->whereNumber('id')->name('unit.recall.close');
     Route::post('/unit/deployments', [\App\Http\Controllers\DeploymentController::class, 'unitStore'])->middleware('throttle:member-writes')->name('unit.deployments.store');
     Route::post('/unit/deployments/{id}/end', [\App\Http\Controllers\DeploymentController::class, 'unitEnd'])->whereNumber('id')->middleware('throttle:member-writes')->name('unit.deployments.end');
     Route::get('/unit/leave/export', [\App\Http\Controllers\LeaveReportController::class, 'unitExport'])->name('unit.leave.export');

@@ -156,3 +156,8 @@ body.pcg-glass .lcr-num.is-minus { color: #fca5a5; }
 .dp-end .lc-form { min-width: 200px; }
 /* readiness: deployed */
 .lcr-deployed { color: var(--pcg-accent); }
+
+/* emergency recall (unit/recall*, applicant/recall) */
+.rc-msg { white-space: pre-line; margin: 0 0 8px; }
+.rc-hero { border-color: rgba(206, 17, 38, 0.6); }
+.rc-answers { display: flex; gap: 10px; flex-wrap: wrap; }
