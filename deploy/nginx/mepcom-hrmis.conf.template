@@ -91,4 +91,18 @@ server {
     location ~ \.php$ { return 404; }
 
     location ~* \.(css|js|webp|png|jpg|jpeg|svg|woff2|ico)$ { expires 7d; access_log off; try_files $uri =404; }
+
+    # 3D ship on the PCG HRMIS landing page (public/models/*.glb): binary glTF compresses to
+    # about a quarter of its size
+    location ~* \.glb$ {
+        types { model/gltf-binary glb; }
+        gzip on;
+        gzip_types model/gltf-binary;
+        gzip_min_length 1024;
+        gzip_comp_level 6;
+        gzip_vary on;
+        expires 7d;
+        access_log off;
+        try_files $uri =404;
+    }
 }
