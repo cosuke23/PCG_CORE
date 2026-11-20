@@ -32,8 +32,13 @@ class LeaveTypes
     /** Longest request any type allows (days, inclusive). */
     public const MAX_DAYS = 120;
 
-    /** How far back a request may start (late filing of sick or emergency leave). */
+    /** Default of config('pcg.leave.backdate_days'): how far back a request may start. */
     public const BACKDATE_DAYS = 30;
+
+    public static function backdateDays(): int
+    {
+        return max(0, (int) config('pcg.leave.backdate_days', self::BACKDATE_DAYS));
+    }
 
     public static function keys(): array
     {
@@ -47,7 +52,8 @@ class LeaveTypes
 
     public static function maxDays(string $key): int
     {
-        return self::TYPES[$key]['max_days'] ?? self::MAX_DAYS;
+        $override = config('pcg.leave.max_days.' . $key);
+        return $override !== null ? (int) $override : (self::TYPES[$key]['max_days'] ?? self::MAX_DAYS);
     }
 
     public static function sensitive(?string $key): bool

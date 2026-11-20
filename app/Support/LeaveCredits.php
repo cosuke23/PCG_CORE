@@ -41,6 +41,33 @@ class LeaveCredits
         'used' => 'Leave taken', 'restored' => 'Leave cancelled, days returned', 'accrual' => 'Monthly credit',
     ];
 
+    /** Ordinary leave credits added each month (config pcg.leave.monthly_credit). */
+    public static function monthly(): float
+    {
+        return (float) config('pcg.leave.monthly_credit', 2.5);
+    }
+
+    /** Days per calendar year of a yearly pool, or null for other pools. */
+    public static function perYear(string $pool): ?float
+    {
+        if (!array_key_exists('per_year', self::POOLS[$pool] ?? [])) {
+            return null;
+        }
+        return (float) config('pcg.leave.per_year.' . $pool, self::POOLS[$pool]['per_year']);
+    }
+
+    /** The rule shown under a balance, with the configured numbers. */
+    public static function rule(string $pool): string
+    {
+        return match ($pool) {
+            'annual' => self::fmt(self::monthly()) . ' days are added on the 1st of every month ('
+                . self::fmt(self::monthly() * 12) . ' a year); unused days carry over.',
+            'solo_parent' => self::fmt(self::perYear('solo_parent')) . ' days each calendar year (RA 8972, RA 11861).',
+            'vawc' => self::fmt(self::perYear('vawc')) . ' days each calendar year (RA 9262).',
+            default => self::POOLS[$pool]['rule'] ?? '',
+        };
+    }
+
     public static function poolFor(?string $leaveType): ?string
     {
         return LeaveTypes::TYPES[$leaveType]['pool'] ?? null;
@@ -85,15 +112,15 @@ class LeaveCredits
                 $opening = $rows->where('kind', 'opening')->sortBy([['effective_date', 'asc'], ['id', 'asc']])->last();
                 if ($opening) {
                     $months = self::monthsAccrued((string) $opening->effective_date, $today);
-                    $accrued = $months * (float) $def['monthly'];
+                    $accrued = $months * self::monthly();
                     $after = $rows->filter(fn ($e) => $e->kind !== 'opening'
                         && ((string) $e->effective_date > (string) $opening->effective_date
                             || ((string) $e->effective_date === (string) $opening->effective_date && $e->id > $opening->id)));
                     $balance = (float) $opening->days + $accrued + (float) $after->sum('days');
                 }
-            } elseif (!empty($def['per_year'])) {
+            } elseif (self::perYear($pool) !== null) {
                 $year = $rows->filter(fn ($e) => substr((string) $e->effective_date, 0, 4) === (string) $today->year);
-                $balance = (float) $def['per_year'] + (float) $year->sum('days');
+                $balance = (float) self::perYear($pool) + (float) $year->sum('days');
             } else {
                 $balance = (float) $rows->sum('days');
             }
@@ -102,7 +129,7 @@ class LeaveCredits
                 'pool' => $pool,
                 'label' => $def['label'],
                 'short' => $def['short'],
-                'rule' => $def['rule'],
+                'rule' => self::rule($pool),
                 'set' => $balance !== null,
                 'balance' => $balance === null ? null : round($balance, 2),
                 'held' => $hold,
@@ -170,7 +197,7 @@ class LeaveCredits
                 $first = Carbon::parse($opening->date, LeaveCalendar::TZ)->startOfMonth();
                 for ($i = 1; $i <= $m; $i++) {
                     $rows->push((object) ['date' => $first->copy()->addMonths($i)->toDateString(), 'kind' => 'accrual',
-                        'days' => (float) $def['monthly'], 'note' => null, 'by' => null, 'id' => 0]);
+                        'days' => self::monthly(), 'note' => null, 'by' => null, 'id' => 0]);
                 }
             }
         }

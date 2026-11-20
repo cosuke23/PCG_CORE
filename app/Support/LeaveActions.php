@@ -2,7 +2,9 @@
 
 namespace App\Support;
 
+use App\Mail\LeaveDecided;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\Rule;
 
@@ -80,8 +82,32 @@ class LeaveActions
             'by_type' => $by['type'] ?? null, 'by_id' => $by['id'] ?? null, 'ip' => $ip,
         ]);
 
+        self::notifyMember($leave, $status === 'approved', $note);
+
         return [true, LeaveTypes::label($leave->leave_type) . ' of ' . $leave->name . ' for '
             . LeaveCalendar::dateLabel((string) $leave->start_date, (string) $leave->end_date) . ' is ' . $status . '.'];
+    }
+
+    /** Email the member the decision. A mail problem never undoes the decision; it is logged. */
+    private static function notifyMember(object $leave, bool $approved, ?string $note): void
+    {
+        if (!config('pcg.leave.notify_members', true)) {
+            return;
+        }
+        $email = trim((string) DB::table('users')->where('id', $leave->user_id)->value('email'));
+        if ($email === '' || !filter_var($email, FILTER_VALIDATE_EMAIL)) {
+            return;
+        }
+        try {
+            Mail::to($email)->send(new LeaveDecided(
+                (string) $leave->name, LeaveTypes::label($leave->leave_type),
+                LeaveCalendar::dateLabel((string) $leave->start_date, (string) $leave->end_date), (int) $leave->days,
+                $approved, $note, route('leave.index', ['month' => substr((string) $leave->start_date, 0, 7)]),
+                'PCG HRMIS',
+            ));
+        } catch (\Throwable $e) {
+            Log::warning('leave.notify_failed', ['leave_id' => $leave->id, 'error' => class_basename($e)]);
+        }
     }
 
     public static function creditRules(?string $action): array

@@ -394,7 +394,14 @@ async function start() {
     const deckGrey = mat(C.deck, { roughness: 0.85 });
 
     const { GLTFLoader } = await import('three/addons/loaders/GLTFLoader.js');
-    const gltf = await new GLTFLoader().loadAsync(new URL('../models/brp-gabriela-silang.glb', import.meta.url).href);
+    // gzip-compressed by the app (/3d/ship-model, ShipModelController); the plain file if that fails
+    const loader = new GLTFLoader();
+    let gltf;
+    try {
+        gltf = await loader.loadAsync(new URL('../3d/ship-model', import.meta.url).href);
+    } catch (e) {
+        gltf = await loader.loadAsync(new URL('../models/brp-gabriela-silang.glb', import.meta.url).href);
+    }
     const model = gltf.scene;
     model.scale.setScalar(0.1);                       // metres -> scene units (1 = 10 m)
     model.traverse((o) => {

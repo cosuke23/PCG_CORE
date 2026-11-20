@@ -20,6 +20,11 @@ class AccessControlTest extends TestCase
             ['get', '/admin/leave/credits'],
             ['get', '/admin/leave/credits/1'],
             ['post', '/admin/leave/credits/1'],
+            ['get', '/admin/leave/credits/import'],
+            ['post', '/admin/leave/credits/import/confirm'],
+            ['get', '/admin/leave/credits/import/template'],
+            ['get', '/admin/leave/1/print'],
+            ['get', '/admin/leave/readiness'],
             ['post', '/admin/approve/1'],
             ['post', '/admin/reject/1'],
             ['get', '/admin/hr-analytics'],
@@ -98,6 +103,12 @@ class AccessControlTest extends TestCase
             ['get', '/unit/leave/credits'],
             ['get', '/unit/leave/credits/1'],
             ['post', '/unit/leave/credits/1'],
+            ['get', '/unit/leave/credits/import'],
+            ['post', '/unit/leave/credits/import'],
+            ['post', '/unit/leave/credits/import/confirm'],
+            ['get', '/unit/leave/credits/import/template'],
+            ['get', '/unit/leave/1/print'],
+            ['get', '/unit/leave/readiness'],
         ];
     }
 
@@ -118,6 +129,7 @@ class AccessControlTest extends TestCase
             ['get', '/leave'],
             ['post', '/leave'],
             ['post', '/leave/1/cancel'],
+            ['get', '/leave/1/print'],
             ['get', '/applicant/operational-training'],
         ];
     }

@@ -20,6 +20,31 @@ use Illuminate\Validation\Rule;
  */
 class UnitLeaveCreditController extends Controller
 {
+    private const IMPORT_VIEW = 'unit.leave-credits-import';
+    private const IMPORT_ROUTE = 'unit.leave.credits.import';
+    private const CREDITS_ROUTE = 'unit.leave.credits';
+
+    /** May this checker manage the member's credits? Own unit by mother_unit; M1 every unit. */
+    private function canManage(Request $request, object $m): bool
+    {
+        return $this->isM1($request)
+            || strcasecmp(trim((string) $m->mother_unit), trim((string) $request->session()->get('unit_name', ''))) === 0;
+    }
+
+    private function by(Request $request): array
+    {
+        return ['type' => 'unit', 'id' => (int) $request->session()->get('unit_user_id'),
+            'name' => (string) ($request->session()->get('unit_full_name') ?: $request->session()->get('unit_email'))];
+    }
+
+    private function manageableMembers(Request $request)
+    {
+        $unit = $this->isM1($request) ? trim((string) $request->query('unit', '')) : trim((string) $request->session()->get('unit_name', ''));
+        return DB::table('users')->whereNotNull('serial_number')->where('serial_number', '<>', '')
+            ->when($unit !== '', fn ($q) => $q->whereRaw('LOWER(TRIM(mother_unit)) = ?', [mb_strtolower($unit)]))
+            ->orderBy('mother_unit')->orderBy('name')->get(['id', 'name', 'rank', 'serial_number', 'mother_unit']);
+    }
+
     private function isM1(Request $request): bool
     {
         return $request->session()->get('unit_role') === UnitUser::ROLE_M1;
@@ -96,5 +121,61 @@ class UnitLeaveCreditController extends Controller
             return back()->withInput()->withErrors($result);
         }
         return redirect()->route('unit.leave.credits.show', $m->id)->with('success', $result);
+    }
+
+    // ---------------------------------------------------------------- import opening balances (CSV)
+
+    public function importForm(Request $request)
+    {
+        return view(self::IMPORT_VIEW, $this->importLinks() + ['result' => null]);
+    }
+
+    public function importPreview(Request $request)
+    {
+        $request->validate(['file' => 'required|file|mimes:csv,txt|max:1024'], ['file.mimes' => 'Upload a CSV file (save the sheet as CSV first).']);
+        $result = \App\Support\LeaveCreditImport::check((string) file_get_contents($request->file('file')->getRealPath()),
+            fn ($m) => $this->canManage($request, $m));
+        $token = bin2hex(random_bytes(16));
+        $request->session()->put('leave_import', ['token' => $token, 'rows' => $result['rows']]);
+        return view(self::IMPORT_VIEW, $this->importLinks() + ['result' => $result, 'token' => $token]);
+    }
+
+    public function importConfirm(Request $request)
+    {
+        $data = $request->validate(['token' => 'required|string|size:32']);
+        $saved = $request->session()->pull('leave_import');
+        if (!$saved || !hash_equals((string) $saved['token'], $data['token'])) {
+            return redirect()->route(self::IMPORT_ROUTE)->with('error', 'That preview has expired. Upload the file again.');
+        }
+        // the scope is checked again for every row at import time
+        $rows = array_values(array_filter($saved['rows'], function ($r) use ($request) {
+            if ($r['error'] !== null || empty($r['user_id'])) {
+                return false;
+            }
+            $m = DB::table('users')->where('id', $r['user_id'])->first(['id', 'mother_unit', 'serial_number']);
+            return $m && $this->canManage($request, $m);
+        }));
+        $n = \App\Support\LeaveCreditImport::apply($rows, $this->by($request), $request->ip());
+        return redirect()->route(self::CREDITS_ROUTE)->with('success', $n . ' opening ' . ($n === 1 ? 'balance' : 'balances') . ' imported.');
+    }
+
+    public function importTemplate(Request $request)
+    {
+        $csv = \App\Support\LeaveCreditImport::template($this->manageableMembers($request));
+        return response($csv, 200, [
+            'Content-Type' => 'text/csv; charset=UTF-8',
+            'Content-Disposition' => 'attachment; filename="leave-credits-' . \App\Support\LeaveCalendar::today()->toDateString() . '.csv"',
+            'Cache-Control' => 'no-store',
+        ]);
+    }
+
+    private function importLinks(): array
+    {
+        return [
+            'uploadAction' => route(self::IMPORT_ROUTE),
+            'confirmAction' => route(self::IMPORT_ROUTE . '.confirm'),
+            'templateUrl' => route(self::IMPORT_ROUTE . '.template'),
+            'backUrl' => route(self::CREDITS_ROUTE),
+        ];
     }
 }

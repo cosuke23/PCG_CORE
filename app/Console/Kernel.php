@@ -15,7 +15,9 @@ class Kernel extends ConsoleKernel
      */
     protected function schedule(Schedule $schedule)
     {
-        // $schedule->command('inspire')->hourly();
+        // leave requests waiting too long: one email a day to each unit checker (needs the
+        // server's cron to run `php artisan schedule:run` every minute)
+        $schedule->command('pcg:leave-reminders')->dailyAt('08:00')->timezone('Asia/Manila')->withoutOverlapping();
     }
 
     /**

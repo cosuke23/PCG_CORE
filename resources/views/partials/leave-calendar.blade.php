@@ -9,7 +9,8 @@
     $minDate = $minDate ?? null;
     $perDay = 3;
 @endphp
-<div class="lc" data-leave-calendar @if ($selectable) data-selectable @endif>
+<div class="lc" data-leave-calendar @if ($selectable) data-selectable @endif
+     data-count="{{ \App\Support\LeaveCalendar::countMode() }}" data-holidays="{{ implode(',', \App\Support\LeaveCalendar::holidays()) }}">
     <div class="lc__bar">
         <a class="pcg-btn pcg-btn--secondary pcg-btn--sm" href="{{ $prevUrl }}" aria-label="Previous month"><i class="fa-solid fa-chevron-left" aria-hidden="true"></i></a>
         <h3 class="lc__month">{{ $month->format('F Y') }}</h3>

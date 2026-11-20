@@ -117,6 +117,9 @@
                                     @if ($r->review_note)
                                         <div class="lc-mine__note"><i class="fa-solid fa-comment" aria-hidden="true"></i> {{ $r->review_note }}</div>
                                     @endif
+                                    @if (in_array($st, ['approved', 'pending'], true))
+                                        <a class="lc-print" href="{{ route('leave.print', $r->id) }}"><i class="fa-solid fa-print" aria-hidden="true"></i> Print leave form</a>
+                                    @endif
                                     @if ($canCancel)
                                         <form method="POST" action="{{ route('leave.cancel', $r->id) }}">
                                             @csrf

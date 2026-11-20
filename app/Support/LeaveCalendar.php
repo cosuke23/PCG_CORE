@@ -16,6 +16,40 @@ class LeaveCalendar
     public const TZ = 'Asia/Manila';
     public const COLOURS = 12;          // .lc-c0 .. .lc-c11 in leave-calendar.css
 
+    /** 'calendar' or 'working' (config pcg.leave.count). */
+    public static function countMode(): string
+    {
+        return config('pcg.leave.count') === 'working' ? 'working' : 'calendar';
+    }
+
+    /** @return string[] YYYY-MM-DD non-working days (config pcg.leave.holidays) */
+    public static function holidays(): array
+    {
+        return array_values(array_filter((array) config('pcg.leave.holidays', []),
+            fn ($d) => is_string($d) && preg_match('/^\d{4}-\d{2}-\d{2}$/', $d)));
+    }
+
+    /** Days a request from $from to $to (inclusive) counts: every day, or working days only. */
+    public static function countDays(string $from, string $to): int
+    {
+        $a = Carbon::parse($from, self::TZ);
+        $b = Carbon::parse($to, self::TZ);
+        if ($b->lt($a)) {
+            return 0;
+        }
+        if (self::countMode() === 'calendar') {
+            return (int) $a->diffInDays($b) + 1;
+        }
+        $off = array_flip(self::holidays());
+        $n = 0;
+        for ($d = $a->copy(); $d->lte($b); $d->addDay()) {
+            if (!$d->isWeekend() && !isset($off[$d->toDateString()])) {
+                $n++;
+            }
+        }
+        return $n;
+    }
+
     public static function today(): Carbon
     {
         return Carbon::now(self::TZ)->startOfDay();

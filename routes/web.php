@@ -65,6 +65,8 @@ use App\Http\Controllers\OsaertController;
 // PCG HRMIS main landing page; the MEPCOM HRMIS home (its command system) is /mepcom
 Route::get('/', [PageController::class, 'pcg'])->name('home');
 Route::get('/mepcom', [PageController::class, 'home'])->name('mepcom');
+// 3D ship of the landing page, gzip-compressed by the app (ShipModelController)
+Route::get('/3d/ship-model', [\App\Http\Controllers\ShipModelController::class, 'show'])->name('ship.model');
 Route::get('/about', [PageController::class, 'about'])->name('about');
 Route::get('/contact', [\App\Http\Controllers\ContactController::class, 'show'])->name('contact');
 Route::post('/contact', [\App\Http\Controllers\ContactController::class, 'store'])
@@ -168,6 +170,7 @@ Route::middleware(['auth'])->group(function () {
         ->middleware('throttle:member-writes')->name('leave.store');
     Route::post('/leave/{id}/cancel', [\App\Http\Controllers\LeaveController::class, 'cancel'])
         ->whereNumber('id')->middleware('throttle:member-writes')->name('leave.cancel');
+    Route::get('/leave/{id}/print', [\App\Http\Controllers\LeavePrintController::class, 'member'])->whereNumber('id')->name('leave.print');
 
     Route::get('/applicant/administrative-training', [ApplicantTrainingController::class, 'administrative'])
         ->name('applicant.administrative.training');
@@ -306,10 +309,18 @@ Route::middleware(['admin.session', 'admin.audit'])->group(function () {
     Route::middleware('admin.can:leave.view')->prefix('admin/leave')->name('admin.leave.')
         ->controller(\App\Http\Controllers\AdminLeaveController::class)->group(function () {
             Route::get('/', 'index')->name('index');
+            Route::get('/{id}/print', [\App\Http\Controllers\LeavePrintController::class, 'admin'])->whereNumber('id')->name('print');
+            Route::get('/readiness', [\App\Http\Controllers\ReadinessController::class, 'admin'])->name('readiness');
             Route::post('/{id}/review', 'review')->whereNumber('id')->middleware('admin.can:leave.approve')->name('review');
             Route::get('/credits', 'credits')->name('credits');
             Route::get('/credits/{user}', 'creditsShow')->whereNumber('user')->name('credits.show');
             Route::post('/credits/{user}', 'creditsStore')->whereNumber('user')->middleware('admin.can:leave.credits')->name('credits.store');
+            Route::middleware('admin.can:leave.credits')->group(function () {
+                Route::get('/credits/import', 'importForm')->name('credits.import');
+                Route::post('/credits/import', 'importPreview');
+                Route::post('/credits/import/confirm', 'importConfirm')->name('credits.import.confirm');
+                Route::get('/credits/import/template', 'importTemplate')->name('credits.import.template');
+            });
         });
 
     // ---- SOI submissions: Adjutant, HR admin (own command/unit) and super admin reopen a submitted SOI ----
@@ -465,6 +476,8 @@ Route::middleware(['unit.session'])->group(function () {
 
     // Leave approval (owner request 2026-11-20): own-unit checkers for their unit, M1 for all (UnitLeaveController)
     Route::get('/unit/leave', [\App\Http\Controllers\UnitLeaveController::class, 'index'])->name('unit.leave');
+    Route::get('/unit/leave/{id}/print', [\App\Http\Controllers\LeavePrintController::class, 'unit'])->whereNumber('id')->name('unit.leave.print');
+    Route::get('/unit/leave/readiness', [\App\Http\Controllers\ReadinessController::class, 'unit'])->name('unit.leave.readiness');
     Route::post('/unit/leave/{id}/review', [\App\Http\Controllers\UnitLeaveController::class, 'review'])
         ->whereNumber('id')->middleware('throttle:member-writes')->name('unit.leave.review');
 
@@ -472,6 +485,12 @@ Route::middleware(['unit.session'])->group(function () {
     Route::get('/unit/leave/credits', [\App\Http\Controllers\UnitLeaveCreditController::class, 'index'])->name('unit.leave.credits');
     Route::get('/unit/leave/credits/{user}', [\App\Http\Controllers\UnitLeaveCreditController::class, 'show'])
         ->whereNumber('user')->name('unit.leave.credits.show');
+    Route::get('/unit/leave/credits/import', [\App\Http\Controllers\UnitLeaveCreditController::class, 'importForm'])->name('unit.leave.credits.import');
+    Route::post('/unit/leave/credits/import', [\App\Http\Controllers\UnitLeaveCreditController::class, 'importPreview'])
+        ->middleware('throttle:member-uploads');
+    Route::post('/unit/leave/credits/import/confirm', [\App\Http\Controllers\UnitLeaveCreditController::class, 'importConfirm'])
+        ->middleware('throttle:member-writes')->name('unit.leave.credits.import.confirm');
+    Route::get('/unit/leave/credits/import/template', [\App\Http\Controllers\UnitLeaveCreditController::class, 'importTemplate'])->name('unit.leave.credits.import.template');
     Route::post('/unit/leave/credits/{user}', [\App\Http\Controllers\UnitLeaveCreditController::class, 'store'])
         ->whereNumber('user')->middleware('throttle:member-writes')->name('unit.leave.credits.store');
 

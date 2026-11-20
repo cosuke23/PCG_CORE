@@ -75,6 +75,7 @@
                                             · <a href="{{ route('unit.leave.credits.show', $r->user_id) }}">credits</a>
                                         </div>
                                     @endif
+                                    <a class="lc-print" href="{{ route('unit.leave.print', $r->id) }}"><i class="fa-solid fa-print" aria-hidden="true"></i> Print leave form</a>
                                     <form method="POST" action="{{ route('unit.leave.review', $r->id) }}" class="lc-review">
                                         @csrf
                                         <label class="pcg-label" for="note-{{ $r->id }}">Note to the member <span class="lc-muted">(needed to decline)</span></label>

@@ -20,7 +20,12 @@
                 </h2>
                 <p>Set each member's opening balance of ordinary leave credits once; from then 2.5 days are added every month. Add RNR days after a deployment or sea duty. Days are taken off when leave is approved.</p>
             </div>
-            <a class="pcg-btn pcg-btn--secondary" href="{{ route('admin.leave.index', array_filter(['unit' => $unit])) }}"><i class="fa-solid fa-calendar-days" aria-hidden="true"></i> Leave requests</a>
+            <div class="lc-review__actions">
+                @if (\App\Support\AdminPermissions::can('leave.credits'))
+                    <a class="pcg-btn pcg-btn--secondary" href="{{ route('admin.leave.credits.import') }}"><i class="fa-solid fa-file-import" aria-hidden="true"></i> Import from CSV</a>
+                @endif
+                <a class="pcg-btn pcg-btn--secondary" href="{{ route('admin.leave.index', array_filter(['unit' => $unit])) }}"><i class="fa-solid fa-calendar-days" aria-hidden="true"></i> Leave requests</a>
+            </div>
         </div>
 
         <section class="pcg-card pcg-mb">

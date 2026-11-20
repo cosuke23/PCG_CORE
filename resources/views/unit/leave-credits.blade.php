@@ -34,6 +34,7 @@
             <label class="pcg-label" for="q">Name or serial number</label>
             <input class="pcg-input pcg-input--sm" type="search" id="q" name="q" value="{{ $q }}" maxlength="100" autocomplete="off">
             <button type="submit" class="pcg-btn pcg-btn--secondary pcg-btn--sm" data-pcg-no-busy>Search</button>
+            <a class="pcg-btn pcg-btn--secondary pcg-btn--sm" href="{{ route('unit.leave.credits.import') }}"><i class="fa-solid fa-file-import" aria-hidden="true"></i> Import from CSV</a>
         </form>
 
         <section class="pcg-card">

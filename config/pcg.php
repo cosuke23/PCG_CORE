@@ -84,4 +84,28 @@ return [
         'version' => env('PCG_ANDROID_APK_VERSION', ''),
     ],
 
+    // Leave module (App\Support\LeaveTypes, LeaveCredits, LeaveCalendar). Defaults until the PCG
+    // leave directive is supplied; set the directive's numbers here or in .env.
+    'leave' => [
+        // how a request's length is counted: 'calendar' (every day) or 'working' (Mon-Fri, minus holidays)
+        'count' => env('PCG_LEAVE_COUNT', 'calendar'),
+        // non-working days for 'working': YYYY-MM-DD, comma-separated in .env
+        'holidays' => array_values(array_filter(array_map('trim', explode(',', (string) env('PCG_LEAVE_HOLIDAYS', ''))))),
+        // ordinary leave credits added on the 1st of each month after the opening balance
+        'monthly_credit' => (float) env('PCG_LEAVE_MONTHLY_CREDIT', 2.5),
+        // days per calendar year of the yearly pools
+        'per_year' => [
+            'solo_parent' => (float) env('PCG_LEAVE_SOLO_PARENT_DAYS', 7),
+            'vawc' => (float) env('PCG_LEAVE_VAWC_DAYS', 10),
+        ],
+        // how far back a request may start (late filing)
+        'backdate_days' => (int) env('PCG_LEAVE_BACKDATE_DAYS', 30),
+        // longest single request per type (days), e.g. ['rnr' => 30]; types not listed keep App\Support\LeaveTypes
+        'max_days' => [],
+        // remind unit checkers of requests waiting longer than this (days); 0 = never
+        'reminder_days' => (int) env('PCG_LEAVE_REMINDER_DAYS', 2),
+        // email members when their leave is decided
+        'notify_members' => (bool) env('PCG_LEAVE_NOTIFY', true),
+    ],
+
 ];

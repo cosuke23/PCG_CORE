@@ -8,7 +8,16 @@
     'use strict';
 
     function parse(d) { var p = d.split('-'); return new Date(+p[0], +p[1] - 1, +p[2]); }
-    function days(a, b) { return Math.round((parse(b) - parse(a)) / 86400000) + 1; }
+    // calendar days, or working days (Mon-Fri minus the configured holidays) when the page says so
+    function days(a, b, mode, off) {
+        if (mode !== 'working') return Math.round((parse(b) - parse(a)) / 86400000) + 1;
+        var n = 0;
+        for (var d = parse(a); d <= parse(b); d.setDate(d.getDate() + 1)) {
+            var key = d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+            if (d.getDay() !== 0 && d.getDay() !== 6 && off.indexOf(key) === -1) n++;
+        }
+        return n;
+    }
     function pretty(d) {
         return parse(d).toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' });
     }
@@ -23,6 +32,8 @@
         var startInput = document.querySelector('[data-lc-start]');
         var endInput = document.querySelector('[data-lc-end]');
         var summary = document.querySelector('[data-lc-summary]');
+        var mode = root.getAttribute('data-count') || 'calendar';
+        var off = (root.getAttribute('data-holidays') || '').split(',').filter(Boolean);
         var start = startInput ? startInput.value : '';
         var end = endInput ? endInput.value : '';
 
@@ -53,8 +64,8 @@
             if (!summary) return;
             summary.classList.remove('is-over');
             if (start && end && end >= start) {
-                var n = days(start, end), max = maxDays();
-                summary.textContent = pretty(start) + (start === end ? '' : ' to ' + pretty(end)) + ' · ' + n + (n === 1 ? ' day' : ' days')
+                var n = days(start, end, mode, off), max = maxDays();
+                summary.textContent = pretty(start) + (start === end ? '' : ' to ' + pretty(end)) + ' · ' + n + (mode === 'working' ? ' working' : '') + (n === 1 ? ' day' : ' days')
                     + (max && n > max ? ' (this type allows ' + max + ')' : '');
                 if (max && n > max) summary.classList.add('is-over');
             } else if (start) {

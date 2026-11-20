@@ -108,6 +108,9 @@
                                             @if ($canCredits) · <a href="{{ route('admin.leave.credits.show', $r->user_id) }}">credits</a>@endif
                                         </div>
                                     @endif
+                                    @if (in_array($st, ['approved', 'pending'], true))
+                                        <a class="lc-print" href="{{ route('admin.leave.print', $r->id) }}"><i class="fa-solid fa-print" aria-hidden="true"></i> Print leave form</a>
+                                    @endif
                                     @if ($st === 'pending' && $canApprove)
                                         <form method="POST" action="{{ route('admin.leave.review', $r->id) }}" class="lc-review">
                                             @csrf

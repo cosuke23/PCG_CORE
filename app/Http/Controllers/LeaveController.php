@@ -57,7 +57,7 @@ class LeaveController extends Controller
             'credits' => LeaveCredits::balances((int) $user->id),
             'histories' => collect(array_keys(LeaveCredits::POOLS))->mapWithKeys(fn ($p) => [$p => LeaveCredits::history((int) $user->id, $p)->take(12)])->all(),
             'types' => LeaveTypes::TYPES,
-            'minDate' => $today->copy()->subDays(LeaveTypes::BACKDATE_DAYS)->toDateString(),
+            'minDate' => $today->copy()->subDays(LeaveTypes::backdateDays())->toDateString(),
             'today' => $today->toDateString(),
             'prev' => $month->copy()->subMonth()->format('Y-m'),
             'next' => $month->copy()->addMonth()->format('Y-m'),
@@ -70,17 +70,20 @@ class LeaveController extends Controller
         $today = LeaveCalendar::today();
         $data = $request->validate([
             'leave_type' => ['required', Rule::in(LeaveTypes::keys())],
-            'start_date' => ['required', 'date_format:Y-m-d', 'after_or_equal:' . $today->copy()->subDays(LeaveTypes::BACKDATE_DAYS)->toDateString()],
+            'start_date' => ['required', 'date_format:Y-m-d', 'after_or_equal:' . $today->copy()->subDays(LeaveTypes::backdateDays())->toDateString()],
             'end_date' => ['required', 'date_format:Y-m-d', 'after_or_equal:start_date'],
             'reason' => ['nullable', 'string', 'max:500'],
         ], [
-            'start_date.after_or_equal' => 'Leave can start at most ' . LeaveTypes::BACKDATE_DAYS . ' days ago.',
+            'start_date.after_or_equal' => 'Leave can start at most ' . LeaveTypes::backdateDays() . ' days ago.',
             'end_date.after_or_equal' => 'The last day must be on or after the first day.',
         ]);
 
         $start = Carbon::parse($data['start_date'], LeaveCalendar::TZ);
         $end = Carbon::parse($data['end_date'], LeaveCalendar::TZ);
-        $days = $start->diffInDays($end) + 1;
+        $days = LeaveCalendar::countDays($start->toDateString(), $end->toDateString());
+        if ($days < 1) {
+            throw ValidationException::withMessages(['end_date' => 'These dates have no working days; choose other dates.']);
+        }
         $max = LeaveTypes::maxDays($data['leave_type']);
         if ($days > $max) {
             throw ValidationException::withMessages([
