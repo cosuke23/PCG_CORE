@@ -84,6 +84,7 @@
     @unless ($is201)
         @include('unit.partials.leave-summary')
         @include('unit.partials.clearance-summary')
+        @include('unit.partials.certificate-summary')
     @endunless
 
     <div class="uc-tools">
