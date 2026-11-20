@@ -445,7 +445,7 @@ async function start() {
     seal.colorSpace = THREE.SRGBColorSpace;
     sideDecal(seal, { width: 0.2, height: 0.2, x: 0.34, y: 0.9, z: 0.762 });          // PCG seal beside the boat bay
     sideDecal(seal, { width: 0.07, height: 0.07, x: 1.86, y: 0.5 });                  // small seal on the bow stripe
-    sideDecal(textTex('GABRIELA SILANG', '700 {s}px Inter, Arial, sans-serif', '#1b1f25', 10, '#f7f8f9'), { width: 0.5, height: 0.05, x: -0.45, y: 1.06, z: 0.764 });
+    sideDecal(textTex('GABRIELA SILANG', '700 {s}px Inter, Arial, sans-serif', '#e9edf1', 10, '#1b1f25'), { width: 0.5, height: 0.05, x: -0.15, y: 1.06, z: 0.764 });   // black name board under the bridge
     const sternName = new THREE.Mesh(new THREE.PlaneGeometry(0.6, 0.06), new THREE.MeshStandardMaterial({ map: textTex('GABRIELA SILANG', '700 {s}px Inter, Arial, sans-serif', '#1b1f25', 10), transparent: true, polygonOffset: true, polygonOffsetFactor: -2 }));
     sternName.position.set(X0 - 0.004, 0.42, 0); sternName.rotation.y = -Math.PI / 2; ship.add(sternName);
     const homePort = new THREE.Mesh(new THREE.PlaneGeometry(0.26, 0.04), new THREE.MeshStandardMaterial({ map: textTex('MANILA', '700 {s}px Inter, Arial, sans-serif', '#1b1f25', 6.5), transparent: true, polygonOffset: true, polygonOffsetFactor: -2 }));
@@ -470,7 +470,7 @@ async function start() {
     }
     const flagBase = flagGeo.attributes.position.array.slice();
     const flag = new THREE.Mesh(flagGeo, new THREE.MeshStandardMaterial({ map: flagTex, side: THREE.DoubleSide, roughness: 0.85 }));
-    flag.castShadow = true; flag.position.set(-0.83, 1.99, 0); ship.add(flag);  // gaff tip in the model: x -8.3 m, z 21.2 m
+    flag.castShadow = true; flag.position.set(-0.67, 2.06, 0); ship.add(flag);  // gaff tip in the model: x -6.7 m, z 21.8 m
 
     // ------------------------------------------------------------ wake and bow waves
     const foamTex = canvasTex(1024, 256, (g, w, h) => {

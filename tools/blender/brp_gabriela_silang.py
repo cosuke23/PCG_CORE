@@ -282,22 +282,60 @@ sup.profile([(-13.7, DECK), (2.0, DECK), (2.0, L1), (-13.7, L1)], 3.1, "White") 
 sup.profile([(-13.7, 9.6), (2.0, 9.6), (2.0, L1), (-13.7, L1)], SW, "White")              # roof over the bays
 sup.profile([(2.0, DECK), (8.8, DECK), (8.8, L1), (2.0, L1)], SW, "White")                # forward block
 sup.profile([(8.8, DECK), (18.6, DECK), (17.6, 10.0), (8.8, 10.0)], SW - 0.2, "White")   # lower forward deckhouse
-sup.profile([(-8.8, L1), (5.8, L1), (6.8, L2), (-8.4, L2)], 6.2, "White")                 # bridge (windows raked forward)
 sup_ob = sup.finish(bevel=0.08, smooth_angle=30)
 
+def prism(b, plan0, plan1, z0, z1, mat, caps=(False, True)):
+    """Walls between two closed plan outlines (x, y) at heights z0 and z1, optional caps."""
+    before = set(b.bm.faces)
+    r0 = [b.bm.verts.new((x, y, z0)) for x, y in plan0]
+    r1 = [b.bm.verts.new((x, y, z1)) for x, y in plan1]
+    n = len(r0)
+    for i in range(n):
+        j = (i + 1) % n
+        b.bm.faces.new((r0[i], r0[j], r1[j], r1[i]))
+    if caps[0]:
+        b.bm.faces.new(list(reversed(r0)))
+    if caps[1]:
+        b.bm.faces.new(r1)
+    b.tag([f for f in b.bm.faces if f not in before], mat)
+
+
+def rounded_plan(x0, x1, hy, rf, ra, n=6):
+    """Rectangle in plan with rounded forward (rf) and aft (ra) corners, counter-clockwise."""
+    pts = []
+    for cx, cy, r, a0 in ((x1 - rf, -hy + rf, rf, -90), (x1 - rf, hy - rf, rf, 0), (x0 + ra, hy - ra, ra, 90), (x0 + ra, -hy + ra, ra, 180)):
+        for k in range(n + 1):
+            a = math.radians(a0 + 90 * k / n)
+            pts.append((cx + r * math.cos(a), cy + r * math.sin(a)))
+    return pts
+
+
+# bridge (from photos): rounded front corners with wrap-around windows, raked forward, and a
+# white roof with an overhanging rim
+BR_X0, BR_X1, BR_HY, BR_RF, BR_RA, BR_RAKE = -8.8, 6.0, 6.2, 2.6, 0.5, 0.5
+
+
+def br_plan(z, grow=0.0, n=6):
+    t = (z - L1) / (L2 - L1)
+    pts = rounded_plan(BR_X0 - grow, BR_X1 + grow, BR_HY + grow, BR_RF + grow, BR_RA + grow, n)
+    return [(x + BR_RAKE * t * max(0.0, min(1.0, (x - (BR_X1 - BR_RF)) / BR_RF)), y) for x, y in pts]
+
+
+bridge = Builder("Bridge")
+prism(bridge, br_plan(L1), br_plan(L2), L1, L2, "White", caps=(False, False))
+bridge.finish(smooth_angle=50)
 glass = Builder("BridgeWindows")
-glass.profile([(-8.6, 12.3), (6.27, 12.3), (6.66, 13.3), (-8.45, 13.3)], 6.3, "BridgeGlass")
+prism(glass, br_plan(12.3, 0.04), br_plan(13.3, 0.04), 12.3, 13.3, "BridgeGlass", caps=(False, False))
 glass.finish()
+roof = Builder("BridgeRoof")
+prism(roof, br_plan(L2, 0.3), br_plan(L2, 0.3), L2 - 0.02, L2 + 0.18, "White", caps=(True, True))
+roof.finish(smooth_angle=50)
 
 misc = Builder("Fittings")
-# bridge wings
-for s in (1, -1):
-    misc.box(2.5, 6.4, s * 6.2 - 0.4 if s > 0 else -6.9, s * 6.9 if s > 0 else -6.2 + 0.4, 12.0, 13.6, "White")
 # blue roof decks
 misc.box(-13.5, -9.0, -SW + 0.25, SW - 0.25, L1, L1 + 0.15, "BlueDeck")
 misc.box(6.6, 8.6, -SW + 0.4, SW - 0.4, L1, L1 + 0.15, "BlueDeck")
 misc.box(9.0, 17.4, -SW + 0.6, SW - 0.6, 10.0, 10.15, "BlueDeck")
-misc.box(-8.6, 6.7, -6.1, 6.1, L2, L2 + 0.15, "BlueDeck")
 # side windows (slightly proud dark panes)
 for s in (1, -1):
     yy = s * (SW + 0.02)
@@ -367,28 +405,58 @@ rail_run([(-41.6, 7.5), (-41.6, -7.5)], DECK + 0.2)
 rail_run([(17.3, 7.2), (17.3, -7.2)], 10.15)
 rails.finish()
 
-# ------------------------------------------------------------------ mast (lattice), platforms, yards; radars as separate parts
-mast = Builder("Mast")
+# ------------------------------------------------------------------ mast (from photos): enclosed tapered tower, yards, forward radar arm; radars separate
 MX = -2.7
-base_z, top_z = L2 + 0.1, 23.6
-for dx, dy in ((0.7, 0.7), (0.7, -0.7), (-0.7, 0.7), (-0.7, -0.7)):
-    mast.cylinder((MX + dx, dy, base_z), (MX + dx * 0.35, dy * 0.35, top_z), 0.09, 0.06, 8, "Mast")
-levels = [base_z + k * 1.2 for k in range(9)]
-for za, zb in zip(levels, levels[1:]):
-    fa = 1 - (za - base_z) / (top_z - base_z) * 0.65
-    fb = 1 - (zb - base_z) / (top_z - base_z) * 0.65
-    for (ax, ay), (bx, by) in (((0.7, 0.7), (0.7, -0.7)), ((-0.7, 0.7), (-0.7, -0.7)), ((0.7, 0.7), (-0.7, 0.7)), ((0.7, -0.7), (-0.7, -0.7))):
-        mast.cylinder((MX + ax * fa, ay * fa, za), (MX + bx * fb, by * fb, zb), 0.03, None, 6, "Mast", caps=False)
-        mast.cylinder((MX + ax * fb, ay * fb, zb), (MX + bx * fb, by * fb, zb), 0.03, None, 6, "Mast", caps=False)
-for z, half in ((16.8, 1.8), (19.2, 1.3)):
-    mast.box(MX - half, MX + half, -half, half, z - 0.08, z + 0.08, "Mast")
-for z, w in ((18.0, 3.2), (21.2, 2.1)):
-    mast.cylinder((MX, -w, z), (MX, w, z), 0.08, None, 8, "Mast")
-mast.sphere((MX, 0, top_z + 0.6), 0.7, "Radar")
-mast.finish(smooth_angle=40)
+base_z, top_z = L2 + 0.1, 22.0
 
 
-def radar(name, z, length, size):
+def octagon(hx, hy):
+    c = 0.28 * min(hx, hy)
+    return [(hx, -hy + c), (hx, hy - c), (hx - c, hy), (-hx + c, hy), (-hx, hy - c), (-hx, -hy + c), (-hx + c, -hy), (hx - c, -hy)]
+
+
+def mast_half(z):
+    t = (z - base_z) / (top_z - base_z)
+    return 0.85 - 0.35 * t, 0.75 - 0.3 * t
+
+
+mast = Builder("Mast")
+prism(mast, [(MX + x, y) for x, y in octagon(*mast_half(base_z))], [(MX + x, y) for x, y in octagon(*mast_half(top_z))],
+      base_z, top_z, "Mast", caps=(False, True))
+# dark panels on the forward face, rung ladder up the aft face
+for z0, z1 in ((15.2, 16.2), (17.0, 17.6)):
+    hx, _ = mast_half((z0 + z1) / 2)
+    mast.box(MX + hx - 0.01, MX + hx + 0.04, -0.28, 0.28, z0, z1, "Glass")
+for k in range(int((top_z - base_z - 0.4) / 0.35)):
+    z = base_z + 0.3 + k * 0.35
+    hx, _ = mast_half(z)
+    mast.box(MX - hx - 0.12, MX - hx - 0.02, -0.22, 0.22, z, z + 0.03, "Mast")
+# lower yard with navigation lights and whips, upper cross-arm with short antennas
+mast.box(MX - 0.08, MX + 0.08, -2.6, 2.6, 18.3, 18.45, "Mast")
+mast.box(MX - 0.06, MX + 0.06, -1.7, 1.7, 21.0, 21.12, "Mast")
+for s in (1, -1):
+    mast.box(MX - 0.12, MX + 0.12, s * 2.5 - 0.12, s * 2.5 + 0.12, 18.45, 18.7, "Dark")
+    mast.cylinder((MX, s * 2.2, 18.45), (MX, s * 2.2, 20.4), 0.03, 0.012, 6, "Mast")
+    for y in (0.9, 1.5):
+        mast.cylinder((MX, s * y, 21.12), (MX, s * y, 21.9), 0.025, 0.012, 6, "Mast")
+    mast.cylinder((MX, s * 2.6, 18.3), (MX - 3.0, s * 4.4, L2 + 0.2), 0.008, None, 3, "Dark", caps=False, smooth=False)
+# forward arm carrying the S-band radar, with a diagonal strut
+mast.box(MX + 0.4, MX + 3.4, -0.45, 0.45, 19.25, 19.4, "Mast")
+mast.cylinder((MX + 0.6, 0, 18.0), (MX + 3.0, 0, 19.25), 0.08, 0.06, 8, "Mast")
+# top platform for the X-band radar; aft bracket with the all-round light
+mast.box(MX - 0.75, MX + 0.75, -0.7, 0.7, top_z, top_z + 0.12, "Mast")
+mast.cylinder((MX - 0.45, 0, top_z - 0.3), (MX - 1.9, 0, top_z + 0.3), 0.06, 0.05, 8, "Mast")
+mast.cylinder((MX - 1.9, 0, top_z + 0.3), (MX - 1.9, 0, top_z + 2.0), 0.05, 0.03, 8, "Mast")
+mast.cylinder((MX - 1.9, 0, top_z + 2.0), (MX - 1.9, 0, top_z + 2.2), 0.08, None, 10, "Lamp")
+mast.cylinder((MX - 1.9, 0, top_z + 2.2), (MX - 1.9, 0, top_z + 2.9), 0.012, 0.006, 4, "Mast")
+# EO/IR camera on a bracket at the front, horn beside it
+mast.cylinder((MX + 0.7, 0, 16.9), (MX + 1.2, 0, 16.9), 0.05, None, 8, "Mast")
+mast.sphere((MX + 1.3, 0, 16.75), 0.26, "Dark", 16, 10)
+mast.cylinder((MX + 0.7, 0.4, 17.9), (MX + 1.2, 0.4, 17.9), 0.07, 0.18, 12, "Dark")
+mast.finish(smooth_angle=30)
+
+
+def radar(name, z, length, size, x=MX):
     """Open-array radar antenna: slim array with a dark radiating face, end caps, support
     arms and a gearbox on the pedestal; origin on the rotation axis."""
     b = Builder(name)
@@ -401,12 +469,12 @@ def radar(name, z, length, size):
     b.box(-size * 0.9, size * 0.9, -size * 0.9, size * 0.9, -h * 1.5, -h * 0.4, "Radar")
     b.cylinder((0, 0, -h * 0.4), (0, 0, -h * 0.25), size * 0.35, None, 12, "Steel")
     ob = b.finish(bevel=0.02)
-    ob.location = (MX, 0, z)
+    ob.location = (x, 0, z)
     return ob
 
 
-radar("RadarS", 17.4, 6.0, 0.28)   # SharpEye S-band
-radar("RadarX", 19.7, 3.8, 0.2)    # SharpEye X-band
+radar("RadarS", 19.75, 4.0, 0.26, MX + 2.7)   # SharpEye S-band on the forward arm
+radar("RadarX", top_z + 0.55, 2.6, 0.2)       # SharpEye X-band on top
 
 # ------------------------------------------------------------------ boat bays: RHIBs on davits
 for s, nm in ((1, "RhibPort"), (-1, "RhibStarboard")):
@@ -427,13 +495,6 @@ for s, nm in ((1, "RhibPort"), (-1, "RhibStarboard")):
 
 # ------------------------------------------------------------------ finer detail (things that read at landing-page distance)
 det = Builder("Details")
-# sun visor over the raked bridge windows, with a dark underside
-det.box(6.55, 7.45, -6.45, 6.45, L2 - 0.02, L2 + 0.12, "White")
-det.box(6.55, 7.4, -6.4, 6.4, L2 - 0.06, L2 - 0.02, "Dark")
-# mullion bars on the bridge front
-for k in range(-5, 6):
-    y = k * 1.12
-    det.box(6.25, 6.7, y - 0.04, y + 0.04, 12.25, 13.35, "White")
 # twin exhaust uptakes on the aft roof, soot-dark tops and side louvres
 for s in (1, -1):
     yc = s * 4.6
@@ -524,17 +585,6 @@ det.sphere((26.5, 0.0, dz + 0.9), 0.75, "White", 20, 10)
 for y in (-2.2, 2.2):
     det.box(22.6, 23.6, y - 0.4, y + 0.4, dz, dz + 0.7, "White")
 det.profile([(19.2, DECK + 0.3), (20.4, DECK + 0.3), (19.6, DECK + 1.3)], 4.6, "White")
-# mast: navigation lights on the yards, horn, extra whip antennas, platform guard rails
-for z, w in ((18.0, 3.2), (21.2, 2.1)):
-    for s in (1, -1):
-        det.box(MX - 0.12, MX + 0.12, s * w - 0.12, s * w + 0.12, z + 0.08, z + 0.35, "Dark")
-        det.cylinder((MX, s * w, z), (MX, s * w, z + 2.4), 0.03, 0.015, 6, "Mast")
-for z, half in ((16.8, 1.8), (19.2, 1.3)):
-    for (xa, ya), (xb, yb) in (((-1, -1), (1, -1)), ((1, -1), (1, 1)), ((1, 1), (-1, 1)), ((-1, 1), (-1, -1))):
-        det.cylinder((MX + xa * half, ya * half, z + 0.55), (MX + xb * half, yb * half, z + 0.55), 0.025, None, 6, "Rail", caps=False)
-det.cylinder((MX + 0.8, 0, 22.4), (MX + 1.5, 0, 22.4), 0.12, 0.25, 12, "Dark")
-for x, y in ((MX + 1.0, 0.8), (MX + 1.0, -0.8)):
-    det.cylinder((x, y, top_z - 0.5), (x, y, top_z + 3.2), 0.03, 0.012, 6, "Mast")
 # boarding ladder rungs on the hull side under the bays
 for s in (1, -1):
     for k in range(8):
@@ -611,34 +661,21 @@ sd = Builder("SuperDetails")
 for s in (1, -1):
     sd.box(-13.7, 8.85, min(s * SW, s * (SW + 0.1)), max(s * SW, s * (SW + 0.1)), L1 - 0.12, L1 - 0.02, "White")
     sd.box(8.8, 18.3, min(s * (SW - 0.2), s * (SW - 0.1)), max(s * (SW - 0.2), s * (SW - 0.1)), 9.88, 9.98, "White")
-    sd.box(-8.6, 6.4, min(s * 6.2, s * 6.3), max(s * 6.2, s * 6.3), L2 - 0.1, L2, "White")
 sd.box(8.8, 8.9, -SW, SW, L1 - 0.12, L1 - 0.02, "White")
 # forward-facing windows of the 01 level above the lower deckhouse
 for k in range(-4, 5):
     y = k * 1.45
     sd.box(8.8, 8.86, y - 0.55, y + 0.55, 10.35, 10.95, "Glass")
-# bridge wings: front and side windows, wing roof, window posts
-for s in (1, -1):
-    yo, yi = (6.9, 6.2) if s > 0 else (-6.9, -6.2)
-    sd.box(6.4, 6.46, min(yo, yi) + 0.08, max(yo, yi) - 0.08, 12.35, 13.3, "Glass")
-    sd.box(2.9, 6.0, s * 6.9 - 0.03, s * 6.9 + 0.03, 12.35, 13.3, "Glass")
-    sd.box(2.5, 6.5, min(s * 6.15, s * 7.0), max(s * 6.15, s * 7.0), 13.6, 13.72, "White")
-    for x in (3.2, 4.0, 4.8, 5.6):
-        sd.box(x - 0.03, x + 0.03, s * 6.9 - 0.05, s * 6.9 + 0.05, 12.35, 13.3, "White")
-# bridge side windows behind the wings, and aft-facing windows
-for s in (1, -1):
-    for x in (-7.6, -5.8, -4.0, -2.2, -0.4, 1.4):
-        sd.box(x, x + 1.4, s * 6.3 - 0.03, s * 6.3 + 0.03, 12.35, 13.25, "Glass")
-for y in (-4.5, -2.7, -0.9, 0.9, 2.7):
-    sd.box(-8.86, -8.8, y, y + 1.4, 12.35, 13.2, "Glass")
-# railing round the bridge roof (compass deck)
-for (xa, ya), (xb, yb) in (((-8.4, -6.05), (6.6, -6.05)), ((6.6, -6.05), (6.6, 6.05)), ((6.6, 6.05), (-8.4, 6.05)), ((-8.4, 6.05), (-8.4, -6.05))):
+# railing round the bridge roof, following its rounded plan
+rp = br_plan(L2, -0.15, 3)
+for (xa, ya), (xb, yb) in zip(rp, rp[1:] + rp[:1]):
     sd.cylinder((xa, ya, L2 + 1.15), (xb, yb, L2 + 1.15), 0.03, None, 6, "Rail", caps=False)
     sd.cylinder((xa, ya, L2 + 0.65), (xb, yb, L2 + 0.65), 0.022, None, 6, "Rail", caps=False)
     n = max(1, int(math.hypot(xb - xa, yb - ya) / 1.6))
     for i in range(n):
         t = i / n
-        sd.cylinder((xa + (xb - xa) * t, ya + (yb - ya) * t, L2 + 0.15), (xa + (xb - xa) * t, ya + (yb - ya) * t, L2 + 1.15), 0.026, None, 6, "Rail", caps=False)
+        px_, py_ = xa + (xb - xa) * t, ya + (yb - ya) * t
+        sd.cylinder((px_, py_, L2 + 0.15), (px_, py_, L2 + 1.15), 0.026, None, 6, "Rail", caps=False)
 
 
 # inclined ladders: 01 roof up to the forward roof, and aft roof up to the bridge roof
@@ -665,7 +702,7 @@ for x, y in ((11.0, 1.2), (11.0, -1.2), (13.5, 0.0), (-6.0, 3.2), (-6.0, -3.2), 
     sd.cylinder((x, y, z0), (x, y, z0 + 0.6), 0.14, None, 10, "White")
     sd.cylinder((x, y, z0 + 0.6), (x, y, z0 + 0.72), 0.3, 0.22, 14, "White")
 for s in (1, -1):
-    sd.box(-8.2, 5.8, s * 5.6 - 0.15, s * 5.6 + 0.15, L2 + 0.15, L2 + 0.27, "Steel")
+    sd.box(-8.2, 3.8, s * 5.6 - 0.15, s * 5.6 + 0.15, L2 + 0.15, L2 + 0.27, "Steel")
 # bridge roof: horn, EO camera, magnetic compass, VHF whips
 sd.cylinder((4.6, 1.8, L2 + 0.15), (4.6, 1.8, L2 + 1.2), 0.08, None, 8, "Mast")
 sd.cylinder((4.6, 1.8, L2 + 1.2), (5.2, 1.8, L2 + 1.25), 0.06, 0.18, 12, "Mast")
@@ -673,53 +710,14 @@ sd.cylinder((5.6, 0.0, L2 + 0.15), (5.6, 0.0, L2 + 1.1), 0.18, 0.14, 12, "White"
 sd.sphere((5.6, 0.0, L2 + 1.25), 0.22, "Glass", 14, 8)
 sd.cylinder((0.0, 2.0, L2 + 0.15), (0.0, 2.0, L2 + 1.3), 0.12, None, 10, "White")
 sd.sphere((0.0, 2.0, L2 + 1.55), 0.32, "Dark", 16, 10)
-for x, y in ((-7.6, 5.4), (-7.6, -5.4), (5.9, -5.4), (5.9, 5.4)):
+for x, y in ((-7.6, 5.4), (-7.6, -5.4), (4.4, -4.4), (4.4, 4.4)):
     sd.cylinder((x, y, L2 + 0.15), (x, y, L2 + 3.2), 0.035, 0.015, 6, "Mast")
 sd.finish(smooth_angle=35)
 
-# ------------------------------------------------------------------ mast detail
-md = Builder("MastDetails")
-# X-bracing on all four faces (the other diagonal of each panel)
-for za, zb in zip(levels, levels[1:]):
-    fa = 1 - (za - base_z) / (top_z - base_z) * 0.65
-    fb_ = 1 - (zb - base_z) / (top_z - base_z) * 0.65
-    for (ax, ay), (bx, by) in (((0.7, 0.7), (0.7, -0.7)), ((-0.7, 0.7), (-0.7, -0.7)), ((0.7, 0.7), (-0.7, 0.7)), ((0.7, -0.7), (-0.7, -0.7))):
-        md.cylinder((MX + bx * fa, by * fa, za), (MX + ax * fb_, ay * fb_, zb), 0.025, None, 6, "Mast", caps=False)
-# platform gratings and a rung ladder up the aft face
-for z, half in ((16.8, 1.8), (19.2, 1.3)):
-    md.box(MX - half + 0.05, MX + half - 0.05, -half + 0.05, half - 0.05, z + 0.08, z + 0.1, "Dark")
-for k in range(int((top_z - base_z) / 0.35)):
-    z = base_z + 0.3 + k * 0.35
-    f = 1 - (z - base_z) / (top_z - base_z) * 0.65
-    md.box(MX - 0.75 * f - 0.05, MX - 0.75 * f + 0.05, -0.22, 0.22, z, z + 0.03, "Mast")
-# topmast above the radome: all-round light, lightning rod, small yard with whips
-md.cylinder((MX, 0, top_z + 1.25), (MX, 0, top_z + 3.6), 0.07, 0.045, 8, "Mast")
-md.cylinder((MX, 0, top_z + 3.6), (MX, 0, top_z + 3.85), 0.09, None, 10, "Lamp")
-md.cylinder((MX, 0, top_z + 3.85), (MX, 0, top_z + 4.6), 0.015, 0.008, 4, "Mast")
-md.box(MX - 0.06, MX + 0.06, -0.5, 0.5, top_z + 2.6, top_z + 2.66, "Mast")
-for s in (1, -1):
-    md.cylinder((MX, s * 0.5, top_z + 2.66), (MX, s * 0.5, top_z + 3.5), 0.02, 0.01, 4, "Mast")
-# EO/IR camera ball on a bracket at the front of the lower platform
-md.cylinder((MX + 1.8, 0, 16.9), (MX + 2.3, 0, 16.9), 0.06, None, 8, "Mast")
-md.sphere((MX + 2.4, 0, 16.75), 0.28, "Dark", 16, 10)
-md.box(MX + 2.55, MX + 2.65, -0.12, 0.12, 16.62, 16.88, "Glass")
-# UHF dipole antennas on the forward platform corners
-for z, half in ((16.8, 1.8), (19.2, 1.3)):
-    for sx, sy in ((1, 1), (1, -1)):
-        x, y = MX + sx * (half - 0.1), sy * (half - 0.1)
-        md.cylinder((x, y, z + 0.1), (x, y, z + 1.6), 0.025, None, 6, "Mast")
-        for k in range(3):
-            zz = z + 0.6 + k * 0.4
-            md.cylinder((x - 0.25, y, zz), (x + 0.25, y, zz), 0.012, None, 4, "Mast")
-# signal halyards from the yard ends down to the bridge roof
-for z, w in ((18.0, 3.2), (21.2, 2.1)):
-    for s in (1, -1):
-        md.cylinder((MX, s * w, z), (MX - 3.5, s * min(5.5, w + 1.4), L2 + 0.2), 0.008, None, 3, "Dark", caps=False, smooth=False)
-md.finish(smooth_angle=40)
 
 # ------------------------------------------------------------------ gaff for the flag (the flag itself is cloth in the web scene)
 gaff = Builder("Gaff")
-gaff.cylinder((MX - 0.4, 0, 19.6), (MX - 5.6, 0, 21.2), 0.08, 0.05, 8, "Mast")
+gaff.cylinder((MX - 0.5, 0, 20.3), (MX - 4.0, 0, 21.8), 0.08, 0.05, 8, "Mast")
 gaff.finish()
 
 # ------------------------------------------------------------------ export
