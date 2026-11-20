@@ -12,7 +12,17 @@
         ? 'Non-officer personnel whose end of term of enlistment (ETE) falls within the coming year, with their unit, status and re-enlistment form.'
         : 'Approve registrations, review HR analytics, and manage training courses, applications and OSAERT records.'))
 
+@section('glass', '1')
+@section('glass_variant', 'pcg-glass--console')
+
 @section('content')
+    <div class="pcg-auth__app">
+        <img src="{{ asset('images/brand/pcg-logo.webp') }}" alt="" width="44" height="44">
+        <div>
+            <strong>PCG HRMIS</strong>
+            <span>{{ $adjutant ? 'Adjutant' : ($reenlistment ? 'Re-enlistment' : 'Administration') }}</span>
+        </div>
+    </div>
     <span class="pcg-auth__role">{{ $adjutant ? 'Adjutant' : ($reenlistment ? 'Re-enlistment admin' : 'Administrator') }}</span>
     <h2>Sign in</h2>
     <p class="pcg-auth__lead">{{ $adjutant ? 'For Adjutants. Sign in with your email and password, then enter the one-time code (OTP) sent to your email.' : ($reenlistment ? 'For re-enlistment administrators. Sign in with your email and password.' : 'Restricted to the system administrator.') }}</p>

@@ -5,6 +5,9 @@
 @section('headline', 'Confirm it is you')
 @section('intro', 'We sent a one-time code to your email to finish signing in.')
 
+@section('glass', '1')
+@section('glass_variant', 'pcg-glass--console')
+
 @section('content')
     <span class="pcg-auth__role">Step 2 of 2</span>
     <h2>Check your email</h2>

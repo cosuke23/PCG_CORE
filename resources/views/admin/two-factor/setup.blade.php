@@ -5,6 +5,9 @@
 @section('headline', 'Two-factor sign-in is required')
 @section('intro', 'Administrator accounts are protected with a code from an authenticator app on your phone, in addition to your password.')
 
+@section('glass', '1')
+@section('glass_variant', 'pcg-glass--console')
+
 @section('content')
     <span class="pcg-auth__role">Step 2 of 2</span>
     <h2>Set up your authenticator</h2>

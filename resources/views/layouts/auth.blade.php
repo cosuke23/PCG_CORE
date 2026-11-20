@@ -23,7 +23,7 @@
     <script nonce="{{ $cspNonce ?? '' }}" src="{{ \App\Support\Asset::v('js/pcg-ui.js') }}" defer></script>
 </head>
 
-<body class="pcg @hasSection('glass') pcg-glass @endif">
+<body class="pcg @hasSection('glass') pcg-glass @yield('glass_variant') @endif">
     <a class="pcg-skip-link" href="#main">Skip to sign-in form</a>
 
     <div class="pcg-auth">

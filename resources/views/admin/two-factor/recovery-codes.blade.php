@@ -5,6 +5,9 @@
 @section('headline', 'Two-factor sign-in is on')
 @section('intro', 'Keep these recovery codes somewhere safe and offline. Each one works once if you lose your phone.')
 
+@section('glass', '1')
+@section('glass_variant', 'pcg-glass--console')
+
 @section('content')
     <span class="pcg-auth__role">Save these now</span>
     <h2>Your recovery codes</h2>

@@ -8,6 +8,11 @@
 @section('eyebrow', $eyebrow)
 @section('headline', 'One last step')
 @section('intro', 'You signed in with a temporary password. Choose your own before you continue.')
+@if (str_contains((string) $action, '/admin/'))
+    {{-- admin accounts: same glass shell as the admin sign-in --}}
+    @section('glass', '1')
+    @section('glass_variant', 'pcg-glass--console')
+@endif
 
 @section('content')
     <span class="pcg-auth__role">First sign-in</span>

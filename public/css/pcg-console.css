@@ -444,3 +444,85 @@ body.pcg-app {
 .pcg-app .swal2-popup { background: var(--c-surface); color: var(--c-text); border: 1px solid var(--c-line); }
 .pcg-app .swal2-title, .pcg-app .swal2-html-container { color: var(--c-text); }
 .pcg-app .swal2-popup .swal2-styled.swal2-confirm { background: var(--c-accent); color: var(--c-accent-ink); }
+
+/* ======================================================================
+ * Glass refresh (owner request 2026-11-20): the console takes the member
+ * portal's look (public/css/pcg-glass.css): deep navy canvas with blue,
+ * crimson and gold glows, translucent panels, pill buttons and a gradient
+ * banner on the dashboards. The console keeps its own accent (cyan).
+ * ==================================================================== */
+:root[data-theme="dark"] body.pcg-app {
+    --c-bg: #070b18;
+    --c-surface: #0f172b;
+    --c-surface-2: #16203a;
+    --c-glass: rgba(255, 255, 255, 0.055);
+    --c-line: rgba(255, 255, 255, 0.10);
+    --c-line-soft: rgba(255, 255, 255, 0.07);
+    --c-text: #eef2fb;
+    --c-muted: #b3bdd0;
+    --c-faint: #8d99b0;
+    --c-side: rgba(6, 10, 22, 0.62);
+    --c-side-2: rgba(6, 10, 22, 0.62);
+    --c-shadow: 0 1px 0 rgba(255, 255, 255, 0.04) inset, 0 18px 40px rgba(0, 0, 0, 0.35);
+    --c-shadow-lift: 0 1px 0 rgba(255, 255, 255, 0.06) inset, 0 24px 54px rgba(0, 0, 0, 0.45);
+    background-color: #070b18;
+    background-image:
+        radial-gradient(900px 520px at 8% -8%, rgba(37, 84, 180, 0.42), transparent 62%),
+        radial-gradient(760px 520px at 100% 4%, rgba(170, 32, 64, 0.30), transparent 60%),
+        radial-gradient(900px 600px at 55% 115%, rgba(214, 170, 50, 0.10), transparent 60%);
+    background-attachment: fixed;
+}
+:root[data-theme="dark"] .pcg-app .pcg-sidebar {
+    background: rgba(6, 10, 22, 0.62);
+    -webkit-backdrop-filter: saturate(160%) blur(18px);
+    backdrop-filter: saturate(160%) blur(18px);
+    border-right: 1px solid rgba(255, 255, 255, 0.10);
+}
+.pcg.pcg-app .pcg-nav__link[aria-current="page"] { box-shadow: 0 0 0 1px var(--c-accent-line) inset; }
+:root[data-theme="dark"] .pcg-app .pcg-topbar { background: rgba(7, 11, 24, 0.55); }
+:root[data-theme="dark"] .pcg-app .pcg-card,
+:root[data-theme="dark"] .pcg-app .pcg-stat,
+:root[data-theme="dark"] .pcg.pcg-app .pcg-tile {
+    background: rgba(255, 255, 255, 0.055);
+    -webkit-backdrop-filter: saturate(160%) blur(18px);
+    backdrop-filter: saturate(160%) blur(18px);
+    border-radius: 16px;
+}
+:root[data-theme="dark"] .pcg-app .pcg-table th { background: rgba(255, 255, 255, 0.05); }
+.pcg.pcg-app .pcg-btn { border-radius: 999px; }
+.pcg.pcg-app .pcg-btn--primary, .pcg.pcg-app a.pcg-btn--primary { box-shadow: 0 8px 22px var(--c-accent-soft); }
+.pcg-app .pcg-input { border-radius: 12px; }
+
+/* dashboard banners: registrations (admin/dashboard .ad-head) and HRMIS overview (.hx-head) */
+.pcg-app .ad-head,
+.pcg-app .hx-head {
+    position: relative;
+    isolation: isolate;
+    overflow: hidden;
+    padding: clamp(20px, 3.2vw, 32px);
+    border-radius: 20px;
+    color: #fff;
+    background: linear-gradient(115deg, #1c3f96 0%, #4b2b98 38%, #b8285a 72%, #ef9f3a 100%);
+    box-shadow: 0 24px 60px rgba(90, 30, 110, 0.32);
+}
+.pcg-app .ad-head::before, .pcg-app .hx-head::before,
+.pcg-app .ad-head::after, .pcg-app .hx-head::after {
+    content: ""; position: absolute; z-index: -1; border-radius: 50%; pointer-events: none;
+}
+.pcg-app .ad-head::before, .pcg-app .hx-head::before {
+    width: 280px; height: 280px; right: -50px; top: -110px;
+    background: radial-gradient(circle at 35% 35%, rgba(255, 255, 255, 0.5), rgba(255, 255, 255, 0.05) 55%, transparent 70%);
+}
+.pcg-app .ad-head::after, .pcg-app .hx-head::after {
+    width: 190px; height: 190px; right: 26%; bottom: -120px;
+    background: radial-gradient(circle at 40% 40%, rgba(255, 214, 120, 0.65), rgba(255, 214, 120, 0.05) 60%, transparent 72%);
+}
+.pcg-app .ad-head h2, .pcg-app .hx-head h2 { color: #fff; }
+.pcg-app .ad-eyebrow, .pcg-app .hx-eyebrow { color: rgba(255, 255, 255, 0.85); }
+.pcg-app .ad-lede, .pcg-app .hx-lede { color: rgba(255, 255, 255, 0.88); }
+.pcg.pcg-app .ad-head .pcg-btn--primary,
+.pcg.pcg-app .hx-head .pcg-btn--primary { background: #fff; border-color: #fff; color: #3a1236; box-shadow: 0 10px 24px rgba(0, 0, 0, 0.25); }
+.pcg.pcg-app .ad-head .pcg-btn--secondary,
+.pcg.pcg-app .hx-head .pcg-btn--secondary { background: rgba(255, 255, 255, 0.14); border-color: rgba(255, 255, 255, 0.45); color: #fff; }
+.pcg.pcg-app .ad-head .pcg-btn--secondary:hover,
+.pcg.pcg-app .hx-head .pcg-btn--secondary:hover { background: rgba(255, 255, 255, 0.24); color: #fff; }
