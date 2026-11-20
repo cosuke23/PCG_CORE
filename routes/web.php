@@ -278,6 +278,8 @@ Route::middleware(['admin.session', 'admin.audit'])->group(function () {
     Route::get('/admin/certificates', [\App\Http\Controllers\ServiceCertificateController::class, 'adminIndex'])->middleware('admin.can:personnel.view')->name('admin.certificates');
     Route::post('/admin/certificates/{id}', [\App\Http\Controllers\ServiceCertificateController::class, 'decide'])->whereNumber('id')->middleware('admin.can:certificates.issue')->name('admin.certificates.decide');
     Route::get('/admin/certificates/{id}/print', [\App\Http\Controllers\ServiceCertificateController::class, 'adminPrint'])->whereNumber('id')->middleware('admin.can:personnel.view')->name('admin.certificates.print');
+    // command trends (App\Support\Trends)
+    Route::get('/admin/trends', [\App\Http\Controllers\TrendsController::class, 'index'])->middleware('admin.can:personnel.view')->name('admin.trends');
     // training certificates and 201 documents expiring (App\Support\CertificateExpiry)
     Route::get('/admin/expiring', [\App\Http\Controllers\ExpiringController::class, 'index'])
         ->middleware('admin.can:personnel.view')->name('admin.expiring');

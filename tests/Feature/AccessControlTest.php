@@ -29,6 +29,7 @@ class AccessControlTest extends TestCase
             ['get', '/admin/deployments'],
             ['get', '/admin/promotions'],
             ['get', '/admin/expiring'],
+            ['get', '/admin/trends'],
             ['get', '/admin/certificates'],
             ['post', '/admin/certificates/1'],
             ['get', '/admin/certificates/1/print'],

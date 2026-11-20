@@ -54,6 +54,7 @@
                 @if ($can('personnel.view'))
                     <div class="pcg-nav__section">HRMIS</div>
                     @include('layouts.partials.nav-link', $link('admin.hrmis.index', 'chart-column', 'Overview', 'admin.hrmis.*'))
+                    @include('layouts.partials.nav-link', $link('admin.trends', 'chart-line', 'Trends', 'admin.trends'))
                     @include('layouts.partials.nav-link', $link('admin.personnel.index', 'id-card', 'Personnel', 'admin.personnel.*'))
                     @include('layouts.partials.nav-link', $link('admin.promotions', 'ranking-star', 'Promotions', 'admin.promotions*'))
                     @include('layouts.partials.nav-link', $link('admin.expiring', 'certificate', 'Expiring certificates', 'admin.expiring'))
