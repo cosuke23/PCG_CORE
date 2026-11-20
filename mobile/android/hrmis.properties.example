@@ -1,0 +1,3 @@
+# Copy to hrmis.properties (git-ignored) and set the PCG HRMIS address the app opens.
+# HTTPS only; no trailing slash. The app never leaves this host.
+hrmis.baseUrl=https://hrmis.example.ts.net

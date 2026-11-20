@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- PCG HRMIS personnel portal: navy sidebar, gold accent (public/css/pcg-ui.css) -->
+    <color name="navy">#0F2347</color>
+    <color name="gold">#D4A72C</color>
+    <color name="icon_background">#FFFFFF</color>
+</resources>

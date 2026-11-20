@@ -107,6 +107,13 @@ Last updated: 2026-10-30 · branch `claude/cool-wozniak-rni95k`
 - ⛔ Real-data run and PCG policy confirmations: see HRMIS_ENTERPRISE_PLAN §9
 - 👤 On the PC: `git pull`, back up, `php artisan migrate`, `php artisan pcg:personnel-sync` (dry run) and send the output
 
+## PCG HRMIS Android app (owner request 2026-11-20) 🟡
+- ✅ `mobile/android`: Android app (minSdk 24, targetSdk 35) that opens the member portal full-screen; HTTPS to the configured host only, camera/location/file picking/downloads/print passed through for that host; build steps in `mobile/android/README.md`
+- ✅ Portal: `/mobile-app` page and `/mobile-app/download` (only when `users.soi_submitted_at` is set; APK outside `public/`, `config('pcg.android_app')`; downloads audited `mobile_app.downloaded`); sidebar link for every member, dashboard tile after submission; `MobileAppTest`
+- 👤 Test the APK on real phones (registration selfie, document upload, residence pin, Print my SOI)
+- 👤 Deploy, then copy the signed APK to `/srv/mepcom-hrmis/shared/storage/app/private/mobile/pcg-hrmis.apk` and set `PCG_ANDROID_APK_VERSION` in the server `.env`
+- 👤 Back up the release signing key (`pcg-hrmis-release.jks` + its passwords): updates must be signed with the same key
+
 ## Phase 11 — Documentation ✅ (living)
 
 ## Test results log

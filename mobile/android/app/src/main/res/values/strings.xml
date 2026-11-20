@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">PCG HRMIS</string>
+    <string name="error_title">Can\'t reach PCG HRMIS</string>
+    <string name="error_message">Check your internet connection, then try again.</string>
+    <string name="error_ssl">The secure connection could not be verified.</string>
+    <string name="retry">Try again</string>
+    <string name="choose_file">Choose a file</string>
+    <string name="no_app">No app on this phone can open this.</string>
+    <string name="downloading">Downloading %1$s…</string>
+</resources>

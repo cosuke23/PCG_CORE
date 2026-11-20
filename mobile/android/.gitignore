@@ -1,0 +1,13 @@
+.gradle/
+build/
+app/build/
+local.properties
+hrmis.properties
+keystore.properties
+*.jks
+*.keystore
+*.apk
+*.aab
+.idea/
+*.iml
+captures/

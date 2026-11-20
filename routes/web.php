@@ -156,6 +156,12 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/generate-soi', [ProfileController::class, 'generateSOI'])
         ->name('generate.soi');
 
+    // PCG HRMIS Android app: download only once the SOI is submitted (MobileAppController)
+    Route::get('/mobile-app', [\App\Http\Controllers\MobileAppController::class, 'show'])
+        ->name('mobile.app');
+    Route::get('/mobile-app/download', [\App\Http\Controllers\MobileAppController::class, 'download'])
+        ->middleware('throttle:member-writes')->name('mobile.app.download');
+
     Route::get('/applicant/administrative-training', [ApplicantTrainingController::class, 'administrative'])
         ->name('applicant.administrative.training');
     Route::get('/applicant/operational-training', [ApplicantTrainingController::class, 'operational'])

@@ -1,0 +1,73 @@
+plugins {
+    id 'com.android.application'
+}
+
+// PCG HRMIS address (git-ignored hrmis.properties, see hrmis.properties.example)
+def hrmisProps = new Properties()
+def hrmisFile = rootProject.file('hrmis.properties')
+if (hrmisFile.exists()) {
+    hrmisFile.withInputStream { hrmisProps.load(it) }
+}
+def baseUrl = (System.getenv('HRMIS_BASE_URL') ?: hrmisProps.getProperty('hrmis.baseUrl', '')).trim().replaceAll('/+$', '')
+if (!baseUrl.startsWith('https://')) {
+    throw new GradleException('Set hrmis.baseUrl (https://...) in mobile/android/hrmis.properties or HRMIS_BASE_URL')
+}
+
+// Release signing: keystore.properties next to this project, or a file named by
+// HRMIS_KEYSTORE_PROPERTIES (kept outside the repo). Never committed.
+def keystoreProps = new Properties()
+def keystorePath = System.getenv('HRMIS_KEYSTORE_PROPERTIES') ?: rootProject.file('keystore.properties').path
+def keystoreFile = file(keystorePath)
+if (keystoreFile.exists()) {
+    keystoreFile.withInputStream { keystoreProps.load(it) }
+}
+
+android {
+    namespace 'ph.pcg.mepcom.hrmis'
+    compileSdk 35
+
+    defaultConfig {
+        applicationId 'ph.pcg.mepcom.hrmis'
+        minSdk 24
+        targetSdk 35
+        versionCode 1
+        versionName '1.0.0'
+        buildConfigField 'String', 'BASE_URL', "\"${baseUrl}\""
+    }
+
+    signingConfigs {
+        release {
+            if (keystoreProps.getProperty('storeFile')) {
+                storeFile file(keystoreProps.getProperty('storeFile'))
+                storePassword keystoreProps.getProperty('storePassword')
+                keyAlias keystoreProps.getProperty('keyAlias')
+                keyPassword keystoreProps.getProperty('keyPassword')
+            }
+        }
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled true
+            shrinkResources true
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+            if (keystoreProps.getProperty('storeFile')) {
+                signingConfig signingConfigs.release
+            }
+        }
+    }
+
+    buildFeatures {
+        buildConfig true
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+    }
+
+    lint {
+        abortOnError true
+        checkReleaseBuilds true
+    }
+}

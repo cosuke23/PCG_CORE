@@ -96,6 +96,13 @@
                             <strong>Print my SOI</strong>
                             <span>Statement of Information, ready to print.</span>
                         </a>
+                        @if (\App\Support\SoiLock::locked($user))
+                            <a class="pcg-tile" href="{{ route('mobile.app') }}">
+                                <i class="fa-solid fa-mobile-screen-button" aria-hidden="true"></i>
+                                <strong>Get the Android app</strong>
+                                <span>Your records on your phone; your SOI is submitted.</span>
+                            </a>
+                        @endif
                     </div>
                 </section>
             </div>

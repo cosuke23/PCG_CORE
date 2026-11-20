@@ -75,4 +75,13 @@ return [
     // Content-Security-Policy: enforce (default) | report | off
     'csp' => env('PCG_CSP', 'enforce'),
 
+    // PCG HRMIS Android app (mobile/android). Members whose SOI is submitted
+    // download it at /mobile-app (MobileAppController). The APK lives outside
+    // public/ and is served only after that check; the version is shown on the page.
+    // Production: /srv/mepcom-hrmis/shared/storage/app/private/mobile/pcg-hrmis.apk
+    'android_app' => [
+        'apk_path' => env('PCG_ANDROID_APK') ?: storage_path('app/private/mobile/pcg-hrmis.apk'),
+        'version' => env('PCG_ANDROID_APK_VERSION', ''),
+    ],
+
 ];
