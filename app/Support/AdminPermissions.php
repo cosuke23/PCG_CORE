@@ -23,6 +23,8 @@ class AdminPermissions
         'documents.upload'     => ['super_admin', 'hr_admin'],
         'documents.verify'     => ['super_admin', 'hr_admin', 'records_reviewer', 'records_approver'],
         'documents.restricted' => ['super_admin', 'records_approver'],
+        // service certificates on request (owner request 2026-11-20)
+        'certificates.issue'   => ['super_admin', 'hr_admin'],
         'reports.view'         => ['super_admin', 'hr_admin', 'records_reviewer', 'records_approver', 'auditor'],
         'org.view'             => ['super_admin', 'hr_admin', 'records_reviewer', 'records_approver', 'auditor'],
         'org.manage'           => ['super_admin'],

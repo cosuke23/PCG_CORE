@@ -46,6 +46,7 @@
                 @include('layouts.partials.nav-link', ['href' => route('upload.201'), 'icon' => 'folder-open', 'label' => '201 files', 'active' => request()->routeIs('upload.201')])
                 @include('layouts.partials.nav-link', ['href' => route('generate.soi'), 'icon' => 'print', 'label' => 'Print my SOI', 'active' => false])
                 @include('layouts.partials.nav-link', ['href' => route('leave.index'), 'icon' => 'calendar-days', 'label' => 'Leave', 'active' => request()->routeIs('leave.*')])
+                @include('layouts.partials.nav-link', ['href' => route('certificates'), 'icon' => 'file-signature', 'label' => 'Certificates', 'active' => request()->routeIs('certificates*')])
                 @include('layouts.partials.nav-link', ['href' => route('mobile.app'), 'icon' => 'mobile-screen-button', 'label' => 'Android app', 'active' => request()->routeIs('mobile.app')])
                 @include('layouts.partials.nav-link', ['href' => route('security'), 'icon' => 'shield-halved', 'label' => 'Sign-in and devices', 'active' => request()->routeIs('security')])
 

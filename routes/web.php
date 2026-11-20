@@ -88,6 +88,9 @@ Route::middleware('throttle:public-verify')->group(function () {
         ->name('osaert.verify');
     Route::get('/osaert/verify/{trainee}', [OsaertController::class, 'verifyCertificate'])
         ->name('osaert.verify.certificate');
+    // service certificates printed from PCG HRMIS (QR code -> /verify/certificate/{code})
+    Route::get('/verify/certificate', [\App\Http\Controllers\ServiceCertificateController::class, 'verify'])->name('certificate.verify');
+    Route::get('/verify/certificate/{code}', [\App\Http\Controllers\ServiceCertificateController::class, 'verify'])->where('code', '[A-Za-z0-9-]{1,20}')->name('certificate.verify.code');
 });
 
 
@@ -130,6 +133,9 @@ Route::post('/login/code/resend', [LoginController::class, 'codeResend'])->middl
 
 Route::middleware(['auth', 'member.device'])->group(function () {
     Route::get('/security', [\App\Http\Controllers\SecurityController::class, 'index'])->name('security');
+    Route::get('/certificates', [\App\Http\Controllers\ServiceCertificateController::class, 'index'])->name('certificates');
+    Route::post('/certificates', [\App\Http\Controllers\ServiceCertificateController::class, 'store'])->middleware('throttle:member-writes')->name('certificates.store');
+    Route::get('/certificates/{id}/print', [\App\Http\Controllers\ServiceCertificateController::class, 'memberPrint'])->whereNumber('id')->name('certificates.print');
     Route::post('/security/login-code', [\App\Http\Controllers\SecurityController::class, 'loginCode'])->middleware('throttle:member-writes')->name('security.login-code');
     Route::post('/security/devices/others', [\App\Http\Controllers\SecurityController::class, 'signOutOthers'])->middleware('throttle:member-writes')->name('security.devices.others');
     Route::post('/security/devices/{id}', [\App\Http\Controllers\SecurityController::class, 'signOutDevice'])->whereNumber('id')->middleware('throttle:member-writes')->name('security.devices.one');
@@ -266,6 +272,10 @@ Route::middleware(['admin.session', 'admin.audit'])->group(function () {
         ->middleware('admin.can:personnel.view')->name('admin.hrmis.index');
     Route::post('/admin/hrmis/export', [\App\Http\Controllers\HrmisDashboardController::class, 'export'])
         ->middleware(['admin.can:personnel.view', 'admin.can:reports.view'])->name('admin.hrmis.export');
+    // service certificates: requests, issue/decline/revoke, print (App\Support\ServiceCertificates)
+    Route::get('/admin/certificates', [\App\Http\Controllers\ServiceCertificateController::class, 'adminIndex'])->middleware('admin.can:personnel.view')->name('admin.certificates');
+    Route::post('/admin/certificates/{id}', [\App\Http\Controllers\ServiceCertificateController::class, 'decide'])->whereNumber('id')->middleware('admin.can:certificates.issue')->name('admin.certificates.decide');
+    Route::get('/admin/certificates/{id}/print', [\App\Http\Controllers\ServiceCertificateController::class, 'adminPrint'])->whereNumber('id')->middleware('admin.can:personnel.view')->name('admin.certificates.print');
     // training certificates and 201 documents expiring (App\Support\CertificateExpiry)
     Route::get('/admin/expiring', [\App\Http\Controllers\ExpiringController::class, 'index'])
         ->middleware('admin.can:personnel.view')->name('admin.expiring');
