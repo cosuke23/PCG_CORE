@@ -281,7 +281,6 @@ sup = Builder("Superstructure")
 sup.profile([(-13.7, DECK), (2.0, DECK), (2.0, L1), (-13.7, L1)], 3.1, "White")           # hangar core
 sup.profile([(-13.7, 9.6), (2.0, 9.6), (2.0, L1), (-13.7, L1)], SW, "White")              # roof over the bays
 sup.profile([(2.0, DECK), (8.8, DECK), (8.8, L1), (2.0, L1)], SW, "White")                # forward block
-sup.profile([(8.8, DECK), (18.6, DECK), (17.6, 10.0), (8.8, 10.0)], SW - 0.2, "White")   # lower forward deckhouse
 sup_ob = sup.finish(bevel=0.08, smooth_angle=30)
 
 def prism(b, plan0, plan1, z0, z1, mat, caps=(False, True)):
@@ -331,18 +330,48 @@ roof = Builder("BridgeRoof")
 prism(roof, br_plan(L2, 0.3), br_plan(L2, 0.3), L2 - 0.02, L2 + 0.18, "White", caps=(True, True))
 roof.finish(smooth_angle=50)
 
+# forward deckhouse (from photos): one tall smooth block up to the bridge base, front raked and
+# rounded in plan, white roof; small round portholes on the sides
+FDH_X0, FDH_X1, FDH_TOP_X1, FDH_HY, FDH_RF = 8.8, 18.6, 16.4, SW - 0.2, 2.5
+fdh = Builder("ForeDeckhouse")
+prism(fdh, rounded_plan(FDH_X0, FDH_X1, FDH_HY, FDH_RF, 0.05), rounded_plan(FDH_X0, FDH_TOP_X1, FDH_HY, FDH_RF, 0.05),
+      DECK, L1, "White", caps=(False, True))
+for s in (1, -1):
+    for x, z in ((10.0, 10.3), (11.0, 10.3), (12.8, 8.0), (13.6, 8.0)):
+        fdh.cylinder((x, s * FDH_HY, z), (x, s * (FDH_HY + 0.04), z), 0.17, None, 12, "Glass")
+fdh.finish(smooth_angle=50)
+
+# aft ends of the boat bays: raked white bulkheads (photo), and the aft roof railing across the back
+ab = Builder("BayAftWalls")
+for s in (1, -1):
+    y0, y1 = sorted((s * 3.1, s * (SW - 0.02)))
+    before = set(ab.bm.faces)
+    pts = [(-13.7, DECK), (-11.6, DECK), (-13.3, 9.6), (-13.7, 9.6)]
+    va = [ab.bm.verts.new((x, y0, z)) for x, z in pts]
+    vb = [ab.bm.verts.new((x, y1, z)) for x, z in pts]
+    ab.bm.faces.new(list(reversed(va)))
+    ab.bm.faces.new(vb)
+    for i in range(4):
+        j = (i + 1) % 4
+        ab.bm.faces.new((va[i], va[j], vb[j], vb[i]))
+    ab.tag([f for f in ab.bm.faces if f not in before], "White")
+ab.cylinder((-13.55, -7.3, L1 + 1.2), (-13.55, 7.3, L1 + 1.2), 0.03, None, 6, "Rail", caps=False)
+ab.cylinder((-13.55, -7.3, L1 + 0.68), (-13.55, 7.3, L1 + 0.68), 0.022, None, 6, "Rail", caps=False)
+for k in range(10):
+    y = -7.3 + k * 14.6 / 9
+    ab.cylinder((-13.55, y, L1 + 0.15), (-13.55, y, L1 + 1.2), 0.026, None, 6, "Rail", caps=False)
+ab.finish(smooth_angle=30)
+
 misc = Builder("Fittings")
 # blue roof decks
 misc.box(-13.5, -9.0, -SW + 0.25, SW - 0.25, L1, L1 + 0.15, "BlueDeck")
 misc.box(6.6, 8.6, -SW + 0.4, SW - 0.4, L1, L1 + 0.15, "BlueDeck")
-misc.box(9.0, 17.4, -SW + 0.6, SW - 0.6, 10.0, 10.15, "BlueDeck")
+misc.box(8.8, 10.4, -SW + 0.6, SW - 0.6, L1, L1 + 0.15, "BlueDeck")
 # side windows (slightly proud dark panes)
 for s in (1, -1):
     yy = s * (SW + 0.02)
     for x in (3.4, 5.2, 7.0):
         misc.box(x, x + 1.2, yy - 0.03, yy + 0.03, 10.0, 10.8, "Glass")
-    for x in (10.5, 12.3, 14.1, 15.9):
-        misc.box(x, x + 1.1, yy - 0.03 - s * 0.2, yy + 0.03 - s * 0.2, 8.1, 8.8, "Glass")
 # hangar door with ribs
 misc.box(-13.85, -13.72, -2.5, 2.5, 7.3, 10.8, "HangarDoor")
 for k in range(9):
@@ -399,10 +428,9 @@ for s in (1, -1):
     rail_run([(-33.0, s * 7.55), (-14.0, s * 7.55)], DECK + 0.55)          # helideck edges
     rail_run([(-41.6, s * 7.5), (-33.3, s * 7.5)], DECK + 0.2)              # aft working deck
     rail_run([(-13.5, s * 7.4), (-9.2, s * 7.4)], L1 + 0.15)               # aft roof
-    rail_run([(9.0, s * 7.2), (17.3, s * 7.2)], 10.15)                      # lower deckhouse roof
     rail_run([(6.6, s * 7.3), (8.6, s * 7.3)], L1 + 0.15)
 rail_run([(-41.6, 7.5), (-41.6, -7.5)], DECK + 0.2)
-rail_run([(17.3, 7.2), (17.3, -7.2)], 10.15)
+rail_run([(9.0, 7.2), (14.0, 7.2), (15.4, 6.7), (16.1, 5.4), (16.25, 0.0), (16.1, -5.4), (15.4, -6.7), (14.0, -7.2), (9.0, -7.2)], L1 + 0.15)   # forward deckhouse roof
 rails.finish()
 
 # ------------------------------------------------------------------ mast (from photos): enclosed tapered tower, yards, forward radar arm; radars separate
@@ -514,20 +542,17 @@ for s in (1, -1):
     for x in (4.2, 5.4, 6.6, 7.8):
         y = s * (SW + 0.01)
         det.cylinder((x, y, 8.4), (x, y + s * 0.05, 8.4), 0.2, None, 12, "Glass")
-    for x in (11.0, 12.6, 14.2, 15.8):
-        y = s * (SW - 0.2 + 0.03)
-        det.box(x, x + 0.5, y - 0.03, y + 0.03, 9.2, 9.6, "Glass")
 # life-raft canister racks on the 01-deck roof, both sides
 for s in (1, -1):
-    det.box(10.0, 15.6, s * 6.3 - 0.45, s * 6.3 + 0.45, 10.15, 10.3, "Steel")
-    for x in (10.6, 12.0, 13.4, 14.8):
-        det.cylinder((x - 0.55, s * 6.3, 10.85), (x + 0.55, s * 6.3, 10.85), 0.5, None, 18, "White")
-        det.cylinder((x - 0.05, s * 6.3, 10.85), (x + 0.05, s * 6.3, 10.85), 0.52, None, 18, "Dark")
+    det.box(9.0, 14.6, s * 6.3 - 0.45, s * 6.3 + 0.45, L1 + 0.15, L1 + 0.3, "Steel")
+    for x in (9.6, 11.0, 12.4, 13.8):
+        det.cylinder((x - 0.55, s * 6.3, L1 + 0.85), (x + 0.55, s * 6.3, L1 + 0.85), 0.5, None, 18, "White")
+        det.cylinder((x - 0.05, s * 6.3, L1 + 0.85), (x + 0.05, s * 6.3, L1 + 0.85), 0.52, None, 18, "Dark")
 # fire-fighting monitors on the forward deckhouse roof
 for s in (1, -1):
-    det.cylinder((16.6, s * 2.4, 10.15), (16.6, s * 2.4, 11.2), 0.22, 0.18, 14, "Red")
-    det.sphere((16.6, s * 2.4, 11.3), 0.26, "Red", 14, 8)
-    det.cylinder((16.6, s * 2.4, 11.35), (17.7, s * 2.4, 11.7), 0.09, 0.06, 10, "Red")
+    det.cylinder((15.2, s * 2.4, L1 + 0.15), (15.2, s * 2.4, L1 + 1.2), 0.22, 0.18, 14, "Red")
+    det.sphere((15.2, s * 2.4, L1 + 1.3), 0.26, "Red", 14, 8)
+    det.cylinder((15.2, s * 2.4, L1 + 1.35), (16.3, s * 2.4, L1 + 1.7), 0.09, 0.06, 10, "Red")
 # helideck: perimeter safety nets outboard of the edge, landing lights
 for s in (1, -1):
     det.box(-33.0, -14.0, min(s * 7.6, s * 8.6), max(s * 7.6, s * 8.6), DECK + 0.42, DECK + 0.48, "Net")
@@ -660,12 +685,8 @@ sd = Builder("SuperDetails")
 # drip ledges along the roof edges (they read as crisp shadow lines on the white walls)
 for s in (1, -1):
     sd.box(-13.7, 8.85, min(s * SW, s * (SW + 0.1)), max(s * SW, s * (SW + 0.1)), L1 - 0.12, L1 - 0.02, "White")
-    sd.box(8.8, 18.3, min(s * (SW - 0.2), s * (SW - 0.1)), max(s * (SW - 0.2), s * (SW - 0.1)), 9.88, 9.98, "White")
+    sd.box(8.8, 14.0, min(s * (SW - 0.2), s * (SW - 0.1)), max(s * (SW - 0.2), s * (SW - 0.1)), L1 - 0.12, L1 - 0.02, "White")
 sd.box(8.8, 8.9, -SW, SW, L1 - 0.12, L1 - 0.02, "White")
-# forward-facing windows of the 01 level above the lower deckhouse
-for k in range(-4, 5):
-    y = k * 1.45
-    sd.box(8.8, 8.86, y - 0.55, y + 0.55, 10.35, 10.95, "Glass")
 # railing round the bridge roof, following its rounded plan
 rp = br_plan(L2, -0.15, 3)
 for (xa, ya), (xb, yb) in zip(rp, rp[1:] + rp[:1]):
@@ -691,14 +712,13 @@ def ladder(p0, p1, width=0.7, steps=8):
 
 
 for s in (1, -1):
-    ladder((10.6, s * 5.6, 10.15), (8.9, s * 5.6, L1 + 0.15))
     ladder((-11.0, s * 1.8, L1 + 0.15), (-8.9, s * 1.8, L2 + 0.15))
 # roof equipment: air-conditioning condensers, mushroom vents, cable trays
 for x, y in ((-12.6, 1.6), (-12.6, -1.6), (7.4, 3.8), (7.4, -3.8)):
     sd.box(x - 0.6, x + 0.6, y - 0.45, y + 0.45, L1 + 0.15, L1 + 0.95, "White")
     sd.cylinder((x, y, L1 + 0.95), (x, y, L1 + 1.0), 0.36, None, 16, "Dark")
 for x, y in ((11.0, 1.2), (11.0, -1.2), (13.5, 0.0), (-6.0, 3.2), (-6.0, -3.2), (2.0, 0.0)):
-    z0 = 10.15 if x > 9 else L2 + 0.15
+    z0 = L1 + 0.15 if x > 9 else L2 + 0.15
     sd.cylinder((x, y, z0), (x, y, z0 + 0.6), 0.14, None, 10, "White")
     sd.cylinder((x, y, z0 + 0.6), (x, y, z0 + 0.72), 0.3, 0.22, 14, "White")
 for s in (1, -1):

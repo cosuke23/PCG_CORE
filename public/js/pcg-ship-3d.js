@@ -445,6 +445,13 @@ async function start() {
     seal.colorSpace = THREE.SRGBColorSpace;
     sideDecal(seal, { width: 0.2, height: 0.2, x: 0.34, y: 0.9, z: 0.762 });          // PCG seal beside the boat bay
     sideDecal(seal, { width: 0.07, height: 0.07, x: 1.86, y: 0.5 });                  // small seal on the bow stripe
+    {   // PCG seal on the raked front of the forward deckhouse (front slopes back 2.2 m over 4.2 m)
+        const a = Math.atan2(2.2, 4.2), n = new THREE.Vector3(Math.cos(a), Math.sin(a), 0);
+        const p = new THREE.Mesh(new THREE.PlaneGeometry(0.16, 0.16), new THREE.MeshStandardMaterial({ map: seal, transparent: true, roughness: 0.4, polygonOffset: true, polygonOffsetFactor: -2 }));
+        p.position.set(1.7395, 0.93, 0).addScaledVector(n, 0.006);
+        p.lookAt(p.position.clone().add(n));
+        ship.add(p);
+    }
     sideDecal(textTex('GABRIELA SILANG', '700 {s}px Inter, Arial, sans-serif', '#e9edf1', 10, '#1b1f25'), { width: 0.5, height: 0.05, x: -0.15, y: 1.06, z: 0.764 });   // black name board under the bridge
     const sternName = new THREE.Mesh(new THREE.PlaneGeometry(0.6, 0.06), new THREE.MeshStandardMaterial({ map: textTex('GABRIELA SILANG', '700 {s}px Inter, Arial, sans-serif', '#1b1f25', 10), transparent: true, polygonOffset: true, polygonOffsetFactor: -2 }));
     sternName.position.set(X0 - 0.004, 0.42, 0); sternName.rotation.y = -Math.PI / 2; ship.add(sternName);
