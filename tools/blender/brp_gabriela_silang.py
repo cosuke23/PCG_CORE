@@ -212,13 +212,24 @@ def fore_h(x):
     return bulwark_h(x) * max(0.0, min(1.0, (x - 18.0) / 0.6))
 
 
+AFT_DROP = 2.4   # the stern working deck is one deck below the helideck (photos)
+
+
+def aft_drop(x):
+    if x < -33.4:
+        return -AFT_DROP
+    if x < -33.1:
+        return -AFT_DROP * (-33.1 - x) / 0.3
+    return 0.0
+
+
 hull = Builder("Hull")
 STATIONS = 200
 rings = []
 for i in range(STATIONS + 1):
     x = X0 + (X1 - X0) * i / STATIONS
-    top = deck_z(x) + fore_h(x)
-    bot = min(keel_z(x), deck_z(x) - 0.01)
+    top = deck_z(x) + fore_h(x) + aft_drop(x)
+    bot = min(keel_z(x), top - 0.01)
     w = half_beam(x)
     b = bowness(x)
 
@@ -247,7 +258,7 @@ deck = Builder("MainDeck")
 dverts = []
 for i in range(STATIONS + 1):
     x = X0 + (X1 - X0) * i / STATIONS
-    z = min(deck_z(x), DECK + 0.3) + 0.02
+    z = min(deck_z(x), DECK + 0.3) + 0.02 + aft_drop(x)
     w = half_beam(x) * 0.985
     dverts.append((deck.bm.verts.new((x, w, z)), deck.bm.verts.new((x, -w, z))))
 dfaces = [deck.bm.faces.new((dverts[i][0], dverts[i + 1][0], dverts[i + 1][1], dverts[i][1])) for i in range(STATIONS)]
@@ -816,6 +827,55 @@ for x, y in ((-7.6, 5.4), (-7.6, -5.4), (4.4, -4.4), (4.4, 4.4)):
     sd.cylinder((x, y, L2 + 0.15), (x, y, L2 + 3.2), 0.035, 0.015, 6, "Mast")
 sd.finish(smooth_angle=35)
 
+
+
+# ------------------------------------------------------------------ sunken stern deck (photos)
+# The helideck is at main-deck level; behind it the stern working deck is one deck lower. Hull,
+# main deck and the stern fittings were built at main-deck level; move everything aft of the
+# helideck down by AFT_DROP, close the helideck's aft end with a wall, add stairs and rails.
+for nm in ("Fittings", "Details", "SternDetails", "Railings"):
+    ob = bpy.data.objects.get(nm)
+    if ob is None:
+        continue
+    for v in ob.data.vertices:
+        if v.co.x < -33.3:
+            v.co.z -= AFT_DROP
+    ob.data.update()
+
+hw = Builder("HelideckAftWall")
+hb_ = half_beam(-33.2) * 0.995
+hw.box(-33.32, -33.1, -hb_, hb_, DECK - AFT_DROP + 0.1, DECK + 0.55, "White")
+hw.box(-33.36, -33.3, -1.4, -0.4, DECK - AFT_DROP + 0.2, DECK - AFT_DROP + 2.1, "Steel")      # door under the helideck
+hw.box(-33.38, -33.34, -0.62, -0.52, DECK - AFT_DROP + 1.0, DECK - AFT_DROP + 1.15, "Dark")
+for s in (1, -1):
+    hw.box(-33.38, -33.32, s * 3.6 - 0.5, s * 3.6 + 0.5, DECK - AFT_DROP + 1.2, DECK - AFT_DROP + 1.8, "Glass")
+# stairs from the helideck down to the stern deck, one each side, with handrails
+for s in (1, -1):
+    y = s * 5.6
+    p0, p1 = Vector((-33.35, y, DECK + 0.55)), Vector((-36.6, y, DECK - AFT_DROP + 0.2))
+    for sgn in (1, -1):
+        side = Vector((0, sgn * 0.4, 0))
+        hw.cylinder(p0 + side, p1 + side, 0.04, None, 6, "Rail", caps=False)
+        hw.cylinder(p0 + side + Vector((0, 0, 0.9)), p1 + side + Vector((0, 0, 0.9)), 0.025, None, 6, "Rail", caps=False)
+    for i in range(1, 10):
+        q = p0.lerp(p1, i / 10)
+        hw.box(q.x - 0.14, q.x + 0.14, y - 0.4, y + 0.4, q.z - 0.02, q.z + 0.02, "Steel")
+# railing along the helideck's aft edge, open at the stairs
+for ya, yb in ((-7.4, -6.15), (-5.05, 5.05), (6.15, 7.4)):
+    hw.cylinder((-33.2, ya, DECK + 1.6), (-33.2, yb, DECK + 1.6), 0.035, None, 6, "Rail", caps=False)
+    hw.cylinder((-33.2, ya, DECK + 1.08), (-33.2, yb, DECK + 1.08), 0.025, None, 6, "Rail", caps=False)
+    n = max(1, int((yb - ya) / 1.6))
+    for i in range(n + 1):
+        yy = ya + (yb - ya) * i / n
+        hw.cylinder((-33.2, yy, DECK + 0.55), (-33.2, yy, DECK + 1.6), 0.03, None, 6, "Rail", caps=False)
+# life-raft canisters on the forecastle, both sides (photo), with orange end bands
+for s in (1, -1):
+    hw.box(19.4, 21.8, s * 5.0 - 0.5, s * 5.0 + 0.5, DECK + 0.34, DECK + 0.48, "Steel")
+    for x in (20.0, 21.2):
+        hw.cylinder((x - 0.5, s * 5.0, DECK + 1.0), (x + 0.5, s * 5.0, DECK + 1.0), 0.48, None, 18, "White")
+        for dx in (-0.48, 0.42):
+            hw.cylinder((x + dx, s * 5.0, DECK + 1.0), (x + dx + 0.06, s * 5.0, DECK + 1.0), 0.5, None, 18, "Orange")
+hw.finish(smooth_angle=30)
 
 # ------------------------------------------------------------------ gaff for the flag (the flag itself is cloth in the web scene)
 gaff = Builder("Gaff")

@@ -331,9 +331,9 @@ async function start() {
         [[-2.95, 0.6], [-2.84, 0.6], [-0.95, 0.6], [-0.84, 0.6]].forEach(([x, y]) => { const [a, b] = px(x, y); g.fillRect(a - 9, b - 6, 18, 12); });
     });
     hullTex.flipY = false;
-    // helideck paint (UV u = aft -> forward over 19.3 m, v = starboard -> port over 15.2 m):
-    // dark non-slip deck with wear, white perimeter line, yellow touchdown circle, white H with its
-    // legs along the centreline, tie-down points, and a yellow/black hatched strip at the hangar
+    // helideck paint as in the photos (UV u = aft -> forward over 19.3 m, v = starboard -> port
+    // over 15.2 m): dark grey non-slip deck with wear, a white touchdown circle with a white
+    // line-up line forward along the centreline, and tie-down points
     const heliTex = canvasTex(1280, 1008, (g, w, h) => {
         const k = w / 19.3;                                   // pixels per metre
         g.fillStyle = '#4f565c'; g.fillRect(0, 0, w, h);
@@ -351,18 +351,9 @@ async function start() {
             const grd = g.createRadialGradient(0, 0, 0, 0, 0, k * 1.2); grd.addColorStop(0, 'rgba(25,25,20,0.16)'); grd.addColorStop(1, 'rgba(25,25,20,0)');
             g.save(); g.translate(w * Math.random(), h * Math.random()); g.fillStyle = grd; g.fillRect(-k * 1.2, -k * 1.2, k * 2.4, k * 2.4); g.restore();
         }
-        // hatched no-landing strip along the forward edge (hangar side)
-        g.save(); g.beginPath(); g.rect(w - k * 0.85, k * 0.4, k * 0.5, h - k * 0.8); g.clip();
-        g.fillStyle = '#f2c230'; g.fillRect(0, 0, w, h); g.fillStyle = '#1b1d20';
-        for (let y = -w; y < h + w; y += k * 0.6) { g.beginPath(); g.moveTo(w - k, y); g.lineTo(w, y - k); g.lineTo(w, y - k + k * 0.3); g.lineTo(w - k, y + k * 0.3); g.fill(); }
-        g.restore();
         const cx = w * 0.47, cy = h / 2;
-        g.strokeStyle = '#eef0f2'; g.lineWidth = k * 0.3; g.strokeRect(k * 0.3, k * 0.3, w - k * 0.6, h - k * 0.6);       // perimeter line
-        g.strokeStyle = '#f2c230'; g.lineWidth = k * 0.75; g.beginPath(); g.arc(cx, cy, k * 4.0, 0, Math.PI * 2); g.stroke(); // touchdown circle
-        g.fillStyle = '#eef0f2';                                                                                              // H: legs along x
-        g.fillRect(cx - k * 2.0, cy - k * 1.5, k * 4.0, k * 0.75);
-        g.fillRect(cx - k * 2.0, cy + k * 0.75, k * 4.0, k * 0.75);
-        g.fillRect(cx - k * 0.375, cy - k * 1.5, k * 0.75, k * 3.0);
+        g.strokeStyle = '#eef0f2'; g.lineWidth = k * 0.5; g.beginPath(); g.arc(cx, cy, k * 4.0, 0, Math.PI * 2); g.stroke();  // touchdown circle
+        g.lineWidth = k * 0.3; g.beginPath(); g.moveTo(cx + k * 4.0, cy); g.lineTo(w - k * 0.6, cy); g.stroke();                // line-up line forward
         g.fillStyle = '#25292d';                                                                                              // tie-down points
         for (let ring = 1; ring <= 3; ring++) {
             const r = k * (ring * 1.6 + (ring === 3 ? 0.7 : 0)), n = ring * 8;
@@ -450,9 +441,9 @@ async function start() {
     bagong.colorSpace = THREE.SRGBColorSpace;
     sideDecal(bagong, { width: 0.11, height: 0.103, x: 0.14, y: 1.05, z: 0.7955 });   // Bagong Pilipinas logo on the box under the bridge, both sides
     const sternName = new THREE.Mesh(new THREE.PlaneGeometry(0.6, 0.06), new THREE.MeshStandardMaterial({ map: textTex('GABRIELA SILANG', '700 {s}px Inter, Arial, sans-serif', '#1b1f25', 10), transparent: true, polygonOffset: true, polygonOffsetFactor: -2 }));
-    sternName.position.set(X0 - 0.004, 0.42, 0); sternName.rotation.y = -Math.PI / 2; ship.add(sternName);
+    sternName.position.set(X0 - 0.004, 0.35, 0); sternName.rotation.y = -Math.PI / 2; ship.add(sternName);
     const homePort = new THREE.Mesh(new THREE.PlaneGeometry(0.26, 0.04), new THREE.MeshStandardMaterial({ map: textTex('MANILA', '700 {s}px Inter, Arial, sans-serif', '#1b1f25', 6.5), transparent: true, polygonOffset: true, polygonOffsetFactor: -2 }));
-    homePort.position.set(X0 - 0.004, 0.35, 0); homePort.rotation.y = -Math.PI / 2; ship.add(homePort);
+    homePort.position.set(X0 - 0.004, 0.285, 0); homePort.rotation.y = -Math.PI / 2; ship.add(homePort);
 
     // ------------------------------------------------------------ Philippine flag on the gaff (cloth)
     const flagTex = canvasTex(512, 256, (g) => {
