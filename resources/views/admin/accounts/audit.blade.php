@@ -7,13 +7,19 @@
         <div class="pcg-page__header">
             <div>
                 <h2>Audit log</h2>
-                <p>Sign-ins (including failed attempts) and every change made in the admin area, newest first.</p>
+                <p>Sign-ins (including failed attempts) and every change made in the admin area, plus what unit checkers, members and scheduled jobs did (document reviews, leave, credits, downloads), newest first.</p>
             </div>
             <form method="GET" action="{{ route('admin.accounts.audit') }}" class="pcg-inline-form">
+                <label class="pcg-visually-hidden" for="actor">Who</label>
+                <select class="pcg-input pcg-input--sm" id="actor" name="actor">
+                    @foreach (['' => 'Everyone', 'admin' => 'Admins', 'unit' => 'Unit checkers', 'member' => 'Members', 'system' => 'System'] as $k => $label)
+                        <option value="{{ $k }}" @selected(($filters['actor'] ?? '') === $k)>{{ $label }}</option>
+                    @endforeach
+                </select>
                 <label class="pcg-visually-hidden" for="action">Action starts with</label>
                 <input class="pcg-input pcg-input--sm" id="action" name="action" value="{{ $filters['action'] ?? '' }}" placeholder="Action, e.g. login">
                 <label class="pcg-visually-hidden" for="admin">Admin email</label>
-                <input class="pcg-input pcg-input--sm" id="admin" name="admin" value="{{ $filters['admin'] ?? '' }}" placeholder="Admin email">
+                <input class="pcg-input pcg-input--sm" id="admin" name="admin" value="{{ $filters['admin'] ?? '' }}" placeholder="Email contains">
                 <button type="submit" class="pcg-btn pcg-btn--secondary pcg-btn--sm">Filter</button>
             </form>
         </div>
@@ -27,7 +33,7 @@
                         <thead>
                             <tr>
                                 <th scope="col">When</th>
-                                <th scope="col">Admin</th>
+                                <th scope="col">Who</th>
                                 <th scope="col">Action</th>
                                 <th scope="col">Details</th>
                                 <th scope="col">Result</th>

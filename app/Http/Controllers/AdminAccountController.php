@@ -163,12 +163,21 @@ class AdminAccountController extends Controller
             $query->where('action', 'like', $action . '%');
         }
         if ($who = $request->query('admin')) {
-            $query->where('admin_email', $who);
+            $query->where('admin_email', 'like', '%' . str_replace(['%', '_'], ['\%', '\_'], $who) . '%');
         }
+        // who did it: admins, unit checkers ("unit: "), members ("member: ") or scheduled jobs ("system")
+        match ($request->query('actor')) {
+            'unit' => $query->where('admin_email', 'like', 'unit: %'),
+            'member' => $query->where('admin_email', 'like', 'member: %'),
+            'system' => $query->whereIn('admin_email', ['system', 'guest']),
+            'admin' => $query->where(fn ($q) => $q->whereNull('admin_email')->orWhere(fn ($w) => $w->where('admin_email', 'not like', 'unit: %')
+                ->where('admin_email', 'not like', 'member: %')->whereNotIn('admin_email', ['system', 'guest']))),
+            default => null,
+        };
 
         return view('admin.accounts.audit', [
             'entries' => $query->paginate(50)->withQueryString(),
-            'filters' => $request->only('action', 'admin'),
+            'filters' => $request->only('action', 'admin', 'actor'),
         ]);
     }
 

@@ -73,11 +73,25 @@ return [
         // Who did what in the unit checker area (document decisions,
         // disciplinary records). Always written, whatever LOG_LEVEL is; ids
         // and serial numbers only, never names or file contents.
+        // audit trail: the daily file as before, plus a copy in admin_audit_logs so the
+        // console's Audit log shows unit checker, member and system actions too
         'audit' => [
+            'driver' => 'stack',
+            'channels' => ['audit_file', 'audit_db'],
+            'ignore_exceptions' => true,
+        ],
+
+        'audit_file' => [
             'driver' => 'daily',
             'path' => storage_path('logs/audit.log'),
             'level' => 'info',
             'days' => env('LOG_AUDIT_DAYS', 400),
+        ],
+
+        'audit_db' => [
+            'driver' => 'monolog',
+            'handler' => App\Logging\AuditDatabaseHandler::class,
+            'level' => 'info',
         ],
 
         'slack' => [
