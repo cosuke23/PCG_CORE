@@ -450,6 +450,34 @@ body.pcg-glass.pcg-glass--console {
 .pcg-glass .tt-empty--warn { border-color: rgba(255, 198, 90, 0.38); }
 .pcg.pcg-glass .tt-years a[aria-current="page"], .pcg.pcg-glass .tt a[aria-current="page"] { color: var(--g-accent-ink); }
 
+/* ---------------------------------------------------------------- unit checker pages (unit-checker.css) */
+.pcg-glass .uc-filter { background: var(--g-panel); border-color: var(--g-line); -webkit-backdrop-filter: var(--g-blur); backdrop-filter: var(--g-blur); border-radius: 999px; }
+.pcg-glass .uc-filter__btn { border-radius: 999px; }
+.pcg-glass .uc-filter__btn[aria-pressed="true"] { background: var(--g-accent); color: var(--g-accent-ink); }
+.pcg-glass .uc-filter__btn[aria-pressed="true"] span { color: var(--g-accent-ink); opacity: .75; }
+.pcg-glass .uc-status--waiting { color: var(--g-accent-strong); }
+.pcg-glass .uc-dialog { background: #121b31; color: var(--g-text); border: 1px solid var(--g-line-strong); }
+.pcg-glass .uc-dialog::backdrop { background: rgba(3, 6, 14, 0.7); -webkit-backdrop-filter: blur(4px); backdrop-filter: blur(4px); }
+.pcg-glass .uc-item__return:hover { border-color: rgba(255, 143, 134, 0.5); background: var(--g-danger-soft); }
+.pcg-glass .uc-head {
+    position: relative; isolation: isolate; overflow: hidden;
+    padding: clamp(18px, 3vw, 28px); border-radius: 20px; color: #fff;
+    background: linear-gradient(115deg, #1c3f96 0%, #4b2b98 38%, #b8285a 72%, #ef9f3a 100%);
+    box-shadow: 0 24px 60px rgba(90, 30, 110, 0.3);
+}
+.pcg-glass .uc-head::before {
+    content: ""; position: absolute; z-index: -1; right: -50px; top: -110px; width: 280px; height: 280px; border-radius: 50%; pointer-events: none;
+    background: radial-gradient(circle at 35% 35%, rgba(255, 255, 255, 0.45), rgba(255, 255, 255, 0.05) 55%, transparent 70%);
+}
+.pcg-glass .uc-title { color: #fff; }
+.pcg-glass .uc-lede { color: rgba(255, 255, 255, 0.88); }
+.pcg.pcg-glass .uc-head .pcg-btn--secondary, .pcg.pcg-glass .uc-head a.pcg-btn--secondary { background: rgba(255, 255, 255, 0.14); border-color: rgba(255, 255, 255, 0.45); color: #fff; }
+.pcg.pcg-glass .uc-head .pcg-btn--primary, .pcg.pcg-glass .uc-head a.pcg-btn--primary { background: #fff; color: #3a1236; box-shadow: 0 10px 24px rgba(0, 0, 0, 0.25); }
+@media (prefers-reduced-motion: no-preference) {
+    .pcg-glass .pcg-hero, .pcg-glass .uc-head { background-size: 180% 180%; animation: pcg-glass-aurora 16s ease-in-out infinite alternate; }
+}
+@keyframes pcg-glass-aurora { 0% { background-position: 0% 40%; } 100% { background-position: 100% 60%; } }
+
 /* ---------------------------------------------------------------- SOI form and older pages (Tailwind colours) */
 .pcg-glass .soi h3, .pcg-glass .soi h4, .pcg-glass .soi h5, .pcg-glass .soi-entry__title { color: var(--g-text); }
 .pcg-glass .soi-stepper__btn { color: var(--g-muted); background: var(--g-panel); border-color: var(--g-line); }

@@ -5,7 +5,16 @@
 @section('headline', 'M1 Document Checker')
 @section('intro', 'Review personnel documents across all units, record decisions and manage 201 files and disciplinary records.')
 
+@section('glass', '1')
+
 @section('content')
+    <div class="pcg-auth__app">
+        <img src="{{ asset('images/brand/pcg-logo.webp') }}" alt="" width="44" height="44">
+        <div>
+            <strong>PCG HRMIS</strong>
+            <span>M1 checker</span>
+        </div>
+    </div>
     <span class="pcg-auth__role">M1 checker</span>
     <h2>Sign in</h2>
     <p class="pcg-auth__lead">For M1 document checkers with an active account.</p>
