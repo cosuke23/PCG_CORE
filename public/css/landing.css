@@ -549,3 +549,99 @@ body.lp {
 .lp-note { border-radius: 12px; }
 /* the ID rule above (#services, #units) set them cream; same canvas as the other sections */
 body.lp #services, body.lp #units { background-color: var(--g-canvas); background-image: var(--g-glows); }
+
+/* ======================================================================
+ * Motion (owner request 2026-11-20): the band entrance is back and the
+ * glass page gets a little life. Safe by construction: things are hidden
+ * before they arrive only under .lp-motion, which landing.js adds as its
+ * very last step, after the scroll observer is running. If the script
+ * fails, or for "reduce motion", everything is simply shown.
+ * ==================================================================== */
+
+/* band: drifting gradient and a floating light (decoration, always on) */
+@media (prefers-reduced-motion: no-preference) {
+    .lp-band { background-size: 180% 180%; animation: lp-aurora 16s ease-in-out infinite alternate; }
+    .lp-band::after { animation: lp-float 12s ease-in-out infinite alternate; }
+    .lp-cta, .lp-pagehead { background-size: 180% 180%; animation: lp-aurora 18s ease-in-out infinite alternate; }
+    .lp-pagehead::after { animation: lp-float 14s ease-in-out infinite alternate; }
+}
+@keyframes lp-aurora { 0% { background-position: 0% 40%; } 100% { background-position: 100% 60%; } }
+@keyframes lp-float { 0% { transform: translate(0, 0) scale(1); } 100% { transform: translate(-90px, 40px) scale(1.18); } }
+
+/* band entrance: eyebrow line draws in, words rise out of a blur one by one,
+   the gold line gets a shine, then the text and the buttons */
+.lp-band .lp-eyebrow::before { transform-origin: left center; }
+.lp-motion .lp-band__anim[data-reveal] { opacity: 1; transform: none; }
+.lp-motion .lp-band__anim .lp-eyebrow,
+.lp-motion .lp-band__anim .lp-band__lead,
+.lp-motion .lp-band__anim .lp-btn { opacity: 0; transform: translateY(18px); transition: opacity .7s ease, transform .7s cubic-bezier(.2, .7, .2, 1); }
+.lp-motion .lp-band__anim .lp-eyebrow { transform: translateX(-24px); }
+.lp-motion .lp-band__anim .lp-eyebrow::before { transform: scaleX(0); transition: transform .8s cubic-bezier(.2, .7, .2, 1) .2s; }
+.lp-motion .lp-band__anim .lp-w { display: inline-block; opacity: 0; transform: translateY(.6em) rotate(3deg); filter: blur(8px); transition: opacity .6s ease, transform .8s cubic-bezier(.2, .8, .2, 1), filter .7s ease; }
+.lp-motion .lp-band__anim.is-in .lp-eyebrow,
+.lp-motion .lp-band__anim.is-in .lp-band__lead,
+.lp-motion .lp-band__anim.is-in .lp-btn,
+.lp-motion .lp-band__anim.is-in .lp-w { opacity: 1; transform: none; filter: none; }
+.lp-motion .lp-band__anim.is-in .lp-eyebrow::before { transform: scaleX(1); }
+.lp-band__anim .lp-line:first-child .lp-w:nth-child(1) { transition-delay: .15s; }
+.lp-band__anim .lp-line:first-child .lp-w:nth-child(2) { transition-delay: .27s; }
+.lp-band__anim .lp-line:first-child .lp-w:nth-child(3) { transition-delay: .39s; }
+.lp-band__anim em .lp-w:nth-child(1) { transition-delay: .6s; }
+.lp-band__anim em .lp-w:nth-child(2) { transition-delay: .72s; }
+.lp-band__anim em .lp-w:nth-child(3) { transition-delay: .84s; }
+.lp-motion .lp-band__anim .lp-band__lead { transition-delay: 1s; }
+.lp-motion .lp-band__anim .lp-btn:nth-child(1) { transition-delay: 1.2s; }
+.lp-motion .lp-band__anim .lp-btn:nth-child(2) { transition-delay: 1.32s; }
+@media (prefers-reduced-motion: no-preference) {
+    /* the gold line: a light sweep every few seconds */
+    .lp-band__anim.is-in em .lp-w {
+        background-image: linear-gradient(100deg, #ffd98a 0 42%, #fff6df 50%, #ffd98a 58% 100%);
+        background-size: 250% 100%; background-repeat: repeat-x; background-position: 100% 0;
+        -webkit-background-clip: text; background-clip: text; color: transparent;
+        animation: lp-shine 5s ease-in-out 1.8s infinite;
+    }
+    /* the sign-in button glows twice to draw the eye */
+    .lp-band__anim.is-in .lp-btn--gold { animation: lp-glow 1.6s ease-in-out 2s 2; }
+}
+@keyframes lp-shine { 0% { background-position: 100% 0; } 35%, 100% { background-position: 0% 0; } }
+@keyframes lp-glow { 0%, 100% { box-shadow: 0 8px 22px rgba(232, 151, 58, 0.28), 0 0 0 0 rgba(232, 151, 58, 0); } 50% { box-shadow: 0 8px 22px rgba(232, 151, 58, 0.28), 0 0 0 12px rgba(232, 151, 58, 0.25); } }
+
+/* sections: headings and cards rise softly as they come into view */
+.lp-motion [data-reveal]:not(.lp-band__anim) { opacity: 0; transform: translateY(28px) scale(.985); transition: opacity .8s ease, transform .9s cubic-bezier(.2, .7, .2, 1); }
+.lp-motion [data-reveal].is-in:not(.lp-band__anim) { opacity: 1; transform: none; }
+.lp-feature > [data-reveal]:nth-child(2) { transition-delay: .12s; }
+/* lists cascade: each AHEAD line and each unit card arrives after the one before */
+.lp-motion .lp-ahead[data-reveal], .lp-motion .lp-units[data-reveal] { opacity: 1; transform: none; }
+.lp-motion .lp-ahead > li, .lp-motion .lp-units > li { opacity: 0; transform: translateY(18px); transition: opacity .6s ease, transform .7s cubic-bezier(.2, .7, .2, 1); }
+.lp-motion .lp-ahead.is-in > li, .lp-motion .lp-units.is-in > li { opacity: 1; transform: none; }
+.lp-ahead > li:nth-child(2), .lp-units > li:nth-child(2) { transition-delay: .07s; }
+.lp-ahead > li:nth-child(3), .lp-units > li:nth-child(3) { transition-delay: .14s; }
+.lp-ahead > li:nth-child(4), .lp-units > li:nth-child(4) { transition-delay: .21s; }
+.lp-ahead > li:nth-child(5), .lp-units > li:nth-child(5) { transition-delay: .28s; }
+.lp-ahead > li:nth-child(6), .lp-units > li:nth-child(6) { transition-delay: .35s; }
+.lp-units > li:nth-child(7) { transition-delay: .42s; }
+.lp-units > li:nth-child(8) { transition-delay: .49s; }
+.lp-units > li:nth-child(9) { transition-delay: .56s; }
+/* AHEAD letters pop once their line is in */
+@media (prefers-reduced-motion: no-preference) {
+    .lp-motion .lp-ahead.is-in b { animation: lp-pop .5s cubic-bezier(.2, .9, .3, 1.4) .15s both; }
+    .lp-motion .lp-ahead.is-in > li:nth-child(2) b { animation-delay: .22s; }
+    .lp-motion .lp-ahead.is-in > li:nth-child(3) b { animation-delay: .29s; }
+    .lp-motion .lp-ahead.is-in > li:nth-child(4) b { animation-delay: .36s; }
+    .lp-motion .lp-ahead.is-in > li:nth-child(5) b { animation-delay: .43s; }
+}
+@keyframes lp-pop { 0% { transform: scale(.6); } 100% { transform: scale(1); } }
+/* hover: glass cards lift a little */
+@media (prefers-reduced-motion: no-preference) and (hover: hover) {
+    .lp-units li, .lp-card:not(.lp-card--navy), .lp-mini { transition: transform .25s ease, background-color .25s ease, opacity .6s ease; }
+    .lp-units li:hover, .lp-card:not(.lp-card--navy):hover { transform: translateY(-3px); }
+}
+
+/* never hidden in print or for "reduce motion" */
+@media print { .lp-motion [data-reveal], .lp-motion [data-reveal] *, .lp-motion .lp-w { opacity: 1 !important; transform: none !important; filter: none !important; } }
+@media (prefers-reduced-motion: reduce) {
+    .lp-motion [data-reveal], .lp-motion [data-reveal] > li, .lp-motion .lp-band__anim .lp-eyebrow, .lp-motion .lp-band__anim .lp-band__lead,
+    .lp-motion .lp-band__anim .lp-btn, .lp-motion .lp-band__anim .lp-w { opacity: 1 !important; transform: none !important; filter: none !important; transition: none !important; }
+    .lp-motion .lp-band__anim .lp-eyebrow::before { transform: none !important; }
+    .lp-band, .lp-band::after, .lp-cta, .lp-pagehead, .lp-pagehead::after { animation: none !important; }
+}

@@ -110,4 +110,8 @@
         });
     }, { rootMargin: '0px 0px -10% 0px', threshold: 0.12 });
     items.forEach(function (el) { if (!el.classList.contains('is-in')) { io.observe(el); } });
+
+    // Last step: only now may landing.css hide things until they arrive
+    // (.lp-motion). If anything above failed, the page stays fully visible.
+    root.classList.add('lp-motion');
 })();
