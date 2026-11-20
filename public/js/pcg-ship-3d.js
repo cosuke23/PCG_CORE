@@ -445,9 +445,11 @@ async function start() {
     seal.colorSpace = THREE.SRGBColorSpace;
     sideDecal(seal, { width: 0.2, height: 0.2, x: 0.34, y: 0.9, z: 0.762 });          // PCG seal beside the boat bay
     sideDecal(seal, { width: 0.07, height: 0.07, x: 1.86, y: 0.5 });                  // small seal on the bow stripe
-    {   // PCG seal on the raked front of the forward deckhouse (front slopes back 2.2 m over 4.2 m)
+    {   // Bagong Pilipinas logo on the raked front of the forward deckhouse, as on the ship (front slopes back 2.2 m over 4.2 m)
+        const bp = new THREE.TextureLoader().load(new URL('../images/brand/bagong-pilipinas.webp', import.meta.url).href);
+        bp.colorSpace = THREE.SRGBColorSpace;
         const a = Math.atan2(2.2, 4.2), n = new THREE.Vector3(Math.cos(a), Math.sin(a), 0);
-        const p = new THREE.Mesh(new THREE.PlaneGeometry(0.16, 0.16), new THREE.MeshStandardMaterial({ map: seal, transparent: true, roughness: 0.4, polygonOffset: true, polygonOffsetFactor: -2 }));
+        const p = new THREE.Mesh(new THREE.PlaneGeometry(0.18, 0.168), new THREE.MeshStandardMaterial({ map: bp, transparent: true, roughness: 0.4, polygonOffset: true, polygonOffsetFactor: -2 }));
         p.position.set(1.7395, 0.93, 0).addScaledVector(n, 0.006);
         p.lookAt(p.position.clone().add(n));
         ship.add(p);
