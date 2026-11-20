@@ -4,6 +4,8 @@
 
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <!-- Phone alerts for portal notifications (1.0.3, NotifyJob); asked on Android 13+. -->
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
     <!-- Registration selfie and document photos (asked only when a page needs them). -->
     <uses-permission android:name="android.permission.CAMERA" />
     <!-- Residence location pin on the required-documents page. -->
@@ -44,5 +46,10 @@
             <!-- long-press shortcuts: Leave -->
             <meta-data android:name="android.app.shortcuts" android:resource="@xml/shortcuts" />
         </activity>
+        <!-- every 15 minutes: new portal notifications become phone alerts -->
+        <service
+            android:name=".NotifyJob"
+            android:exported="false"
+            android:permission="android.permission.BIND_JOB_SERVICE" />
     </application>
 </manifest>

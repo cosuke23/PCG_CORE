@@ -10,4 +10,5 @@
     <string name="downloading">Downloading %1$s…</string>
     <string name="shortcut_leave_short">Leave</string>
     <string name="shortcut_leave_long">File or check leave</string>
+    <string name="notify_channel">HRMIS updates</string>
 </resources>

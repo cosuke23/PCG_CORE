@@ -57,9 +57,10 @@ public class MainActivity extends Activity {
     private static final int REQ_CAMERA = 11;
     private static final int REQ_LOCATION = 12;
     private static final int REQ_STORAGE = 13;
+    private static final int REQ_NOTIFY = 14;
     private static final String START_PATH = "/dashboard";
     /** Pages a home-screen shortcut (res/xml/shortcuts.xml) may open; anything else opens the dashboard. */
-    private static final java.util.List<String> SHORTCUT_PATHS = java.util.Arrays.asList("/dashboard", "/leave");
+    private static final java.util.List<String> SHORTCUT_PATHS = java.util.Arrays.asList("/dashboard", "/leave", "/notifications");
     private static final String BRIDGE = "PCGHRMISApp";
 
     private Uri base;
@@ -100,6 +101,7 @@ public class MainActivity extends Activity {
         applySystemBarInsets(root);
         configureWebView();
         registerBackHandler();
+        NotifyJob.schedule(this);   // no-op until the portal has given a token (see onPageFinished)
 
         String shortcut = shortcutPath(getIntent());
         if (shortcut != null) {
@@ -335,6 +337,18 @@ public class MainActivity extends Activity {
                 // The portal's Print buttons call window.print(), which WebView does not implement.
                 view.evaluateJavascript("window.print=function(){if(window." + BRIDGE + "){" + BRIDGE
                     + ".print(document.title||'PCG HRMIS');}};", null);
+                // Phone alerts: the member pages carry <meta name=pcg-app-notify content="id:token">;
+                // the sign-in page has none, so signing out forgets the token (NotifyJob).
+                String path = Uri.parse(url).getPath();
+                view.evaluateJavascript("(function(){var m=document.querySelector('meta[name=\"pcg-app-notify\"]');return m?m.content:'';})()", value -> {
+                    String v = value == null ? "" : value.replace("\"", "");
+                    if (!v.isEmpty()) {
+                        NotifyJob.setToken(MainActivity.this, v);
+                        askNotificationPermission();
+                    } else if (path != null && path.startsWith("/login")) {
+                        NotifyJob.setToken(MainActivity.this, "");
+                    }
+                });
             }
             CookieManager.getInstance().flush();
         }
@@ -469,6 +483,18 @@ public class MainActivity extends Activity {
             return;
         }
         super.onActivityResult(requestCode, resultCode, data);
+    }
+
+    /** Android 13+: ask once for permission to show phone alerts. */
+    private void askNotificationPermission() {
+        if (Build.VERSION.SDK_INT < 33 || checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS) == PackageManager.PERMISSION_GRANTED) {
+            return;
+        }
+        android.content.SharedPreferences p = getSharedPreferences("notify", MODE_PRIVATE);
+        if (!p.getBoolean("asked", false)) {
+            p.edit().putBoolean("asked", true).apply();
+            requestPermissions(new String[]{Manifest.permission.POST_NOTIFICATIONS}, REQ_NOTIFY);
+        }
     }
 
     @Override
