@@ -159,8 +159,9 @@ class Monitor
         $fail = function (string $m) use (&$ok, &$lines) { $ok = false; $lines[] = 'FAIL ' . $m; };
         $pass = function (string $m) use (&$lines) { $lines[] = 'OK   ' . $m; };
 
-        $taken = \DateTime::createFromFormat('Ymd-His', basename($dir));
-        $age = $taken ? (time() - $taken->getTimestamp()) / 3600 : INF;
+        // age from the files themselves: the folder name is in the server's local time, the app runs in UTC
+        $stamp = @filemtime(is_file($dir . '/SHA256SUMS') ? $dir . '/SHA256SUMS' : $dir);
+        $age = $stamp ? max(0, time() - $stamp) / 3600 : INF;
         $max = (int) config('pcg.monitor.backup_max_age_hours', 30);
         $age <= $max ? $pass(sprintf('newest backup %s is %.0f hours old', basename($dir), $age))
             : $fail(sprintf('newest backup %s is %.0f hours old (more than %d)', basename($dir), $age, $max));
