@@ -94,45 +94,96 @@ async function start() {
     sunLight.shadow.normalBias = 0.02;
     scene.add(sunLight);
 
-    // ------------------------------------------------------------ ocean (reflective water with a generated wave texture)
-    function waveNormals(size = 256) {
-        // tileable height field from waves with whole-number frequencies, turned into a normal map
-        const waves = [];
-        for (let i = 0; i < 14; i++) waves.push({ fx: Math.round(Math.random() * 10 - 5), fy: Math.round(Math.random() * 10 - 5) || 1, a: 1 / (1 + i * 0.6), p: Math.random() * Math.PI * 2 });
-        const h = new Float32Array(size * size);
-        for (let y = 0; y < size; y++) for (let x = 0; x < size; x++) {
-            let v = 0;
-            for (const w of waves) v += w.a * Math.sin(2 * Math.PI * (w.fx * x + w.fy * y) / size + w.p);
-            h[y * size + x] = v;
+    // ------------------------------------------------------------ ocean (wind sea drawn by a shader)
+    // 32 directional waves from about 60 m down to ripples, moving at deep-water speeds
+    // (omega = sqrt(g k), g = 0.98 units/s^2 at 1 unit = 10 m). Per pixel: wave slopes give the
+    // normal, a Fresnel blend of the deep-water colour and the sky, sun glitter, lighter crests,
+    // and haze toward the horizon. Waves finer than a pixel fade out so the sea never shimmers.
+    const WAVES = 32;
+    const waveData = [];
+    {
+        let seed = 8301;
+        const rnd = () => { seed = (seed * 16807) % 2147483647; return seed / 2147483647; };
+        const wind = 0.75;                                     // radians, waves run mostly one way
+        for (let i = 0; i < WAVES; i++) {
+            const lambda = 6.0 * Math.pow(0.83, i);            // units (x 10 m)
+            const k = 2 * Math.PI / lambda;
+            const dir = wind + (rnd() - 0.5) * (1.1 + i * 0.06);
+            const slope = 0.05 * Math.pow(0.975, i) * (0.7 + rnd() * 0.6);
+            waveData.push(new THREE.Vector4(Math.cos(dir), Math.sin(dir), k, slope / k));
         }
-        const c = document.createElement('canvas'); c.width = c.height = size;
-        const g = c.getContext('2d'), img = g.createImageData(size, size);
-        const at = (x, y) => h[((y + size) % size) * size + ((x + size) % size)];
-        for (let y = 0; y < size; y++) for (let x = 0; x < size; x++) {
-            const dx = (at(x + 1, y) - at(x - 1, y)) * 0.9, dy = (at(x, y + 1) - at(x, y - 1)) * 0.9;
-            const n = new THREE.Vector3(-dx, -dy, 1).normalize();
-            const i = (y * size + x) * 4;
-            img.data[i] = (n.x * 0.5 + 0.5) * 255; img.data[i + 1] = (n.y * 0.5 + 0.5) * 255; img.data[i + 2] = (n.z * 0.5 + 0.5) * 255; img.data[i + 3] = 255;
-        }
-        g.putImageData(img, 0, 0);
-        const t = new THREE.CanvasTexture(c);
-        t.wrapS = t.wrapT = THREE.RepeatWrapping;
-        return t;
     }
-    // deep navy sea: physically lit surface, two wave layers drifting at different speeds,
-    // sky reflections from the environment and glints from the sun
-    const waveTex = waveNormals();
-    waveTex.repeat.set(70, 70);
-    const swellTex = waveNormals();
-    swellTex.repeat.set(18, 18);
-    const water = new THREE.Mesh(new THREE.PlaneGeometry(400, 400), new THREE.MeshPhysicalMaterial({
-        color: C.water, roughness: 0.16, metalness: 0, normalMap: waveTex, normalScale: new THREE.Vector2(0.9, 0.9),
-        clearcoat: 1, clearcoatRoughness: 0.28, clearcoatNormalMap: swellTex, clearcoatNormalScale: new THREE.Vector2(0.6, 0.6),
-        envMapIntensity: 0.55,
+    const linear = (hex) => new THREE.Color(hex);
+    const water = new THREE.Mesh(new THREE.PlaneGeometry(900, 900), new THREE.ShaderMaterial({
+        uniforms: {
+            uTime: { value: 0 },
+            uWaves: { value: waveData },
+            uSunDir: { value: sun.clone().normalize() },
+            uSunColor: { value: linear('#fff1d6') },
+            uDeep: { value: linear('#05224d') },
+            uScatter: { value: linear('#13698f') },
+            uSkyHorizon: { value: linear('#c4d8ea') },
+            uSkyZenith: { value: linear('#3f7fc4') },
+        },
+        vertexShader: `
+            varying vec3 vWorld;
+            void main() {
+                vec4 w = modelMatrix * vec4(position, 1.0);
+                vWorld = w.xyz;
+                gl_Position = projectionMatrix * viewMatrix * w;
+            }`,
+        fragmentShader: `
+            #define NW ${WAVES}
+            uniform float uTime;
+            uniform vec4 uWaves[NW];
+            uniform vec3 uSunDir, uSunColor, uDeep, uScatter, uSkyHorizon, uSkyZenith;
+            varying vec3 vWorld;
+            void main() {
+                vec2 p = vWorld.xz;
+                float dist = length(cameraPosition - vWorld);
+                float foot = max(length(fwidth(p)), 1e-4);
+                vec2 grad = vec2(0.0);
+                float h = 0.0;
+                for (int i = 0; i < NW; i++) {
+                    vec4 w = uWaves[i];
+                    float k = w.z;
+                    float a = w.w * (1.0 - smoothstep(0.3, 1.1, k * foot));
+                    float ph = k * dot(w.xy, p) - sqrt(0.98 * k) * uTime + float(i) * 1.731;
+                    grad += a * k * cos(ph) * w.xy;
+                    h += a * k * sin(ph);
+                }
+                vec3 n = normalize(vec3(-grad.x, 1.0, -grad.y));
+                vec3 V = normalize(cameraPosition - vWorld);
+                vec3 R = reflect(-V, n);
+                R.y = abs(R.y);
+                float fres = 0.02 + 0.98 * pow(1.0 - max(dot(n, V), 0.0), 5.0);
+                vec3 sky = mix(uSkyHorizon, uSkyZenith, pow(clamp(R.y, 0.0, 1.0), 0.5));
+                float crest = clamp(h * 2.2 + 0.25, 0.0, 1.0);
+                vec3 body = mix(uDeep, uScatter, crest * 0.45 + max(dot(n, uSunDir), 0.0) * 0.12);
+                float sd = max(dot(R, uSunDir), 0.0);
+                float glint = pow(sd, 1400.0) * 90.0 + pow(sd, 160.0) * 2.0;
+                vec3 col = mix(body, sky, fres) + uSunColor * glint;
+                float haze = 1.0 - exp(-dist * 0.0045);
+                col = mix(col, uSkyHorizon, haze * haze);
+                gl_FragColor = vec4(col, 1.0);
+                #include <tonemapping_fragment>
+                #include <colorspace_fragment>
+            }`,
     }));
     water.rotation.x = -Math.PI / 2;
-    water.receiveShadow = true;
     scene.add(water);
+
+    // soft contact shadow under the hull (the shader sea does not take shadow maps)
+    const shadowTex = (() => {
+        const c = document.createElement('canvas'); c.width = 256; c.height = 64;
+        const g = c.getContext('2d'), w = c.width, h = c.height;
+        const grd = g.createRadialGradient(w / 2, h / 2, 2, w / 2, h / 2, w / 2);
+        grd.addColorStop(0, 'rgba(0,8,20,0.55)'); grd.addColorStop(1, 'rgba(0,8,20,0)');
+        g.fillStyle = grd; g.fillRect(0, 0, w, h);
+        return new THREE.CanvasTexture(c);
+    })();
+    const hullShadow = new THREE.Mesh(new THREE.PlaneGeometry(10.5, 2.6), new THREE.MeshBasicMaterial({ map: shadowTex, transparent: true, depthWrite: false }));
+    hullShadow.rotation.x = -Math.PI / 2; hullShadow.position.set(0.1, 0.006, 0.25); scene.add(hullShadow);
 
     // ------------------------------------------------------------ helpers
     const ship = new THREE.Group();
@@ -324,11 +375,21 @@ async function start() {
 
     // ------------------------------------------------------------ wake and bow waves
     const foamTex = canvasTex(1024, 256, (g, w, h) => {
-        for (let i = 0; i < 5200; i++) {
-            const x = Math.random() * w, spread = 18 + x * 0.2, y = h / 2 + (Math.random() - 0.5) * spread;
-            const a = Math.max(0, 0.95 - x / (w * 1.05)) * (0.4 + Math.random() * 0.6);
-            g.fillStyle = `rgba(255,255,255,${a.toFixed(3)})`;
-            g.beginPath(); g.arc(x, y, 0.8 + Math.random() * 2.6, 0, Math.PI * 2); g.fill();
+        // churned water behind the stern: soft overlapping blobs, dense and narrow near the ship,
+        // thinning and spreading downstream, with a few brighter streaks
+        const gauss = () => (Math.random() + Math.random() + Math.random() - 1.5) / 1.5;
+        for (let i = 0; i < 3400; i++) {
+            const x = w * Math.pow(Math.random(), 1.5), spread = 26 + x * 0.16;
+            const y = h / 2 + gauss() * spread, r = 3 + Math.random() * (5 + x * 0.01);
+            const a = Math.max(0, 1 - x / w) ** 1.2 * (0.3 + Math.random() * 0.45);
+            const grd = g.createRadialGradient(x, y, 0, x, y, r);
+            grd.addColorStop(0, `rgba(255,255,255,${a.toFixed(3)})`); grd.addColorStop(1, 'rgba(255,255,255,0)');
+            g.fillStyle = grd; g.fillRect(x - r, y - r, r * 2, r * 2);
+        }
+        g.strokeStyle = 'rgba(255,255,255,0.12)'; g.lineWidth = 1.5;
+        for (let i = 0; i < 40; i++) {
+            const y = h / 2 + gauss() * 30, len = 80 + Math.random() * 300;
+            g.beginPath(); g.moveTo(0, y); g.bezierCurveTo(len / 3, y + gauss() * 10, len * 0.66, y + gauss() * 16, len, y + gauss() * 22); g.stroke();
         }
     }, false);
     foamTex.wrapS = THREE.RepeatWrapping;
@@ -380,8 +441,7 @@ async function start() {
 
     const flagPos = flagGeo.attributes.position;
     function animate(t) {
-        waveTex.offset.set(t * 0.012, t * 0.007);
-        swellTex.offset.set(-t * 0.004, t * 0.006);
+        water.material.uniforms.uTime.value = t;
         for (let i = 0; i < flagPos.count; i++) {
             const x = flagBase[i * 3], y = flagBase[i * 3 + 1], k = -x / 0.5;
             flagPos.setZ(i, Math.sin(x * 15 + t * 7) * 0.032 * k + Math.sin(y * 9 + t * 5) * 0.01 * k);
