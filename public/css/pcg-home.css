@@ -424,9 +424,10 @@ body.ph {
 .ph-hero__band .ph-eyebrow { color: #fcd116; }
 
 /* ------------------------------------------------------------ BRP Gabriela Silang in 3D (#ship, js/pcg-ship-3d.js) */
-.ph-ship__in { display: grid; grid-template-columns: minmax(0, 4fr) minmax(0, 7fr); gap: 40px; align-items: center; }
+.ph-ship__in { display: grid; grid-template-columns: minmax(0, 1fr); gap: 28px; }
+.ph-ship__text { max-width: 760px; }
 .ph-ship__text .ph-lead { margin-bottom: 0; }
-.ph-ship__stage { position: relative; margin: 0; width: 100%; aspect-ratio: 16 / 10; overflow: hidden; isolation: isolate;
+.ph-ship__stage { position: relative; margin: 0; width: 100%; aspect-ratio: 21 / 9; min-height: 360px; max-height: 78vh; overflow: hidden; isolation: isolate;
     border-radius: 22px; border: 1px solid rgba(255, 255, 255, 0.12);
     background: radial-gradient(120% 90% at 60% 30%, rgba(0, 56, 168, 0.35), rgba(7, 11, 24, 0.2) 70%), rgba(255, 255, 255, 0.03);
     box-shadow: 0 1px 0 rgba(255, 255, 255, 0.05) inset, 0 30px 60px rgba(0, 0, 0, 0.4); }
@@ -441,7 +442,7 @@ body.ph {
     -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px); }
 .ph-ship__stage.is-3d .ph-ship__hint { opacity: 1; }
 @media (max-width: 860px) {
-    .ph-ship__in { grid-template-columns: minmax(0, 1fr); gap: 24px; }
+    .ph-ship__stage { aspect-ratio: 4 / 3; min-height: 0; border-radius: 16px; }
 }
 @media (prefers-reduced-motion: reduce) {
     .ph-ship__img, .ph-ship__canvas, .ph-ship__hint { transition: none; }
