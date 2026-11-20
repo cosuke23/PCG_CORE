@@ -125,6 +125,7 @@
                                 <th scope="col">Time to ETE</th>
                                 <th scope="col">Account</th>
                                 <th scope="col">Form</th>
+                                <th scope="col">Process</th>
                                 <th scope="col" class="pcg-no-print"><span class="pcg-visually-hidden">Details</span></th>
                             </tr>
                         </thead>
@@ -141,6 +142,7 @@
                                     <td data-label="Time to ETE" class="pcg-nowrap"><span class="pcg-badge {{ $r->ete_tone ? 'pcg-badge--' . $r->ete_tone : '' }}">{{ $r->ete_label }}</span></td>
                                     <td data-label="Account">{{ ucfirst(strtolower((string) $r->status)) ?: '—' }}</td>
                                     <td data-label="Form">@if ($r->form_submitted)<span class="pcg-badge pcg-badge--success"><i class="fa-solid fa-check" aria-hidden="true"></i> Submitted</span>@else<span class="pcg-badge">Not yet</span>@endif</td>
+                                    <td data-label="Process">{{ \App\Support\ReenlistmentCases::STATUSES[$r->case_status ?? 'not_started'] }}</td>
                                     <td class="pcg-no-print pcg-re__go"><a href="{{ route('admin.reenlistment.show', $r->id) }}" aria-label="Details for {{ $r->name }}"><i class="fa-solid fa-chevron-right" aria-hidden="true"></i></a></td>
                                 </tr>
                             @endforeach

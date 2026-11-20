@@ -30,6 +30,8 @@ class AdminPermissions
         // Re-enlistment: non-officers whose ETE (end of term of enlistment) is near
         'reenlistment.view'    => ['super_admin', 'hr_admin', 'reenlistment_admin', 'auditor'],
         'reenlistment.export'  => ['super_admin', 'hr_admin', 'reenlistment_admin'],
+        // the re-enlistment process (status and requirements checklist per member, owner request 2026-11-20)
+        'reenlistment.manage'  => ['super_admin', 'hr_admin', 'reenlistment_admin'],
         // Adjutant: Coast Guard awards and decorations (SOI 1.a) and Coast Guard schooling (SOI 3.a)
         'soi.adjutant'         => ['super_admin', 'adjutant'],
         'soi.reopen'           => ['super_admin', 'hr_admin', 'adjutant'],

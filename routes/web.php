@@ -382,6 +382,7 @@ Route::middleware(['admin.session', 'admin.audit'])->group(function () {
             Route::get('/', 'index')->name('index');
             Route::get('/export', 'export')->middleware('admin.can:reenlistment.export')->name('export');
             Route::get('/{id}', 'show')->whereNumber('id')->name('show');
+            Route::post('/{id}/case', 'saveCase')->whereNumber('id')->middleware('admin.can:reenlistment.manage')->name('case');
         });
 
     Route::get('/admin/reports', [\App\Http\Controllers\ReportController::class, 'index'])

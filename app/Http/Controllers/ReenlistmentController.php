@@ -42,6 +42,8 @@ class ReenlistmentController extends Controller
 
         $rows = $this->query($f, $today)->paginate(50)->withQueryString();
         $rows->getCollection()->transform(fn ($r) => $this->decorate($r, $today));
+        $cases = \App\Support\ReenlistmentCases::forMany($rows->getCollection()->pluck('id')->all());
+        $rows->getCollection()->each(fn ($r) => $r->case_status = $cases[$r->id]->status ?? null);
 
         AdminAudit::record('reenlistment.list', $f['window'], ['rows' => $rows->total()]);
 
@@ -102,7 +104,32 @@ class ReenlistmentController extends Controller
 
         AdminAudit::record('reenlistment.view', (string) $person->serial_number);
 
-        return view('admin.reenlistment.show', compact('person', 'form', 'personal', 'personnelId', 'today'));
+        return view('admin.reenlistment.show', compact('person', 'form', 'personal', 'personnelId', 'today') + [
+            'case' => \App\Support\ReenlistmentCases::for((int) $person->id),
+            'requirements' => \App\Support\ReenlistmentCases::requirements(),
+            'canManage' => AdminPermissions::can('reenlistment.manage'),
+        ]);
+    }
+
+    /** Save the member's re-enlistment process (status, checklist, note); notify on a status change. */
+    public function saveCase(Request $request, int $id)
+    {
+        abort_unless(\App\Support\ReenlistmentCases::ready(), 409, 'Run the database update first.');
+        $person = $this->base(['status' => 'all', 'q' => null, 'unit' => null], true)->where('u.id', $id)->first();
+        abort_unless($person, 404);
+        $data = $request->validate([
+            'status' => 'required|in:' . implode(',', array_keys(\App\Support\ReenlistmentCases::STATUSES)),
+            'done' => 'nullable|array', 'done.*' => 'string|max:20',
+            'note' => 'nullable|string|max:1000',
+        ]);
+        $by = ['id' => $request->session()->get('admin_user_id'), 'name' => (string) ($request->session()->get('admin_name') ?: $request->session()->get('admin_email'))];
+        [$old, $new] = \App\Support\ReenlistmentCases::save($person, $data['status'], (array) ($data['done'] ?? []), $data['note'] ?? null, $by);
+        AdminAudit::record('reenlistment.case_saved', (string) $person->serial_number, ['from' => $old, 'to' => $new, 'done' => count((array) ($data['done'] ?? []))]);
+        if ($old !== $new) {
+            \App\Support\MemberNotifications::send((int) $person->id, 'reenlistment.' . $new, 'Re-enlistment: ' . \App\Support\ReenlistmentCases::STATUSES[$new],
+                $data['note'] ?? null, '/dashboard');
+        }
+        return back()->with('success', 'Re-enlistment process of ' . $person->name . ' saved.');
     }
 
     // ------------------------------------------------------------------ helpers

@@ -101,6 +101,45 @@ class ReenlistmentTest extends TestCase
         $this->assertSame(1, DB::table('admin_audit_logs')->where('action', 'reenlistment.csv')->count());
     }
 
+    public function test_hr_keeps_the_process_and_the_member_is_notified()
+    {
+        (require base_path('database/migrations/2026_11_21_000002_create_reenlistment_cases_table.php'))->up();
+        (require base_path('database/migrations/2026_11_20_000005_create_member_notifications_table.php'))->up();
+        $this->withSession($this->re);
+        $soon = DB::table('users')->where('serial_number', 'NO-1')->value('id');
+        $keys = array_keys(\App\Support\ReenlistmentCases::requirements());
+
+        $this->get("/admin/reenlistment/{$soon}")->assertSee('Re-enlistment process: Not started · 0 of ' . count($keys));
+        $this->post("/admin/reenlistment/{$soon}/case", ['status' => 'in_progress', 'done' => [$keys[0], $keys[1]], 'note' => 'CO letter received'])
+            ->assertSessionHas('success');
+        $this->get("/admin/reenlistment/{$soon}")->assertSee('Gathering requirements · 2 of ' . count($keys))->assertSee('done Nov 3, 2026');
+        $this->get('/admin/reenlistment')->assertSee('Gathering requirements');
+        $this->assertSame('reenlistment.in_progress', DB::table('member_notifications')->where('user_id', $soon)->value('kind'));
+
+        // saving again without a status change: no second notification; dates of ticked items are kept
+        $this->travel(2)->days();
+        $this->post("/admin/reenlistment/{$soon}/case", ['status' => 'in_progress', 'done' => [$keys[0]]]);
+        $this->assertSame(1, DB::table('member_notifications')->count());
+        $this->assertSame(['' . $keys[0] => '2026-11-03'], json_decode(DB::table('reenlistment_cases')->value('checklist'), true));
+    }
+
+    public function test_members_are_reminded_six_and_three_months_before_ete()
+    {
+        (require base_path('database/migrations/2026_11_20_000005_create_member_notifications_table.php'))->up();
+        \Illuminate\Support\Facades\Mail::fake();
+        DB::table('users')->insert([
+            ['name' => 'Six', 'email' => 'six@x.test', 'serial_number' => 'NO-9', 'registration_type' => 'non_officer', 'ete' => '2027-05-02', 'status' => 'Approved'],
+            ['name' => 'Three', 'email' => 'three@x.test', 'serial_number' => 'NO-10', 'registration_type' => 'non_officer', 'ete' => '2027-02-01', 'status' => 'Approved'],
+            ['name' => 'Off', 'email' => 'off@x.test', 'serial_number' => 'OF-2', 'registration_type' => 'officer', 'ete' => '2027-05-02', 'status' => 'Approved'],
+        ]);
+        $this->artisan('pcg:reenlistment-reminders')->assertSuccessful();
+        \Illuminate\Support\Facades\Mail::assertSent(\App\Mail\ReenlistmentDue::class, 2);
+        \Illuminate\Support\Facades\Mail::assertSent(\App\Mail\ReenlistmentDue::class, fn ($m) => $m->hasTo('six@x.test') && $m->months === 6);
+        $this->assertSame(2, DB::table('member_notifications')->where('kind', 'reenlistment.due')->count());
+        $this->artisan('pcg:reenlistment-reminders');
+        \Illuminate\Support\Facades\Mail::assertSent(\App\Mail\ReenlistmentDue::class, 2);
+    }
+
     public function test_reenlistment_admin_sees_only_this_module()
     {
         $this->withSession($this->re);

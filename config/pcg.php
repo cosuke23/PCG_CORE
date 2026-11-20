@@ -36,6 +36,15 @@ return [
         ],
     ],
 
+    // Re-enlistment process (App\Support\ReenlistmentCases): the checklist HR keeps per member
+    // (PCG_REENLIST_REQUIREMENTS, separated by |) and the reminder days before ETE.
+    // Defaults until the PCG directive is supplied.
+    'reenlistment' => [
+        'requirements' => array_values(array_filter(array_map('trim', explode('|', (string) env('PCG_REENLIST_REQUIREMENTS',
+            'Letter of intent to re-enlist|Recommendation of the commanding officer|Medical and dental clearance|Physical fitness test (PFT) result|Neuro-psychiatric evaluation|NBI clearance|Statement of assets, liabilities and net worth (SALN)|Updated SOI and 201 file'))))),
+        'reminder_days' => array_values(array_filter(array_map('trim', explode(',', (string) env('PCG_REENLIST_REMINDER_DAYS', '180,90'))), 'is_numeric')),
+    ],
+
     // Promotion eligibility (App\Support\PromotionEligibility): years in grade per classification,
     // and per rank code {"years": n, "courses": ["keyword", ...]} (courses matched in the training
     // records). Defaults until the PCG directive is supplied; PCG_PROMOTION_RANKS takes JSON.

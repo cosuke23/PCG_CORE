@@ -19,6 +19,8 @@
             </div>
         </div>
 
+        @include('admin.reenlistment.partials.case')
+
         <div class="pcg-grid">
             <section class="pcg-card" aria-labelledby="term-heading">
                 <div class="pcg-card__header"><h3 id="term-heading">Term of enlistment</h3></div>
