@@ -382,7 +382,8 @@ for k in range(9):
     misc.box(-13.9, -13.84, -2.4, 2.4, z, z + 0.05, "Steel")
 # boat bays: dark inner walls and bay roof underside
 for s in (1, -1):
-    misc.box(-13.3, 1.8, s * 3.05 - 0.03, s * 3.05 + 0.03, DECK, 9.6, "Dark")
+    misc.box(-13.3, 1.8, min(s * 3.11, s * 3.16), max(s * 3.11, s * 3.16), DECK, 9.6, "Dark")           # inner wall, on the hangar side face
+    misc.box(-13.3, 1.8, min(s * 3.12, s * (SW - 0.05)), max(s * 3.12, s * (SW - 0.05)), DECK + 0.32, DECK + 0.36, "Dark")  # bay floor
     misc.box(-13.3, 1.8, min(s * 3.1, s * SW), max(s * 3.1, s * SW), 9.55, 9.6, "Dark")
 # helideck plate and aft working deck
 misc.box(-33.1, -13.8, -7.6, 7.6, DECK + 0.25, DECK + 0.55, "Helideck",
@@ -507,21 +508,101 @@ def radar(name, z, length, size, x=MX):
 radar("RadarS", 19.75, 4.0, 0.26, MX + 2.7)   # SharpEye S-band on the forward arm
 radar("RadarX", top_z + 0.55, 2.6, 0.2)       # SharpEye X-band on top
 
-# ------------------------------------------------------------------ boat bays: RHIBs on davits
+# ------------------------------------------------------------------ boat bays: 9.5 m RHIBs on davits
+# Deep-V GRP hull, inflatable collar with a rubbing strake, non-slip deck, centre console with
+# windscreen, jockey seats, A-frame with light/radar/whip, inboard waterjet; keel chocks and the
+# davit's single-point lift hook with four slings.
+RHIB_L = 9.5
+
+
+def rhib_half_beam(t):
+    """Hull half beam at t = 0 (transom) .. 1 (bow)."""
+    if t < 0.6:
+        return 1.2
+    return max(0.04, 1.2 * (1 - ((t - 0.6) / 0.4) ** 2.1))
+
+
 for s, nm in ((1, "RhibPort"), (-1, "RhibStarboard")):
     r = Builder(nm)
     y0 = s * 5.2
-    L, R = 9.5, 0.55
-    # collar tubes along both sides, joined round the bow
+    xs = -RHIB_L / 2
+    z0 = DECK + 0.62                                    # keel at the transom
+    N = 20
+    rings, tops = [], []
+    for i in range(N + 1):
+        t = i / N
+        x = xs + RHIB_L * t
+        w = rhib_half_beam(t)
+        keel = z0 + max(0.0, (t - 0.68) / 0.32) ** 2 * 0.6
+        top = z0 + 0.78 + max(0.0, (t - 0.72) / 0.28) ** 2 * 0.25
+        half = [(0.0, keel), (w * 0.5, min(top, keel + 0.2)), (w * 0.9, min(top, keel + 0.42)), (w, top)]
+        ring = [(-yy, zz) for yy, zz in reversed(half[1:])] + half
+        rings.append([r.bm.verts.new((x, y0 + yy, zz)) for yy, zz in ring])
+        tops.append((x, w, top))
+    hull_faces = []
+    for i in range(N):
+        a, c = rings[i], rings[i + 1]
+        for k in range(len(a) - 1):
+            hull_faces.append(r.bm.faces.new((a[k], a[k + 1], c[k + 1], c[k])))
+    hull_faces.append(r.bm.faces.new(list(rings[0])))
+    r.tag(hull_faces, "White", smooth=True)
+    # collar: tube segments along both gunwales, meeting at the bow, coned ends past the transom
+    R = 0.4
     for side in (1, -1):
-        r.cylinder((-L / 2 + 0.5, y0 + side * 1.25, DECK + 1.1), (L / 2 - 1.4, y0 + side * 1.25, DECK + 1.1), R, None, 16, "RhibGrey")
-        r.cylinder((L / 2 - 1.4, y0 + side * 1.25, DECK + 1.1), (L / 2, y0, DECK + 1.15), R, R * 0.8, 16, "RhibGrey")
-    r.box(-L / 2 + 0.4, L / 2 - 1.2, y0 - 1.2, y0 + 1.2, DECK + 0.55, DECK + 1.0, "Rubber")
-    r.box(-0.6, 1.0, y0 - 0.5, y0 + 0.5, DECK + 1.0, DECK + 2.0, "White")          # console
-    r.box(-L / 2 + 0.2, -L / 2 + 1.0, y0 - 0.45, y0 + 0.45, DECK + 1.0, DECK + 1.9, "Rubber")  # outboard engine
-    # davit: post and arm over the boat
+        pts = [(x, y0 + side * (w + R * 0.35), top + R * 0.6) for x, w, top in tops]
+        pts[-1] = (tops[-1][0] + 0.25, y0, tops[-1][2] + R * 0.6)
+        pts = pts[:-1:2] + [pts[-1]]                  # fewer, slightly overlapping segments
+        for (xa, ya, za), (xb, yb, zb) in zip(pts, pts[1:]):
+            d = Vector((xb - xa, yb - ya, zb - za)).normalized() * 0.06
+            r.cylinder((xa - d.x, ya - d.y, za - d.z), (xb + d.x, yb + d.y, zb + d.z), R, None, 12, "RhibGrey", caps=False)
+        x0_, y0_, z0_ = pts[0]
+        r.cylinder((x0_, y0_, z0_), (x0_ - 0.55, y0_, z0_ + 0.02), R, R * 0.55, 12, "RhibGrey")
+        # rubbing strake low on the outboard side of the tube
+        for (xa, ya, za), (xb, yb, zb) in zip(pts[:-3], pts[1:-2]):
+            r.cylinder((xa, ya + side * R * 0.75, za - R * 0.45), (xb, yb + side * R * 0.75, zb - R * 0.45), 0.07, None, 6, "Rubber", caps=False)
+    # deck
+    dz = z0 + 0.5
+    deck_pts = [(x, w * 0.92) for x, w, _ in tops[1:-4]]
+    prev = None
+    for x, w in deck_pts:
+        pair = (r.bm.verts.new((x, y0 - w, dz)), r.bm.verts.new((x, y0 + w, dz)))
+        if prev:
+            r.tag([r.bm.faces.new((prev[0], pair[0], pair[1], prev[1]))], "Rubber")
+        prev = pair
+    # centre console, windscreen and grab rail
+    r.box(0.2, 1.4, y0 - 0.55, y0 + 0.55, dz, dz + 0.85, "White")
+    r.box(1.35, 1.45, y0 - 0.5, y0 + 0.5, dz + 0.85, dz + 1.25, "Glass")
+    r.box(0.2, 1.4, y0 - 0.58, y0 + 0.58, dz + 0.85, dz + 0.9, "White")
+    for sgn in (1, -1):
+        r.cylinder((0.1, y0 + sgn * 0.62, dz + 0.4), (0.1, y0 + sgn * 0.62, dz + 1.0), 0.03, None, 6, "Rail")
+        r.cylinder((1.45, y0 + sgn * 0.62, dz + 0.4), (1.45, y0 + sgn * 0.62, dz + 1.3), 0.03, None, 6, "Rail")
+        r.cylinder((0.1, y0 + sgn * 0.62, dz + 1.0), (1.45, y0 + sgn * 0.62, dz + 1.3), 0.03, None, 6, "Rail")
+    # jockey seats and the rear bench
+    for x in (-0.6, -1.5):
+        r.box(x - 0.25, x + 0.25, y0 - 0.25, y0 + 0.25, dz, dz + 0.55, "Steel")
+        r.box(x - 0.4, x + 0.4, y0 - 0.32, y0 + 0.32, dz + 0.55, dz + 0.85, "Rubber")
+    r.box(-3.0, -2.4, y0 - 0.85, y0 + 0.85, dz, dz + 0.5, "Rubber")
+    # A-frame (low enough to stow under the bay roof) with the navigation light, radar, and the whip folded aft
+    for sgn in (1, -1):
+        r.cylinder((-3.3, y0 + sgn * 0.95, dz), (-3.05, y0 + sgn * 0.75, dz + 1.15), 0.05, None, 8, "Rail")
+    r.cylinder((-3.05, y0 - 0.75, dz + 1.15), (-3.05, y0 + 0.75, dz + 1.15), 0.05, None, 8, "Rail")
+    r.cylinder((-3.0, y0, dz + 1.15), (-3.0, y0, dz + 1.32), 0.22, 0.2, 14, "Radar")
+    r.cylinder((-3.05, y0 + 0.4, dz + 1.15), (-3.05, y0 + 0.4, dz + 1.3), 0.05, None, 8, "Lamp")
+    r.cylinder((-3.05, y0 - 0.5, dz + 1.2), (-4.4, y0 - 0.5, dz + 1.25), 0.02, 0.008, 4, "Mast")
+    # inboard engine cover and waterjet at the transom
+    r.box(-4.5, -3.5, y0 - 0.6, y0 + 0.6, dz, dz + 0.55, "White")
+    r.cylinder((xs + 0.02, y0, z0 + 0.25), (xs - 0.35, y0, z0 + 0.25), 0.18, 0.14, 12, "Steel")
+    # bow towing eye
+    r.cylinder((tops[-1][0] - 0.15, y0, tops[-1][2] - 0.25), (tops[-1][0] + 0.12, y0, tops[-1][2] - 0.35), 0.04, None, 6, "Steel")
+    # keel chocks on the bay floor
+    for x in (-3.0, 0.0, 2.6):
+        r.box(x - 0.2, x + 0.2, y0 - 0.7, y0 + 0.7, DECK, z0 + 0.1, "Steel")
+    # davit: post, arm, hook block and four slings to the boat's lifting points
     r.cylinder((-0.5, s * 3.3, DECK), (-0.5, s * 3.3, 9.3), 0.18, 0.14, 12, "Rail")
     r.cylinder((-0.5, s * 3.3, 9.3), (-0.5, y0, 9.45), 0.14, None, 12, "Rail")
+    r.box(-0.62, -0.38, y0 - 0.12, y0 + 0.12, 9.05, 9.35, "Orange")
+    for x, dy in ((-2.6, 0.75), (-2.6, -0.75), (1.8, 0.75), (1.8, -0.75)):
+        r.cylinder((-0.5, y0, 9.05), (x, y0 + dy, dz + 0.1), 0.012, None, 4, "Dark", caps=False, smooth=False)
     r.finish(smooth_angle=40)
 
 # ------------------------------------------------------------------ finer detail (things that read at landing-page distance)
