@@ -168,6 +168,7 @@ Route::middleware(['auth'])->group(function () {
         ->middleware('throttle:member-writes')->name('mobile.app.download');
 
     // Leave (owner request 2026-11-20): file on the calendar, the unit checker approves (LeaveController)
+    Route::get('/notifications', [\App\Http\Controllers\NotificationController::class, 'index'])->name('notifications');
     Route::get('/leave', [\App\Http\Controllers\LeaveController::class, 'index'])->name('leave.index');
     Route::post('/leave', [\App\Http\Controllers\LeaveController::class, 'store'])
         ->middleware('throttle:member-writes')->name('leave.store');

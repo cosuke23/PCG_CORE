@@ -48,6 +48,8 @@ class ClearanceReminders extends Command
                 Mail::to($r->email)->send(new ClearanceExpiring($r->name, $r->label, $r->valid_until, $r->days_left,
                     url('/documents/upload'), (string) config('app.name', 'MEPCOM HRMIS')));
                 $sent++;
+                \App\Support\MemberNotifications::send($r->user_id, 'clearance.expiring', 'Your ' . $r->label . ' ' . ClearanceExpiry::when($r->days_left),
+                    'Valid until ' . \Illuminate\Support\Carbon::parse($r->valid_until)->format('M j, Y') . '. Upload the new one when you have it.', '/documents/upload');
                 $this->line($line);
                 Log::channel('audit')->info('clearance.reminder', ['user_id' => $r->user_id, 'serial_number' => $r->serial_number, 'document' => $r->field, 'days_left' => $r->days_left]);
             } catch (\Throwable $e) {

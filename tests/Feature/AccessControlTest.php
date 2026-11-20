@@ -137,6 +137,7 @@ class AccessControlTest extends TestCase
             ['get', '/mobile-app'],
             ['get', '/mobile-app/download'],
             ['get', '/leave'],
+            ['get', '/notifications'],
             ['post', '/leave'],
             ['post', '/leave/1/cancel'],
             ['get', '/leave/1/print'],

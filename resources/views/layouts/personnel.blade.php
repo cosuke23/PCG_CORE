@@ -17,6 +17,10 @@
     <link rel="stylesheet" href="{{ \App\Support\Asset::v('css/pcg-ui.css') }}">
     <link rel="stylesheet" href="{{ \App\Support\Asset::v('css/pcg-glass.css') }}">
     <meta name="theme-color" content="#070b18">
+    @if (str_contains((string) request()->userAgent(), 'PCGHRMIS-Android/'))
+        {{-- read by the Android app to poll /api/app/notifications for phone alerts --}}
+        <meta name="pcg-app-notify" content="{{ auth()->id() }}:{{ \App\Support\MemberNotifications::appToken(auth()->user()) }}">
+    @endif
     <script nonce="{{ $cspNonce ?? '' }}" src="{{ \App\Support\Asset::v('js/pcg-ui.js') }}" defer></script>
     @yield('styles')
 </head>
@@ -59,6 +63,12 @@
                 </button>
                 <h1 class="pcg-topbar__title">@yield('title', 'Dashboard')</h1>
                 <div class="pcg-topbar__user">
+                    @php($pcgUnread = \App\Support\MemberNotifications::unread((int) auth()->id()))
+                    <a class="pcg-bell {{ $pcgUnread ? 'has-new' : '' }}" href="{{ route('notifications') }}"
+                        aria-label="{{ $pcgUnread ? $pcgUnread . ' new ' . ($pcgUnread === 1 ? 'notification' : 'notifications') : 'Notifications' }}">
+                        <i class="fa-solid fa-bell" aria-hidden="true"></i>
+                        @if ($pcgUnread)<span class="pcg-bell__count" aria-hidden="true">{{ $pcgUnread > 99 ? '99+' : $pcgUnread }}</span>@endif
+                    </a>
                     @php($pcgInitials = collect(preg_split('/\s+/', trim((string) auth()->user()->name)))->filter()->map(fn ($w) => mb_substr($w, 0, 1))->take(2)->implode(''))
                     <span class="pcg-avatar" aria-hidden="true">{{ mb_strtoupper($pcgInitials) }}</span>
                     <span><strong>{{ auth()->user()->name }}</strong> · {{ auth()->user()->rank }} {{ auth()->user()->serial_number }}</span>

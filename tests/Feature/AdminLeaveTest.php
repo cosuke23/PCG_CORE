@@ -85,6 +85,7 @@ class AdminLeaveTest extends TestCase
 
         $this->post('/admin/leave/' . $this->leaveOf($this->ben)->id . '/review', ['decision' => 'approve'])->assertForbidden();
         $this->post('/admin/leave/' . $this->leaveOf($this->ana)->id . '/review', ['decision' => 'approve'])->assertSessionHas('success');
+        $this->assertDatabaseHas('member_notifications', ['user_id' => $this->ana, 'kind' => 'leave.approved', 'url' => '/leave?month=2026-11']);
 
         $row = $this->leaveOf($this->ana);
         $this->assertSame('approved', $row->status);

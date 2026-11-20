@@ -78,6 +78,7 @@ class SoiSubmissionController extends Controller
         }
         DB::table('users')->where('id', $m->id)->update(['soi_submitted_at' => null]);
         AdminAudit::record('soi.reopened', 'users:' . $m->id, ['reason' => $data['reason'], 'submitted_at' => (string) $m->soi_submitted_at]);
+        \App\Support\MemberNotifications::send((int) $m->id, 'soi.reopened', 'Your SOI is open for corrections', $data['reason'] . ' · Submit it again when you are done.', '/profile');
 
         return back()->with('success', 'Reopened the SOI of ' . $m->name . '. They can correct it and must submit it again.')
             ->with('reopened', $m->id);

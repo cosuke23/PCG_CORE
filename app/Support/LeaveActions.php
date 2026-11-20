@@ -83,6 +83,10 @@ class LeaveActions
         ]);
 
         self::notifyMember($leave, $status === 'approved', $note);
+        MemberNotifications::send((int) $leave->user_id, 'leave.' . $status,
+            'Your ' . LeaveTypes::label($leave->leave_type) . ' is ' . $status,
+            LeaveCalendar::dateLabel((string) $leave->start_date, (string) $leave->end_date) . ($note ? ' · ' . $note : ''),
+            '/leave?month=' . substr((string) $leave->start_date, 0, 7));
 
         return [true, LeaveTypes::label($leave->leave_type) . ' of ' . $leave->name . ' for '
             . LeaveCalendar::dateLabel((string) $leave->start_date, (string) $leave->end_date) . ' is ' . $status . '.'];

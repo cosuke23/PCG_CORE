@@ -203,6 +203,11 @@ class UnitDocumentController extends Controller
             $name = DB::table('personnel_data as pd')->join('users as u', 'u.serial_number', '=', 'pd.serial_number')
                 ->where('pd.id', $rowId)->where(fn ($q) => \App\Models\UnitUser::recordOwner($q))->value('u.name') ?? $serial;
             $returned = $decision === 'rejected' ? count(array_filter($docs, fn ($d) => is_array($d) && isset($d['checked']))) : 0;
+            $memberId = (int) DB::table('personnel_data as pd')->join('users as u', 'u.serial_number', '=', 'pd.serial_number')
+                ->where('pd.id', $rowId)->where(fn ($q) => \App\Models\UnitUser::recordOwner($q))->value('u.id');
+            \App\Support\MemberNotifications::send($memberId, 'documents.' . $decision,
+                $decision === 'approved' ? 'Your required documents are approved' : ($returned ? "{$returned} " . ($returned === 1 ? 'document was' : 'documents were') . ' returned to you' : 'Your required documents were returned'),
+                $decision === 'approved' ? 'Your unit checker accepted them.' : 'Read the comments and upload them again.', '/documents/upload');
 
             return back()
                 ->with('success', $decision === 'approved'
@@ -244,7 +249,7 @@ class UnitDocumentController extends Controller
         $row = \App\Support\Review201::queueFor(session('unit_name'), $isM1)
             ->where('p201.serial_number', $request->serial_number)
             ->orderByDesc('p201.id')
-            ->first(['p201.*', 'u.name as applicant_name']);
+            ->first(['p201.*', 'u.name as applicant_name', 'u.id as applicant_user_id']);
         abort_unless($row, 403, 'This member is not in your unit.');
 
         $serial = $row->serial_number;
@@ -288,6 +293,9 @@ class UnitDocumentController extends Controller
 
         $name = $row->applicant_name ?: $serial;
         $n = count($returned);
+        \App\Support\MemberNotifications::send((int) ($row->applicant_user_id ?? 0), '201.' . $request->decision,
+            $request->decision === 'approved' ? 'Your 201 file is approved' : ($n ? "{$n} " . ($n === 1 ? 'section' : 'sections') . ' of your 201 file returned' : 'Your 201 file was returned'),
+            $request->decision === 'approved' ? 'Your unit checker accepted it.' : 'Read the comments and upload them again.', '/upload-201');
 
         return back()
             ->with('success', $request->decision === 'approved'
