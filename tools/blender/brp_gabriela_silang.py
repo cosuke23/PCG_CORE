@@ -213,6 +213,7 @@ def fore_h(x):
 
 
 AFT_DROP = 2.4   # the stern working deck is one deck below the helideck (photos)
+AFT_BULWARK = 1.4   # solid bulwark round it, measured from the lowered hull edge
 
 
 def aft_drop(x):
@@ -228,7 +229,7 @@ STATIONS = 200
 rings = []
 for i in range(STATIONS + 1):
     x = X0 + (X1 - X0) * i / STATIONS
-    top = deck_z(x) + fore_h(x) + aft_drop(x)
+    top = deck_z(x) + fore_h(x) + aft_drop(x) + (AFT_BULWARK if x < -33.4 else 0.0)
     bot = min(keel_z(x), top - 0.01)
     w = half_beam(x)
     b = bowness(x)
@@ -421,11 +422,8 @@ for s in (1, -1):
 # helideck plate and aft working deck
 misc.box(-33.1, -13.8, -7.6, 7.6, DECK + 0.25, DECK + 0.55, "Helideck",
          uvfn=lambda co, f: ((co.x + 33.1) / 19.3, (co.y + 7.6) / 15.2))
-misc.box(-41.8, -33.1, -7.5, 7.5, DECK + 0.02, DECK + 0.2, "BlueDeck")
+misc.box(-41.8, -33.35, -7.5, 7.5, DECK + 0.3, DECK + 0.42, "BlueDeck")
 # deck crane (orange) and life-raft canisters at the stern
-for y in (-5.2, -3.8, 5.5, 4.1):
-    misc.cylinder((-40.6, y, DECK + 0.9), (-38.8, y, DECK + 0.9), 0.55, None, 18, "White")
-    misc.box(-40.4, -39.0, y - 0.5, y + 0.5, DECK + 0.2, DECK + 0.4, "Steel")
 # bow fittings: windlass, bollards, jack staff, anchor hawse pipes
 misc.cylinder((31.0, -1.4, DECK + 0.6), (31.0, 1.4, DECK + 0.6), 0.45, None, 18, "Dark")
 for x in (25.0, 28.0):
@@ -463,10 +461,10 @@ def rail_run(pts, z0, h=1.05, spacing=1.6):
 
 for s in (1, -1):
     rail_run([(-33.0, s * 7.55), (-14.0, s * 7.55)], DECK + 0.55)          # helideck edges
-    rail_run([(-41.6, s * 7.5), (-33.3, s * 7.5)], DECK + 0.2)              # aft working deck
+    rail_run([(-41.6, s * 7.5), (-33.4, s * 7.5)], DECK + AFT_BULWARK)      # aft working deck, on the bulwark
     rail_run([(-13.5, s * 7.4), (-9.2, s * 7.4)], L1 + 0.15)               # aft roof
     rail_run([(6.6, s * 7.3), (8.6, s * 7.3)], L1 + 0.15)
-rail_run([(-41.6, 7.5), (-41.6, -7.5)], DECK + 0.2)
+rail_run([(-41.75, 7.5), (-41.75, -7.5)], DECK + AFT_BULWARK)
 rail_run([(9.0, 7.2), (14.0, 7.2), (15.4, 6.7), (16.1, 5.4), (16.25, 0.0), (16.1, -5.4), (15.4, -6.7), (14.0, -7.2), (9.0, -7.2)], L1 + 0.15)   # forward deckhouse roof
 rails.finish()
 
@@ -653,9 +651,9 @@ for s in (1, -1):
 for s in (1, -1):
     for x in (-40.2, -35.0):
         for dx in (0, 0.7):
-            det.cylinder((x + dx, s * 6.4, DECK + 0.2), (x + dx, s * 6.4, DECK + 0.85), 0.17, None, 12, "Dark")
-        det.box(x - 0.2, x + 0.9, s * 6.4 - 0.2, s * 6.4 + 0.2, DECK + 0.2, DECK + 0.3, "Dark")
-    det.cylinder((-38.0, s * 1.6, DECK + 0.2), (-38.0, s * 1.6, DECK + 0.9), 0.38, 0.3, 16, "Dark")
+            det.cylinder((x + dx, s * 6.4, DECK + 0.2), (x + dx, s * 6.4, DECK + 0.85), 0.17, None, 12, "White")
+        det.box(x - 0.2, x + 0.9, s * 6.4 - 0.2, s * 6.4 + 0.2, DECK + 0.2, DECK + 0.5, "White")
+    det.cylinder((-38.0, s * 1.6, DECK + 0.2), (-38.0, s * 1.6, DECK + 0.9), 0.38, 0.3, 16, "White")
     det.box(-41.9, -41.4, s * 6.4 - 0.5, s * 6.4 + 0.5, DECK + 0.2, DECK + 0.65, "Steel")
     det.box(23.5, 24.3, s * 4.2 - 0.25, s * 4.2 + 0.25, DECK + 0.45, DECK + 0.9, "Steel")
     # anchor chains from the windlass to the hawse pipes
@@ -746,28 +744,24 @@ for k in range(5):
     ra = 0.32 - k * 0.04
     st.cylinder((xa, ws_y, ws_z + 3.9 - k * 0.05), (xa - 0.32, ws_y, ws_z + 3.9 - (k + 1) * 0.05), ra, ra - 0.04, 14,
                 "Orange" if k % 2 == 0 else "White", caps=(k == 4), smooth=True)
-# deck crane: pedestal, slewing house, knuckle boom with hydraulic ram, hook block
+# deck crane (photo): small white knuckle-boom crane, stowed folded
 cx, cy = -37.6, -3.6
-st.box(cx - 0.7, cx + 0.7, cy - 0.7, cy + 0.7, DECK + 0.2, DECK + 0.5, "Steel")
-st.cylinder((cx, cy, DECK + 0.5), (cx, cy, DECK + 1.9), 0.42, 0.42, 18, "Orange")
-st.box(cx - 0.55, cx + 0.55, cy - 0.5, cy + 0.5, DECK + 1.9, DECK + 2.6, "Orange")
-st.box(cx - 0.75, cx - 0.5, cy - 0.35, cy + 0.35, DECK + 2.0, DECK + 2.5, "Dark")        # operator panel
-st.cylinder((cx + 0.2, cy, DECK + 2.4), (cx + 3.4, cy, DECK + 4.0), 0.2, 0.15, 10, "Orange")  # main boom
-st.cylinder((cx + 3.4, cy, DECK + 4.0), (cx + 5.0, cy, DECK + 3.0), 0.14, 0.1, 10, "Orange")  # jib (knuckle)
-st.cylinder((cx + 0.3, cy, DECK + 1.7), (cx + 1.9, cy, DECK + 3.05), 0.1, None, 8, "Steel")   # ram
-st.cylinder((cx + 5.0, cy, DECK + 3.0), (cx + 5.0, cy, DECK + 1.5), 0.015, None, 4, "Dark")   # wire
-st.box(cx + 4.85, cx + 5.15, cy - 0.12, cy + 0.12, DECK + 1.2, DECK + 1.5, "Orange")         # hook block
-# life-raft canister cradles
-for y in (-5.2, -3.8, 5.5, 4.1):
-    for x in (-40.3, -39.1):
-        st.box(x - 0.08, x + 0.08, y - 0.55, y + 0.55, DECK + 0.4, DECK + 0.75, "Steel")
+st.box(cx - 0.6, cx + 0.6, cy - 0.6, cy + 0.6, DECK + 0.2, DECK + 0.6, "Steel")
+st.cylinder((cx, cy, DECK + 0.6), (cx, cy, DECK + 1.6), 0.36, 0.36, 18, "White")
+st.box(cx - 0.5, cx + 0.5, cy - 0.45, cy + 0.45, DECK + 1.6, DECK + 2.2, "White")
+st.box(cx - 0.65, cx - 0.45, cy - 0.3, cy + 0.3, DECK + 1.7, DECK + 2.1, "Dark")        # operator panel
+st.cylinder((cx + 0.2, cy, DECK + 2.0), (cx + 3.2, cy, DECK + 2.5), 0.17, 0.13, 10, "White")  # main boom, lowered
+st.cylinder((cx + 3.2, cy, DECK + 2.5), (cx + 1.4, cy, DECK + 2.15), 0.12, 0.09, 10, "White")  # jib folded back
+st.cylinder((cx + 0.3, cy, DECK + 1.5), (cx + 1.8, cy, DECK + 2.2), 0.08, None, 8, "Steel")   # ram
+st.box(cx + 1.25, cx + 1.5, cy - 0.1, cy + 0.1, DECK + 1.85, DECK + 2.1, "Orange")         # hook block
+st.box(cx + 3.0, cx + 3.4, cy - 0.3, cy + 0.3, DECK + 0.2, DECK + 2.3, "Steel")           # boom rest
 # aft deck hatches, mooring winches, stern fairleads, lights and an ensign staff
 st.box(-37.0, -35.4, 2.0, 3.6, DECK + 0.2, DECK + 0.3, "Steel")
 st.box(-34.5, -33.6, -1.0, 1.0, DECK + 0.2, DECK + 0.3, "Steel")
 for s in (1, -1):
-    st.cylinder((-36.2, s * 4.7, DECK + 0.6), (-36.2, s * 4.7 + s * 1.0, DECK + 0.6), 0.4, None, 16, "Dark")
+    st.cylinder((-36.2, s * 4.7, DECK + 0.6), (-36.2, s * 4.7 + s * 1.0, DECK + 0.6), 0.4, None, 16, "White")
     st.box(-36.6, -35.8, s * 4.5 - 0.2, s * 4.5 + 0.2, DECK + 0.2, DECK + 0.6, "Steel")
-    st.box(-42.05, -41.85, s * 3.6 - 0.45, s * 3.6 + 0.45, DECK - 0.55, DECK - 0.15, "Dark")   # transom fairleads
+    st.box(-42.05, -41.85, s * 3.6 - 0.45, s * 3.6 + 0.45, DECK + 0.75, DECK + 1.15, "Dark")   # transom fairleads
     st.box(-42.08, -41.9, s * 6.2 - 0.18, s * 6.2 + 0.18, DECK - 1.1, DECK - 0.9, "Lamp")     # stern lights
 st.cylinder((-41.5, 0.0, DECK + 0.2), (-41.5, 0.0, DECK + 3.4), 0.05, 0.035, 8, "Mast")
 st.sphere((-41.5, 0.0, DECK + 3.45), 0.08, "Mast", 8, 6)
@@ -852,7 +846,7 @@ for s in (1, -1):
 # stairs from the helideck down to the stern deck, one each side, with handrails
 for s in (1, -1):
     y = s * 5.6
-    p0, p1 = Vector((-33.35, y, DECK + 0.55)), Vector((-36.6, y, DECK - AFT_DROP + 0.2))
+    p0, p1 = Vector((-33.35, y, DECK + 0.55)), Vector((-36.6, y, DECK - AFT_DROP + 0.42))
     for sgn in (1, -1):
         side = Vector((0, sgn * 0.4, 0))
         hw.cylinder(p0 + side, p1 + side, 0.04, None, 6, "Rail", caps=False)
@@ -876,6 +870,29 @@ for s in (1, -1):
         for dx in (-0.48, 0.42):
             hw.cylinder((x + dx, s * 5.0, DECK + 1.0), (x + dx + 0.06, s * 5.0, DECK + 1.0), 0.5, None, 18, "Orange")
 hw.finish(smooth_angle=30)
+
+# solid bulwark round the sunken stern deck (photo): the hull side rises AFT_BULWARK above the
+# hull edge there; white inner face and top cap on both sides and across the transom
+sb = Builder("SternBulwark")
+SB_Z0 = DECK - AFT_DROP + 0.3
+for side in (1, -1):
+    prev = None
+    for i in range(0, 25):
+        x = X0 + 0.02 + (-33.35 - X0 - 0.02) * i / 24
+        w = half_beam(x) * 0.985
+        wo = half_beam(x) * 0.997
+        top = DECK - AFT_DROP + AFT_BULWARK
+        pts = (sb.bm.verts.new((x, side * w, SB_Z0)), sb.bm.verts.new((x, side * w, top)), sb.bm.verts.new((x, side * wo, top)))
+        if prev:
+            if side > 0:
+                fs = [sb.bm.faces.new((prev[0], pts[0], pts[1], prev[1])), sb.bm.faces.new((prev[1], pts[1], pts[2], prev[2]))]
+            else:
+                fs = [sb.bm.faces.new((prev[1], pts[1], pts[0], prev[0])), sb.bm.faces.new((prev[2], pts[2], pts[1], prev[1]))]
+            sb.tag(fs, "White")
+        prev = pts
+hbt = half_beam(X0) * 0.99
+sb.box(X0 + 0.01, X0 + 0.16, -hbt, hbt, SB_Z0, DECK - AFT_DROP + AFT_BULWARK + 0.02, "White")
+sb.finish(smooth_angle=30)
 
 # ------------------------------------------------------------------ gaff for the flag (the flag itself is cloth in the web scene)
 gaff = Builder("Gaff")

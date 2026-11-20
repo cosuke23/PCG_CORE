@@ -441,9 +441,9 @@ async function start() {
     bagong.colorSpace = THREE.SRGBColorSpace;
     sideDecal(bagong, { width: 0.11, height: 0.103, x: 0.14, y: 1.05, z: 0.7955 });   // Bagong Pilipinas logo on the box under the bridge, both sides
     const sternName = new THREE.Mesh(new THREE.PlaneGeometry(0.6, 0.06), new THREE.MeshStandardMaterial({ map: textTex('GABRIELA SILANG', '700 {s}px Inter, Arial, sans-serif', '#1b1f25', 10), transparent: true, polygonOffset: true, polygonOffsetFactor: -2 }));
-    sternName.position.set(X0 - 0.004, 0.35, 0); sternName.rotation.y = -Math.PI / 2; ship.add(sternName);
+    sternName.position.set(X0 - 0.004, 0.44, 0); sternName.rotation.y = -Math.PI / 2; ship.add(sternName);
     const homePort = new THREE.Mesh(new THREE.PlaneGeometry(0.26, 0.04), new THREE.MeshStandardMaterial({ map: textTex('MANILA', '700 {s}px Inter, Arial, sans-serif', '#1b1f25', 6.5), transparent: true, polygonOffset: true, polygonOffsetFactor: -2 }));
-    homePort.position.set(X0 - 0.004, 0.285, 0); homePort.rotation.y = -Math.PI / 2; ship.add(homePort);
+    homePort.position.set(X0 - 0.004, 0.375, 0); homePort.rotation.y = -Math.PI / 2; ship.add(homePort);
 
     // ------------------------------------------------------------ Philippine flag on the gaff (cloth)
     const flagTex = canvasTex(512, 256, (g) => {
