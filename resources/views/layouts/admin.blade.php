@@ -55,6 +55,7 @@
                     <div class="pcg-nav__section">HRMIS</div>
                     @include('layouts.partials.nav-link', $link('admin.hrmis.index', 'chart-column', 'Overview', 'admin.hrmis.*'))
                     @include('layouts.partials.nav-link', $link('admin.personnel.index', 'id-card', 'Personnel', 'admin.personnel.*'))
+                    @include('layouts.partials.nav-link', $link('admin.promotions', 'ranking-star', 'Promotions', 'admin.promotions*'))
                     @include('layouts.partials.nav-link', $link('admin.unit-check', 'code-compare', 'Unit check', 'admin.unit-check*'))
                     @if ($can('registration.review'))
                         @include('layouts.partials.nav-link', $link('admin.registrations.index', 'user-plus', 'Registrations', 'admin.registrations.*'))

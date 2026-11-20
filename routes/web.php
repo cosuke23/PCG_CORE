@@ -266,6 +266,11 @@ Route::middleware(['admin.session', 'admin.audit'])->group(function () {
         ->middleware('admin.can:personnel.view')->name('admin.hrmis.index');
     Route::post('/admin/hrmis/export', [\App\Http\Controllers\HrmisDashboardController::class, 'export'])
         ->middleware(['admin.can:personnel.view', 'admin.can:reports.view'])->name('admin.hrmis.export');
+    // promotion eligibility by time in grade and schooling (App\Support\PromotionEligibility)
+    Route::get('/admin/promotions', [\App\Http\Controllers\PromotionEligibilityController::class, 'index'])
+        ->middleware('admin.can:personnel.view')->name('admin.promotions');
+    Route::get('/admin/promotions/export', [\App\Http\Controllers\PromotionEligibilityController::class, 'export'])
+        ->middleware(['admin.can:personnel.view', 'admin.can:reports.view'])->name('admin.promotions.export');
     // one unit per member: sign-up unit vs HRMIS assignment (App\Support\UnitMismatch)
     Route::get('/admin/unit-check', [\App\Http\Controllers\UnitMismatchController::class, 'index'])
         ->middleware('admin.can:personnel.view')->name('admin.unit-check');

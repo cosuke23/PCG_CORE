@@ -36,6 +36,17 @@ return [
         ],
     ],
 
+    // Promotion eligibility (App\Support\PromotionEligibility): years in grade per classification,
+    // and per rank code {"years": n, "courses": ["keyword", ...]} (courses matched in the training
+    // records). Defaults until the PCG directive is supplied; PCG_PROMOTION_RANKS takes JSON.
+    'promotion' => [
+        'years' => [
+            'non_officer' => (float) env('PCG_PROMOTION_YEARS_NON_OFFICER', 2),
+            'officer' => (float) env('PCG_PROMOTION_YEARS_OFFICER', 3),
+        ],
+        'ranks' => json_decode((string) env('PCG_PROMOTION_RANKS', '{}'), true) ?: [],
+    ],
+
     // Deployments / sea duty (App\Support\Deployments): RNR days suggested per 30 days
     // deployed when a deployment ends (0 = no suggestion; the checker types the days).
     'deployment' => [
