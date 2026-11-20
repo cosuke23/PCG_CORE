@@ -362,6 +362,28 @@ for k in range(10):
     ab.cylinder((-13.55, y, L1 + 0.15), (-13.55, y, L1 + 1.2), 0.026, None, 6, "Rail", caps=False)
 ab.finish(smooth_angle=30)
 
+# aft end of the superstructure (photo): a low solid bulwark round the blue aft roof deck, and a
+# white side plate closing the back of each boat bay, its forward edge raked down and forward
+aw = Builder("AftSuperstructure")
+for s in (1, -1):
+    aw.box(-13.75, -8.8, min(s * (SW - 0.08), s * (SW + 0.02)), max(s * (SW - 0.08), s * (SW + 0.02)), L1, L1 + 0.55, "White")
+aw.box(-13.8, -13.7, -SW, SW, L1, L1 + 0.55, "White")
+for s in (1, -1):
+    y0, y1 = sorted((s * SW, s * (SW + 0.06)))
+    before = set(aw.bm.faces)
+    pts = [(-13.75, DECK), (-10.9, DECK), (-12.7, 9.6), (-13.75, 9.6)]
+    va = [aw.bm.verts.new((x, y0, z)) for x, z in pts]
+    vb = [aw.bm.verts.new((x, y1, z)) for x, z in pts]
+    aw.bm.faces.new(list(reversed(va)))
+    aw.bm.faces.new(vb)
+    for i in range(4):
+        j = (i + 1) % 4
+        aw.bm.faces.new((va[i], va[j], vb[j], vb[i]))
+    aw.tag([f for f in aw.bm.faces if f not in before], "White")
+    # life-buoy on the plate
+    aw.cylinder((-12.9, s * (SW + 0.06), 8.2), (-12.9, s * (SW + 0.14), 8.2), 0.34, None, 18, "Orange")
+aw.finish(smooth_angle=30)
+
 misc = Builder("Fittings")
 # blue roof decks
 misc.box(-13.5, -9.0, -SW + 0.25, SW - 0.25, L1, L1 + 0.15, "BlueDeck")
@@ -607,16 +629,6 @@ for s, nm in ((1, "RhibPort"), (-1, "RhibStarboard")):
 
 # ------------------------------------------------------------------ finer detail (things that read at landing-page distance)
 det = Builder("Details")
-# twin exhaust uptakes on the aft roof, soot-dark tops and side louvres
-for s in (1, -1):
-    yc = s * 4.6
-    det.box(-12.4, -9.8, yc - 0.9, yc + 0.9, L1 + 0.15, L1 + 2.5, "White")
-    det.box(-12.3, -9.9, yc - 0.8, yc + 0.8, L1 + 2.5, L1 + 2.62, "Dark")
-    for x in (-11.6, -10.6):
-        det.cylinder((x, yc, L1 + 2.5), (x, yc, L1 + 2.95), 0.28, 0.26, 14, "Dark")
-    for k in range(5):
-        z = L1 + 0.6 + k * 0.32
-        det.box(-12.2, -10.0, yc + s * 0.9 - 0.02, yc + s * 0.9 + 0.04, z, z + 0.12, "Dark")
 # watertight doors and portholes on the superstructure sides
 for s in (1, -1):
     for x0, yy in ((2.5, SW), (9.3, SW - 0.2)):
@@ -784,7 +796,7 @@ def ladder(p0, p1, width=0.7, steps=8):
 for s in (1, -1):
     ladder((-11.0, s * 1.8, L1 + 0.15), (-8.9, s * 1.8, L2 + 0.15))
 # roof equipment: air-conditioning condensers, mushroom vents, cable trays
-for x, y in ((-12.6, 1.6), (-12.6, -1.6), (7.4, 3.8), (7.4, -3.8)):
+for x, y in ((7.4, 3.8), (7.4, -3.8)):
     sd.box(x - 0.6, x + 0.6, y - 0.45, y + 0.45, L1 + 0.15, L1 + 0.95, "White")
     sd.cylinder((x, y, L1 + 0.95), (x, y, L1 + 1.0), 0.36, None, 16, "Dark")
 for x, y in ((-6.0, 3.2), (-6.0, -3.2), (2.0, 0.0)):
