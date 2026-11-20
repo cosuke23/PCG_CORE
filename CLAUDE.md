@@ -21,6 +21,7 @@ php artisan pcg:purge-accounts --keep-admin=EMAIL [--keep-user=EMAIL] [--keep-si
 php artisan pcg:reset-documents SERIAL [--reason=TEXT] [--apply]  # clear one member's required documents so they upload them again (dry run by default; back up first; files stay on disk)
 php artisan pcg:schema-report [--table=NAME]  # read-only: table layout of the connected DB (no rows), to match the dev schema to Hermes
 php artisan pcg:move-uploads [--apply]  # copy uploads out of public/ into private storage (never deletes)
+php artisan pcg:app-key-rotate [--apply]  # new APP_KEY (e.g. after exposure): re-encrypts admin 2FA data, old key not kept, .env backed up; then config:cache; everyone signs in again (dry run by default)
 php artisan pcg:file-keys init|status|rotate|retire|backup  # master keys for upload encryption (docs/FILE_ENCRYPTION.md)
 php artisan pcg:files status|encrypt|verify|rewrap [--apply]  # encrypt older uploads, verify after a restore, rewrap after rotation
 php artisan migrate           # additive pcg migrations only (back up first)
