@@ -188,6 +188,22 @@ async function start() {
         };
         const line = (a, b, c2, d, wpx, color = C.boot) => { const [x1, y1] = px(a, b), [x2, y2] = px(c2, d); g.strokeStyle = color; g.lineWidth = wpx; g.beginPath(); g.moveTo(x1, y1); g.lineTo(x2, y2); g.stroke(); };
         g.fillStyle = C.hull; g.fillRect(0, 0, W, H);
+        // weathering: faint plate seams, grime just above the waterline, rust streaks under openings
+        g.globalAlpha = 0.07; g.strokeStyle = '#5b6470'; g.lineWidth = 2;
+        for (let x = X0 + 0.24; x < X1; x += 0.24) { const [a] = px(x, 0); g.beginPath(); g.moveTo(a, 0); g.lineTo(a, H); g.stroke(); }
+        [0.3, 0.52].forEach((y) => { const [, b] = px(0, y); g.beginPath(); g.moveTo(0, b); g.lineTo(W, b); g.stroke(); });
+        g.globalAlpha = 1;
+        { const [, top] = px(0, 0.16), [, bot] = px(0, 0.05);
+          const grd = g.createLinearGradient(0, top, 0, bot); grd.addColorStop(0, 'rgba(90,96,80,0)'); grd.addColorStop(1, 'rgba(90,96,80,0.28)');
+          g.fillStyle = grd; g.fillRect(0, top, W, bot - top); }
+        const streak = (x, y0, len, a = 0.16, color = '120,82,52') => {
+            const [sx, sy] = px(x, y0), [, ey] = px(x, y0 - len);
+            const grd = g.createLinearGradient(0, sy, 0, ey); grd.addColorStop(0, `rgba(${color},${a})`); grd.addColorStop(1, `rgba(${color},0)`);
+            g.fillStyle = grd; g.fillRect(sx - 3, sy, 6, ey - sy);
+        };
+        [3.16, 3.22, 3.28].forEach((x) => streak(x, 0.44, 0.3, 0.22));                    // below the anchor recess
+        [-2.95, -2.84, -0.95, -0.84, 2.84, 2.95].forEach((x) => streak(x, 0.57, 0.2, 0.1, '70,78,88'));
+        for (let x = -3.9; x < 0.4; x += 0.55) streak(x + (Math.sin(x * 7) * 0.05), 0.68, 0.22, 0.06, '70,78,88');
         poly([[-4.4, -0.5], [-4.4, 0.21], [-2.45, 0.21], [-2.35, 0.05], [4.4, 0.05], [4.4, -0.5]], C.boot);   // dark bottom, deep band at the stern
         [-2.3, -2.0, -1.7].forEach((x) => line(x, 0.05, x + 0.26, 0.31, 10));                          // slanted aft accents
         line(-2.42, 0.31, -0.62, 0.31, 7); line(0.02, 0.28, 0.95, 0.28, 7); line(0.2, 0.56, 1.28, 0.56, 6);    // black lines
@@ -233,6 +249,8 @@ async function start() {
         Rubber: mat('#2c3238', { roughness: 0.8 }),
         Helideck: mat('#ffffff', { map: heliTex, roughness: 0.8 }),
         HangarDoor: mat('#aeb6c0', { roughness: 0.55, metalness: 0.3 }),
+        Red: paint('#c8102e'),
+        Net: mat('#2a2f36', { roughness: 0.95, transparent: true, opacity: 0.75 }),
     };
     const deckGrey = mat(C.deck, { roughness: 0.85 });
 

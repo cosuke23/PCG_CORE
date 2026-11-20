@@ -52,7 +52,7 @@ for name, hexc, r, m in [
     ("Dark", "#353c46", 0.75, 0), ("Glass", "#17212c", 0.08, 0.6), ("BridgeGlass", "#17212c", 0.08, 0.6),
     ("Mast", "#eef1f4", 0.4, 0), ("Rail", "#e6eaee", 0.35, 0.5), ("Orange", "#d9822b", 0.6, 0),
     ("RhibGrey", "#5a636d", 0.75, 0), ("Rubber", "#2c3238", 0.8, 0), ("Helideck", "#c3c9d1", 0.8, 0),
-    ("HangarDoor", "#aeb6c0", 0.55, 0.3), ("Steel", "#9aa3ad", 0.4, 0.6), ("Radar", "#f4f6f8", 0.5, 0),
+    ("HangarDoor", "#aeb6c0", 0.55, 0.3), ("Steel", "#9aa3ad", 0.4, 0.6), ("Radar", "#f4f6f8", 0.5, 0), ("Red", "#c8102e", 0.5, 0), ("Net", "#2a2f36", 0.9, 0),
 ]:
     material(name, srgb(hexc), r, m)
 
@@ -266,11 +266,11 @@ sup.profile([(-13.7, DECK), (2.0, DECK), (2.0, L1), (-13.7, L1)], 3.1, "White") 
 sup.profile([(-13.7, 9.6), (2.0, 9.6), (2.0, L1), (-13.7, L1)], SW, "White")              # roof over the bays
 sup.profile([(2.0, DECK), (8.8, DECK), (8.8, L1), (2.0, L1)], SW, "White")                # forward block
 sup.profile([(8.8, DECK), (18.6, DECK), (17.6, 10.0), (8.8, 10.0)], SW - 0.2, "White")   # lower forward deckhouse
-sup.profile([(-8.8, L1), (6.6, L1), (5.6, L2), (-8.4, L2)], 6.2, "White")                 # bridge
+sup.profile([(-8.8, L1), (5.8, L1), (6.8, L2), (-8.4, L2)], 6.2, "White")                 # bridge (windows raked forward)
 sup_ob = sup.finish(bevel=0.08, smooth_angle=30)
 
 glass = Builder("BridgeWindows")
-glass.profile([(-8.6, 12.3), (6.2, 12.3), (5.85, 13.3), (-8.45, 13.3)], 6.3, "BridgeGlass")
+glass.profile([(-8.6, 12.3), (6.27, 12.3), (6.66, 13.3), (-8.45, 13.3)], 6.3, "BridgeGlass")
 glass.finish()
 
 misc = Builder("Fittings")
@@ -281,7 +281,7 @@ for s in (1, -1):
 misc.box(-13.5, -9.0, -SW + 0.25, SW - 0.25, L1, L1 + 0.15, "BlueDeck")
 misc.box(6.6, 8.6, -SW + 0.4, SW - 0.4, L1, L1 + 0.15, "BlueDeck")
 misc.box(9.0, 17.4, -SW + 0.6, SW - 0.6, 10.0, 10.15, "BlueDeck")
-misc.box(-8.6, 6.0, -6.1, 6.1, L2, L2 + 0.15, "BlueDeck")
+misc.box(-8.6, 6.7, -6.1, 6.1, L2, L2 + 0.15, "BlueDeck")
 # side windows (slightly proud dark panes)
 for s in (1, -1):
     yy = s * (SW + 0.02)
@@ -403,6 +403,103 @@ for s, nm in ((1, "RhibPort"), (-1, "RhibStarboard")):
     r.cylinder((-0.5, s * 3.3, DECK), (-0.5, s * 3.3, 9.3), 0.18, 0.14, 12, "Rail")
     r.cylinder((-0.5, s * 3.3, 9.3), (-0.5, y0, 9.45), 0.14, None, 12, "Rail")
     r.finish(smooth_angle=40)
+
+# ------------------------------------------------------------------ finer detail (things that read at landing-page distance)
+det = Builder("Details")
+# sun visor over the raked bridge windows, with a dark underside
+det.box(6.55, 7.45, -6.45, 6.45, L2 - 0.02, L2 + 0.12, "White")
+det.box(6.55, 7.4, -6.4, 6.4, L2 - 0.06, L2 - 0.02, "Dark")
+# mullion bars on the bridge front
+for k in range(-5, 6):
+    y = k * 1.12
+    det.box(6.25, 6.7, y - 0.04, y + 0.04, 12.25, 13.35, "White")
+# twin exhaust uptakes on the aft roof, soot-dark tops and side louvres
+for s in (1, -1):
+    yc = s * 4.6
+    det.box(-12.4, -9.8, yc - 0.9, yc + 0.9, L1 + 0.15, L1 + 2.5, "White")
+    det.box(-12.3, -9.9, yc - 0.8, yc + 0.8, L1 + 2.5, L1 + 2.62, "Dark")
+    for x in (-11.6, -10.6):
+        det.cylinder((x, yc, L1 + 2.5), (x, yc, L1 + 2.95), 0.28, 0.26, 14, "Dark")
+    for k in range(5):
+        z = L1 + 0.6 + k * 0.32
+        det.box(-12.2, -10.0, yc + s * 0.9 - 0.02, yc + s * 0.9 + 0.04, z, z + 0.12, "Dark")
+# watertight doors and portholes on the superstructure sides
+for s in (1, -1):
+    for x0, yy in ((2.5, SW), (9.3, SW - 0.2)):
+        y = s * (yy + 0.02)
+        det.box(x0, x0 + 0.9, y - 0.04, y + 0.04, DECK + 0.2, DECK + 2.1, "Steel")
+        det.box(x0 + 0.65, x0 + 0.78, y + s * 0.03, y + s * 0.09, DECK + 1.0, DECK + 1.15, "Dark")
+    for x in (4.2, 5.4, 6.6, 7.8):
+        y = s * (SW + 0.01)
+        det.cylinder((x, y, 8.4), (x, y + s * 0.05, 8.4), 0.2, None, 12, "Glass")
+    for x in (11.0, 12.6, 14.2, 15.8):
+        y = s * (SW - 0.2 + 0.03)
+        det.box(x, x + 0.5, y - 0.03, y + 0.03, 9.2, 9.6, "Glass")
+# life-raft canister racks on the 01-deck roof, both sides
+for s in (1, -1):
+    det.box(10.0, 15.6, s * 6.3 - 0.45, s * 6.3 + 0.45, 10.15, 10.3, "Steel")
+    for x in (10.6, 12.0, 13.4, 14.8):
+        det.cylinder((x - 0.55, s * 6.3, 10.85), (x + 0.55, s * 6.3, 10.85), 0.5, None, 18, "White")
+        det.cylinder((x - 0.05, s * 6.3, 10.85), (x + 0.05, s * 6.3, 10.85), 0.52, None, 18, "Dark")
+# fire-fighting monitors on the forward deckhouse roof
+for s in (1, -1):
+    det.cylinder((16.6, s * 2.4, 10.15), (16.6, s * 2.4, 11.2), 0.22, 0.18, 14, "Red")
+    det.sphere((16.6, s * 2.4, 11.3), 0.26, "Red", 14, 8)
+    det.cylinder((16.6, s * 2.4, 11.35), (17.7, s * 2.4, 11.7), 0.09, 0.06, 10, "Red")
+# helideck: perimeter safety nets outboard of the edge, landing lights
+for s in (1, -1):
+    det.box(-33.0, -14.0, min(s * 7.6, s * 8.6), max(s * 7.6, s * 8.6), DECK + 0.42, DECK + 0.48, "Net")
+    for x in (-32.0, -28.0, -24.0, -20.0, -16.0):
+        det.cylinder((x, s * 7.4, DECK + 0.55), (x, s * 7.4, DECK + 0.68), 0.09, None, 8, "Orange")
+# mooring gear: stern bitts, fairleads and capstans; forecastle fairleads
+for s in (1, -1):
+    for x in (-40.2, -35.0):
+        for dx in (0, 0.7):
+            det.cylinder((x + dx, s * 6.4, DECK + 0.2), (x + dx, s * 6.4, DECK + 0.85), 0.17, None, 12, "Dark")
+        det.box(x - 0.2, x + 0.9, s * 6.4 - 0.2, s * 6.4 + 0.2, DECK + 0.2, DECK + 0.3, "Dark")
+    det.cylinder((-38.0, s * 1.6, DECK + 0.2), (-38.0, s * 1.6, DECK + 0.9), 0.38, 0.3, 16, "Dark")
+    det.box(-41.9, -41.4, s * 6.4 - 0.5, s * 6.4 + 0.5, DECK + 0.2, DECK + 0.65, "Steel")
+    det.box(23.5, 24.3, s * 4.2 - 0.25, s * 4.2 + 0.25, DECK + 0.45, DECK + 0.9, "Steel")
+    # anchor chains from the windlass to the hawse pipes
+    det.cylinder((31.0, s * 1.2, DECK + 0.62), (32.3, s * 1.45, DECK + 0.5), 0.12, None, 8, "Dark")
+# anchors stowed in the hull recesses (stockless: shank and flukes)
+for s in (1, -1):
+    x = 32.2
+    y = s * (half_beam(x) * 0.99 + 0.08)
+    det.box(x - 0.12, x + 0.12, y - 0.08, y + 0.08, 5.15, 6.75, "Dark")
+    det.box(x - 0.55, x + 0.55, y - 0.1, y + 0.1, 4.75, 5.2, "Dark")
+    det.cylinder((x - 0.55, y, 5.0), (x - 0.75, y, 5.5), 0.11, 0.05, 8, "Dark")
+    det.cylinder((x + 0.55, y, 5.0), (x + 0.75, y, 5.5), 0.11, 0.05, 8, "Dark")
+# rubbing strakes along the parallel body
+for s in (1, -1):
+    det.cylinder((-33.0, s * 8.04, 5.9), (4.0, s * 8.04, 5.9), 0.1, None, 8, "White")
+    det.cylinder((-33.0, s * 8.03, 2.4), (-6.0, s * 8.03, 2.4), 0.08, None, 8, "White")
+# forecastle railing following the deck edge, and a breakwater ahead of the deckhouse
+for s in (1, -1):
+    pts = [(18.8 + (40.6 - 18.8) * i / 12) for i in range(13)]
+    for xa, xb in zip(pts, pts[1:]):
+        ya, yb = s * half_beam(xa) * 0.97, s * half_beam(xb) * 0.97
+        za, zb = deck_z(xa) + 1.0, deck_z(xb) + 1.0
+        det.cylinder((xa, ya, za), (xb, yb, zb), 0.035, None, 6, "Rail", caps=False)
+        det.cylinder((xa, ya, deck_z(xa)), (xa, ya, za), 0.03, None, 6, "Rail", caps=False)
+det.profile([(19.2, DECK + 0.3), (20.4, DECK + 0.3), (19.6, DECK + 1.3)], 4.6, "White")
+# mast: navigation lights on the yards, horn, extra whip antennas, platform guard rails
+for z, w in ((18.0, 3.2), (21.2, 2.1)):
+    for s in (1, -1):
+        det.box(MX - 0.12, MX + 0.12, s * w - 0.12, s * w + 0.12, z + 0.08, z + 0.35, "Dark")
+        det.cylinder((MX, s * w, z), (MX, s * w, z + 2.4), 0.03, 0.015, 6, "Mast")
+for z, half in ((16.8, 1.8), (19.2, 1.3)):
+    for (xa, ya), (xb, yb) in (((-1, -1), (1, -1)), ((1, -1), (1, 1)), ((1, 1), (-1, 1)), ((-1, 1), (-1, -1))):
+        det.cylinder((MX + xa * half, ya * half, z + 0.55), (MX + xb * half, yb * half, z + 0.55), 0.025, None, 6, "Rail", caps=False)
+det.cylinder((MX + 0.8, 0, 22.4), (MX + 1.5, 0, 22.4), 0.12, 0.25, 12, "Dark")
+for x, y in ((MX + 1.0, 0.8), (MX + 1.0, -0.8)):
+    det.cylinder((x, y, top_z - 0.5), (x, y, top_z + 3.2), 0.03, 0.012, 6, "Mast")
+# boarding ladder rungs on the hull side under the bays
+for s in (1, -1):
+    for k in range(8):
+        z = 1.2 + k * 0.6
+        det.box(-6.4, -5.6, s * 8.02 - 0.03, s * 8.02 + 0.03, z, z + 0.06, "Steel")
+det.finish(smooth_angle=35)
 
 # ------------------------------------------------------------------ gaff for the flag (the flag itself is cloth in the web scene)
 gaff = Builder("Gaff")
