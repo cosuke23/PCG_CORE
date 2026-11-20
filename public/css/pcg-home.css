@@ -305,3 +305,118 @@ body.ph { margin: 0; font: 16px/1.6 var(--ph-sans); color: var(--ph-ink); backgr
     .ph-btn, .ph-card, .ph-nav a::after { transition: none; }
     .ph-btn:hover, .ph-card:hover { transform: none; }
 }
+
+/* ======================================================================
+ * Glass theme (owner request 2026-11-20): the PCG HRMIS landing page takes
+ * the look of the HRMIS portal and the MEPCOM pages: deep navy canvas with
+ * blue, crimson and gold glows, translucent panels, gradient banners and
+ * pill buttons. The three-commands banner and all entrance motion above stay.
+ * ==================================================================== */
+body.ph {
+    --ph-ink: #eef2fb;
+    --ph-muted: #b3bdd0;
+    --g-canvas: #070b18;
+    --g-panel: rgba(255, 255, 255, 0.055);
+    --g-panel-2: rgba(255, 255, 255, 0.085);
+    --g-line: rgba(255, 255, 255, 0.12);
+    --g-blur: saturate(160%) blur(18px);
+    --g-banner: linear-gradient(115deg, #1c3f96 0%, #4b2b98 38%, #b8285a 72%, #ef9f3a 100%);
+    --g-glows:
+        radial-gradient(900px 520px at 8% -8%, rgba(37, 84, 180, 0.40), transparent 62%),
+        radial-gradient(760px 520px at 100% 4%, rgba(170, 32, 64, 0.30), transparent 60%),
+        radial-gradient(900px 600px at 55% 115%, rgba(214, 170, 50, 0.10), transparent 60%);
+    color-scheme: dark;
+    background: var(--g-canvas);
+}
+.ph-skip { background: #0f172b; color: #fff; }
+
+/* strip + header: dark glass */
+.ph-strip { background: #05080f; border-bottom-color: rgba(255, 255, 255, 0.08); color: #b3bdd0; }
+.ph-strip strong { color: #fff; }
+.ph-strip p span { color: #5b6780; }
+.ph-strip a { color: var(--ph-gold-300); }
+.ph-top { background: rgba(7, 11, 24, 0.72); -webkit-backdrop-filter: var(--g-blur); backdrop-filter: var(--g-blur); border-bottom-color: rgba(255, 255, 255, 0.08); }
+.ph-brand span span { color: #b3bdd0; }
+.ph-nav a { color: #ccd5e4; }
+.ph-menu { border-radius: 999px; }
+.ph-mobile a { color: #ccd5e4; }
+.ph-mobile a i { color: var(--ph-gold-300); }
+
+/* buttons: pills */
+.ph-btn { border-radius: 999px; }
+.ph-btn--gold { box-shadow: 0 8px 22px rgba(235, 148, 64, 0.28); }
+.ph-btn--crimson { background: rgba(255, 255, 255, 0.06); color: #fff; border-color: rgba(255, 255, 255, 0.28); }
+.ph-btn--crimson:hover { background: rgba(255, 255, 255, 0.14); }
+.ph-eyebrow { color: var(--ph-gold-300); }
+
+/* hero: the banner stays; the band under it becomes the gradient banner */
+.ph-hero { background: var(--g-canvas); }
+.ph-hero__band { background: var(--g-banner); position: relative; isolation: isolate; overflow: hidden; }
+.ph-hero__band::after {
+    content: ""; position: absolute; z-index: -1; right: -60px; top: -120px; width: 340px; height: 340px; border-radius: 50%;
+    background: radial-gradient(circle at 35% 35%, rgba(255, 255, 255, 0.45), rgba(255, 255, 255, 0.05) 55%, transparent 70%); pointer-events: none;
+}
+.ph-hero h1 .ph-hero__gold { color: #ffd98a; }
+.ph-hero__in.is-in .ph-hero__gold .ph-w { background-image: linear-gradient(100deg, #ffd98a 0 42%, #fff6df 50%, #ffd98a 58% 100%); }
+.ph-credit { color: rgba(255, 255, 255, 0.75); }
+
+/* sections on the canvas */
+.ph-section { background-color: var(--g-canvas); background-image: var(--g-glows); }
+.ph-section h2, .ph-card h3, .ph-org__group h3, .ph-org__top strong, .ph-org__cmd strong, .ph-cta h2 { font-family: var(--ph-sans); letter-spacing: -0.02em; }
+.ph-section h2 { color: #fff; }
+.ph-lead { color: var(--ph-muted); }
+
+/* cards: glass */
+.ph-card--azure { background: linear-gradient(140deg, rgba(28, 63, 150, 0.85), rgba(75, 43, 152, 0.75) 60%, rgba(184, 40, 90, 0.6)); border: 1px solid rgba(255, 255, 255, 0.16); border-radius: 18px; }
+.ph-card--light, .ph-directory, .ph-org__group {
+    background: var(--g-panel); border: 1px solid var(--g-line); border-radius: 18px;
+    -webkit-backdrop-filter: var(--g-blur); backdrop-filter: var(--g-blur);
+    box-shadow: 0 1px 0 rgba(255, 255, 255, 0.04) inset, 0 18px 40px rgba(0, 0, 0, 0.3);
+}
+.ph-card--light { box-shadow: inset 0 3px 0 var(--ph-gold-400), 0 18px 40px rgba(0, 0, 0, 0.3); }
+.ph-card--light:hover { box-shadow: inset 0 3px 0 var(--ph-gold-400), 0 26px 54px rgba(0, 0, 0, 0.45); background: var(--g-panel-2); }
+.ph-card--light h3 { color: #fff; }
+.ph-card--light p, .ph-note { color: var(--ph-muted); }
+.ph-card__kicker--gold { color: var(--ph-gold-300); }
+.ph-card__kicker--gold .ph-card__icon { background: rgba(235, 148, 64, 0.16); }
+.ph-tags li { border-radius: 999px; }
+.ph-directory { background: var(--g-line); gap: 1px; overflow: hidden; }
+.ph-directory li { background: rgba(12, 18, 36, 0.92); }
+.ph-directory li:hover { background: rgba(20, 28, 52, 0.95); }
+.ph-directory li > i { color: #7cb2ff; }
+.ph-directory h3 { color: #fff; }
+.ph-directory a { color: var(--ph-gold-300); }
+.ph-directory a:hover { color: #ffd98a; }
+
+/* organizational structure */
+.ph-org { background-color: #080d1c; background-image: radial-gradient(800px 500px at 90% 0%, rgba(37, 84, 180, 0.30), transparent 62%), radial-gradient(700px 480px at 0% 100%, rgba(170, 32, 64, 0.22), transparent 60%); }
+.ph-org__top { background: var(--g-banner); border-radius: 16px; box-shadow: 0 18px 40px rgba(90, 30, 110, 0.35); }
+.ph-org__top span { color: rgba(255, 255, 255, 0.85); }
+.ph-org__group { color: var(--ph-ink); }
+.ph-org__group h3 { color: #fff; }
+.ph-org__icon { background: rgba(255, 255, 255, 0.08); color: var(--ph-gold-300); }
+.ph-org__count { background: rgba(255, 255, 255, 0.08); color: var(--ph-muted); }
+.ph-org__group li { background: rgba(255, 255, 255, 0.05); border-radius: 10px; }
+.ph-org__cmd { border-color: var(--g-line); }
+.ph-org__cmd strong { color: #fff; }
+.ph-org__cmd--here { background: var(--g-banner) !important; border-color: rgba(255, 217, 138, 0.6); box-shadow: 0 18px 36px rgba(90, 30, 110, 0.4); }
+.ph-org__cmd--here strong { color: #fff; }
+.ph-org__cmd--here a { border-radius: 999px; background: #fff; color: #3a1236; }
+.ph-org__cmd--here a:hover { background: #ffeac2; }
+
+/* contact + footer */
+.ph-cta { background: var(--g-banner); position: relative; isolation: isolate; overflow: hidden; }
+.ph-cta p { color: rgba(255, 255, 255, 0.88); }
+.ph-foot { background: #05080f; color: #b3bdd0; box-shadow: inset 0 3px 0 transparent; border-top: 1px solid rgba(255, 255, 255, 0.08); }
+.ph-foot a { color: #ccd5e4; }
+
+/* motion added with the glass theme: drifting gradients, floating light */
+@media (prefers-reduced-motion: no-preference) {
+    .ph-hero__band, .ph-cta, .ph-org__top, .ph-org__cmd--here { background-size: 180% 180%; animation: ph-aurora 16s ease-in-out infinite alternate; }
+    .ph-hero__band::after { animation: ph-float 12s ease-in-out infinite alternate; }
+}
+@keyframes ph-aurora { 0% { background-position: 0% 40%; } 100% { background-position: 100% 60%; } }
+@keyframes ph-float { 0% { transform: translate(0, 0) scale(1); } 100% { transform: translate(-90px, 40px) scale(1.18); } }
+@media (prefers-reduced-motion: reduce) {
+    .ph-hero__band, .ph-cta, .ph-org__top, .ph-org__cmd--here, .ph-hero__band::after { animation: none !important; }
+}
