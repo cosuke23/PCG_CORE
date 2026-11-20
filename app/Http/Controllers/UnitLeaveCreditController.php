@@ -42,10 +42,14 @@ class UnitLeaveCreditController extends Controller
     public function index(Request $request)
     {
         $q = trim((string) $request->query('q', ''));
+        $unitFilter = $this->isM1($request) ? trim((string) $request->query('unit', '')) : '';
         $members = DB::table('users')->whereNotNull('serial_number')->where('serial_number', '<>', '')
             ->select('id', 'name', 'rank', 'serial_number', 'mother_unit')->orderBy('name');
         if (!$this->isM1($request)) {
             $members->whereRaw('LOWER(TRIM(mother_unit)) = ?', [mb_strtolower(trim((string) $request->session()->get('unit_name', '')))]);
+        }
+        if ($unitFilter !== '') {
+            $members->whereRaw('LOWER(TRIM(mother_unit)) = ?', [mb_strtolower($unitFilter)]);
         }
         if ($q !== '') {
             $like = '%' . str_replace(['%', '_'], ['\%', '\_'], $q) . '%';
@@ -60,6 +64,11 @@ class UnitLeaveCreditController extends Controller
 
         return view('unit.leave-credits', [
             'members' => $members, 'q' => $q, 'isM1' => $this->isM1($request), 'notSet' => $notSet,
+            'unitFilter' => $unitFilter,
+            'units' => $this->isM1($request)
+                ? DB::table('users')->whereNotNull('mother_unit')->where('mother_unit', '<>', '')->whereNotNull('serial_number')->where('serial_number', '<>', '')
+                    ->distinct()->orderBy('mother_unit')->pluck('mother_unit')
+                : collect(),
             'pools' => LeaveCredits::POOLS,
         ]);
     }

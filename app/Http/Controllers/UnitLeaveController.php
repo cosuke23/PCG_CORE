@@ -58,7 +58,6 @@ class UnitLeaveController extends Controller
 
         $units = $this->isM1($request)
             ? DB::table('users')->whereNotNull('mother_unit')->where('mother_unit', '<>', '')
-                ->whereIn('id', DB::table('leave_requests')->select('user_id'))
                 ->distinct()->orderBy('mother_unit')->pluck('mother_unit')
             : collect();
 

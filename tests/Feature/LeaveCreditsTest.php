@@ -194,6 +194,8 @@ class LeaveCreditsTest extends TestCase
         $this->withSession($this->otherUnit)->post('/unit/leave/credits/' . $this->ana->id, ['action' => 'grant', 'days' => 5, 'effective_date' => '2026-11-20', 'note' => 'x'])->assertForbidden();
 
         $this->withSession($this->m1)->get('/unit/leave/credits')->assertOk()->assertSee('Ana Reyes')->assertSee('Ben Cruz');
+        $this->withSession($this->m1)->get('/unit/leave/credits?unit=NOCOP')->assertOk()->assertSee('Ben Cruz')->assertDontSee('Ana Reyes');
+        $this->withSession($this->unit)->get('/unit/leave/credits?unit=NOCOP')->assertOk()->assertSee('Ana Reyes')->assertDontSee('Ben Cruz');   // own-unit checkers ignore it
         $this->withSession($this->m1)->post('/unit/leave/credits/' . $this->ana->id, ['action' => 'grant', 'days' => 5, 'effective_date' => '2026-11-20', 'note' => 'x'])->assertRedirect();
         $this->assertSame(5.0, $this->avail('rnr'));
 

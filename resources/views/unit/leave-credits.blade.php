@@ -22,6 +22,15 @@
         </div>
 
         <form method="GET" action="{{ route('unit.leave.credits') }}" class="lc-filter pcg-mb">
+            @if ($isM1)
+                <label class="pcg-label" for="unit-filter">Unit</label>
+                <select class="pcg-input pcg-input--sm" id="unit-filter" name="unit">
+                    <option value="">All units</option>
+                    @foreach ($units as $u)
+                        <option value="{{ $u }}" @selected(strcasecmp($unitFilter, $u) === 0)>{{ $u }}</option>
+                    @endforeach
+                </select>
+            @endif
             <label class="pcg-label" for="q">Name or serial number</label>
             <input class="pcg-input pcg-input--sm" type="search" id="q" name="q" value="{{ $q }}" maxlength="100" autocomplete="off">
             <button type="submit" class="pcg-btn pcg-btn--secondary pcg-btn--sm" data-pcg-no-busy>Search</button>
