@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Leave shortcut icon: a calendar on the app's flag-blue circle, sun-yellow header. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="48dp"
+    android:height="48dp"
+    android:viewportWidth="48"
+    android:viewportHeight="48">
+    <path android:fillColor="#0038A8" android:pathData="M24,0a24,24 0,1 1,0 48a24,24 0,1 1,0 -48z" />
+    <path android:fillColor="#FFFFFF" android:pathData="M14,16h20a2,2 0,0 1,2 2v14a2,2 0,0 1,-2 2h-20a2,2 0,0 1,-2 -2v-14a2,2 0,0 1,2 -2z" />
+    <path android:fillColor="#FCD116" android:pathData="M14,16h20a2,2 0,0 1,2 2v4h-24v-4a2,2 0,0 1,2 -2z" />
+    <path android:fillColor="#FFFFFF" android:pathData="M18,12h2v6h-2zM28,12h2v6h-2z" />
+    <path android:fillColor="#CE1126" android:pathData="M16,25h4v4h-4z" />
+    <path android:fillColor="#0038A8" android:pathData="M22,25h4v4h-4zM28,25h4v4h-4z" />
+</vector>

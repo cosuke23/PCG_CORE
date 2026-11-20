@@ -562,3 +562,12 @@ body.pcg-app {
 .pcg-app .ad-rank__bar span { background: linear-gradient(90deg, var(--c-accent), #ce1126); }
 .pcg-app .ad-orb--a { background: radial-gradient(circle, rgba(0, 56, 168, 0.35), transparent 70%); }
 .pcg-app .ad-orb--b { background: radial-gradient(circle, rgba(206, 17, 38, 0.22), transparent 70%); }
+
+/* Leave at a glance on the HR admin's landing pages (admin/leave/partials/summary) */
+.lsum__body { display: flex; align-items: center; gap: 16px; padding: 16px 20px; flex-wrap: wrap; }
+.lsum__icon { flex: none; display: grid; place-items: center; width: 44px; height: 44px; border-radius: 12px;
+    background: color-mix(in srgb, var(--c-accent) 18%, transparent); color: var(--c-accent); font-size: 1.2rem; }
+.lsum__text { flex: 1 1 260px; min-width: 0; }
+.lsum__text h3 { margin: 0 0 2px; font-size: 1.05rem; text-wrap: balance; }
+.lsum__text p { margin: 0; color: var(--c-muted); font-variant-numeric: tabular-nums; }
+.lsum__actions { display: flex; gap: 8px; flex-wrap: wrap; }

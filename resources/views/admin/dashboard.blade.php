@@ -61,6 +61,8 @@
             @endif
         </header>
 
+        @include('admin.leave.partials.summary')
+
         {{-- KPI strip --}}
         <section class="ad-kpis" aria-label="Key figures">
             <button type="button" class="ad-kpi ad-glass" data-ad-filter="" aria-pressed="true">

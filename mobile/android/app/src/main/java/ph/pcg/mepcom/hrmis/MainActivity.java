@@ -58,6 +58,8 @@ public class MainActivity extends Activity {
     private static final int REQ_LOCATION = 12;
     private static final int REQ_STORAGE = 13;
     private static final String START_PATH = "/dashboard";
+    /** Pages a home-screen shortcut (res/xml/shortcuts.xml) may open; anything else opens the dashboard. */
+    private static final java.util.List<String> SHORTCUT_PATHS = java.util.Arrays.asList("/dashboard", "/leave");
     private static final String BRIDGE = "PCGHRMISApp";
 
     private Uri base;
@@ -99,9 +101,32 @@ public class MainActivity extends Activity {
         configureWebView();
         registerBackHandler();
 
-        if (savedInstanceState == null || web.restoreState(savedInstanceState) == null) {
+        String shortcut = shortcutPath(getIntent());
+        if (shortcut != null) {
+            web.loadUrl(BuildConfig.BASE_URL + shortcut);
+        } else if (savedInstanceState == null || web.restoreState(savedInstanceState) == null) {
             web.loadUrl(BuildConfig.BASE_URL + START_PATH);
         }
+    }
+
+    /** The app is already open (singleTask) and a shortcut is tapped: go to its page. */
+    @Override
+    protected void onNewIntent(Intent intent) {
+        super.onNewIntent(intent);
+        setIntent(intent);
+        String shortcut = shortcutPath(intent);
+        if (shortcut != null && web != null) {
+            errorView.setVisibility(View.GONE);
+            web.loadUrl(BuildConfig.BASE_URL + shortcut);
+        }
+    }
+
+    private static String shortcutPath(Intent intent) {
+        if (intent == null) {
+            return null;
+        }
+        String path = intent.getStringExtra("path");
+        return path != null && SHORTCUT_PATHS.contains(path) ? path : null;
     }
 
     // ------------------------------------------------------------------ setup

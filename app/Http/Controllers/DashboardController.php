@@ -46,7 +46,27 @@ class DashboardController extends Controller
             'documentStatus' => $documents->status ?? null,
             'documentsUploaded' => $uploaded,
             'documentsTotal' => count($documentFields),
+            'leave' => self::leaveSummary((int) $user->id),
         ]);
+    }
+
+    /** Leave at a glance for the dashboard row (null until the leave tables exist). */
+    private static function leaveSummary(int $userId): ?array
+    {
+        if (!\Illuminate\Support\Facades\Schema::hasTable('leave_requests')) {
+            return null;
+        }
+        $today = \App\Support\LeaveCalendar::today()->toDateString();
+        $next = DB::table('leave_requests')->where('user_id', $userId)->whereRaw('LOWER(status) = ?', ['approved'])
+            ->where('end_date', '>=', $today)->orderBy('start_date')->first();
+        $credits = \Illuminate\Support\Facades\Schema::hasTable('leave_credit_entries') ? \App\Support\LeaveCredits::balances($userId) : null;
+        return [
+            'pending' => DB::table('leave_requests')->where('user_id', $userId)->whereRaw('LOWER(status) = ?', ['pending'])->count(),
+            'next' => $next,
+            'onLeave' => $next && (string) $next->start_date <= $today,
+            'annual' => $credits['annual'] ?? null,
+            'rnr' => $credits['rnr'] ?? null,
+        ];
     }
 
     public function profile()

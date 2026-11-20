@@ -209,6 +209,21 @@ class LeaveTest extends TestCase
         $this->assertNotSame(200, $this->actingAs($this->ana)->get('/unit/leave')->status());
     }
 
+    public function test_the_dashboard_shows_leave_at_a_glance()
+    {
+        (require base_path('database/migrations/2026_11_09_000002_add_soi_submitted_at_to_users.php'))->up();
+        Schema::create('rejected_documents', function (Blueprint $t) { $t->id(); $t->string('serial_number'); $t->string('doc_type'); $t->text('comment')->nullable(); $t->string('status')->nullable(); });
+        Schema::create('training_courses', function (Blueprint $t) { $t->id(); $t->string('course_name')->nullable(); $t->string('status')->nullable(); });
+        Schema::create('course_students', function (Blueprint $t) { $t->id(); $t->unsignedBigInteger('course_id')->nullable(); $t->string('serial_number')->nullable(); $t->date('date_attended')->nullable(); $t->date('date_ended')->nullable(); });
+        Schema::create('personnel_data', function (Blueprint $t) { $t->id(); $t->unsignedBigInteger('personnel_id')->nullable(); $t->string('status')->nullable(); });
+
+        $this->actingAs($this->ana)->get('/dashboard')->assertOk()->assertSee('No leave filed')->assertSee('RNR 30 days available');
+        $this->file($this->ana);
+        $this->get('/dashboard')->assertSee('1 request waiting')->assertSee(route('leave.index'));
+        $this->withSession($this->unit)->post('/unit/leave/' . DB::table('leave_requests')->value('id') . '/review', ['decision' => 'approve']);
+        $this->actingAs($this->ana)->get('/dashboard')->assertSee('Next: Nov 24–27, 2026')->assertSee('RNR 26 days available');
+    }
+
     public function test_calendar_colours_and_initials_tell_people_apart()
     {
         $this->assertSame('AR', LeaveCalendar::initials('Ana Reyes'));

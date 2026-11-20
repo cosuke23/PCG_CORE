@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Long-press the app icon: open the leave calendar directly (MainActivity accepts only
+     the paths listed in its SHORTCUT_PATHS). -->
+<shortcuts xmlns:android="http://schemas.android.com/apk/res/android">
+    <shortcut
+        android:shortcutId="leave"
+        android:enabled="true"
+        android:icon="@drawable/ic_shortcut_leave"
+        android:shortcutShortLabel="@string/shortcut_leave_short"
+        android:shortcutLongLabel="@string/shortcut_leave_long">
+        <intent
+            android:action="android.intent.action.VIEW"
+            android:targetPackage="ph.pcg.mepcom.hrmis"
+            android:targetClass="ph.pcg.mepcom.hrmis.MainActivity">
+            <extra android:name="path" android:value="/leave" />
+        </intent>
+    </shortcut>
+</shortcuts>

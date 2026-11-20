@@ -8,4 +8,6 @@
     <string name="choose_file">Choose a file</string>
     <string name="no_app">No app on this phone can open this.</string>
     <string name="downloading">Downloading %1$s…</string>
+    <string name="shortcut_leave_short">Leave</string>
+    <string name="shortcut_leave_long">File or check leave</string>
 </resources>

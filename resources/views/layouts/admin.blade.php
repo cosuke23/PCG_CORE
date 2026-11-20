@@ -151,6 +151,17 @@
                 </div>
 
                 <div class="pcg-navbar__actions">
+                    @php $navLeave = \App\Support\AdminLeaveSummary::get(); @endphp
+                    @if ($navLeave && $navLeave['canApprove'])
+                        <a href="{{ route('admin.leave.index') }}" class="pcg-navbar__icon pcg-navbar__bell"
+                            aria-label="{{ $navLeave['pending'] }} leave {{ $navLeave['pending'] === 1 ? 'request' : 'requests' }} waiting"
+                            title="{{ $navLeave['pending'] }} leave {{ $navLeave['pending'] === 1 ? 'request' : 'requests' }} waiting">
+                            <i class="fa-regular fa-calendar-check" aria-hidden="true"></i>
+                            @if ($navLeave['pending'] > 0)
+                                <span class="pcg-navbar__badge">{{ $navLeave['pending'] > 99 ? '99+' : $navLeave['pending'] }}</span>
+                            @endif
+                        </a>
+                    @endif
                     @if ($pendingRegistrations !== null)
                         <a href="{{ route('admin.dashboard') }}" class="pcg-navbar__icon pcg-navbar__bell"
                             aria-label="{{ $pendingRegistrations }} pending {{ $pendingRegistrations === 1 ? 'registration' : 'registrations' }}"

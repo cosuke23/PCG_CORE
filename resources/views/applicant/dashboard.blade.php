@@ -89,6 +89,27 @@
                 <span class="pcg-row__status">Reviewed by your unit</span>
                 <a class="pcg-btn pcg-btn--secondary" href="{{ route('upload.201') }}">Open</a>
             </li>
+            @if ($leave)
+                @php
+                    $fmtDays = fn ($c) => $c && $c['set'] ? \App\Support\LeaveCredits::fmt($c['available']) : null;
+                    $creditLine = collect(['Ordinary' => $fmtDays($leave['annual']), 'RNR' => $fmtDays($leave['rnr'])])
+                        ->filter(fn ($v) => $v !== null)->map(fn ($v, $k) => $k . ' ' . $v . ' days')->implode(' · ');
+                @endphp
+                <li class="pcg-row">
+                    <span class="pcg-row__icon pcg-row__icon--violet" aria-hidden="true"><i class="fa-solid fa-calendar-days"></i></span>
+                    <span class="pcg-row__name">Leave<small>{{ $creditLine !== '' ? $creditLine . ' available' : 'Pick dates on the calendar and file leave' }}</small></span>
+                    @if ($leave['onLeave'])
+                        <span class="pcg-row__status pcg-row__status--ok">On leave until {{ \Illuminate\Support\Carbon::parse($leave['next']->end_date)->format('M j') }}</span>
+                    @elseif ($leave['pending'])
+                        <span class="pcg-row__status pcg-row__status--info">{{ $leave['pending'] === 1 ? '1 request waiting' : $leave['pending'] . ' requests waiting' }}</span>
+                    @elseif ($leave['next'])
+                        <span class="pcg-row__status pcg-row__status--ok">Next: {{ \App\Support\LeaveCalendar::dateLabel((string) $leave['next']->start_date, (string) $leave['next']->end_date) }}</span>
+                    @else
+                        <span class="pcg-row__status">No leave filed</span>
+                    @endif
+                    <a class="pcg-btn pcg-btn--secondary" href="{{ route('leave.index') }}">{{ $leave['pending'] || $leave['next'] ? 'Open' : 'File leave' }}</a>
+                </li>
+            @endif
             <li class="pcg-row">
                 <span class="pcg-row__icon pcg-row__icon--teal" aria-hidden="true"><i class="fa-solid fa-print"></i></span>
                 <span class="pcg-row__name">Print my SOI<small>Ready-to-print Statement of Information</small></span>

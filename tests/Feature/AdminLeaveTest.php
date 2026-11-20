@@ -130,6 +130,13 @@ class AdminLeaveTest extends TestCase
         $this->assertSame(10.0, LeaveCredits::balances($this->ben)['rnr']['available']);
     }
 
+    public function test_the_navbar_shows_waiting_leave_of_the_admins_scope()
+    {
+        $this->withSession($this->hr)->get('/admin/leave/credits')->assertSee('1 leave request waiting');
+        $this->withSession($this->super)->get('/admin/leave/credits')->assertSee('2 leave requests waiting');
+        $this->withSession($this->auditor)->get('/admin/leave/credits')->assertDontSee('leave requests waiting');   // cannot approve
+    }
+
     public function test_other_roles_do_not_see_leave()
     {
         $lms = AdminUser::create(['name' => 'LMS', 'email' => 'lms@x.test', 'password' => 'x', 'role' => 'lms_admin', 'is_active' => true]);

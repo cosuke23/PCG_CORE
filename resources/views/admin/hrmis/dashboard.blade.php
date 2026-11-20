@@ -34,6 +34,8 @@
             </div>
         </header>
 
+        @include('admin.leave.partials.summary')
+
         @if ($total === 0)
             <section class="pcg-card hx-empty-card">
                 <div class="pcg-card__body">
