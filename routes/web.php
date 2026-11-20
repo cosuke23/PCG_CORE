@@ -302,6 +302,16 @@ Route::middleware(['admin.session', 'admin.audit'])->group(function () {
         });
 
     // ---- Re-enlistment: non-officers whose ETE is near (read-only; views and exports audited)
+    // ---- Leave (owner request 2026-11-20): requests, calendar and credits of the admin's scope (AdminLeaveController) ----
+    Route::middleware('admin.can:leave.view')->prefix('admin/leave')->name('admin.leave.')
+        ->controller(\App\Http\Controllers\AdminLeaveController::class)->group(function () {
+            Route::get('/', 'index')->name('index');
+            Route::post('/{id}/review', 'review')->whereNumber('id')->middleware('admin.can:leave.approve')->name('review');
+            Route::get('/credits', 'credits')->name('credits');
+            Route::get('/credits/{user}', 'creditsShow')->whereNumber('user')->name('credits.show');
+            Route::post('/credits/{user}', 'creditsStore')->whereNumber('user')->middleware('admin.can:leave.credits')->name('credits.store');
+        });
+
     // ---- SOI submissions: Adjutant, HR admin (own command/unit) and super admin reopen a submitted SOI ----
     Route::middleware('admin.can:soi.reopen')->prefix('admin/soi')->name('admin.soi.')
         ->controller(\App\Http\Controllers\SoiSubmissionController::class)->group(function () {

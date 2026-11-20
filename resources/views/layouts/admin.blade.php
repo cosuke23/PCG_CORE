@@ -75,6 +75,12 @@
                     @endif
                 @endif
 
+                @if ($can('leave.view'))
+                    <div class="pcg-nav__section">Leave</div>
+                    @include('layouts.partials.nav-link', $link('admin.leave.index', 'calendar-days', 'Leave requests', 'admin.leave.index'))
+                    @include('layouts.partials.nav-link', $link('admin.leave.credits', 'scale-balanced', 'Leave credits', 'admin.leave.credits*'))
+                @endif
+
                 @if ($can('reenlistment.view') && $orgWide)
                     <div class="pcg-nav__section">Re-enlistment</div>
                     @include('layouts.partials.nav-link', $link('admin.reenlistment.index', 'calendar-check', 'ETE watchlist', 'admin.reenlistment.*'))

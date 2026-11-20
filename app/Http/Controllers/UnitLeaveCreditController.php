@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\UnitUser;
+use App\Support\LeaveActions;
 use App\Support\LeaveCalendar;
 use App\Support\LeaveCredits;
 use Illuminate\Http\Request;
@@ -78,47 +79,13 @@ class UnitLeaveCreditController extends Controller
     public function store(Request $request, int $user)
     {
         $m = $this->member($request, $user);
-        $data = $request->validate([
-            'action' => ['required', Rule::in(['opening', 'grant', 'adjustment'])],
-            'pool' => ['required_if:action,adjustment', 'nullable', Rule::in(array_keys(LeaveCredits::POOLS))],
-            'days' => ['required', 'numeric', 'between:-365,365'],
-            'effective_date' => ['required', 'date_format:Y-m-d', 'before_or_equal:' . LeaveCalendar::today()->copy()->addDays(31)->toDateString()],
-            'note' => ['nullable', 'string', 'max:500', Rule::requiredIf(in_array($request->input('action'), ['grant', 'adjustment'], true))],
-        ], [
-            'note.required' => 'Say what the credit is for, e.g. the deployment or the reason for the adjustment.',
-        ]);
-
-        $days = round((float) $data['days'], 2);
-        [$pool, $kind] = match ($data['action']) {
-            'opening' => ['annual', 'opening'],
-            'grant' => ['rnr', 'grant'],
-            default => [$data['pool'], 'adjustment'],
-        };
-        if ($kind === 'opening' && $days < 0) {
-            return back()->withInput()->withErrors(['days' => 'An opening balance cannot be negative.']);
-        }
-        if ($kind === 'grant' && $days <= 0) {
-            return back()->withInput()->withErrors(['days' => 'Add at least half a day of RNR.']);
-        }
-        if ($kind === 'adjustment' && abs($days) < 0.01) {
-            return back()->withInput()->withErrors(['days' => 'An adjustment needs a number of days other than 0.']);
-        }
-
+        $data = $request->validate(LeaveActions::creditRules($request->input('action')), LeaveActions::creditMessages());
         $by = ['type' => 'unit', 'id' => (int) $request->session()->get('unit_user_id'),
             'name' => (string) ($request->session()->get('unit_full_name') ?: $request->session()->get('unit_email'))];
-        $entryId = LeaveCredits::post((int) $m->id, (string) $m->serial_number, $pool, $kind, $days, $data['effective_date'],
-            $data['note'] ?? null, null, $by);
-
-        Log::channel('audit')->info('leave_credit.' . $kind, [
-            'entry_id' => $entryId, 'member_user_id' => $m->id, 'serial_number' => $m->serial_number, 'pool' => $pool,
-            'days' => $days, 'effective_date' => $data['effective_date'], 'unit_user_id' => $by['id'], 'ip' => $request->ip(),
-        ]);
-
-        $what = match ($kind) {
-            'opening' => 'Opening balance of ' . LeaveCredits::fmt($days) . ' days set',
-            'grant' => LeaveCredits::fmt($days) . ' RNR days added',
-            default => 'Adjustment of ' . ($days > 0 ? '+' : '') . LeaveCredits::fmt($days) . ' days to ' . strtolower(LeaveCredits::label($pool)) . ' recorded',
-        };
-        return redirect()->route('unit.leave.credits.show', $m->id)->with('success', $what . ' for ' . $m->name . '.');
+        [$ok, $result] = LeaveActions::credit($m, $data, $by, $request->ip());
+        if (!$ok) {
+            return back()->withInput()->withErrors($result);
+        }
+        return redirect()->route('unit.leave.credits.show', $m->id)->with('success', $result);
     }
 }

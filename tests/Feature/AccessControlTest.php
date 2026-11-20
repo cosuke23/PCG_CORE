@@ -15,6 +15,11 @@ class AccessControlTest extends TestCase
     {
         return [
             ['get', '/admin/dashboard'],
+            ['get', '/admin/leave'],
+            ['post', '/admin/leave/1/review'],
+            ['get', '/admin/leave/credits'],
+            ['get', '/admin/leave/credits/1'],
+            ['post', '/admin/leave/credits/1'],
             ['post', '/admin/approve/1'],
             ['post', '/admin/reject/1'],
             ['get', '/admin/hr-analytics'],

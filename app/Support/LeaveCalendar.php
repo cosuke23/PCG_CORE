@@ -64,9 +64,31 @@ class LeaveCalendar
         ];
     }
 
+    /** Colours given out for the calendar on this page (serial => colour). */
+    private static array $assigned = [];
+
+    /**
+     * Give the people on one calendar different colours: in serial order, the first
+     * twelve never share one. Anyone else falls back to a colour from the serial.
+     */
+    public static function assignColours(iterable $serials): void
+    {
+        $keys = [];
+        foreach ($serials as $s) {
+            $keys[strtoupper(trim((string) $s))] = true;
+        }
+        $keys = array_keys($keys);
+        sort($keys);
+        self::$assigned = [];
+        foreach ($keys as $i => $k) {
+            self::$assigned[$k] = $i % self::COLOURS;
+        }
+    }
+
     public static function colour(?string $serial): int
     {
-        return (int) (sprintf('%u', crc32(strtoupper(trim((string) $serial)))) % self::COLOURS);
+        $key = strtoupper(trim((string) $serial));
+        return self::$assigned[$key] ?? (int) (sprintf('%u', crc32($key)) % self::COLOURS);
     }
 
     public static function initials(?string $name): string
@@ -91,9 +113,10 @@ class LeaveCalendar
 
     /**
      * Approved leave overlapping [from, to] for members of one unit (users.mother_unit,
-     * compared case-insensitively), or of every unit when $unit is null.
+     * compared case-insensitively), or of every unit when $unit is null; $serials limits it
+     * to those members (the admin console's org scope).
      */
-    public static function approved(?string $unit, string $from, string $to): Collection
+    public static function approved(?string $unit, string $from, string $to, ?array $serials = null): Collection
     {
         $q = DB::table('leave_requests as l')
             ->join('users as u', 'u.id', '=', 'l.user_id')
@@ -106,6 +129,9 @@ class LeaveCalendar
         if ($unit !== null) {
             $q->whereRaw('LOWER(TRIM(u.mother_unit)) = ?', [mb_strtolower(trim($unit))]);
         }
+        if ($serials !== null) {            // admin scope (OrgScope): normalised serial numbers
+            $q->whereIn(DB::raw('UPPER(TRIM(l.serial_number))'), $serials ?: ['__none__']);
+        }
         return $q->get();
     }
 
@@ -115,6 +141,7 @@ class LeaveCalendar
      */
     public static function byDay(Collection $rows, string $from, string $to, ?int $viewerId = null, bool $fullTypes = false): array
     {
+        self::assignColours($rows->pluck('serial_number'));
         $days = [];
         foreach ($rows as $r) {
             $own = $viewerId !== null && (int) $r->user_id === $viewerId;

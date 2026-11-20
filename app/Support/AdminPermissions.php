@@ -33,6 +33,10 @@ class AdminPermissions
         // Adjutant: Coast Guard awards and decorations (SOI 1.a) and Coast Guard schooling (SOI 3.a)
         'soi.adjutant'         => ['super_admin', 'adjutant'],
         'soi.reopen'           => ['super_admin', 'hr_admin', 'adjutant'],
+        // Leave (owner request 2026-11-20): see requests and the calendar, decide requests, manage credits
+        'leave.view'           => ['super_admin', 'hr_admin', 'auditor'],
+        'leave.approve'        => ['super_admin', 'hr_admin'],
+        'leave.credits'        => ['super_admin', 'hr_admin'],
     ];
 
     public static function allows(?string $role, string $capability): bool

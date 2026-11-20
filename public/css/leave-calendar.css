@@ -53,10 +53,10 @@
 .lc-dot { display: inline-block; width: 10px; height: 10px; border-radius: 50%; background: var(--lc-colour); flex: none; }
 
 /* 12 person colours, white text readable on each */
-.lc-c0 { --lc-colour: #2563eb; } .lc-c1 { --lc-colour: #dc2626; } .lc-c2 { --lc-colour: #059669; }
-.lc-c3 { --lc-colour: #b45309; } .lc-c4 { --lc-colour: #7c3aed; } .lc-c5 { --lc-colour: #db2777; }
-.lc-c6 { --lc-colour: #0e7490; } .lc-c7 { --lc-colour: #4d7c0f; } .lc-c8 { --lc-colour: #c2410c; }
-.lc-c9 { --lc-colour: #4338ca; } .lc-c10 { --lc-colour: #0f766e; } .lc-c11 { --lc-colour: #9f1239; }
+.lc-c0 { --lc-colour: #2563eb; } .lc-c1 { --lc-colour: #c2410c; } .lc-c2 { --lc-colour: #15803d; }
+.lc-c3 { --lc-colour: #7c3aed; } .lc-c4 { --lc-colour: #dc2626; } .lc-c5 { --lc-colour: #0e7490; }
+.lc-c6 { --lc-colour: #4d7c0f; } .lc-c7 { --lc-colour: #db2777; } .lc-c8 { --lc-colour: #4338ca; }
+.lc-c9 { --lc-colour: #a16207; } .lc-c10 { --lc-colour: #0f766e; } .lc-c11 { --lc-colour: #9f1239; }
 
 /* the day panel: everyone on leave that day */
 .lc-panel { margin-top: var(--pcg-space-3); border: 1px solid var(--pcg-border); border-radius: 12px; padding: var(--pcg-space-3); background: color-mix(in srgb, var(--pcg-surface) 85%, transparent); }

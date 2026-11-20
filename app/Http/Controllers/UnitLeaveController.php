@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\UnitUser;
+use App\Support\LeaveActions;
 use App\Support\LeaveCalendar;
 use App\Support\LeaveCredits;
 use App\Support\LeaveTypes;
@@ -80,13 +81,8 @@ class UnitLeaveController extends Controller
 
     public function review(Request $request, int $id)
     {
-        $data = $request->validate([
-            'decision' => ['required', 'in:approve,decline'],
-            'note' => ['nullable', 'string', 'max:500', 'required_if:decision,decline'],
-        ], ['note.required_if' => 'Say why the leave is declined, so the member knows what to change.']);
-
-        $leave = DB::table('leave_requests as l')->join('users as u', 'u.id', '=', 'l.user_id')
-            ->where('l.id', $id)->select('l.*', 'u.name', 'u.mother_unit')->first();
+        $data = $request->validate(LeaveActions::reviewRules(), LeaveActions::reviewMessages());
+        $leave = LeaveActions::request($id);
         if (!$leave) {
             abort(404);
         }
@@ -94,49 +90,10 @@ class UnitLeaveController extends Controller
         if (!$this->isM1($request) && !$own) {
             abort(403);
         }
-        if (strtolower((string) $leave->status) !== 'pending') {
-            return back()->with('error', 'This request was already decided or withdrawn.');
-        }
-
-        if ($data['decision'] === 'approve') {
-            $clash = DB::table('leave_requests')->where('user_id', $leave->user_id)->where('id', '<>', $id)
-                ->whereRaw('LOWER(status) = ?', ['approved'])
-                ->where('start_date', '<=', $leave->end_date)->where('end_date', '>=', $leave->start_date)->exists();
-            if ($clash) {
-                return back()->with('error', $leave->name . ' already has approved leave on some of these days. Decline this request with a note instead.');
-            }
-        }
-
-        if ($data['decision'] === 'approve'
-            && ($short = LeaveCredits::shortfall((int) $leave->user_id, $leave->leave_type, (float) $leave->days, $id))) {
-            return back()->with('error', $leave->name . ': ' . $short . ' Adjust the credits first or decline with a note.');
-        }
-
-        $status = $data['decision'] === 'approve' ? 'approved' : 'declined';
         $by = ['type' => 'unit', 'id' => (int) $request->session()->get('unit_user_id'),
             'name' => (string) ($request->session()->get('unit_full_name') ?: $request->session()->get('unit_email'))];
-        DB::transaction(function () use ($status, $leave, $id, $by, $request, $data) {
-            if ($status === 'approved' && ($pool = LeaveCredits::poolFor($leave->leave_type))) {
-                LeaveCredits::post((int) $leave->user_id, (string) $leave->serial_number, $pool, 'used', -(float) $leave->days,
-                    (string) $leave->start_date, LeaveTypes::label($leave->leave_type) . ', ' . LeaveCalendar::dateLabel((string) $leave->start_date, (string) $leave->end_date), $id, $by);
-            }
-            DB::table('leave_requests')->where('id', $id)->update([
-                'status' => $status,
-                'reviewed_by' => (int) $request->session()->get('unit_user_id'),
-                'reviewer_name' => (string) ($request->session()->get('unit_full_name') ?: $request->session()->get('unit_email')),
-                'reviewed_at' => now(),
-                'review_note' => $data['note'] ?? null,
-                'updated_at' => now(),
-            ]);
-        });
+        [$ok, $message] = LeaveActions::decide($leave, $data['decision'], $data['note'] ?? null, $by, $request->ip());
 
-        Log::channel('audit')->info('leave.' . $status, [
-            'leave_id' => $id, 'member_user_id' => $leave->user_id, 'serial_number' => $leave->serial_number,
-            'type' => $leave->leave_type, 'start' => $leave->start_date, 'end' => $leave->end_date,
-            'unit_user_id' => $request->session()->get('unit_user_id'), 'ip' => $request->ip(),
-        ]);
-
-        return back()->with('success', LeaveTypes::label($leave->leave_type) . ' of ' . $leave->name . ' for '
-            . LeaveCalendar::dateLabel((string) $leave->start_date, (string) $leave->end_date) . ' is ' . $status . '.');
+        return back()->with($ok ? 'success' : 'error', $message);
     }
 }
