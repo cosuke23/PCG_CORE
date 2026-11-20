@@ -163,6 +163,15 @@ body.uc-locked { overflow: hidden; }
 .uc-leave__away { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 8px 14px; }
 .uc-leave__away li { display: inline-flex; align-items: center; gap: 6px; font-size: var(--pcg-text-sm); }
 .uc-leave__away .lc-chip { font-size: 12px; line-height: 18px; }
+/* Clearances near or past their valid-until date (unit/partials/clearance-summary) */
+.uc-clear__icon { background: color-mix(in srgb, #ce1126 22%, transparent); color: #ff8a8a; }
+.uc-clear__list { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; font-size: var(--pcg-text-sm); }
+.uc-clear__list li { display: flex; flex-wrap: wrap; gap: 4px 12px; align-items: baseline; padding: 6px 10px; border-radius: 10px;
+    background: color-mix(in srgb, var(--pcg-surface) 60%, transparent); }
+.uc-clear__who { font-weight: 700; }
+.uc-clear__when { margin-left: auto; color: var(--pcg-text-muted); font-variant-numeric: tabular-nums; }
+.uc-clear__list li.is-soon .uc-clear__when { color: var(--pcg-accent); }
+.uc-clear__list li.is-expired .uc-clear__when { color: #ff8a8a; font-weight: 700; }
 /* count on a sidebar link (layouts/partials/nav-link $badge) */
 .pcg-nav__badge { margin-left: auto; min-width: 20px; height: 20px; padding: 0 6px; border-radius: 999px; display: inline-grid; place-items: center;
     background: var(--pcg-accent); color: #10141c; font-size: 11px; font-weight: 800; font-variant-numeric: tabular-nums; }

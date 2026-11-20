@@ -19,6 +19,12 @@ return [
     // Monitoring and alerts (App\Support\Monitor). alert_to: comma-separated emails;
     // empty = the active super_admin accounts. backup_dir empty = ../../backups next to
     // the release (Hermes: /srv/mepcom-hrmis/backups).
+    // Clearance expiry reminders (pcg:clearance-reminders): days before the valid-until
+    // date on which the member is emailed (0 = on the day). PCG_CLEARANCE_REMINDER_DAYS=30,7,0
+    'clearance' => [
+        'reminder_days' => array_values(array_filter(array_map('trim', explode(',', (string) env('PCG_CLEARANCE_REMINDER_DAYS', '30,7,0'))), 'is_numeric')),
+    ],
+
     'monitor' => [
         'alert_to' => env('PCG_ALERT_EMAIL', ''),
         'error_alerts' => (bool) env('PCG_ERROR_ALERTS', true),
