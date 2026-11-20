@@ -450,6 +450,10 @@ Route::post('/unit/login', [UnitUserController::class, 'login'])->middleware('th
 Route::get('/unit/loginM1', [UnitUserController::class, 'loginFormM1']);
 Route::post('/unit/loginM1', [UnitUserController::class, 'loginM1'])->middleware('throttle:unit-login');
 Route::post('/unit/logout', [UnitUserController::class, 'logout'])->name('unit.logout');
+// second sign-in step for unit and M1 checkers: emailed code (App\Support\UnitLoginCode)
+Route::get('/unit/two-factor', [UnitUserController::class, 'twoFactorForm'])->name('unit.two-factor');
+Route::post('/unit/two-factor', [UnitUserController::class, 'twoFactorVerify'])->middleware('throttle:unit-login')->name('unit.two-factor.verify');
+Route::post('/unit/two-factor/resend', [UnitUserController::class, 'twoFactorResend'])->middleware('throttle:unit-login')->name('unit.two-factor.resend');
 
 Route::middleware(['unit.session'])->group(function () {
 

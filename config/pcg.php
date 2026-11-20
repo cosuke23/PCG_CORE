@@ -14,6 +14,13 @@ return [
 
     // Super-admin login (/admin/login). ADMIN_PASSWORD_HASH must be a bcrypt
     // hash, generated with:  php artisan pcg:hash-password
+    // Unit and M1 checkers: second sign-in step. 'email' = one-time code to the
+    // checker's email (owner request 2026-11-20), 'off' = password only.
+    'unit' => [
+        'two_factor' => env('PCG_UNIT_2FA', 'email'),
+        'email_code_minutes' => (int) env('PCG_UNIT_EMAIL_CODE_MINUTES', 10),
+    ],
+
     'admin' => [
         'email' => env('ADMIN_EMAIL'),
         'password_hash' => env('ADMIN_PASSWORD_HASH'),

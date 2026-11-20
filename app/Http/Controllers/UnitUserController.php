@@ -46,8 +46,6 @@ class UnitUserController extends Controller
             return null;
         }
 
-        $request->session()->regenerate();
-
         return $user;
     }
 
@@ -67,15 +65,7 @@ class UnitUserController extends Controller
                 ->withInput($request->only('email'));
         }
 
-        session([
-            'unit_user_id'   => $user->id,
-            'unit_full_name' => $user->full_name,
-            'unit_email'     => $user->email,
-            'unit_role'      => $user->role,
-            'unit_name'      => $user->unit_name,
-        ]);
-
-        return redirect('/unit/dashboardM1');
+        return $this->signInOrChallenge($request, $user, true);
     }
     // ================= LOGIN =================
     public function login(Request $request)
@@ -88,6 +78,32 @@ class UnitUserController extends Controller
                 ->withInput($request->only('email'));
         }
 
+        return $this->signInOrChallenge($request, $user, false);
+    }
+
+    // ================= SECOND STEP: EMAILED CODE =================
+    /**
+     * After the password: sign in at once when the second step is off, otherwise
+     * email a one-time code (App\Support\UnitLoginCode) and ask for it. The checker
+     * is signed in (unit_user_id in the session) only after a correct code.
+     */
+    private function signInOrChallenge(Request $request, UnitUser $user, bool $m1)
+    {
+        if (!\App\Support\UnitLoginCode::enabled()) {
+            return $this->completeSignIn($request, $user, $m1);
+        }
+        session(['unit_2fa_user_id' => $user->id, 'unit_2fa_m1' => $m1]);
+        if (!\App\Support\UnitLoginCode::issue($user)) {
+            session()->forget(['unit_2fa_user_id', 'unit_2fa_m1']);
+            return back()->with('error', 'The sign-in code could not be emailed. Try again later, or ask the administrator to check the email settings.')
+                ->withInput($request->only('email'));
+        }
+        return redirect()->route('unit.two-factor');
+    }
+
+    private function completeSignIn(Request $request, UnitUser $user, bool $m1)
+    {
+        $request->session()->regenerate();
         session([
             'unit_user_id'   => $user->id,
             'unit_full_name' => $user->full_name,
@@ -95,8 +111,54 @@ class UnitUserController extends Controller
             'unit_role'      => $user->role,
             'unit_name'      => $user->unit_name,
         ]);
+        Log::channel('audit')->info('unit.login', ['unit_user_id' => $user->id, 'm1' => $m1, 'ip' => $request->ip()]);
+        return redirect($m1 ? '/unit/dashboardM1' : '/unit/dashboard');
+    }
 
-        return redirect('/unit/dashboard');
+    private function pendingUser(): ?UnitUser
+    {
+        $id = session('unit_2fa_user_id');
+        return $id ? UnitUser::where('id', $id)->where('is_active', 1)->first() : null;
+    }
+
+    public function twoFactorForm()
+    {
+        $user = $this->pendingUser();
+        if (!$user) {
+            return redirect('/unit/login');
+        }
+        $masked = \App\Support\EmailLoginCode::masked((string) $user->email);
+        return view('unit.two-factor', ['maskedEmail' => $masked, 'minutes' => \App\Support\UnitLoginCode::minutes(), 'm1' => (bool) session('unit_2fa_m1')]);
+    }
+
+    public function twoFactorVerify(Request $request)
+    {
+        $request->validate(['code' => 'required|string|max:32']);
+        $user = $this->pendingUser();
+        if (!$user) {
+            return redirect('/unit/login')->with('error', 'Sign in again.');
+        }
+        if ($reason = \App\Support\UnitLoginCode::check($user, (string) $request->input('code'))) {
+            Log::warning('Failed unit sign-in code', ['unit_user_id' => $user->id, 'ip' => $request->ip()]);
+            return back()->withErrors(['code' => $reason]);
+        }
+        $m1 = (bool) session('unit_2fa_m1');
+        session()->forget(['unit_2fa_user_id', 'unit_2fa_m1']);
+        return $this->completeSignIn($request, $user, $m1);
+    }
+
+    public function twoFactorResend(Request $request)
+    {
+        $user = $this->pendingUser();
+        if (!$user) {
+            return redirect('/unit/login');
+        }
+        if (($wait = \App\Support\UnitLoginCode::secondsUntilResend()) > 0) {
+            return back()->with('error', "Wait {$wait} seconds before asking for a new code.");
+        }
+        return \App\Support\UnitLoginCode::issue($user)
+            ? back()->with('success', 'A new code is on its way.')
+            : back()->with('error', 'The sign-in code could not be emailed. Try again later.');
     }
 
     // ================= DASHBOARD =================
