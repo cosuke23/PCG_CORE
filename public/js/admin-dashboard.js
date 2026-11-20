@@ -68,7 +68,14 @@
                 data: { labels: courses.labels, datasets: [{ label: 'Personnel', data: courses.data, backgroundColor: palette(courses.labels.length), borderColor: surface, borderWidth: 2, hoverOffset: 6 }] },
                 options: {
                     responsive: true, maintainAspectRatio: false, cutout: '68%',
-                    plugins: { legend: { position: window.innerWidth < 640 ? 'bottom' : 'right', labels: { color: text, boxWidth: 10, boxHeight: 10, usePointStyle: true, padding: 12 } }, tooltip: tooltip }
+                    // legend below the ring (the card is narrow); long course names are
+                    // shortened there and shown in full in the tooltip
+                    plugins: { legend: { position: 'bottom', labels: { color: text, boxWidth: 10, boxHeight: 10, usePointStyle: true, padding: 12,
+                        generateLabels: function (chart) {
+                            var items = Chart.overrides.doughnut.plugins.legend.labels.generateLabels(chart);
+                            items.forEach(function (item) { if (item.text && item.text.length > 30) { item.text = item.text.slice(0, 29) + '…'; } });
+                            return items;
+                        } } }, tooltip: tooltip }
                 }
             }));
         }
