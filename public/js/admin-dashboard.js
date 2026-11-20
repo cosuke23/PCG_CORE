@@ -42,11 +42,11 @@
     /* ---------------- charts ---------------- */
     var charts = [];
     function palette(n) {
-        // cyan-led sequence that reads on both themes
+        // flag-led sequence (yellow / blue / red first) that reads on both themes
         var dark = document.documentElement.getAttribute('data-theme') !== 'light';
         var base = dark
-            ? ['#22d3ee', '#818cf8', '#5ad48f', '#f5b84b', '#f8877c', '#c084fc', '#38bdf8', '#a3e635', '#fb7185', '#94a3b8']
-            : ['#0e7490', '#4f46e5', '#15803d', '#b45309', '#b42318', '#7e22ce', '#0369a1', '#4d7c0f', '#be123c', '#475569'];
+            ? ['#fcd116', '#6f97ff', '#ff5a6e', '#5ad48f', '#f5b84b', '#c084fc', '#38bdf8', '#a3e635', '#fb7185', '#94a3b8']
+            : ['#0038a8', '#ce1126', '#b58900', '#15803d', '#b45309', '#7e22ce', '#0369a1', '#4d7c0f', '#be123c', '#475569'];
         var out = [];
         for (var i = 0; i < n; i++) out.push(base[i % base.length]);
         return out;

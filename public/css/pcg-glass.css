@@ -86,15 +86,16 @@ body.pcg-glass {
     color: var(--g-text);
 }
 
-/* admin sign-in pages (pcg-glass--console): same glass, the console's cyan accent */
+/* admin sign-in pages (pcg-glass--console): same glass, the console's flag accent
+   (sun yellow, like its dark theme; cyan until 2026-11-20) */
 body.pcg-glass.pcg-glass--console {
-    --g-accent: #22d3ee;
-    --g-accent-strong: #67e8f9;
-    --g-accent-ink: #04212b;
-    --g-accent-soft: rgba(34, 211, 238, 0.14);
-    --g-accent-line: rgba(34, 211, 238, 0.45);
+    --g-accent: #fcd116;
+    --g-accent-strong: #ffe066;
+    --g-accent-ink: #1b1400;
+    --g-accent-soft: rgba(252, 209, 22, 0.14);
+    --g-accent-line: rgba(252, 209, 22, 0.45);
 }
-.pcg.pcg-glass--console .pcg-btn--primary, .pcg.pcg-glass--console a.pcg-btn--primary { box-shadow: 0 8px 22px rgba(34, 211, 238, 0.22); }
+.pcg.pcg-glass--console .pcg-btn--primary, .pcg.pcg-glass--console a.pcg-btn--primary { box-shadow: 0 8px 22px rgba(252, 209, 22, 0.22); }
 
 .pcg-glass [hidden] { display: none !important; }
 .pcg-glass ::selection { background: rgba(226, 187, 69, 0.35); color: #fff; }

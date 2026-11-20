@@ -526,3 +526,39 @@ body.pcg-app {
 .pcg.pcg-app .hx-head .pcg-btn--secondary { background: rgba(255, 255, 255, 0.14); border-color: rgba(255, 255, 255, 0.45); color: #fff; }
 .pcg.pcg-app .ad-head .pcg-btn--secondary:hover,
 .pcg.pcg-app .hx-head .pcg-btn--secondary:hover { background: rgba(255, 255, 255, 0.24); color: #fff; }
+
+/* ======================================================================
+ * Flag colours (owner request 2026-11-20): the console's accent moves from
+ * cyan to the Philippine flag. Dark theme: sun yellow (#FCD116) for actions
+ * and highlights, flag blue/red in gradients. Light theme: flag blue
+ * (#0038A8), which reads on white. Status colours (ok, warn, danger) stay.
+ * ==================================================================== */
+body.pcg-app {
+    --c-accent: #0038a8;
+    --c-accent-strong: #002a80;
+    --c-accent-ink: #ffffff;
+    --c-accent-soft: rgba(0, 56, 168, 0.10);
+    --c-accent-line: rgba(0, 56, 168, 0.35);
+    --c-bar: #0038a8;
+    --c-bg-glow: rgba(0, 56, 168, 0.08);
+    --c-side-accent: #fcd116;
+}
+:root[data-theme="dark"] body.pcg-app {
+    --c-accent: #fcd116;
+    --c-accent-strong: #ffe066;
+    --c-accent-ink: #1b1400;
+    --c-accent-soft: rgba(252, 209, 22, 0.13);
+    --c-accent-line: rgba(252, 209, 22, 0.45);
+    --c-bar: #fcd116;
+    --c-side-accent: #fcd116;
+    --pcg-navy-100: rgba(252, 209, 22, 0.12);
+    --pcg-navy-600: #ffe066;
+    --pcg-navy-700: #fcd116;
+    --pcg-info-700: #8fb0ff;
+    --pcg-info-50: rgba(0, 56, 168, 0.28);
+}
+.pcg-app .pcg-navbar__avatar { background: linear-gradient(135deg, #0038a8, #ce1126 62%, #fcd116); color: #fff; }
+.pcg-navbar__menu-head .pcg-navbar__avatar { color: #fff; }
+.pcg-app .ad-rank__bar span { background: linear-gradient(90deg, var(--c-accent), #ce1126); }
+.pcg-app .ad-orb--a { background: radial-gradient(circle, rgba(0, 56, 168, 0.35), transparent 70%); }
+.pcg-app .ad-orb--b { background: radial-gradient(circle, rgba(206, 17, 38, 0.22), transparent 70%); }
