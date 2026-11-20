@@ -47,6 +47,7 @@
                 @include('layouts.partials.nav-link', ['href' => route('generate.soi'), 'icon' => 'print', 'label' => 'Print my SOI', 'active' => false])
                 @include('layouts.partials.nav-link', ['href' => route('leave.index'), 'icon' => 'calendar-days', 'label' => 'Leave', 'active' => request()->routeIs('leave.*')])
                 @include('layouts.partials.nav-link', ['href' => route('mobile.app'), 'icon' => 'mobile-screen-button', 'label' => 'Android app', 'active' => request()->routeIs('mobile.app')])
+                @include('layouts.partials.nav-link', ['href' => route('security'), 'icon' => 'shield-halved', 'label' => 'Sign-in and devices', 'active' => request()->routeIs('security')])
 
                 <div class="pcg-nav__section">Training</div>
                 @include('layouts.partials.nav-link', ['href' => route('applicant.administrative.training'), 'icon' => 'graduation-cap', 'label' => 'Administrative track', 'active' => request()->routeIs('applicant.administrative.training')])

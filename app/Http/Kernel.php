@@ -60,6 +60,7 @@ class Kernel extends HttpKernel
         'admin.orgwide' => \App\Http\Middleware\EnsureAdminOrgWide::class,
         'admin.can' => \App\Http\Middleware\EnsureAdminCan::class,
         'soi.open' => \App\Http\Middleware\EnsureSoiOpen::class,
+        'member.device' => \App\Http\Middleware\TrackMemberDevice::class,
         'admin.audit' => \App\Http\Middleware\AuditAdminRequests::class,
         'unit.session' => \App\Http\Middleware\EnsureUnitSession::class,
         'unit.m1' => \App\Http\Middleware\EnsureUnitM1::class,

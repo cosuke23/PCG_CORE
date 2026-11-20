@@ -116,6 +116,10 @@ Route::post('/login', [LoginController::class, 'login'])
     ->name('login.store');
 
 Route::post('/logout', [LoginController::class, 'logout'])->name('logout');
+// optional emailed sign-in code for members (App\Support\MemberLoginCode, chosen on /security)
+Route::get('/login/code', [LoginController::class, 'codeForm'])->name('login.code');
+Route::post('/login/code', [LoginController::class, 'codeVerify'])->middleware('throttle:login')->name('login.code.verify');
+Route::post('/login/code/resend', [LoginController::class, 'codeResend'])->middleware('throttle:login')->name('login.code.resend');
 
 
 /*
@@ -124,7 +128,11 @@ Route::post('/logout', [LoginController::class, 'logout'])->name('logout');
 |--------------------------------------------------------------------------
 */
 
-Route::middleware(['auth'])->group(function () {
+Route::middleware(['auth', 'member.device'])->group(function () {
+    Route::get('/security', [\App\Http\Controllers\SecurityController::class, 'index'])->name('security');
+    Route::post('/security/login-code', [\App\Http\Controllers\SecurityController::class, 'loginCode'])->middleware('throttle:member-writes')->name('security.login-code');
+    Route::post('/security/devices/others', [\App\Http\Controllers\SecurityController::class, 'signOutOthers'])->middleware('throttle:member-writes')->name('security.devices.others');
+    Route::post('/security/devices/{id}', [\App\Http\Controllers\SecurityController::class, 'signOutDevice'])->whereNumber('id')->middleware('throttle:member-writes')->name('security.devices.one');
 
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
 
