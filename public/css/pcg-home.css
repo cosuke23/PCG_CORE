@@ -422,3 +422,29 @@ body.ph {
 }
 /* flag colours (2026-11-20): the band's eyebrow in the flag's yellow */
 .ph-hero__band .ph-eyebrow { color: #fcd116; }
+
+/* ------------------------------------------------------------ the PCG seal in 3D (#seal, js/pcg-seal-3d.js) */
+.ph-seal__in { display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 6fr); gap: 48px; align-items: center; }
+.ph-seal__text .ph-lead { margin-bottom: 0; }
+.ph-seal__stage { position: relative; margin: 0; width: 100%; max-width: 520px; aspect-ratio: 1; justify-self: center; isolation: isolate; }
+.ph-seal__stage::before { /* golden sun glow behind the seal */
+    content: ""; position: absolute; inset: 6%; z-index: -1; border-radius: 50%;
+    background: radial-gradient(circle, rgba(252, 209, 22, 0.28), rgba(206, 17, 38, 0.12) 45%, rgba(0, 56, 168, 0.10) 62%, transparent 72%);
+    filter: blur(8px);
+}
+.ph-seal__img { position: absolute; inset: 9%; width: 82%; height: 82%; object-fit: contain; transition: opacity .6s ease; filter: drop-shadow(0 24px 40px rgba(0, 0, 0, 0.45)); }
+.ph-seal__canvas { position: absolute; inset: 0; width: 100% !important; height: 100% !important; opacity: 0; transition: opacity .8s ease; cursor: grab; touch-action: pan-y; }
+.ph-seal__canvas:active { cursor: grabbing; }
+.ph-seal__stage.is-3d .ph-seal__canvas { opacity: 1; }
+.ph-seal__stage.is-3d .ph-seal__img { opacity: 0; }
+.ph-seal__hint { position: absolute; left: 50%; bottom: 0; transform: translateX(-50%); display: inline-flex; align-items: center; gap: 8px;
+    padding: 6px 14px; border-radius: 999px; background: rgba(255, 255, 255, 0.07); border: 1px solid rgba(255, 255, 255, 0.14);
+    color: var(--ph-muted); font-size: 13px; white-space: nowrap; opacity: 0; transition: opacity .6s ease .6s; pointer-events: none; }
+.ph-seal__stage.is-3d .ph-seal__hint { opacity: 1; }
+@media (max-width: 860px) {
+    .ph-seal__in { grid-template-columns: minmax(0, 1fr); gap: 24px; }
+    .ph-seal__stage { max-width: 380px; }
+}
+@media (prefers-reduced-motion: reduce) {
+    .ph-seal__img, .ph-seal__canvas, .ph-seal__hint { transition: none; }
+}
