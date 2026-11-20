@@ -137,6 +137,19 @@ class AdminLeaveTest extends TestCase
         $this->withSession($this->auditor)->get('/admin/leave/credits')->assertDontSee('leave requests waiting');   // cannot approve
     }
 
+    public function test_the_leave_summary_and_csv_follow_the_admins_scope_and_are_audited()
+    {
+        $this->withSession($this->hr)->get('/admin/leave/summary?month=2026-11')->assertOk()
+            ->assertSee('Leave summary')->assertSee('MEPLEF')->assertDontSee('MSSC-HQ');
+        $csv = $this->withSession($this->hr)->get('/admin/leave/export?from=2026-11-01&to=2026-11-30')->streamedContent();
+        $this->assertStringContainsString('Ana Inside', $csv);
+        $this->assertStringNotContainsString('Ben Outside', $csv);
+        $this->assertDatabaseHas('admin_audit_logs', ['action' => 'leave.exported', 'admin_email' => 'hr@x.test']);
+
+        $all = $this->withSession($this->super)->get('/admin/leave/export?month=2026-11')->streamedContent();
+        $this->assertStringContainsString('Ben Outside', $all);
+    }
+
     public function test_the_adjutant_handles_leave_of_their_command()
     {
         $mepcom = OrgUnit::where('code', 'MEPCOM')->first();

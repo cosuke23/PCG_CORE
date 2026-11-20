@@ -80,6 +80,7 @@
                     @include('layouts.partials.nav-link', $link('admin.leave.index', 'calendar-days', 'Leave requests', 'admin.leave.index'))
                     @include('layouts.partials.nav-link', $link('admin.leave.credits', 'scale-balanced', 'Leave credits', 'admin.leave.credits*'))
                     @include('layouts.partials.nav-link', $link('admin.leave.readiness', 'people-group', 'Readiness', 'admin.leave.readiness'))
+                    @include('layouts.partials.nav-link', $link('admin.leave.summary', 'chart-column', 'Leave summary', 'admin.leave.summary'))
                 @endif
 
                 @if ($can('reenlistment.view') && $orgWide)

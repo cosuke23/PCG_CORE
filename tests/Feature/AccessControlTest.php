@@ -25,6 +25,8 @@ class AccessControlTest extends TestCase
             ['get', '/admin/leave/credits/import/template'],
             ['get', '/admin/leave/1/print'],
             ['get', '/admin/leave/readiness'],
+            ['get', '/admin/leave/summary'],
+            ['get', '/admin/leave/export'],
             ['post', '/admin/approve/1'],
             ['post', '/admin/reject/1'],
             ['get', '/admin/hr-analytics'],
@@ -109,6 +111,8 @@ class AccessControlTest extends TestCase
             ['get', '/unit/leave/credits/import/template'],
             ['get', '/unit/leave/1/print'],
             ['get', '/unit/leave/readiness'],
+            ['get', '/unit/leave/summary'],
+            ['get', '/unit/leave/export'],
         ];
     }
 

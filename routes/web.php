@@ -313,6 +313,8 @@ Route::middleware(['admin.session', 'admin.audit'])->group(function () {
             Route::get('/', 'index')->name('index');
             Route::get('/{id}/print', [\App\Http\Controllers\LeavePrintController::class, 'admin'])->whereNumber('id')->name('print');
             Route::get('/readiness', [\App\Http\Controllers\ReadinessController::class, 'admin'])->name('readiness');
+            Route::get('/summary', [\App\Http\Controllers\LeaveReportController::class, 'adminSummary'])->name('summary');
+            Route::get('/export', [\App\Http\Controllers\LeaveReportController::class, 'adminExport'])->name('export');
             Route::post('/{id}/review', 'review')->whereNumber('id')->middleware('admin.can:leave.approve')->name('review');
             Route::get('/credits', 'credits')->name('credits');
             Route::get('/credits/{user}', 'creditsShow')->whereNumber('user')->name('credits.show');
@@ -484,6 +486,8 @@ Route::middleware(['unit.session'])->group(function () {
     Route::get('/unit/leave', [\App\Http\Controllers\UnitLeaveController::class, 'index'])->name('unit.leave');
     Route::get('/unit/leave/{id}/print', [\App\Http\Controllers\LeavePrintController::class, 'unit'])->whereNumber('id')->name('unit.leave.print');
     Route::get('/unit/leave/readiness', [\App\Http\Controllers\ReadinessController::class, 'unit'])->name('unit.leave.readiness');
+    Route::get('/unit/leave/summary', [\App\Http\Controllers\LeaveReportController::class, 'unitSummary'])->name('unit.leave.summary');
+    Route::get('/unit/leave/export', [\App\Http\Controllers\LeaveReportController::class, 'unitExport'])->name('unit.leave.export');
     Route::post('/unit/leave/{id}/review', [\App\Http\Controllers\UnitLeaveController::class, 'review'])
         ->whereNumber('id')->middleware('throttle:member-writes')->name('unit.leave.review');
 

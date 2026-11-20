@@ -207,6 +207,50 @@ class LeaveExtrasTest extends TestCase
         $this->withSession($this->m1)->get('/unit/leave/readiness')->assertOk()->assertSee('1 of 3 members are available today')->assertSee('NOCOP');
     }
 
+    // ---------------------------------------------------------------- monthly summary and CSV
+
+    private function reportLeave(): void
+    {
+        $row = fn ($u, $serial, $type, $from, $to, $days, $status, $note = null) => ['user_id' => $u->id, 'serial_number' => $serial, 'leave_type' => $type,
+            'start_date' => $from, 'end_date' => $to, 'days' => $days, 'status' => $status, 'reason' => 'private reason', 'review_note' => $note,
+            'created_at' => now(), 'updated_at' => now()];
+        DB::table('leave_requests')->insert([
+            $row($this->ana, 'SN-A', 'rnr', '2026-11-28', '2026-12-03', 6, 'approved', '=HYPERLINK("x")'),
+            $row($this->ana, 'SN-A', 'vacation', '2026-11-25', '2026-11-26', 2, 'pending'),
+            $row($this->ben, 'SN-B', 'rnr', '2026-11-10', '2026-11-11', 2, 'approved'),
+            $row($this->ben, 'SN-B', 'rnr', '2026-10-01', '2026-10-02', 2, 'approved'),
+        ]);
+    }
+
+    public function test_the_monthly_summary_counts_days_inside_the_month_for_the_checkers_scope()
+    {
+        $this->reportLeave();
+        $this->withSession($this->unit)->get('/unit/leave/summary?month=2026-11')->assertOk()
+            ->assertSee('1 member of MEPLEF took 3 leave days in November 2026')   // Nov 28-30 of the RNR
+            ->assertDontSee('NOCOP');
+        $this->withSession($this->m1)->get('/unit/leave/summary?month=2026-11')->assertOk()
+            ->assertSee('2 members took 5 leave days in November 2026')->assertSee('NOCOP');
+        $this->withSession($this->unit)->get('/unit/leave/summary?month=2026-12')->assertSee('took 3 leave days in December 2026');
+    }
+
+    public function test_the_csv_export_has_the_scope_and_no_reasons_and_is_audited()
+    {
+        $this->reportLeave();
+        $res = $this->withSession($this->unit)->get('/unit/leave/export?from=2026-11-01&to=2026-11-30&unit=NOCOP');
+        $res->assertOk()->assertHeader('content-type', 'text/csv; charset=UTF-8');
+        $csv = $res->streamedContent();
+        $this->assertStringContainsString('Ana Reyes', $csv);
+        $this->assertStringNotContainsString('Ben Cruz', $csv);               // own-unit checker: the unit filter is ignored
+        $this->assertStringNotContainsString('private reason', $csv);
+        $this->assertStringContainsString("'=HYPERLINK", $csv);               // formula neutralised
+        $this->assertStringContainsString('2026-11-28,2026-12-03,6,3,Approved', $csv);
+
+        $m1 = $this->withSession($this->m1)->get('/unit/leave/export?from=2026-11-01&to=2026-11-30&status=approved')->streamedContent();
+        $this->assertStringContainsString('Ben Cruz', $m1);
+        $this->assertStringNotContainsString('Waiting', $m1);
+        $this->assertSame(2, substr_count($m1, ',Approved,'));
+    }
+
     // ---------------------------------------------------------------- 3D model
 
     public function test_the_ship_model_is_sent_compressed_and_cached()
