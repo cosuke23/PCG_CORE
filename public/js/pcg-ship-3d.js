@@ -76,7 +76,69 @@ async function start() {
     sky.material.uniforms.mieCoefficient.value = 0.0025;
     sky.material.uniforms.mieDirectionalG.value = 0.82;
     sky.material.uniforms.sunPosition.value.copy(sun);
-    scene.add(sky);
+
+    // the visible sky: deep blue overhead fading to a pale hazy horizon, the sun with its glow, and
+    // fair-weather cumulus projected onto a layer above the sea, drifting with the wind: bright
+    // sunlit tops, grey-blue bases, flattening and dissolving into haze toward the horizon.
+    // (The Sky model above only lights the scene; see envSky below.)
+    const SKY_ZENITH = new THREE.Color('#1d5cc0'), SKY_HORIZON = new THREE.Color('#bdd6ee');
+    const clouds = new THREE.Mesh(new THREE.SphereGeometry(450, 48, 32), new THREE.ShaderMaterial({
+        uniforms: {
+            uTime: { value: 0 }, uSun: { value: sun.clone().normalize() },
+            uZenith: { value: SKY_ZENITH }, uHorizon: { value: SKY_HORIZON },
+        },
+        vertexShader: `
+            varying vec3 vDir;
+            void main() {
+                vDir = normalize(position);
+                gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+            }`,
+        fragmentShader: `
+            uniform float uTime;
+            uniform vec3 uSun, uZenith, uHorizon;
+            varying vec3 vDir;
+            float hash(vec2 p) { return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453); }
+            float noise(vec2 p) {
+                vec2 i = floor(p), f = fract(p);
+                f = f * f * (3.0 - 2.0 * f);
+                return mix(mix(hash(i), hash(i + vec2(1, 0)), f.x), mix(hash(i + vec2(0, 1)), hash(i + vec2(1, 1)), f.x), f.y);
+            }
+            float fbm(vec2 p) {
+                float v = 0.0, a = 0.5;
+                for (int i = 0; i < 5; i++) { v += a * noise(p); p = p * 2.07 + vec2(17.0, 9.0); a *= 0.5; }
+                return v;
+            }
+            float cloud(vec2 uv) {
+                vec2 warp = vec2(fbm(uv * 0.6 + 3.1), fbm(uv * 0.6 - 5.7)) - 0.5;
+                float d = fbm(uv + warp * 1.4);
+                float cells = smoothstep(0.35, 0.75, noise(uv * 0.35 + 11.0));   // gaps between cloud groups
+                return smoothstep(0.49, 0.7, d * (0.8 + cells * 0.4));
+            }
+            void main() {
+                vec3 d = normalize(vDir);
+                float h = max(d.y, 0.0);
+                vec3 col = mix(uHorizon, uZenith, pow(h, 0.28)) * 1.75;
+                float sd = max(dot(d, uSun), 0.0);
+                col += vec3(1.0, 0.95, 0.85) * (pow(sd, 900.0) * 40.0 + pow(sd, 18.0) * 0.5 + pow(sd, 6.0) * 0.06);
+                if (d.y > 0.004) {
+                    vec2 uv = d.xz / (d.y + 0.1) * 1.3 + vec2(uTime * 0.004, uTime * 0.0016);
+                    float c = cloud(uv);
+                    if (c > 0.001) {
+                        float lit = clamp(0.55 + (c - cloud(uv + uSun.xz * 0.06)) * 2.5, 0.0, 1.0);
+                        vec3 cc = mix(vec3(0.5, 0.56, 0.66), vec3(1.0, 0.99, 0.96), lit) * 2.6;
+                        cc += vec3(1.0, 0.92, 0.8) * pow(sd, 6.0) * 0.8 * (1.0 - c);   // silver lining near the sun
+                        float fade = smoothstep(0.0, 0.22, d.y);
+                        col = mix(col, mix(uHorizon * 1.75, cc, fade), c * (0.35 + 0.6 * fade));
+                    }
+                }
+                gl_FragColor = vec4(col, 1.0);
+                #include <tonemapping_fragment>
+                #include <colorspace_fragment>
+            }`,
+        side: THREE.BackSide, depthWrite: false,
+    }));
+    clouds.renderOrder = -1;
+    scene.add(clouds);
     const pmrem = new THREE.PMREMGenerator(renderer);
     const envScene = new THREE.Scene();
     const envSky = new Sky(); envSky.scale.setScalar(1000);
@@ -122,8 +184,8 @@ async function start() {
             uSunColor: { value: linear('#fff1d6') },
             uDeep: { value: linear('#05224d') },
             uScatter: { value: linear('#13698f') },
-            uSkyHorizon: { value: linear('#c4d8ea') },
-            uSkyZenith: { value: linear('#3f7fc4') },
+            uSkyHorizon: { value: SKY_HORIZON.clone().multiplyScalar(1.7) },
+            uSkyZenith: { value: SKY_ZENITH.clone().multiplyScalar(1.3) },
         },
         vertexShader: `
             varying vec3 vWorld;
@@ -252,7 +314,7 @@ async function start() {
             const grd = g.createLinearGradient(0, sy, 0, ey); grd.addColorStop(0, `rgba(${color},${a})`); grd.addColorStop(1, `rgba(${color},0)`);
             g.fillStyle = grd; g.fillRect(sx - 3, sy, 6, ey - sy);
         };
-        [3.16, 3.22, 3.28].forEach((x) => streak(x, 0.44, 0.3, 0.22));                    // below the anchor recess
+        [3.25, 3.3].forEach((x) => streak(x, 0.43, 0.3, 0.2));                    // below the anchor recess
         [-2.95, -2.84, -0.95, -0.84, 2.84, 2.95].forEach((x) => streak(x, 0.57, 0.2, 0.1, '70,78,88'));
         for (let x = -3.9; x < 0.4; x += 0.55) streak(x + (Math.sin(x * 7) * 0.05), 0.68, 0.22, 0.06, '70,78,88');
         poly([[-4.4, -0.5], [-4.4, 0.21], [-2.45, 0.21], [-2.35, 0.05], [4.4, 0.05], [4.4, -0.5]], C.boot);   // dark bottom, deep band at the stern
@@ -261,10 +323,11 @@ async function start() {
         [-0.62, -0.18].forEach((x) => line(x, 0.1, x, 0.66, 4, '#9aa3ad'));                              // shell door seams
         poly([[1.13, 0.05], [1.25, 0.05], [1.95, 1.0], [1.83, 1.0]], C.stripeBlue);                      // bow stripes
         poly([[1.33, 0.05], [1.6, 0.05], [2.34, 1.0], [2.07, 1.0]], C.stripeRed);
-        poly([[3.13, 0.44], [3.33, 0.44], [3.33, 0.72], [3.13, 0.72]], '#1c232b');                       // anchor recess
-        poly([[3.16, 0.47], [3.3, 0.47], [3.3, 0.69], [3.16, 0.69]], '#3a4450');
+        poly([[3.21, 0.43], [3.36, 0.43], [3.43, 0.75], [3.28, 0.75]], '#151b22');                       // anchor pocket: tall slot raked with the stem
+        poly([[3.235, 0.46], [3.335, 0.46], [3.395, 0.72], [3.295, 0.72]], '#2e3843');
         g.fillStyle = '#2a3340';                                                                          // portholes and small windows
-        [2.84, 2.95, 3.3, 3.41].forEach((x) => { const [a, b] = px(x, 0.8); g.beginPath(); g.arc(a, b, 7, 0, Math.PI * 2); g.fill(); });
+        [2.74, 2.86].forEach((x) => { const [a, b] = px(x, 0.79); g.fillRect(a - 26, b - 13, 52, 26); });          // two small windows
+        [3.03, 3.13].forEach((x) => { const [a, b] = px(x, 0.8); g.beginPath(); g.arc(a, b, 15, 0, Math.PI * 2); g.fill(); });  // then two portholes
         [[-2.95, 0.6], [-2.84, 0.6], [-0.95, 0.6], [-0.84, 0.6]].forEach(([x, y]) => { const [a, b] = px(x, y); g.fillRect(a - 9, b - 6, 18, 12); });
     });
     hullTex.flipY = false;
@@ -442,6 +505,7 @@ async function start() {
     const flagPos = flagGeo.attributes.position;
     function animate(t) {
         water.material.uniforms.uTime.value = t;
+        clouds.material.uniforms.uTime.value = t;
         for (let i = 0; i < flagPos.count; i++) {
             const x = flagBase[i * 3], y = flagBase[i * 3 + 1], k = -x / 0.5;
             flagPos.setZ(i, Math.sin(x * 15 + t * 7) * 0.032 * k + Math.sin(y * 9 + t * 5) * 0.01 * k);

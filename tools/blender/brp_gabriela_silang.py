@@ -201,13 +201,24 @@ def hull_uv(co, f):
     return ((co.x - X0) / (X1 - X0), (co.z + 4.0) / 14.0)
 
 
+def bulwark_h(x):
+    t = max(0.0, min(1.0, (x - 29.0) / (X1 - 29.0)))
+    return 1.15 + t ** 1.6 * 1.0
+
+
+
+def fore_h(x):
+    """Height of the forecastle bulwark above the deck edge (0 aft of the deckhouse front)."""
+    return bulwark_h(x) * max(0.0, min(1.0, (x - 18.0) / 0.6))
+
+
 hull = Builder("Hull")
 STATIONS = 200
 rings = []
 for i in range(STATIONS + 1):
     x = X0 + (X1 - X0) * i / STATIONS
-    top = deck_z(x)
-    bot = min(keel_z(x), top - 0.01)
+    top = deck_z(x) + fore_h(x)
+    bot = min(keel_z(x), deck_z(x) - 0.01)
     w = half_beam(x)
     b = bowness(x)
 
@@ -247,14 +258,19 @@ deck.finish()
 bulwark = Builder("BowBulwark")
 for side in (1, -1):
     prev = None
-    for i in range(0, 41):
-        x = 22 + (X1 - 22 - 0.3) * i / 40
+    for i in range(0, 61):
+        x = 18.05 + (X1 - 18.05 - 0.3) * i / 60
         w = half_beam(x) * 0.985
-        top = deck_z(x)
-        pts = (bulwark.bm.verts.new((x, side * w, DECK + 0.3)), bulwark.bm.verts.new((x, side * w, top)))
+        wo = half_beam(x) * 0.997
+        top = deck_z(x) + fore_h(x)
+        pts = (bulwark.bm.verts.new((x, side * w, DECK + 0.3)), bulwark.bm.verts.new((x, side * w, top)),
+               bulwark.bm.verts.new((x, side * wo, top)))
         if prev:
-            f = bulwark.bm.faces.new((prev[0], pts[0], pts[1], prev[1]) if side > 0 else (prev[1], pts[1], pts[0], prev[0]))
-            bulwark.tag([f], "White")
+            if side > 0:
+                fs = [bulwark.bm.faces.new((prev[0], pts[0], pts[1], prev[1])), bulwark.bm.faces.new((prev[1], pts[1], pts[2], prev[2]))]
+            else:
+                fs = [bulwark.bm.faces.new((prev[1], pts[1], pts[0], prev[0])), bulwark.bm.faces.new((prev[2], pts[2], pts[1], prev[1]))]
+            bulwark.tag(fs, "White")
         prev = pts
 bulwark.finish()
 
@@ -302,7 +318,6 @@ for s in (1, -1):
 misc.box(-33.1, -13.8, -7.6, 7.6, DECK + 0.25, DECK + 0.55, "Helideck",
          uvfn=lambda co, f: ((co.x + 33.1) / 19.3, (co.y + 7.6) / 15.2))
 misc.box(-41.8, -33.1, -7.5, 7.5, DECK + 0.02, DECK + 0.2, "BlueDeck")
-misc.box(21.0, 33.5, -5.0, 5.0, DECK + 0.32, DECK + 0.45, "BlueDeck")
 # deck crane (orange) and life-raft canisters at the stern
 misc.cylinder((-37.6, -3.6, DECK), (-37.6, -3.6, DECK + 2.2), 0.6, 0.5, 16, "Orange")
 misc.cylinder((-37.6, -3.6, DECK + 2.2), (-33.4, -3.6, DECK + 3.8), 0.22, 0.16, 10, "Orange")
@@ -464,7 +479,7 @@ for s in (1, -1):
     det.cylinder((31.0, s * 1.2, DECK + 0.62), (32.3, s * 1.45, DECK + 0.5), 0.12, None, 8, "Dark")
 # anchors stowed in the hull recesses (stockless: shank and flukes)
 for s in (1, -1):
-    x = 32.2
+    x = 33.0
     y = s * (half_beam(x) * 0.99 + 0.08)
     det.box(x - 0.12, x + 0.12, y - 0.08, y + 0.08, 5.15, 6.75, "Dark")
     det.box(x - 0.55, x + 0.55, y - 0.1, y + 0.1, 4.75, 5.2, "Dark")
@@ -474,14 +489,36 @@ for s in (1, -1):
 for s in (1, -1):
     det.cylinder((-33.0, s * 8.04, 5.9), (4.0, s * 8.04, 5.9), 0.1, None, 8, "White")
     det.cylinder((-33.0, s * 8.03, 2.4), (-6.0, s * 8.03, 2.4), 0.08, None, 8, "White")
-# forecastle railing following the deck edge, and a breakwater ahead of the deckhouse
+# forecastle (from the bow photo): a solid bulwark, flush with the hull side and painted with it,
+# runs from the deckhouse to the stem and rises into a high bow shield; railing on its aft part;
+# blue deck out to the bulwark
+FB_T = 0.16
+FB_X0 = 18.6
+fd = Builder("ForeDeck")
+prev = None
+dz = DECK + 0.34
+for i in range(41):
+    x = FB_X0 + (39.5 - FB_X0) * i / 40
+    w = max(0.05, half_beam(x) - FB_T - 0.02)
+    pair = (fd.bm.verts.new((x, w, dz)), fd.bm.verts.new((x, -w, dz)))
+    if prev:
+        fd.tag([fd.bm.faces.new((prev[0], pair[0], pair[1], prev[1]))], "BlueDeck")
+    prev = pair
+fd.finish()
+
+# railing on top of the bulwark, aft part
 for s in (1, -1):
-    pts = [(18.8 + (40.6 - 18.8) * i / 12) for i in range(13)]
+    pts = [(FB_X0 + 0.2 + (31.0 - FB_X0 - 0.2) * i / 8) for i in range(9)]
     for xa, xb in zip(pts, pts[1:]):
-        ya, yb = s * half_beam(xa) * 0.97, s * half_beam(xb) * 0.97
-        za, zb = deck_z(xa) + 1.0, deck_z(xb) + 1.0
-        det.cylinder((xa, ya, za), (xb, yb, zb), 0.035, None, 6, "Rail", caps=False)
-        det.cylinder((xa, ya, deck_z(xa)), (xa, ya, za), 0.03, None, 6, "Rail", caps=False)
+        ya, yb = s * (half_beam(xa) - FB_T / 2), s * (half_beam(xb) - FB_T / 2)
+        za, zb = deck_z(xa) + bulwark_h(xa), deck_z(xb) + bulwark_h(xb)
+        det.cylinder((xa, ya, za + 0.75), (xb, yb, zb + 0.75), 0.035, None, 6, "Rail", caps=False)
+        det.cylinder((xa, ya, za), (xa, ya, za + 0.75), 0.03, None, 6, "Rail", caps=False)
+# white fittings on the forecastle seen in the photo: a dome-topped locker and small boxes
+det.cylinder((26.5, 0.0, dz), (26.5, 0.0, dz + 0.9), 0.75, 0.75, 20, "White")
+det.sphere((26.5, 0.0, dz + 0.9), 0.75, "White", 20, 10)
+for y in (-2.2, 2.2):
+    det.box(22.6, 23.6, y - 0.4, y + 0.4, dz, dz + 0.7, "White")
 det.profile([(19.2, DECK + 0.3), (20.4, DECK + 0.3), (19.6, DECK + 1.3)], 4.6, "White")
 # mast: navigation lights on the yards, horn, extra whip antennas, platform guard rails
 for z, w in ((18.0, 3.2), (21.2, 2.1)):
