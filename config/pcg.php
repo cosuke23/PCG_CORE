@@ -52,6 +52,9 @@ return [
         'backup_dir' => env('PCG_BACKUP_DIR', ''),
         'backup_max_age_hours' => (int) env('PCG_BACKUP_MAX_AGE_HOURS', 30),
         'disk_min_free_percent' => (float) env('PCG_DISK_MIN_FREE_PERCENT', 10),
+        // off-site copy and restore drill from the office PC (deploy/offsite): heartbeat files in shared/
+        'shared_dir' => env('PCG_SHARED_DIR', ''),
+        'offsite_expected' => (bool) env('PCG_OFFSITE_EXPECTED', false),
     ],
 
     'unit' => [

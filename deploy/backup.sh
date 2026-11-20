@@ -26,6 +26,8 @@ tar -C "$BASE/shared" --exclude='storage/app/keys' -czf "$dir/files.tar.gz" uplo
 # The file encryption keys are NOT in this backup on purpose (they are kept
 # apart from the files). Record which key ids the files need, never the keys.
 (cd "$BASE/current" && php artisan pcg:file-keys status --no-ansi > "$dir/file-key-ids.txt" 2>&1) || true
+# exact row count per table, for the restore drill (deploy/offsite/restore-drill.php)
+(cd "$BASE/current" && php artisan pcg:row-counts --no-ansi > "$dir/row-counts.json" 2>/dev/null) || rm -f "$dir/row-counts.json"
 (cd "$dir" && sha256sum -- * > SHA256SUMS)
 
 find "$OUT" -mindepth 1 -maxdepth 1 -type d -mtime +"$KEEP_DAYS" -exec rm -rf {} +

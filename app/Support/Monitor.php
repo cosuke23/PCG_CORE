@@ -49,6 +49,39 @@ class Monitor
         return $out;
     }
 
+    /**
+     * Server-side checks of the off-site copy and the restore drill run on the
+     * office PC (deploy/offsite): the PC leaves shared/offsite-last.txt after each
+     * copy and shared/restore-drill-last.json after each drill. Skipped until the
+     * first one arrives (or PCG_OFFSITE_EXPECTED=true). pcg:monitor only.
+     *
+     * @return array<string, array{ok: bool, note: string}>
+     */
+    public static function offsiteChecks(): array
+    {
+        $dir = (string) config('pcg.monitor.shared_dir') ?: dirname(base_path(), 2) . DIRECTORY_SEPARATOR . 'shared';
+        $expected = (bool) config('pcg.monitor.offsite_expected', false);
+        $out = [];
+        $copy = $dir . DIRECTORY_SEPARATOR . 'offsite-last.txt';
+        if (is_file($copy) || $expected) {
+            $age = is_file($copy) ? (time() - filemtime($copy)) / 3600 : INF;
+            $out['offsite copy'] = $age <= 48
+                ? ['ok' => true, 'note' => sprintf('last copy %.0f hours ago (%s)', $age, trim((string) @file_get_contents($copy)))]
+                : ['ok' => false, 'note' => is_finite($age) ? sprintf('no off-site copy for %.0f hours: is the office PC on? (deploy/offsite)', $age) : 'no off-site copy has arrived yet'];
+        }
+        $drill = $dir . DIRECTORY_SEPARATOR . 'restore-drill-last.json';
+        if (is_file($drill)) {
+            $r = json_decode((string) @file_get_contents($drill), true) ?: [];
+            $days = (time() - filemtime($drill)) / 86400;
+            $out['restore drill'] = match (true) {
+                empty($r['ok']) => ['ok' => false, 'note' => 'the last restore drill FAILED (' . ($r['backup'] ?? '?') . '): see restore-drill.log on the office PC'],
+                $days > 40 => ['ok' => false, 'note' => sprintf('no restore drill for %.0f days', $days)],
+                default => ['ok' => true, 'note' => sprintf('passed %.0f days ago (backup %s)', $days, $r['backup'] ?? '?')],
+            };
+        }
+        return $out;
+    }
+
     public static function healthy(array $checks): bool
     {
         foreach ($checks as $c) {

@@ -18,7 +18,7 @@ class MonitorCommand extends Command
 
     public function handle(): int
     {
-        $checks = Monitor::checks();
+        $checks = Monitor::checks() + Monitor::offsiteChecks();
         foreach ($checks as $name => $c) {
             $this->line(($c['ok'] ? '  <info>[ OK ]</info> ' : '  <error>[FAIL]</error> ') . "$name: {$c['note']}");
         }
