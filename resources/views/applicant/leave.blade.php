@@ -42,6 +42,11 @@
             </div>
 
             <aside class="lc-layout__side">
+                <section class="pcg-card pcg-mb" aria-labelledby="leave-credits-heading">
+                    <div class="pcg-card__header"><h3 id="leave-credits-heading">My leave credits</h3></div>
+                    <div class="pcg-card__body">@include('partials.leave-credit-cards', ['self' => true])</div>
+                </section>
+
                 <section class="pcg-card pcg-mb" aria-labelledby="leave-form-heading">
                     <div class="pcg-card__header"><h3 id="leave-form-heading">File leave</h3></div>
                     <div class="pcg-card__body">
@@ -70,6 +75,10 @@
                                         <span class="lc-type__text">
                                             <strong>{{ $t['label'] }}</strong>
                                             <span class="lc-muted">{{ $t['hint'] }} Up to {{ $t['max_days'] }} days.@if ($t['sensitive']) Others in the unit see only "On leave".@endif</span>
+                                            @if (!empty($t['pool']))
+                                                @php $c = $credits[$t['pool']]; @endphp
+                                                <span class="lcr-avail{{ !$c['set'] || $c['available'] <= 0 ? ' is-empty' : '' }}">{{ $c['set'] ? \App\Support\LeaveCredits::fmt($c['available']) . ' days available' : 'Credits not set yet' }}</span>
+                                            @endif
                                         </span>
                                     </label>
                                 @endforeach
@@ -122,6 +131,11 @@
                             @endforeach
                         </ul>
                     @endif
+                </section>
+
+                <section class="pcg-card pcg-mt" aria-labelledby="leave-credit-history-heading">
+                    <div class="pcg-card__header"><h3 id="leave-credit-history-heading">Credit history</h3></div>
+                    <div class="pcg-card__body">@include('partials.leave-credit-history', ['pools' => \App\Support\LeaveCredits::POOLS])</div>
                 </section>
             </aside>
         </div>

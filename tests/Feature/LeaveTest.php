@@ -43,6 +43,7 @@ class LeaveTest extends TestCase
             $t->string('role')->nullable(); $t->string('unit_name')->nullable(); $t->boolean('is_active')->default(true); $t->timestamps();
         });
         (require base_path('database/migrations/2026_11_20_000001_create_leave_requests_table.php'))->up();
+        (require base_path('database/migrations/2026_11_20_000002_create_leave_credit_entries_table.php'))->up();
 
         $this->ana = User::forceCreate(['name' => 'Ana Reyes', 'email' => 'a@x.test', 'password' => bcrypt('x'), 'rank' => 'SN2', 'serial_number' => 'SN-A', 'status' => 'Approved', 'mother_unit' => 'MEPLEF']);
         $this->carl = User::forceCreate(['name' => 'Carl Santos', 'email' => 'c@x.test', 'password' => bcrypt('x'), 'rank' => 'PO3', 'serial_number' => 'SN-C', 'status' => 'Approved', 'mother_unit' => 'meplef']);
@@ -52,6 +53,15 @@ class LeaveTest extends TestCase
             ['full_name' => 'M1 Checker', 'email' => 'm1@x.test', 'password' => Hash::make('pw-m1-1234'), 'role' => UnitUser::ROLE_M1, 'unit_name' => 'MEPCOM'],
             ['full_name' => 'Other Checker', 'email' => 'nocop@x.test', 'password' => Hash::make('pw-nocop-12'), 'role' => UnitUser::ROLE_UNIT, 'unit_name' => 'NOCOP'],
         ]);
+        $this->giveRnr();
+    }
+
+    /** RNR credits for the members who file RNR in these tests (credits are tested in LeaveCreditsTest). */
+    private function giveRnr(): void
+    {
+        foreach ([$this->ana, $this->ben, $this->carl] as $u) {
+            \App\Support\LeaveCredits::post($u->id, $u->serial_number, 'rnr', 'grant', 30, '2026-11-01', 'Patrol');
+        }
     }
 
     protected function tearDown(): void

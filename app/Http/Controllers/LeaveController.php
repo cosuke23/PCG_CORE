@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Support\DbError;
 use App\Support\LeaveCalendar;
+use App\Support\LeaveCredits;
 use App\Support\LeaveTypes;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
@@ -53,6 +54,8 @@ class LeaveController extends Controller
             'byDay' => $byDay,
             'legend' => LeaveCalendar::legend($byDay),
             'mine' => $mine,
+            'credits' => LeaveCredits::balances((int) $user->id),
+            'histories' => collect(array_keys(LeaveCredits::POOLS))->mapWithKeys(fn ($p) => [$p => LeaveCredits::history((int) $user->id, $p)->take(12)])->all(),
             'types' => LeaveTypes::TYPES,
             'minDate' => $today->copy()->subDays(LeaveTypes::BACKDATE_DAYS)->toDateString(),
             'today' => $today->toDateString(),
@@ -93,6 +96,10 @@ class LeaveController extends Controller
             throw ValidationException::withMessages([
                 'start_date' => 'You already have leave filed or approved on some of these days. Cancel it first or choose other dates.',
             ]);
+        }
+
+        if ($short = LeaveCredits::shortfall((int) $user->id, $data['leave_type'], (float) $days)) {
+            throw ValidationException::withMessages(['leave_type' => $short]);
         }
 
         try {
@@ -138,7 +145,16 @@ class LeaveController extends Controller
             return back()->with('error', 'This leave can no longer be cancelled here. Ask your unit if it needs to change.');
         }
 
-        DB::table('leave_requests')->where('id', $id)->update(['status' => 'cancelled', 'updated_at' => now()]);
+        DB::transaction(function () use ($id, $leave, $status, $user) {
+            DB::table('leave_requests')->where('id', $id)->update(['status' => 'cancelled', 'updated_at' => now()]);
+            // approved leave took its days from the credits: give them back
+            $pool = LeaveCredits::poolFor($leave->leave_type);
+            if ($status === 'approved' && $pool !== null
+                && DB::table('leave_credit_entries')->where('leave_request_id', $id)->where('kind', 'used')->exists()) {
+                LeaveCredits::post((int) $user->id, (string) $leave->serial_number, $pool, 'restored', (float) $leave->days,
+                    (string) $leave->start_date, 'Cancelled by the member', $id, ['type' => 'member', 'id' => $user->id, 'name' => $user->name]);
+            }
+        });
         Log::channel('audit')->info('leave.cancelled', ['leave_id' => $id, 'user_id' => $user->id, 'was' => $status]);
 
         return back()->with('success', 'Your ' . strtolower(LeaveTypes::label($leave->leave_type)) . ' for '

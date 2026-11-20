@@ -108,3 +108,34 @@
     .lc__wd { font-size: 10px; letter-spacing: 0; }
 }
 @media (prefers-reduced-motion: reduce) { .lc-day { transition: none; } }
+
+/* ---- leave credits (App\Support\LeaveCredits): balance cards, history, availability hints ---- */
+.lcr-cards { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: var(--pcg-space-2); }
+.lcr-card { display: flex; flex-direction: column; gap: 2px; padding: 10px 12px; border: 1px solid var(--pcg-border); border-radius: 12px;
+    background: color-mix(in srgb, var(--pcg-surface) 70%, transparent); }
+.lcr-card__label { font-size: var(--pcg-text-xs); font-weight: 700; letter-spacing: .03em; text-transform: uppercase; color: var(--pcg-text-muted); }
+.lcr-card__value { font-size: 1.6rem; line-height: 1.1; font-variant-numeric: tabular-nums; }
+.lcr-card__unit { font-size: var(--pcg-text-sm); }
+.lcr-card__held { font-size: var(--pcg-text-xs); color: var(--pcg-accent); }
+.lcr-card__rule { font-size: var(--pcg-text-xs); color: var(--pcg-text-muted); margin-top: 4px; }
+.lcr-card.is-unset .lcr-card__value, .lcr-card.is-empty .lcr-card__value { color: var(--pcg-text-muted); }
+.lcr-avail { font-size: var(--pcg-text-sm); font-weight: 600; color: var(--pcg-success-700, #067647); }
+.lcr-avail.is-empty { color: var(--pcg-danger-700, #b42318); }
+body.pcg-glass .lcr-avail { color: #6ee7b7; }
+body.pcg-glass .lcr-avail.is-empty { color: #fca5a5; }
+.lcr-history { border-top: 1px solid var(--pcg-border); padding: 8px 0; }
+.lcr-history:first-child { border-top: 0; }
+.lcr-history summary { cursor: pointer; font-weight: 600; }
+.lcr-table { margin-top: 6px; width: 100%; }
+.lcr-num { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.lcr-num.is-minus { color: var(--pcg-danger-700, #b42318); }
+body.pcg-glass .lcr-num.is-minus { color: #fca5a5; }
+.lcr-nowrap { white-space: nowrap; }
+.pcg-mt { margin-top: var(--pcg-space-4); }
+/* date fields and balance cards fit narrow cards */
+.lc-form__dates > .pcg-field { min-width: 0; }
+.lc-form__dates .pcg-input { width: 100%; min-width: 0; }
+@media (max-width: 720px) {
+    .lcr-cards { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .lcr-card__value { font-size: 1.35rem; }
+}

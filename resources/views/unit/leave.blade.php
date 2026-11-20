@@ -68,6 +68,13 @@
                                     @if ($r->reason)
                                         <div class="lc-mine__note"><i class="fa-solid fa-quote-left" aria-hidden="true"></i> {{ $r->reason }}</div>
                                     @endif
+                                    @if ($r->credit)
+                                        <div class="lcr-avail{{ $r->shortfall ? ' is-empty' : '' }}">
+                                            {{ $r->credit['label'] }}: {{ $r->credit['set'] ? \App\Support\LeaveCredits::fmt($r->credit['balance']) . ' days' : 'not set' }}
+                                            @if ($r->shortfall) · not enough to approve @else · {{ \App\Support\LeaveCredits::fmt($r->credit['balance'] - $r->days) }} left after this @endif
+                                            · <a href="{{ route('unit.leave.credits.show', $r->user_id) }}">credits</a>
+                                        </div>
+                                    @endif
                                     <form method="POST" action="{{ route('unit.leave.review', $r->id) }}" class="lc-review">
                                         @csrf
                                         <label class="pcg-label" for="note-{{ $r->id }}">Note to the member <span class="lc-muted">(needed to decline)</span></label>

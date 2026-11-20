@@ -3,6 +3,8 @@
 namespace Database\Seeders;
 
 use App\Support\LeaveCalendar;
+use App\Support\LeaveCredits;
+use App\Support\LeaveTypes;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
@@ -16,9 +18,19 @@ class LeaveSeeder extends DevOnlySeeder
     public function run(): void
     {
         $this->ensureSafe();
-        if (!Schema::hasTable('leave_requests') || DB::table('leave_requests')->where('serial_number', 'like', 'DEMO-%')->exists()) {
+        if (!Schema::hasTable('leave_requests')) {
             return;
         }
+        if (!DB::table('leave_requests')->where('serial_number', 'like', 'DEMO-%')->exists()) {
+            $this->requests();
+        }
+        if (Schema::hasTable('leave_credit_entries') && !DB::table('leave_credit_entries')->where('serial_number', 'like', 'DEMO-%')->exists()) {
+            $this->credits();
+        }
+    }
+
+    private function requests(): void
+    {
 
         $users = DB::table('users')->where('serial_number', 'like', 'DEMO-%')->orderBy('id')->get()->values();
         if ($users->isEmpty()) {
@@ -50,6 +62,21 @@ class LeaveSeeder extends DevOnlySeeder
                 'reviewed_at' => $status === 'pending' ? null : $now, 'review_note' => $note,
                 'created_at' => $now, 'updated_at' => $now,
             ]);
+        }
+    }
+
+    /** Opening balances and RNR days for the demo members; approved sample leave takes its days. */
+    private function credits(): void
+    {
+        $opening = LeaveCalendar::today()->startOfYear()->toDateString();
+        foreach (DB::table('users')->where('serial_number', 'like', 'DEMO-%')->get() as $i => $u) {
+            LeaveCredits::post($u->id, $u->serial_number, 'annual', 'opening', 10 + ($i % 4) * 5, $opening, 'Opening balance (sample)', null, ['type' => 'system', 'name' => 'Sample data']);
+            LeaveCredits::post($u->id, $u->serial_number, 'rnr', 'grant', 15, $opening, 'Sample deployment', null, ['type' => 'system', 'name' => 'Sample data']);
+        }
+        foreach (DB::table('leave_requests')->where('serial_number', 'like', 'DEMO-%')->whereRaw('LOWER(status) = ?', ['approved'])->get() as $l) {
+            if ($pool = LeaveCredits::poolFor($l->leave_type)) {
+                LeaveCredits::post($l->user_id, $l->serial_number, $pool, 'used', -(float) $l->days, (string) $l->start_date, LeaveTypes::label($l->leave_type) . ' (sample)', $l->id, ['type' => 'system', 'name' => 'Sample data']);
+            }
         }
     }
 }

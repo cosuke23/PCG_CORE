@@ -458,6 +458,13 @@ Route::middleware(['unit.session'])->group(function () {
     Route::post('/unit/leave/{id}/review', [\App\Http\Controllers\UnitLeaveController::class, 'review'])
         ->whereNumber('id')->middleware('throttle:member-writes')->name('unit.leave.review');
 
+    // Leave credits (owner request 2026-11-20): balances, opening balance, RNR days, adjustments (UnitLeaveCreditController)
+    Route::get('/unit/leave/credits', [\App\Http\Controllers\UnitLeaveCreditController::class, 'index'])->name('unit.leave.credits');
+    Route::get('/unit/leave/credits/{user}', [\App\Http\Controllers\UnitLeaveCreditController::class, 'show'])
+        ->whereNumber('user')->name('unit.leave.credits.show');
+    Route::post('/unit/leave/credits/{user}', [\App\Http\Controllers\UnitLeaveCreditController::class, 'store'])
+        ->whereNumber('user')->middleware('throttle:member-writes')->name('unit.leave.credits.store');
+
     // M1 checkers only (all units)
     Route::middleware(['unit.m1'])->group(function () {
         Route::get('/unit/dashboardM1', [UnitUserController::class, 'dashboardM1'])->name('unit.dashboard.m1');

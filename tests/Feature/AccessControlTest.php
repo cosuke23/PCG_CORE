@@ -90,6 +90,9 @@ class AccessControlTest extends TestCase
             ['post', '/unit/201-files/review'],
             ['get', '/unit/leave'],
             ['post', '/unit/leave/1/review'],
+            ['get', '/unit/leave/credits'],
+            ['get', '/unit/leave/credits/1'],
+            ['post', '/unit/leave/credits/1'],
         ];
     }
 

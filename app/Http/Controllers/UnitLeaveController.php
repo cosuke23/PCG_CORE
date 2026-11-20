@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\UnitUser;
 use App\Support\LeaveCalendar;
+use App\Support\LeaveCredits;
 use App\Support\LeaveTypes;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -45,7 +46,11 @@ class UnitLeaveController extends Controller
         if ($unit !== null) {
             $pending->whereRaw('LOWER(TRIM(u.mother_unit)) = ?', [mb_strtolower($unit)]);
         }
-        $pending = $pending->get();
+        $pending = $pending->get()->each(function ($r) {
+            $pool = LeaveCredits::poolFor($r->leave_type);
+            $r->credit = $pool ? LeaveCredits::balances((int) $r->user_id)[$pool] : null;
+            $r->shortfall = $pool ? LeaveCredits::shortfall((int) $r->user_id, $r->leave_type, (float) $r->days, (int) $r->id) : null;
+        });
 
         $rows = $unit === '' ? collect() : LeaveCalendar::approved($unit, $from, $to);
         $byDay = LeaveCalendar::byDay($rows, $from, $to, null, true);
@@ -102,15 +107,28 @@ class UnitLeaveController extends Controller
             }
         }
 
+        if ($data['decision'] === 'approve'
+            && ($short = LeaveCredits::shortfall((int) $leave->user_id, $leave->leave_type, (float) $leave->days, $id))) {
+            return back()->with('error', $leave->name . ': ' . $short . ' Adjust the credits first or decline with a note.');
+        }
+
         $status = $data['decision'] === 'approve' ? 'approved' : 'declined';
-        DB::table('leave_requests')->where('id', $id)->update([
-            'status' => $status,
-            'reviewed_by' => (int) $request->session()->get('unit_user_id'),
-            'reviewer_name' => (string) ($request->session()->get('unit_full_name') ?: $request->session()->get('unit_email')),
-            'reviewed_at' => now(),
-            'review_note' => $data['note'] ?? null,
-            'updated_at' => now(),
-        ]);
+        $by = ['type' => 'unit', 'id' => (int) $request->session()->get('unit_user_id'),
+            'name' => (string) ($request->session()->get('unit_full_name') ?: $request->session()->get('unit_email'))];
+        DB::transaction(function () use ($status, $leave, $id, $by, $request, $data) {
+            if ($status === 'approved' && ($pool = LeaveCredits::poolFor($leave->leave_type))) {
+                LeaveCredits::post((int) $leave->user_id, (string) $leave->serial_number, $pool, 'used', -(float) $leave->days,
+                    (string) $leave->start_date, LeaveTypes::label($leave->leave_type) . ', ' . LeaveCalendar::dateLabel((string) $leave->start_date, (string) $leave->end_date), $id, $by);
+            }
+            DB::table('leave_requests')->where('id', $id)->update([
+                'status' => $status,
+                'reviewed_by' => (int) $request->session()->get('unit_user_id'),
+                'reviewer_name' => (string) ($request->session()->get('unit_full_name') ?: $request->session()->get('unit_email')),
+                'reviewed_at' => now(),
+                'review_note' => $data['note'] ?? null,
+                'updated_at' => now(),
+            ]);
+        });
 
         Log::channel('audit')->info('leave.' . $status, [
             'leave_id' => $id, 'member_user_id' => $leave->user_id, 'serial_number' => $leave->serial_number,
