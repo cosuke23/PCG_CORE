@@ -188,3 +188,8 @@ body.pcg-glass .lcr-num.is-minus { color: #fca5a5; }
     padding: 4px 8px; border-radius: 6px; background: var(--pcg-text, #111827); color: var(--pcg-surface, #fff); font-size: 12px; white-space: nowrap; pointer-events: none; }
 .tr-table { margin-top: 10px; font-size: var(--pcg-text-sm); }
 .tr-table summary { cursor: pointer; color: var(--pcg-text-muted); }
+
+/* duty roster (unit/roster) */
+.ro-table td { vertical-align: top; min-width: 140px; }
+.ro-table tr.is-today th { color: var(--pcg-accent); }
+.ro-item { display: flex; justify-content: space-between; gap: 6px; align-items: flex-start; padding: 6px 8px; margin-bottom: 6px; border-radius: 8px; background: color-mix(in srgb, var(--pcg-accent) 12%, transparent); font-size: var(--pcg-text-sm); }

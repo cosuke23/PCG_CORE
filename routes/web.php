@@ -133,6 +133,7 @@ Route::post('/login/code/resend', [LoginController::class, 'codeResend'])->middl
 
 Route::middleware(['auth', 'member.device'])->group(function () {
     Route::get('/security', [\App\Http\Controllers\SecurityController::class, 'index'])->name('security');
+    Route::get('/my-duties', [\App\Http\Controllers\DutyRosterController::class, 'mine'])->name('duties');
     Route::get('/recall/{id}', [\App\Http\Controllers\RecallController::class, 'member'])->whereNumber('id')->name('recall.show');
     Route::post('/recall/{id}', [\App\Http\Controllers\RecallController::class, 'answer'])->whereNumber('id')->middleware('throttle:member-writes')->name('recall.answer');
     Route::get('/certificates', [\App\Http\Controllers\ServiceCertificateController::class, 'index'])->name('certificates');
@@ -536,6 +537,9 @@ Route::middleware(['unit.session'])->group(function () {
     Route::get('/unit/leave/readiness', [\App\Http\Controllers\ReadinessController::class, 'unit'])->name('unit.leave.readiness');
     Route::get('/unit/leave/summary', [\App\Http\Controllers\LeaveReportController::class, 'unitSummary'])->name('unit.leave.summary');
     Route::get('/unit/deployments', [\App\Http\Controllers\DeploymentController::class, 'unitIndex'])->name('unit.deployments');
+    Route::get('/unit/roster', [\App\Http\Controllers\DutyRosterController::class, 'index'])->name('unit.roster');
+    Route::post('/unit/roster', [\App\Http\Controllers\DutyRosterController::class, 'store'])->middleware('throttle:member-writes')->name('unit.roster.store');
+    Route::post('/unit/roster/{id}/remove', [\App\Http\Controllers\DutyRosterController::class, 'destroy'])->whereNumber('id')->middleware('throttle:member-writes')->name('unit.roster.remove');
     Route::get('/unit/recall', [\App\Http\Controllers\RecallController::class, 'unitIndex'])->name('unit.recall');
     Route::post('/unit/recall', [\App\Http\Controllers\RecallController::class, 'unitSend'])->middleware('throttle:member-writes')->name('unit.recall.send');
     Route::get('/unit/recall/{id}', [\App\Http\Controllers\RecallController::class, 'unitShow'])->whereNumber('id')->name('unit.recall.show');

@@ -296,6 +296,33 @@ class LeaveExtrasTest extends TestCase
         $this->get('/unit/deployments')->assertOk()->assertSee('Kalayaan patrol')->assertSee('Ended');
     }
 
+    // ---------------------------------------------------------------- duty roster
+
+    public function test_the_roster_refuses_members_who_are_away_and_notifies_the_member()
+    {
+        (require base_path('database/migrations/2026_11_21_000005_create_duty_assignments_table.php'))->up();
+        (require base_path('database/migrations/2026_11_20_000005_create_member_notifications_table.php'))->up();
+        $this->withDeployments();
+        DB::table('leave_requests')->insert(['user_id' => $this->ana->id, 'serial_number' => 'SN-A', 'leave_type' => 'rnr',
+            'start_date' => '2026-11-24', 'end_date' => '2026-11-25', 'days' => 2, 'status' => 'approved', 'created_at' => now(), 'updated_at' => now()]);
+        $duty = fn ($date, $shift = 'day', $user = null) => ['user_id' => ($user ?? $this->ana)->id, 'duty_date' => $date, 'shift' => $shift, 'post' => 'Officer of the Day'];
+
+        $this->withSession($this->unit)->post('/unit/roster', $duty('2026-11-24'))->assertSessionHasErrors(['user_id' => 'Ana Reyes is on approved leave on Nov 24.']);
+        $this->post('/unit/roster', $duty('2026-11-23', 'day', $this->ben))->assertForbidden();            // other unit
+        $this->post('/unit/roster', $duty('2026-11-23'))->assertRedirect();
+        $this->post('/unit/roster', $duty('2026-11-23', '24h'))->assertSessionHasErrors('shift');             // clashes with the day duty
+        $this->assertSame(1, DB::table('duty_assignments')->count());
+        $this->assertDatabaseHas('member_notifications', ['user_id' => $this->ana->id, 'kind' => 'duty.assigned']);
+
+        $this->get('/unit/roster?week=2026-11-23')->assertOk()->assertSee('1 duty is rostered in MEPLEF for the week of November 23')->assertSee('Officer of the Day');
+        $this->actingAs($this->ana)->get('/my-duties')->assertOk()->assertSee('Your next duty: Officer of the Day, Monday, November 23');
+
+        $id = DB::table('duty_assignments')->value('id');
+        $this->withSession($this->otherUnit)->post("/unit/roster/$id/remove")->assertForbidden();
+        $this->withSession($this->unit)->post("/unit/roster/$id/remove")->assertSessionHas('success');
+        $this->assertSame(0, DB::table('duty_assignments')->count());
+    }
+
     // ---------------------------------------------------------------- 3D model
 
     public function test_the_ship_model_is_sent_compressed_and_cached()
