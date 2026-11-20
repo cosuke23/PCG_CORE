@@ -72,7 +72,7 @@ class LeaveReportController extends Controller
         $status = $f['status'] ?? 'all';
         $rows = LeaveReport::rows($limit, $unit, $from, $to, $status);
         $details = ['from' => $from, 'to' => $to, 'status' => $status, 'unit' => $unit !== '' ? $unit : null, 'rows' => $rows->count()];
-        if ($request->session()->get('admin_logged_in')) {
+        if ($request->is('admin/*')) {
             AdminAudit::record('leave.exported', $scopeLabel, $details);
         } else {
             Log::channel('audit')->info('leave.exported', $details + ['unit_user_id' => $request->session()->get('unit_user_id')]);

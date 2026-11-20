@@ -41,6 +41,13 @@ class AuditTrailTest extends TestCase
         $this->assertSame(7, (int) $admin->admin_user_id);
     }
 
+    public function test_the_page_area_decides_who_when_several_sign_ins_share_a_session()
+    {
+        $this->app->instance('request', \Illuminate\Http\Request::create('/unit/leave/5/review', 'POST'));
+        $this->logAs(['admin_logged_in' => true, 'admin_user_id' => 7, 'admin_email' => 'hr@x.test', 'unit_user_id' => 4, 'unit_email' => 'checker@x.test'], 'leave.approved');
+        $this->assertSame('unit: checker@x.test', DB::table('admin_audit_logs')->where('action', 'leave.approved')->value('admin_email'));
+    }
+
     public function test_the_audit_page_filters_by_who()
     {
         $this->logAs(['unit_user_id' => 4, 'unit_email' => 'checker@x.test'], 'unit.login');

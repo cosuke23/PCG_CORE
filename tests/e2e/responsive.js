@@ -52,6 +52,7 @@ function measure([touch, phone]) {
       await page.goto(BASE + cfg.login[0]);
       await page.fill('#email', cfg.login[1]); await page.fill('#password', cfg.login[2]);
       await Promise.all([page.waitForNavigation(), page.click('button[type=submit]')]);
+      await require('./lib').passUnitCode(page, cfg.login[1]);
     }
     for (const url of cfg.pages) {
       for (const [w, h] of SIZES) {

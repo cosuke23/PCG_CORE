@@ -21,9 +21,11 @@ node tests/e2e/flow-register.js         # self-registration with a fake camera
 node tests/e2e/flow-hrmis.js            # registration -> approval -> 201 upload/verify -> promotion -> reports, scope, auditor
 node tests/e2e/flow-soi-admin.js        # admin edits a submitted SOI (steps 1-6, audited), confirm dialog on Reopen, phone width
 node tests/e2e/responsive.js /tmp/shots # every page at 320-1920px: sideways scroll, cut-off content, iOS zoom fields, tap targets
+node tests/e2e/flow-new-modules.js      # unit sign-in code, leave summary + CSV, deployments -> RNR -> readiness, clearance card,
+                                        # notifications bell + app poll, unit check fixes, audit Who filter, privacy consent, /health
 ```
 
-`.env` for the run: `APP_ENV=local`, `DB_DATABASE=pcg_core_dev`, `PCG_ADMIN_2FA=totp` (the scripts compute authenticator codes). Add `MAIL_MAILER=log` too: new accounts get their temporary password by email, and `flows-admin.js` reads it from `storage/logs/laravel.log` (`emailedPassword()` in `lib.js`). The seeder
+`.env` for the run: `APP_ENV=local`, `DB_DATABASE=pcg_core_dev`, `PCG_ADMIN_2FA=totp` (the scripts compute authenticator codes). Add `MAIL_MAILER=log` and `MAIL_LOG_CHANNEL=mail` too (the log mailer writes at debug level, so emails land in `storage/logs/mail-*.log` whatever `LOG_LEVEL` is): new accounts get their temporary password by email, and `flows-admin.js` reads it from `storage/logs/laravel.log` (`emailedPassword()` in `lib.js`); unit and M1 checker sign-in codes are read the same way (`passUnitCode()`). The seeder
 creates admin@ / hr@ / lms@demo.test (password `Admin@Demo12345`) with two-factor
 enrolled on a fixed dev-only key; `lib.js` computes the codes. Admin sign-in is
 limited to 5 attempts/min per email, so wait a minute between repeated runs.

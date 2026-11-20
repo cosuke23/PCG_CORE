@@ -81,6 +81,15 @@ return [
             'ignore_exceptions' => true,
         ],
 
+        // MAIL_MAILER=log writes each email at debug level; MAIL_LOG_CHANNEL=mail keeps them in
+        // storage/logs/mail-*.log whatever LOG_LEVEL is (dev and e2e only, never production)
+        'mail' => [
+            'driver' => 'daily',
+            'path' => storage_path('logs/mail.log'),
+            'level' => 'debug',
+            'days' => 7,
+        ],
+
         'audit_file' => [
             'driver' => 'daily',
             'path' => storage_path('logs/audit.log'),

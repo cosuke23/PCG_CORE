@@ -51,15 +51,42 @@ async function autoConfirm(page) {
   });
 }
 
+// The log mailer writes to storage/logs/laravel.log, or laravel-YYYY-MM-DD.log with LOG_CHANNEL=daily: read the newest.
+function mailLog() {
+  const fs = require('fs'), path = require('path');
+  const dir = path.resolve(__dirname, '../../storage/logs');
+  const files = fs.readdirSync(dir).filter(f => /^(laravel|mail).*\.log$/.test(f))
+    .map(f => [f, fs.statSync(path.join(dir, f)).mtimeMs]).sort((a, b) => b[1] - a[1]);
+  return files.length ? fs.readFileSync(path.join(dir, files[0][0]), 'utf8') : '';
+}
+
 // Dev copy only (MAIL_MAILER=log): the latest temporary password emailed to an address,
 // read from storage/logs/laravel.log, where the log mailer writes each email.
 function emailedPassword(email) {
-  const fs = require('fs');
-  const log = fs.readFileSync(require('path').resolve(__dirname, '../../storage/logs/laravel.log'), 'utf8');
+  const log = mailLog();
   const at = log.lastIndexOf('To: ' + email);
   if (at < 0) return null;
   const m = /Temporary password: ([A-Za-z0-9]+)/.exec(log.slice(at));
   return m ? m[1] : null;
 }
 
-module.exports = { totp, adminLogin, autoConfirm, emailedPassword, ADMIN_PASSWORD, ADMIN_TOTP_SECRET };
+// Unit and M1 checkers get an emailed sign-in code after the password (since 2026-11-20).
+// Dev copy only (MAIL_MAILER=log): read the newest code sent to the address from laravel.log.
+function emailedUnitCode(email) {
+  const log = mailLog();
+  const at = log.lastIndexOf('To: ' + email);
+  if (at < 0) return null;
+  const m = /Your sign-in code: (\d{6})/.exec(log.slice(at));
+  return m ? m[1] : null;
+}
+
+// After the password form: if the second step is asked, enter the emailed code.
+async function passUnitCode(page, email) {
+  if (!page.url().includes('/unit/two-factor')) return;
+  const code = emailedUnitCode(email);
+  if (!code) throw new Error('no unit sign-in code in storage/logs/laravel.log for ' + email + ' (MAIL_MAILER=log?)');
+  await page.fill('#code', code);
+  await Promise.all([page.waitForNavigation(), page.click('button[type=submit]')]);
+}
+
+module.exports = { totp, adminLogin, autoConfirm, emailedPassword, emailedUnitCode, passUnitCode, ADMIN_PASSWORD, ADMIN_TOTP_SECRET };

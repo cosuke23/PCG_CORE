@@ -45,3 +45,12 @@ Phones accept an update only if it is signed with the same key as the installed
 app. Keep `pcg-hrmis-release.jks` and its passwords backed up somewhere safe and
 never commit them. If the key is lost, every member has to uninstall the app and
 install a newly signed one.
+
+## Phone alerts (1.0.3)
+
+No push service. `NotifyJob` (JobScheduler, every 15 minutes with a network) asks
+`/api/app/notifications` for portal notifications newer than the last one shown, with the
+account id and token the member pages give the app (`<meta name="pcg-app-notify">`, only
+sent to the app's user agent). The token is tied to the password: a new password, or
+reaching the sign-in page, stops the alerts. Android 13+ asks for permission once. Tapping
+an alert opens `/notifications`.

@@ -21,6 +21,7 @@ async function login(browser, url, email, pass, opts = {}) {
     await page.goto(BASE + url);
     await page.fill('#email', email); await page.fill('#password', pass);
     await Promise.all([page.waitForNavigation(), page.click('button[type=submit]')]);
+    await require('./lib').passUnitCode(page, email);
   }
   return page;
 }

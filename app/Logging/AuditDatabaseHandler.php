@@ -56,6 +56,16 @@ class AuditDatabaseHandler extends AbstractProcessingHandler
             return ['system', null];
         }
         $session = request()->hasSession() ? request()->session() : null;
+        // one browser session can hold an admin, a unit checker and a member sign-in at once:
+        // the area of the page that did the action decides who it was
+        $path = ltrim(request()->path(), '/');
+        $area = str_starts_with($path, 'unit/') ? 'unit' : (str_starts_with($path, 'admin/') ? 'admin' : null);
+        if ($area === 'unit' && $session && $session->get('unit_user_id')) {
+            return ['unit: ' . (string) $session->get('unit_email', '#' . $session->get('unit_user_id')), null];
+        }
+        if ($area === null && auth()->user()) {
+            return ['member: ' . (string) (auth()->user()->email ?? '#' . auth()->id()), null];
+        }
         if ($session && $session->get('admin_logged_in')) {
             $id = $session->get('admin_user_id');
             return [(string) $session->get('admin_email', 'admin'), $id !== null ? (int) $id : null];
