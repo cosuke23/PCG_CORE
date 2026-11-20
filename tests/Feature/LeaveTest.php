@@ -224,6 +224,33 @@ class LeaveTest extends TestCase
         $this->actingAs($this->ana)->get('/dashboard')->assertSee('Next: Nov 24–27, 2026')->assertSee('RNR 26 days available');
     }
 
+    public function test_the_unit_checker_dashboard_shows_leave_at_a_glance()
+    {
+        Schema::create('personnel_data', function (Blueprint $t) {
+            $t->id(); $t->unsignedBigInteger('personnel_id')->nullable(); $t->string('serial_number')->nullable(); $t->string('status')->nullable();
+            $t->date('nbi_clearance_expiration')->nullable(); $t->date('ombudsman_clearance_expiration')->nullable(); $t->date('sandiganbayan_clearance_expiration')->nullable();
+            $t->timestamps();
+        });
+        Schema::create('reinlist_personal_info', function (Blueprint $t) { $t->id(); $t->string('serial_number')->nullable(); });
+
+        // Carl is on approved leave today; Ana's request waits; Ben is in another unit
+        DB::table('leave_requests')->insert(['user_id' => $this->carl->id, 'serial_number' => 'SN-C', 'leave_type' => 'ordinary',
+            'start_date' => '2026-11-19', 'end_date' => '2026-11-22', 'days' => 4, 'status' => 'approved', 'created_at' => now(), 'updated_at' => now()]);
+        $this->file($this->ana);
+        $this->file($this->ben);
+
+        $this->withSession($this->unit)->get('/unit/dashboard')->assertOk()
+            ->assertSee('1 leave request is waiting for your approval')
+            ->assertSee('1 member is on leave today in MEPLEF')
+            ->assertSee('PO3 Santos')->assertSee('until Nov 22')
+            ->assertSee('members have no opening balance yet')
+            ->assertSee('pcg-nav__badge', false);
+
+        $this->withSession($this->m1)->get('/unit/dashboardM1')->assertOk()
+            ->assertSee('2 leave requests are waiting for your approval')
+            ->assertSee('on leave today in all units');
+    }
+
     public function test_calendar_colours_and_initials_tell_people_apart()
     {
         $this->assertSame('AR', LeaveCalendar::initials('Ana Reyes'));

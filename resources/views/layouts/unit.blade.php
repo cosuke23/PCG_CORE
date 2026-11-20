@@ -19,6 +19,7 @@
     <link rel="stylesheet" href="{{ asset('vendor/fontawesome/css/all.min.css') }}">
     <link rel="stylesheet" href="{{ \App\Support\Asset::v('css/pcg-ui.css') }}">
     <link rel="stylesheet" href="{{ \App\Support\Asset::v('css/unit-checker.css') }}">
+    <link rel="stylesheet" href="{{ \App\Support\Asset::v('css/leave-calendar.css') }}">
     <link rel="stylesheet" href="{{ \App\Support\Asset::v('css/pcg-glass.css') }}">
     <meta name="theme-color" content="#070b18">
     <script nonce="{{ $cspNonce ?? '' }}" src="{{ \App\Support\Asset::v('js/pcg-ui.js') }}" defer></script>
@@ -43,12 +44,12 @@
                 @if ($isM1)
                     @include('layouts.partials.nav-link', ['href' => route('unit.dashboard.m1'), 'icon' => 'clipboard-check', 'label' => 'Document review', 'active' => request()->routeIs('unit.dashboard.m1')])
                     @include('layouts.partials.nav-link', ['href' => route('unit.201files'), 'icon' => 'folder-open', 'label' => '201 file review', 'active' => request()->routeIs('unit.201files')])
-                    @include('layouts.partials.nav-link', ['href' => route('unit.leave'), 'icon' => 'calendar-days', 'label' => 'Leave approval', 'active' => request()->routeIs('unit.leave', 'unit.leave.review')])
+                    @include('layouts.partials.nav-link', ['href' => route('unit.leave'), 'icon' => 'calendar-days', 'label' => 'Leave approval', 'active' => request()->routeIs('unit.leave', 'unit.leave.review'), 'navBadge' => \App\Support\UnitLeaveSummary::get()['pending'] ?? null])
                     @include('layouts.partials.nav-link', ['href' => route('unit.leave.credits'), 'icon' => 'scale-balanced', 'label' => 'Leave credits', 'active' => request()->routeIs('unit.leave.credits*')])
                 @else
                     @include('layouts.partials.nav-link', ['href' => route('unit.dashboard'), 'icon' => 'clipboard-check', 'label' => 'Document review', 'active' => request()->routeIs('unit.dashboard')])
                     @include('layouts.partials.nav-link', ['href' => route('unit.201files'), 'icon' => 'folder-open', 'label' => '201 file review', 'active' => request()->routeIs('unit.201files')])
-                    @include('layouts.partials.nav-link', ['href' => route('unit.leave'), 'icon' => 'calendar-days', 'label' => 'Leave approval', 'active' => request()->routeIs('unit.leave', 'unit.leave.review')])
+                    @include('layouts.partials.nav-link', ['href' => route('unit.leave'), 'icon' => 'calendar-days', 'label' => 'Leave approval', 'active' => request()->routeIs('unit.leave', 'unit.leave.review'), 'navBadge' => \App\Support\UnitLeaveSummary::get()['pending'] ?? null])
                     @include('layouts.partials.nav-link', ['href' => route('unit.leave.credits'), 'icon' => 'scale-balanced', 'label' => 'Leave credits', 'active' => request()->routeIs('unit.leave.credits*')])
                 @endif
             </nav>

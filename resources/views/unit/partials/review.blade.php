@@ -81,6 +81,10 @@
         </div>
     </header>
 
+    @unless ($is201)
+        @include('unit.partials.leave-summary')
+    @endunless
+
     <div class="uc-tools">
         <div class="uc-filter" role="group" aria-label="Show records">
             @foreach (['waiting' => 'Waiting', 'returned' => 'Returned', 'approved' => 'Approved', 'all' => 'All'] as $key => $label)

@@ -149,3 +149,20 @@ body.uc-locked { overflow: hidden; }
     .uc-table td { padding: 2px 0; border: 0; }
     .uc-table td.uc-action { text-align: left; padding-top: var(--pcg-space-2); }
 }
+
+/* Leave at a glance on the unit checker dashboards (unit/partials/leave-summary) */
+.uc-leave { display: grid; gap: 12px; padding: 16px 18px; border: 1px solid var(--pcg-border); border-radius: 16px;
+    background: color-mix(in srgb, var(--pcg-surface) 80%, transparent); }
+.uc-leave__main { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; }
+.uc-leave__icon { flex: none; display: grid; place-items: center; width: 44px; height: 44px; border-radius: 12px;
+    background: color-mix(in srgb, var(--pcg-accent) 20%, transparent); color: var(--pcg-accent); font-size: 1.2rem; }
+.uc-leave__text { flex: 1 1 240px; min-width: 0; }
+.uc-leave__text h3 { margin: 0 0 2px; font-size: 1.05rem; text-wrap: balance; }
+.uc-leave__text p { margin: 0; color: var(--pcg-text-muted); font-size: var(--pcg-text-sm); font-variant-numeric: tabular-nums; }
+.uc-leave__actions { display: flex; gap: 8px; flex-wrap: wrap; }
+.uc-leave__away { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 8px 14px; }
+.uc-leave__away li { display: inline-flex; align-items: center; gap: 6px; font-size: var(--pcg-text-sm); }
+.uc-leave__away .lc-chip { font-size: 12px; line-height: 18px; }
+/* count on a sidebar link (layouts/partials/nav-link $badge) */
+.pcg-nav__badge { margin-left: auto; min-width: 20px; height: 20px; padding: 0 6px; border-radius: 999px; display: inline-grid; place-items: center;
+    background: var(--pcg-accent); color: #10141c; font-size: 11px; font-weight: 800; font-variant-numeric: tabular-nums; }
