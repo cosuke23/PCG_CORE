@@ -320,7 +320,7 @@ body.ph {
     --g-panel-2: rgba(255, 255, 255, 0.085);
     --g-line: rgba(255, 255, 255, 0.12);
     --g-blur: saturate(160%) blur(18px);
-    --g-banner: linear-gradient(115deg, #1c3f96 0%, #4b2b98 38%, #b8285a 72%, #ef9f3a 100%);
+    --g-banner: linear-gradient(115deg, #0038a8 0%, #0038a8 44%, #ce1126 56%, #ce1126 100%);
     --g-glows:
         radial-gradient(900px 520px at 8% -8%, rgba(37, 84, 180, 0.40), transparent 62%),
         radial-gradient(760px 520px at 100% 4%, rgba(170, 32, 64, 0.30), transparent 60%),
@@ -354,10 +354,10 @@ body.ph {
 .ph-hero__band { background: var(--g-banner); position: relative; isolation: isolate; overflow: hidden; }
 .ph-hero__band::after {
     content: ""; position: absolute; z-index: -1; right: -60px; top: -120px; width: 340px; height: 340px; border-radius: 50%;
-    background: radial-gradient(circle at 35% 35%, rgba(255, 255, 255, 0.45), rgba(255, 255, 255, 0.05) 55%, transparent 70%); pointer-events: none;
+    background: radial-gradient(circle at 35% 35%, rgba(252, 209, 22, 0.55), rgba(252, 209, 22, 0.08) 55%, transparent 70%); pointer-events: none;
 }
-.ph-hero h1 .ph-hero__gold { color: #ffd98a; }
-.ph-hero__in.is-in .ph-hero__gold .ph-w { background-image: linear-gradient(100deg, #ffd98a 0 42%, #fff6df 50%, #ffd98a 58% 100%); }
+.ph-hero h1 .ph-hero__gold { color: #fcd116; }
+.ph-hero__in.is-in .ph-hero__gold .ph-w { background-image: linear-gradient(100deg, #fcd116 0 42%, #fff6c2 50%, #fcd116 58% 100%); }
 .ph-credit { color: rgba(255, 255, 255, 0.75); }
 
 /* sections on the canvas */
@@ -367,7 +367,7 @@ body.ph {
 .ph-lead { color: var(--ph-muted); }
 
 /* cards: glass */
-.ph-card--azure { background: linear-gradient(140deg, rgba(28, 63, 150, 0.85), rgba(75, 43, 152, 0.75) 60%, rgba(184, 40, 90, 0.6)); border: 1px solid rgba(255, 255, 255, 0.16); border-radius: 18px; }
+.ph-card--azure { background: linear-gradient(140deg, rgba(0, 56, 168, 0.9), rgba(0, 44, 135, 0.82) 55%, rgba(206, 17, 38, 0.6)); border: 1px solid rgba(255, 255, 255, 0.16); border-radius: 18px; }
 .ph-card--light, .ph-directory, .ph-org__group {
     background: var(--g-panel); border: 1px solid var(--g-line); border-radius: 18px;
     -webkit-backdrop-filter: var(--g-blur); backdrop-filter: var(--g-blur);
@@ -386,11 +386,11 @@ body.ph {
 .ph-directory li > i { color: #7cb2ff; }
 .ph-directory h3 { color: #fff; }
 .ph-directory a { color: var(--ph-gold-300); }
-.ph-directory a:hover { color: #ffd98a; }
+.ph-directory a:hover { color: #fcd116; }
 
 /* organizational structure */
 .ph-org { background-color: #080d1c; background-image: radial-gradient(800px 500px at 90% 0%, rgba(37, 84, 180, 0.30), transparent 62%), radial-gradient(700px 480px at 0% 100%, rgba(170, 32, 64, 0.22), transparent 60%); }
-.ph-org__top { background: var(--g-banner); border-radius: 16px; box-shadow: 0 18px 40px rgba(90, 30, 110, 0.35); }
+.ph-org__top { background: var(--g-banner); border-radius: 16px; box-shadow: 0 18px 40px rgba(0, 30, 90, 0.4); }
 .ph-org__top span { color: rgba(255, 255, 255, 0.85); }
 .ph-org__group { color: var(--ph-ink); }
 .ph-org__group h3 { color: #fff; }
@@ -399,9 +399,9 @@ body.ph {
 .ph-org__group li { background: rgba(255, 255, 255, 0.05); border-radius: 10px; }
 .ph-org__cmd { border-color: var(--g-line); }
 .ph-org__cmd strong { color: #fff; }
-.ph-org__cmd--here { background: var(--g-banner) !important; border-color: rgba(255, 217, 138, 0.6); box-shadow: 0 18px 36px rgba(90, 30, 110, 0.4); }
+.ph-org__cmd--here { background: var(--g-banner) !important; border-color: rgba(252, 209, 22, 0.6); box-shadow: 0 18px 36px rgba(0, 30, 90, 0.45); }
 .ph-org__cmd--here strong { color: #fff; }
-.ph-org__cmd--here a { border-radius: 999px; background: #fff; color: #3a1236; }
+.ph-org__cmd--here a { border-radius: 999px; background: #fff; color: #0b1f4d; }
 .ph-org__cmd--here a:hover { background: #ffeac2; }
 
 /* contact + footer */
@@ -412,11 +412,13 @@ body.ph {
 
 /* motion added with the glass theme: drifting gradients, floating light */
 @media (prefers-reduced-motion: no-preference) {
-    .ph-hero__band, .ph-cta, .ph-org__top, .ph-org__cmd--here { background-size: 180% 180%; animation: ph-aurora 16s ease-in-out infinite alternate; }
+    .ph-hero__band, .ph-cta, .ph-org__top, .ph-org__cmd--here { background-size: 130% 130%; animation: ph-aurora 16s ease-in-out infinite alternate; }
     .ph-hero__band::after { animation: ph-float 12s ease-in-out infinite alternate; }
 }
-@keyframes ph-aurora { 0% { background-position: 0% 40%; } 100% { background-position: 100% 60%; } }
+@keyframes ph-aurora { 0% { background-position: 25% 45%; } 100% { background-position: 75% 55%; } }
 @keyframes ph-float { 0% { transform: translate(0, 0) scale(1); } 100% { transform: translate(-90px, 40px) scale(1.18); } }
 @media (prefers-reduced-motion: reduce) {
     .ph-hero__band, .ph-cta, .ph-org__top, .ph-org__cmd--here, .ph-hero__band::after { animation: none !important; }
 }
+/* flag colours (2026-11-20): the band's eyebrow in the flag's yellow */
+.ph-hero__band .ph-eyebrow { color: #fcd116; }

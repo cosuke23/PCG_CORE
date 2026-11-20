@@ -502,8 +502,8 @@ body.pcg-app {
     padding: clamp(20px, 3.2vw, 32px);
     border-radius: 20px;
     color: #fff;
-    background: linear-gradient(115deg, #1c3f96 0%, #4b2b98 38%, #b8285a 72%, #ef9f3a 100%);
-    box-shadow: 0 24px 60px rgba(90, 30, 110, 0.32);
+    background: linear-gradient(115deg, #0038a8 0%, #0038a8 44%, #ce1126 56%, #ce1126 100%);
+    box-shadow: 0 24px 60px rgba(0, 30, 90, 0.4);
 }
 .pcg-app .ad-head::before, .pcg-app .hx-head::before,
 .pcg-app .ad-head::after, .pcg-app .hx-head::after {
@@ -511,17 +511,17 @@ body.pcg-app {
 }
 .pcg-app .ad-head::before, .pcg-app .hx-head::before {
     width: 280px; height: 280px; right: -50px; top: -110px;
-    background: radial-gradient(circle at 35% 35%, rgba(255, 255, 255, 0.5), rgba(255, 255, 255, 0.05) 55%, transparent 70%);
+    background: radial-gradient(circle at 35% 35%, rgba(252, 209, 22, 0.55), rgba(252, 209, 22, 0.08) 55%, transparent 70%);
 }
 .pcg-app .ad-head::after, .pcg-app .hx-head::after {
     width: 190px; height: 190px; right: 26%; bottom: -120px;
-    background: radial-gradient(circle at 40% 40%, rgba(255, 214, 120, 0.65), rgba(255, 214, 120, 0.05) 60%, transparent 72%);
+    background: radial-gradient(circle at 40% 40%, rgba(255, 255, 255, 0.35), rgba(255, 255, 255, 0.04) 60%, transparent 72%);
 }
 .pcg-app .ad-head h2, .pcg-app .hx-head h2 { color: #fff; }
 .pcg-app .ad-eyebrow, .pcg-app .hx-eyebrow { color: rgba(255, 255, 255, 0.85); }
 .pcg-app .ad-lede, .pcg-app .hx-lede { color: rgba(255, 255, 255, 0.88); }
 .pcg.pcg-app .ad-head .pcg-btn--primary,
-.pcg.pcg-app .hx-head .pcg-btn--primary { background: #fff; border-color: #fff; color: #3a1236; box-shadow: 0 10px 24px rgba(0, 0, 0, 0.25); }
+.pcg.pcg-app .hx-head .pcg-btn--primary { background: #fff; border-color: #fff; color: #0b1f4d; box-shadow: 0 10px 24px rgba(0, 0, 0, 0.25); }
 .pcg.pcg-app .ad-head .pcg-btn--secondary,
 .pcg.pcg-app .hx-head .pcg-btn--secondary { background: rgba(255, 255, 255, 0.14); border-color: rgba(255, 255, 255, 0.45); color: #fff; }
 .pcg.pcg-app .ad-head .pcg-btn--secondary:hover,

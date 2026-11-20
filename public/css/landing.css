@@ -455,7 +455,7 @@ body.lp {
     --g-panel: rgba(255, 255, 255, 0.055);
     --g-panel-hover: rgba(255, 255, 255, 0.09);
     --g-blur: saturate(160%) blur(18px);
-    --g-banner: linear-gradient(115deg, #1c3f96 0%, #4b2b98 38%, #b8285a 72%, #ef9f3a 100%);
+    --g-banner: linear-gradient(115deg, #0038a8 0%, #0038a8 44%, #ce1126 56%, #ce1126 100%);
     --g-glows:
         radial-gradient(900px 520px at 8% -8%, rgba(37, 84, 180, 0.40), transparent 62%),
         radial-gradient(760px 520px at 100% 4%, rgba(170, 32, 64, 0.30), transparent 60%),
@@ -484,9 +484,9 @@ body.lp {
 .lp-band { background: var(--g-banner); position: relative; isolation: isolate; overflow: hidden; }
 .lp-band::after {
     content: ""; position: absolute; z-index: -1; right: -60px; top: -120px; width: 320px; height: 320px; border-radius: 50%;
-    background: radial-gradient(circle at 35% 35%, rgba(255, 255, 255, 0.45), rgba(255, 255, 255, 0.05) 55%, transparent 70%); pointer-events: none;
+    background: radial-gradient(circle at 35% 35%, rgba(252, 209, 22, 0.55), rgba(252, 209, 22, 0.08) 55%, transparent 70%); pointer-events: none;
 }
-.lp-band h2 em { color: #ffd98a; }
+.lp-band h2 em { color: #fcd116; }
 
 /* sections sit on the canvas (they scroll over the sticky hero, so they stay opaque) */
 .lp-section, .lp-section--sand { background-color: var(--g-canvas); background-image: var(--g-glows); }
@@ -504,7 +504,7 @@ body.lp {
     backdrop-filter: var(--g-blur);
     box-shadow: 0 1px 0 rgba(255, 255, 255, 0.04) inset, 0 18px 40px rgba(0, 0, 0, 0.3);
 }
-.lp-card--navy { background: linear-gradient(140deg, rgba(28, 63, 150, 0.85), rgba(75, 43, 152, 0.75) 60%, rgba(184, 40, 90, 0.6)); border-color: rgba(255, 255, 255, 0.16); }
+.lp-card--navy { background: linear-gradient(140deg, rgba(0, 56, 168, 0.9), rgba(0, 44, 135, 0.82) 55%, rgba(206, 17, 38, 0.6)); border-color: rgba(255, 255, 255, 0.16); }
 .lp-card:not(.lp-card--navy) .lp-card__icon { background: rgba(232, 151, 58, 0.16); color: var(--lp-gold-300); }
 .lp-card:not(.lp-card--navy) .lp-card__kicker { color: var(--lp-gold-300); }
 .lp-card h3 { color: #fff; }
@@ -532,7 +532,7 @@ body.lp {
 .lp-pagehead { background: var(--g-banner); position: relative; isolation: isolate; overflow: hidden; }
 .lp-pagehead::after {
     content: ""; position: absolute; z-index: -1; right: -40px; top: -60px; width: 300px; height: 300px; border-radius: 50%;
-    background: radial-gradient(circle at 35% 35%, rgba(255, 255, 255, 0.4), rgba(255, 255, 255, 0.04) 55%, transparent 70%); pointer-events: none;
+    background: radial-gradient(circle at 35% 35%, rgba(252, 209, 22, 0.55), rgba(252, 209, 22, 0.08) 55%, transparent 70%); pointer-events: none;
 }
 .lp-prose { color: var(--lp-ink); }
 .lp-cols3 { border-top: 2px solid var(--lp-gold); }
@@ -560,12 +560,12 @@ body.lp #services, body.lp #units { background-color: var(--g-canvas); backgroun
 
 /* band: drifting gradient and a floating light (decoration, always on) */
 @media (prefers-reduced-motion: no-preference) {
-    .lp-band { background-size: 180% 180%; animation: lp-aurora 16s ease-in-out infinite alternate; }
+    .lp-band { background-size: 130% 130%; animation: lp-aurora 16s ease-in-out infinite alternate; }
     .lp-band::after { animation: lp-float 12s ease-in-out infinite alternate; }
-    .lp-cta, .lp-pagehead { background-size: 180% 180%; animation: lp-aurora 18s ease-in-out infinite alternate; }
+    .lp-cta, .lp-pagehead { background-size: 130% 130%; animation: lp-aurora 18s ease-in-out infinite alternate; }
     .lp-pagehead::after { animation: lp-float 14s ease-in-out infinite alternate; }
 }
-@keyframes lp-aurora { 0% { background-position: 0% 40%; } 100% { background-position: 100% 60%; } }
+@keyframes lp-aurora { 0% { background-position: 25% 45%; } 100% { background-position: 75% 55%; } }
 @keyframes lp-float { 0% { transform: translate(0, 0) scale(1); } 100% { transform: translate(-90px, 40px) scale(1.18); } }
 
 /* band entrance: eyebrow line draws in, words rise out of a blur one by one,
@@ -595,7 +595,7 @@ body.lp #services, body.lp #units { background-color: var(--g-canvas); backgroun
 @media (prefers-reduced-motion: no-preference) {
     /* the gold line: a light sweep every few seconds */
     .lp-band__anim.is-in em .lp-w {
-        background-image: linear-gradient(100deg, #ffd98a 0 42%, #fff6df 50%, #ffd98a 58% 100%);
+        background-image: linear-gradient(100deg, #fcd116 0 42%, #fff6c2 50%, #fcd116 58% 100%);
         background-size: 250% 100%; background-repeat: repeat-x; background-position: 100% 0;
         -webkit-background-clip: text; background-clip: text; color: transparent;
         animation: lp-shine 5s ease-in-out 1.8s infinite;
@@ -645,3 +645,5 @@ body.lp #services, body.lp #units { background-color: var(--g-canvas); backgroun
     .lp-motion .lp-band__anim .lp-eyebrow::before { transform: none !important; }
     .lp-band, .lp-band::after, .lp-cta, .lp-pagehead, .lp-pagehead::after { animation: none !important; }
 }
+/* flag colours (2026-11-20): the band's eyebrow in the flag's yellow */
+.lp-band .lp-eyebrow { color: #fcd116; }
