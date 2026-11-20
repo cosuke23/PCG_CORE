@@ -13,6 +13,8 @@
  *   without WebGL, or if anything fails, the photo simply stays.
  * - Rendering pauses while the section is off screen or the tab is hidden.
  * - "Reduce motion": sea, flag, radars and ship hold still; dragging still turns the view.
+ * - The ship geometry is a GLB built in Blender (tools/blender/brp_gabriela_silang.py,
+ *   public/models/brp-gabriela-silang.glb); paint, lettering, seal and flag are added here.
  */
 const stage = document.querySelector('[data-pcg-ship-3d]');
 
@@ -164,68 +166,20 @@ async function start() {
         return t;
     };
 
-    // ------------------------------------------------------------ hull (lofted cross-sections, real proportions)
-    // Profile from side photos (RIMPAC 2026, U.S. Navy / U.S. Coast Guard): main deck runs at
-    // one height from stern to bow (about 7 m above the water), slight sheer at the bow
-    // bulwark, raked stem, no bulbous bow, transom stern.
-    const X0 = -4.2, X1 = 4.22;                       // 84 m
-    const DECK = 0.7;
-    const deckY = (x) => {
-        if (x < 2.2) return DECK + (x - X0) / (2.2 - X0) * 0.02;
-        return DECK + 0.02 + Math.pow((x - 2.2) / (X1 - 2.2), 2) * 0.14;   // bow bulwark rises
-    };
-    const keelY = (x) => {
-        if (x < -3.4) return -0.35 + (-3.4 - x) / 0.8 * 0.2;          // run up to the transom
-        if (x < 2.9) return -0.35;                                     // 3.5 m draft
-        if (x < 3.75) return -0.35 + Math.pow((x - 2.9) / 0.85, 2) * 0.35; // forefoot reaches the waterline
-        return (x - 3.75) / (X1 - 3.75) * deckY(X1);                  // raked stem above water
-    };
-    const halfBeam = (x) => {                         // 16 m beam
+    // ------------------------------------------------------------ the ship model (built in Blender)
+    // tools/blender/brp_gabriela_silang.py builds the geometry in metres and exports
+    // public/models/brp-gabriela-silang.glb; this scene scales it to 1 unit = 10 m and gives it
+    // the materials, paint, lettering, seal and flag. The hull shape functions below match the
+    // script and place the painted decals on the hull sides.
+    const X0 = -4.2, X1 = 4.22, DECK = 0.7;
+    const halfBeam = (x) => {
         if (x < -3.4) return 0.8 - Math.pow((-3.4 - x) / 0.8, 2) * 0.04;
         if (x < 0.5) return 0.8;
         return Math.max(0.004, 0.8 * (1 - Math.pow((x - 0.5) / (X1 - 0.5), 2.0)));
     };
-    const bowness = (x) => Math.pow(THREE.MathUtils.clamp((x - 0.4) / 3.6, 0, 1), 1.1); // flare grows toward the bow
-    const STATIONS = 190;
-    const hullPos = [], hullUv = [], hullIdx = [];
     const uvOf = (x, y) => [(x - X0) / (X1 - X0), (y + 0.4) / 1.4];
-    let ringCount = 0;
-    for (let i = 0; i <= STATIONS; i++) {
-        const x = X0 + (X1 - X0) * i / STATIONS;
-        const top = deckY(x), bot = Math.min(keelY(x), top - 0.001), w = halfBeam(x), b = bowness(x);
-        const yAt = (y) => Math.min(top, Math.max(bot, y));
-        const half = [
-            [w, top],
-            [w * 0.997, yAt(top - 0.12)],
-            [w * THREE.MathUtils.lerp(0.99, 0.8, b), yAt(0.3)],
-            [w * THREE.MathUtils.lerp(0.97, 0.62, b), yAt(0.04)],
-            [w * THREE.MathUtils.lerp(0.9, 0.44, b), yAt(-0.17)],
-            [w * THREE.MathUtils.lerp(0.55, 0.18, b), yAt(-0.31)],
-            [0, bot],
-        ];
-        const ring = [...half, ...half.slice(0, -1).reverse().map(([z, y]) => [-z, y])];
-        ringCount = ring.length;
-        ring.forEach(([z, y]) => { hullPos.push(x, y, z); hullUv.push(...uvOf(x, y)); });
-    }
-    for (let i = 0; i < STATIONS; i++) for (let k = 0; k < ringCount - 1; k++) {
-        const a = i * ringCount + k, b2 = a + 1, c = a + ringCount, d = c + 1;
-        hullIdx.push(a, c, b2, b2, c, d);
-    }
-    const deckStart = hullPos.length / 3;
-    for (let i = 0; i <= STATIONS; i++) {
-        const x = X0 + (X1 - X0) * i / STATIONS, y = Math.min(deckY(x), DECK + 0.03) + 0.002, w = halfBeam(x) * 0.985;
-        hullPos.push(x, y, w, x, y, -w);
-        hullUv.push(...uvOf(x, 0.98), ...uvOf(x, 0.98));
-    }
-    for (let i = 0; i < STATIONS; i++) { const a = deckStart + i * 2; hullIdx.push(a, a + 1, a + 2, a + 1, a + 3, a + 2); }
-    for (let k = 1; k < ringCount - 1; k++) hullIdx.push(0, k + 1, k); // transom
-    const hullGeo = new THREE.BufferGeometry();
-    hullGeo.setAttribute('position', new THREE.Float32BufferAttribute(hullPos, 3));
-    hullGeo.setAttribute('uv', new THREE.Float32BufferAttribute(hullUv, 2));
-    hullGeo.setIndex(hullIdx);
-    hullGeo.computeVertexNormals();
 
-    // hull paint, positions measured from the side photos
+    // hull paint, positions measured from the side photos (glTF UVs: flipY off)
     const hullTex = canvasTex(4096, 700, (g, W, H) => {
         const px = (x, y) => { const [u, v] = uvOf(x, y); return [u * W, (1 - v) * H]; };
         const poly = (pts, color) => {
@@ -235,7 +189,6 @@ async function start() {
         const line = (a, b, c2, d, wpx, color = C.boot) => { const [x1, y1] = px(a, b), [x2, y2] = px(c2, d); g.strokeStyle = color; g.lineWidth = wpx; g.beginPath(); g.moveTo(x1, y1); g.lineTo(x2, y2); g.stroke(); };
         g.fillStyle = C.hull; g.fillRect(0, 0, W, H);
         poly([[-4.4, -0.5], [-4.4, 0.21], [-2.45, 0.21], [-2.35, 0.05], [4.4, 0.05], [4.4, -0.5]], C.boot);   // dark bottom, deep band at the stern
-        g.lineCap = 'butt';
         [-2.3, -2.0, -1.7].forEach((x) => line(x, 0.05, x + 0.26, 0.31, 10));                          // slanted aft accents
         line(-2.42, 0.31, -0.62, 0.31, 7); line(0.02, 0.28, 0.95, 0.28, 7); line(0.2, 0.56, 1.28, 0.56, 6);    // black lines
         [-0.62, -0.18].forEach((x) => line(x, 0.1, x, 0.66, 4, '#9aa3ad'));                              // shell door seams
@@ -243,15 +196,64 @@ async function start() {
         poly([[1.33, 0.05], [1.6, 0.05], [2.34, 1.0], [2.07, 1.0]], C.stripeRed);
         poly([[3.13, 0.44], [3.33, 0.44], [3.33, 0.72], [3.13, 0.72]], '#1c232b');                       // anchor recess
         poly([[3.16, 0.47], [3.3, 0.47], [3.3, 0.69], [3.16, 0.69]], '#3a4450');
-        g.fillStyle = '#2a3340';                                                                          // portholes forward
+        g.fillStyle = '#2a3340';                                                                          // portholes and small windows
         [2.84, 2.95, 3.3, 3.41].forEach((x) => { const [a, b] = px(x, 0.8); g.beginPath(); g.arc(a, b, 7, 0, Math.PI * 2); g.fill(); });
         [[-2.95, 0.6], [-2.84, 0.6], [-0.95, 0.6], [-0.84, 0.6]].forEach(([x, y]) => { const [a, b] = px(x, y); g.fillRect(a - 9, b - 6, 18, 12); });
     });
-    add(hullGeo, paint('#ffffff', { map: hullTex, side: THREE.DoubleSide }));
+    hullTex.flipY = false;
+    const heliTex = canvasTex(1024, 512, (g, w, h) => {
+        g.fillStyle = '#c3c9d1'; g.fillRect(0, 0, w, h);
+        g.strokeStyle = '#f7f8fa'; g.lineWidth = 16; g.beginPath(); g.arc(w / 2, h / 2, 170, 0, Math.PI * 2); g.stroke();
+        g.lineWidth = 10; g.strokeRect(24, 24, w - 48, h - 48);
+        g.strokeStyle = '#f2c94c'; g.lineWidth = 8; g.beginPath(); g.arc(w / 2, h / 2, 118, 0, Math.PI * 2); g.stroke();
+    });
+    heliTex.flipY = false;
+    const mullionTex = canvasTex(512, 64, (g, w, h) => {
+        g.fillStyle = C.glass; g.fillRect(0, 0, w, h);
+        g.fillStyle = '#c9d1db'; for (let x = 0; x < w; x += 44) g.fillRect(x, 0, 4, h);
+        const grd = g.createLinearGradient(0, 0, 0, h); grd.addColorStop(0, 'rgba(255,255,255,0.2)'); grd.addColorStop(1, 'rgba(255,255,255,0)');
+        g.fillStyle = grd; g.fillRect(0, 0, w, h);
+    });
+    mullionTex.wrapS = mullionTex.wrapT = THREE.RepeatWrapping;
+    mullionTex.flipY = false;
+
+    const MATERIALS = {
+        HullPaint: paint('#ffffff', { map: hullTex }),
+        White: paint(C.hull),
+        Mast: paint(C.mast),
+        Radar: paint('#f6f7f9'),
+        BlueDeck: mat(C.blueDeck, { roughness: 0.7 }),
+        Dark: mat(C.bay, { roughness: 0.75 }),
+        Glass: mat(C.glass, { roughness: 0.08, metalness: 0.7, envMapIntensity: 1.4 }),
+        BridgeGlass: mat('#ffffff', { map: mullionTex, roughness: 0.08, metalness: 0.6, envMapIntensity: 1.4 }),
+        Rail: mat('#e6eaee', { roughness: 0.35, metalness: 0.5 }),
+        Steel: mat('#9aa3ad', { roughness: 0.4, metalness: 0.6 }),
+        Orange: mat(C.orange, { roughness: 0.6 }),
+        RhibGrey: mat(C.rhib, { roughness: 0.75 }),
+        Rubber: mat('#2c3238', { roughness: 0.8 }),
+        Helideck: mat('#ffffff', { map: heliTex, roughness: 0.8 }),
+        HangarDoor: mat('#aeb6c0', { roughness: 0.55, metalness: 0.3 }),
+    };
+    const deckGrey = mat(C.deck, { roughness: 0.85 });
+
+    const { GLTFLoader } = await import('three/addons/loaders/GLTFLoader.js');
+    const gltf = await new GLTFLoader().loadAsync(new URL('../models/brp-gabriela-silang.glb', import.meta.url).href);
+    const model = gltf.scene;
+    model.scale.setScalar(0.1);                       // metres -> scene units (1 = 10 m)
+    model.traverse((o) => {
+        if (!o.isMesh) return;
+        o.castShadow = true; o.receiveShadow = true;
+        if (o.name === 'MainDeck' || (o.parent && o.parent.name === 'MainDeck')) { o.material = deckGrey; return; }
+        const pick = (m) => MATERIALS[m.name] || m;
+        o.material = Array.isArray(o.material) ? o.material.map(pick) : pick(o.material);
+    });
+    ship.add(model);
+    const sBand = model.getObjectByName('RadarS') || new THREE.Object3D();
+    const xBand = model.getObjectByName('RadarX') || new THREE.Object3D();
 
     // painted words and emblems on both sides (separate decals laid along the hull, never mirrored)
-    function sideDecal(tex, { width, height, x, y, z = null, opacity = 1 }) {
-        const m = new THREE.MeshStandardMaterial({ map: tex, transparent: true, opacity, roughness: 0.4, polygonOffset: true, polygonOffsetFactor: -2 });
+    function sideDecal(tex, { width, height, x, y, z = null }) {
+        const m = new THREE.MeshStandardMaterial({ map: tex, transparent: true, roughness: 0.4, polygonOffset: true, polygonOffsetFactor: -2 });
         const onHull = z === null;
         const slope = onHull ? (halfBeam(x + 0.01) - halfBeam(x - 0.01)) / 0.02 : 0;
         const zz = onHull ? halfBeam(x) + 0.006 : z;
@@ -277,126 +279,11 @@ async function start() {
     seal.colorSpace = THREE.SRGBColorSpace;
     sideDecal(seal, { width: 0.2, height: 0.2, x: 0.34, y: 0.9, z: 0.762 });          // PCG seal beside the boat bay
     sideDecal(seal, { width: 0.07, height: 0.07, x: 1.86, y: 0.5 });                  // small seal on the bow stripe
-
-    // ------------------------------------------------------------ superstructure
-    const white = paint(C.hull);
-    const blue = mat(C.blueDeck, { roughness: 0.7 });
-    const dark = mat(C.bay, { roughness: 0.75 });
-    const SW = 1.52;                                  // nearly full width, narrow side walkways
-    const L1 = 1.12, L2 = 1.38;                       // roof of the main superstructure, roof of the bridge
-    // hangar core between the two boat bays, the roof slab over the bays, the forward block,
-    // and the lower forward deckhouse with its raked front
-    block([[-1.37, DECK], [0.2, DECK], [0.2, L1], [-1.37, L1]], 0.62, white);
-    block([[-1.37, 0.96], [0.2, 0.96], [0.2, L1], [-1.37, L1]], SW, white);
-    block([[0.2, DECK], [0.88, DECK], [0.88, L1], [0.2, L1]], SW, white);
-    block([[0.88, DECK], [1.86, DECK], [1.76, 1.0], [0.88, 1.0]], SW - 0.04, white);
-    // hangar door facing the helideck
-    boxAt(-1.385, -1.372, 0.73, 1.08, 0.5, mat('#aeb6c0', { roughness: 0.6, metalness: 0.3 }));
-    for (let y = 0.77; y < 1.08; y += 0.045) boxAt(-1.389, -1.386, y, y + 0.006, 0.48, mat('#8b949e'));
-    // boat bays: open to each side, dark inner wall, one 9.5 m RHIB with its davit in each
-    [1, -1].forEach((s) => {
-        const wall = new THREE.Mesh(new THREE.PlaneGeometry(1.55, 0.26), mat('#262c34', { roughness: 0.9 }));
-        wall.position.set(-0.585, 0.83, s * 0.312); if (s < 0) wall.rotation.y = Math.PI; ship.add(wall);
-        boxAt(-1.33, 0.18, 0.955, 0.962, 0.45, dark, s * 0.535);                      // underside of the roof slab
-        const rhib = new THREE.Group(); ship.add(rhib);
-        const tube = add(new THREE.CapsuleGeometry(0.07, 0.82, 8, 16), mat(C.rhib, { roughness: 0.75 }), rhib);
-        tube.rotation.z = Math.PI / 2; tube.scale.set(1, 1, 1.85);
-        boxAt(-0.36, 0.32, 0.05, 0.14, 0.18, mat('#2c3238'), 0, rhib);
-        boxAt(-0.05, 0.12, 0.14, 0.23, 0.15, mat('#d8dde3'), 0, rhib);
-        rhib.position.set(-0.6, DECK + 0.1, s * 0.52);
-        const davit = add(new THREE.BoxGeometry(0.035, 0.035, 0.34), mat('#e6e9ed', { metalness: 0.4 }));
-        davit.position.set(-0.6, 0.93, s * 0.55);
-    });
-    // windows on the superstructure sides
-    const windowRow = (n) => canvasTex(512, 64, (g, w, h) => {
-        const pad = 10, cell = (w - pad * 2) / n;
-        g.fillStyle = C.glass;
-        for (let i = 0; i < n; i++) g.fillRect(pad + i * cell + 8, 16, cell - 16, h - 32);
-    });
-    const winMat = (n) => new THREE.MeshStandardMaterial({ map: windowRow(n), transparent: true, roughness: 0.1, metalness: 0.6, polygonOffset: true, polygonOffsetFactor: -2 });
-    [1, -1].forEach((s) => {
-        [[0.3, 0.84, 1.04, 0.09, 3], [1.0, 1.7, 0.85, 0.08, 4]].forEach(([x0, x1, y, h, n]) => {
-            const p = new THREE.Mesh(new THREE.PlaneGeometry(x1 - x0, h), winMat(n));
-            p.position.set((x0 + x1) / 2, y, s * (SW / 2 + 0.003)); if (s < 0) p.rotation.y = Math.PI; ship.add(p);
-        });
-    });
-    // ship's name above the bay and on the transom
-    const nameTex = textTex('GABRIELA SILANG', '700 {s}px Inter, Arial, sans-serif', '#1b1f25', 0.5 / 0.05, '#f7f8f9');
-    sideDecal(nameTex, { width: 0.5, height: 0.05, x: -0.45, y: 1.06, z: SW / 2 + 0.004 });
+    sideDecal(textTex('GABRIELA SILANG', '700 {s}px Inter, Arial, sans-serif', '#1b1f25', 10, '#f7f8f9'), { width: 0.5, height: 0.05, x: -0.45, y: 1.06, z: 0.764 });
     const sternName = new THREE.Mesh(new THREE.PlaneGeometry(0.6, 0.06), new THREE.MeshStandardMaterial({ map: textTex('GABRIELA SILANG', '700 {s}px Inter, Arial, sans-serif', '#1b1f25', 10), transparent: true, polygonOffset: true, polygonOffsetFactor: -2 }));
     sternName.position.set(X0 - 0.004, 0.42, 0); sternName.rotation.y = -Math.PI / 2; ship.add(sternName);
-    // roof decks painted blue, with railings
-    boxAt(-1.35, -0.9, L1, L1 + 0.02, SW - 0.05, blue);
-    boxAt(0.66, 0.86, L1, L1 + 0.02, SW - 0.08, blue);
-    boxAt(0.9, 1.74, 1.0, 1.02, SW - 0.12, blue);
-    // bridge: wrap-around glass band with mullions, roof, wings
-    block([[-0.88, L1], [0.66, L1], [0.56, L2], [-0.84, L2]], 1.24, white);
-    const mullions = canvasTex(1024, 64, (g, w, h) => {
-        g.fillStyle = C.glass; g.fillRect(0, 0, w, h);
-        g.fillStyle = '#c9d1db'; for (let x = 0; x < w; x += 44) g.fillRect(x, 0, 4, h);
-        const grd = g.createLinearGradient(0, 0, 0, h); grd.addColorStop(0, 'rgba(255,255,255,0.2)'); grd.addColorStop(1, 'rgba(255,255,255,0)');
-        g.fillStyle = grd; g.fillRect(0, 0, w, h);
-    });
-    block([[-0.86, 1.23], [0.62, 1.23], [0.585, 1.33], [-0.845, 1.33]], 1.26, mat('#ffffff', { map: mullions, roughness: 0.08, metalness: 0.6 }), 0.004);
-    boxAt(-0.9, 0.6, L2, L2 + 0.02, 1.26, blue);
-    [1, -1].forEach((s) => boxAt(0.25, 0.64, 1.2, 1.36, 0.14, white, s * 0.69));       // bridge wings
-    // forecastle: blue deck behind the bow bulwark
-    const fore = add(new THREE.BoxGeometry(1.4, 0.02, 1.0), blue);
-    fore.position.set(2.75, DECK + 0.035, 0);
-    // helideck with its markings, and the working deck at the stern
-    const heliTex = canvasTex(1024, 512, (g, w, h) => {
-        g.fillStyle = '#c3c9d1'; g.fillRect(0, 0, w, h);
-        g.strokeStyle = '#f7f8fa'; g.lineWidth = 16; g.beginPath(); g.arc(w / 2, h / 2, 170, 0, Math.PI * 2); g.stroke();
-        g.lineWidth = 10; g.strokeRect(24, 24, w - 48, h - 48);
-        g.strokeStyle = '#f2c94c'; g.lineWidth = 8; g.beginPath(); g.arc(w / 2, h / 2, 118, 0, Math.PI * 2); g.stroke();
-    });
-    const heliSide = mat('#c3c9d1');
-    const heli = add(new THREE.BoxGeometry(1.94, 0.04, 1.52), [heliSide, heliSide, mat('#ffffff', { map: heliTex, roughness: 0.8 }), heliSide, heliSide, heliSide]);
-    heli.position.set(-2.34, DECK + 0.04, 0);
-    boxAt(-4.18, -3.31, DECK, DECK + 0.02, 1.5, blue);
-    boxAt(-3.9, -3.62, DECK + 0.02, DECK + 0.2, 0.3, mat(C.orange, { roughness: 0.6 }), 0.36);    // deck crane
-    const jib = add(new THREE.BoxGeometry(0.5, 0.035, 0.035), mat(C.orange)); jib.position.set(-3.6, DECK + 0.26, 0.36); jib.rotation.z = 0.35;
-    [-0.52, -0.38, 0.55].forEach((z) => { const raft = add(new THREE.CylinderGeometry(0.055, 0.055, 0.18, 16), white); raft.rotation.z = Math.PI / 2; raft.position.set(-4.02, DECK + 0.08, z); });
-    // railings (instanced posts)
-    const rail = mat('#e6eaee', { roughness: 0.35, metalness: 0.5 });
-    const posts = [];
-    const railRun = (x0, x1, y, z) => [1, -1].forEach((s) => {
-        boxAt(x0, x1, y - 0.006, y + 0.006, 0.012, rail, s * z);
-        for (let x = x0; x <= x1 + 1e-6; x += 0.15) posts.push([x, y - 0.05, s * z]);
-    });
-    railRun(-3.3, -1.4, DECK + 0.17, 0.76);
-    railRun(-4.15, -3.32, DECK + 0.12, 0.76);
-    railRun(-1.35, -0.92, L1 + 0.11, 0.72);
-    railRun(0.9, 1.74, 1.11, 0.7);
-    railRun(1.9, 2.6, DECK + 0.13, 0.62);
-    const postMesh = new THREE.InstancedMesh(new THREE.BoxGeometry(0.01, 0.1, 0.01), rail, posts.length);
-    posts.forEach(([x, y, z], i) => postMesh.setMatrixAt(i, new THREE.Matrix4().makeTranslation(x, y, z)));
-    postMesh.castShadow = true; ship.add(postMesh);
 
-    // ------------------------------------------------------------ mast, radars, domes, flag
-    const mastMat = paint(C.mast);
-    const MX = -0.27;
-    const mast = add(new THREE.CylinderGeometry(0.045, 0.08, 1.0, 4), mastMat);
-    mast.rotation.y = Math.PI / 4; mast.position.set(MX, L2 + 0.5, 0);
-    [[1.68, 0.32], [1.92, 0.24]].forEach(([y, d]) => boxAt(MX - d / 2, MX + d / 2, y - 0.012, y + 0.012, d, mastMat));      // platforms
-    [[1.8, 0.62], [2.12, 0.4]].forEach(([y, w]) => { const yard = add(new THREE.BoxGeometry(0.03, 0.03, w), mastMat); yard.position.set(MX, y, 0); });
-    const radarMat = mat('#f4f6f8', { roughness: 0.5 });
-    const sBand = new THREE.Group(); sBand.position.set(MX, 1.72, 0); ship.add(sBand);        // SharpEye S-band (larger)
-    add(new THREE.BoxGeometry(0.05, 0.05, 0.6), radarMat, sBand).position.y = 0.04;
-    const xBand = new THREE.Group(); xBand.position.set(MX, 1.96, 0); ship.add(xBand);        // SharpEye X-band
-    add(new THREE.BoxGeometry(0.035, 0.035, 0.38), radarMat, xBand).position.y = 0.03;
-    const domeMat = paint('#f6f7f9');
-    add(new THREE.SphereGeometry(0.07, 24, 16), domeMat).position.set(MX, 2.42, 0);
-    [[0.35, L2 + 0.1, 0.4], [0.35, L2 + 0.1, -0.4], [-0.7, L2 + 0.1, 0]].forEach(([x, y, z]) => {   // satcom radomes
-        add(new THREE.SphereGeometry(0.065, 20, 14), domeMat).position.set(x, y, z);
-        boxAt(x - 0.03, x + 0.03, L2 + 0.02, y - 0.02, 0.06, mastMat, z);
-    });
-    [[0.1, 0.5], [-0.55, -0.5]].forEach(([x, z]) => { const whip = add(new THREE.CylinderGeometry(0.004, 0.006, 0.55, 6), mastMat); whip.position.set(x, L2 + 0.3, z); });
-    [1, -1].forEach((s) => add(new THREE.CylinderGeometry(0.024, 0.028, 0.05, 12), mat('#2b3138')).position.set(0.55, L2 + 0.05, s * 0.4)); // searchlights
-    const jack = add(new THREE.CylinderGeometry(0.006, 0.006, 0.28, 6), mastMat); jack.position.set(4.12, deckY(4.12) + 0.14, 0);       // jack staff at the bow
-    // gaff angled aft, Philippine flag at its end
-    const gaff = add(new THREE.CylinderGeometry(0.01, 0.01, 0.62, 8), mastMat);
-    gaff.position.set(MX - 0.28, 2.02, 0); gaff.rotation.z = Math.PI / 2 - 0.35;
+    // ------------------------------------------------------------ Philippine flag on the gaff (cloth)
     const flagTex = canvasTex(512, 256, (g) => {
         g.fillStyle = '#0038a8'; g.fillRect(0, 0, 512, 128);
         g.fillStyle = '#ce1126'; g.fillRect(0, 128, 512, 128);
@@ -415,7 +302,7 @@ async function start() {
     }
     const flagBase = flagGeo.attributes.position.array.slice();
     const flag = new THREE.Mesh(flagGeo, new THREE.MeshStandardMaterial({ map: flagTex, side: THREE.DoubleSide, roughness: 0.85 }));
-    flag.castShadow = true; flag.position.set(MX - 0.57, 2.0, 0); ship.add(flag);
+    flag.castShadow = true; flag.position.set(-0.83, 1.99, 0); ship.add(flag);  // gaff tip in the model: x -8.3 m, z 21.2 m
 
     // ------------------------------------------------------------ wake and bow waves
     const foamTex = canvasTex(1024, 256, (g, w, h) => {

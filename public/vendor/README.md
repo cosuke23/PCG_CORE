@@ -19,7 +19,7 @@ licence header.
 | qrcodejs | qrcodejs | 1.0.0 | MIT |
 | inter | @fontsource/inter (latin 400/600/700/800) | 5.1.1 | SIL OFL 1.1 |
 | source-serif-4 | @fontsource/source-serif-4 (latin 600/700, landing page headings) | 5.1.0 | SIL OFL 1.1 |
-| three-0.160.0 | three (`build/three.module.min.js`, `examples/jsm/controls/OrbitControls.js`, `examples/jsm/environments/RoomEnvironment.js`, `examples/jsm/objects/Sky.js`, `examples/jsm/geometries/RoundedBoxGeometry.js`; 3D BRP Gabriela Silang on the PCG HRMIS landing page, loaded through the import map in `pages/pcg`) | 0.160.0 | MIT |
+| three-0.160.0 | three (`build/three.module.min.js`, `examples/jsm/controls/OrbitControls.js`, `examples/jsm/environments/RoomEnvironment.js`, `examples/jsm/objects/Sky.js`, `examples/jsm/loaders/GLTFLoader.js`, `examples/jsm/utils/BufferGeometryUtils.js`, `examples/jsm/geometries/RoundedBoxGeometry.js`; 3D BRP Gabriela Silang on the PCG HRMIS landing page, loaded through the import map in `pages/pcg`) | 0.160.0 | MIT |
 
 To update one: `npm install <package>@<version>` in a scratch folder, copy the
 same dist file over the old one, rename it with the new version, and update
