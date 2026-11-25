@@ -20,4 +20,5 @@ Install or update the schedule (once): `powershell -ExecutionPolicy Bypass -File
   `pcg:monitor --alert` (hourly) emails the administrators when no copy has arrived for 48 hours, the last
   drill failed, or no drill ran for 40 days.
 - By hand: decrypt one file with `php deploy\offsite\offsite-crypt.php decrypt <key> <file>.enc <out>`.
-- The PC must be on at 03:30 / 04:30. The drill starts XAMPP's MariaDB if it is not running and stops it after.
+- If the PC is off, asleep or on battery at 03:30 / 04:30, the task runs as soon as it is on again and may wake it (catch-up options set by `install-tasks.ps1` since 2026-11-25; run it again on a PC installed earlier). The task needs the Windows user signed in. The drill starts XAMPP's MariaDB if it is not running and stops it after.
+- Copy by hand at any time: `powershell -ExecutionPolicy Bypass -File deploy\offsite\offsite-pull.ps1` (clears the "offsite copy" alert).
