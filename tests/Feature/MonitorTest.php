@@ -84,6 +84,17 @@ class MonitorTest extends TestCase
         Mail::assertSent(SystemAlert::class, 1);
     }
 
+    public function test_a_failed_scheduled_command_is_not_emailed_as_an_error()
+    {
+        Mail::fake();
+        config(['pcg.monitor.alerts_in_tests' => true]);
+        Monitor::reportError(new \Exception("Scheduled command ['/usr/bin/php' 'artisan' pcg:monitor --alert] failed with exit code [1]."));
+        Mail::assertNothingSent();
+
+        Monitor::reportError(new \RuntimeException('A real error'));
+        Mail::assertSent(SystemAlert::class, 1);
+    }
+
     private function makeBackup(bool $complete = true): string
     {
         $dir = $this->tmp . '/backups/' . date('Ymd-His');

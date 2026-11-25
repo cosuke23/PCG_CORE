@@ -63,6 +63,7 @@ class Monitor
         $expected = (bool) config('pcg.monitor.offsite_expected', false);
         $out = [];
         $copy = $dir . DIRECTORY_SEPARATOR . 'offsite-last.txt';
+        clearstatcache(); // fresh file times, also when called twice in one process
         if (is_file($copy) || $expected) {
             $age = is_file($copy) ? (time() - filemtime($copy)) / 3600 : INF;
             $out['offsite copy'] = $age <= 48
@@ -137,6 +138,13 @@ class Monitor
         if (!config('pcg.monitor.error_alerts', true) || app()->runningUnitTests() && !config('pcg.monitor.alerts_in_tests')) {
             return;
         }
+        // "Scheduled command [...] failed with exit code [1]" from schedule:run only
+        // repeats a command's result: pcg:monitor and pcg:backup-verify email their own
+        // findings, and a real error inside a command is reported by that command
+        // itself. Emailing it again sent an "error" every hour (owner request 2026-11-25).
+        if (self::isScheduledCommandExit($e)) {
+            return;
+        }
         try {
             $hour = 'pcg-alert-count:' . now()->format('YmdH');
             Cache::add($hour, 0, now()->addHours(2));
@@ -156,6 +164,12 @@ class Monitor
             ]);
         } catch (Throwable $ignored) {
         }
+    }
+
+    public static function isScheduledCommandExit(Throwable $e): bool
+    {
+        return basename($e->getFile()) === 'ScheduleRunCommand.php'
+            || str_starts_with($e->getMessage(), 'Scheduled command [');
     }
 
     public static function backupDir(): ?string
