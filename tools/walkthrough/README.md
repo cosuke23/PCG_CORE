@@ -67,6 +67,27 @@ python3 tools/walkthrough/build_docs.py walkthrough-out walkthrough-out/routes.j
 bash tools/walkthrough/render.sh walkthrough-out/PCG_HRMIS_End_to_End_Walkthrough.pptx walkthrough-out/render
 ```
 
+### Video (full run-through as one MP4)
+
+```bash
+bash tools/walkthrough/reseed.sh
+```
+
+```bash
+WALKTHROUGH_VIDEO=1 node tools/walkthrough/capture.js walkthrough-video
+```
+
+```bash
+node tools/walkthrough/build_video.js walkthrough-video
+```
+
+The capture records every browser page (with a visible pointer), holds each step with an
+on-screen caption and outlines what it points at, and saves `video/timeline.json`.
+`build_video.js` (needs ffmpeg) cuts it into `PCG_HRMIS_End_to_End_Walkthrough.mp4`
+(1920×1080, title card before every workflow, chapters in the file and in
+`PCG_HRMIS_Walkthrough_chapters.txt`); waits for a fresh authenticator code are cut out.
+About 14 minutes; the capture takes about 25. Never commit the output.
+
 The last command writes `render/deck.pdf` (copy it to `PCG_HRMIS_End_to_End_Walkthrough.pdf`)
 and `render/grid-NN.jpg` contact sheets for a visual check. `walkthrough-out/` is
 ignored by git: never commit screenshots.
