@@ -165,7 +165,7 @@ When you select "Deactivate unit", the system asks you to confirm and reminds yo
     'S06-08': `To see who belongs to a unit, go to Personnel and choose it in "Unit (incl. subordinate units)", then select Filter.
 You get that unit and everything under it.`,
     'S06-09': `Last step for a new unit: give it a checker.
-In Unit accounts, fill in the name, email, unit and password, and select "Create account". That person can now sign in as the unit's document checker.
+In Unit accounts, fill in the name, email and unit, and select "Create account". The system emails them a temporary password; at their first sign-in they choose their own.
 If someone needs to check every unit, "Grant M1 access" does that.`,
 
     // ---------------------------------------------------------------- applicant management
@@ -177,6 +177,7 @@ Compare them with what you know about the person. If it all matches, select Appr
     'S07-04': `"Approved! The member can now sign in."
 That's the moment our registrant from section three could get in.`,
     'S07-05': `Now the unit checker's side. Checkers sign in at the unit login with their own account.`,
+    'S07-05b': `After the password, a 6-digit code goes to the checker's email. Type it and select Verify.`,
     'S07-06': `The headline tells you right away how many records are waiting.
 Use the filters, Waiting, Returned, Approved or All, or search by name or serial. Then select Review on a record.`,
     'S07-07': `The review window lists every document on the left. Select one and it opens on the right.

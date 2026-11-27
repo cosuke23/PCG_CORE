@@ -26,6 +26,58 @@ const STEPS = [];
 const WARN = [];
 let seq = 0;
 
+// Video mode (WALKTHROUGH_VIDEO=1): every browser page is recorded, each step shows an
+// on-screen caption and outlines what it points at, and the timeline of steps and long
+// waits is saved so build_video.js can cut one continuous film (video/timeline.json).
+const VIDEO = !!process.env.WALKTHROUGH_VIDEO;
+const VIDEO_DIR = path.join(OUT, 'video');
+const T0 = Date.now();
+const PAGES = [];   // { idx, start, path }
+const MARKS = [];   // one per step: { page, t, id, section, workflow, role, title }
+const PAUSES = [];  // [from, to]: long waits (fresh authenticator codes) cut from the film
+if (VIDEO) fs.mkdirSync(path.join(VIDEO_DIR, 'raw'), { recursive: true });
+const sleep = ms => new Promise(r => setTimeout(r, ms));
+
+// what a viewer sees on top of the page while a step is held (video mode only)
+async function showStep(page, m, boxes) {
+  await page.evaluate(({ boxes, c }) => {
+    document.querySelectorAll('[data-wt]').forEach(e => e.remove());
+    const small = innerWidth < 700, k = small ? 0.62 : 1;
+    const colour = { click: '#fcd116', field: '#38bdf8', caution: '#fb923c', error: '#f87171', result: '#4ade80' };
+    for (const b of boxes) {
+      const r = document.createElement('div'); r.dataset.wt = '1';
+      r.style.cssText = `position:fixed;z-index:2147483646;pointer-events:none;left:${b.x - 6}px;top:${b.y - 6}px;width:${b.w + 12}px;height:${b.h + 12}px;` +
+        `border:3px solid ${colour[b.kind] || '#fcd116'};border-radius:10px;box-shadow:0 0 0 4px rgba(0,0,0,.35),0 0 24px ${colour[b.kind] || '#fcd116'};`;
+      if (b.label) {
+        const l = document.createElement('span');
+        l.textContent = b.label;
+        l.style.cssText = `position:absolute;left:-3px;top:-${Math.round(30 * k)}px;padding:${Math.round(3 * k)}px ${Math.round(9 * k)}px;border-radius:999px;` +
+          `background:${colour[b.kind] || '#fcd116'};color:#111;font:700 ${Math.round(14 * k)}px system-ui,sans-serif;white-space:nowrap;`;
+        r.appendChild(l);
+      }
+      document.body.appendChild(r);
+    }
+    const cap = document.createElement('div'); cap.dataset.wt = '1';
+    cap.style.cssText = `position:fixed;z-index:2147483647;pointer-events:none;left:50%;bottom:${Math.round(28 * k)}px;transform:translateX(-50%);` +
+      `width:min(${small ? 92 : 70}vw,1280px);padding:${Math.round(16 * k)}px ${Math.round(24 * k)}px;border-radius:${Math.round(16 * k)}px;` +
+      `background:rgba(7,11,24,.88);border:1px solid rgba(255,255,255,.18);box-shadow:0 18px 40px rgba(0,0,0,.5);color:#fff;font-family:system-ui,sans-serif;`;
+    const meta = document.createElement('div');
+    meta.textContent = c.meta;
+    meta.style.cssText = `font:600 ${Math.round(13 * k)}px ui-monospace,monospace;letter-spacing:.08em;text-transform:uppercase;color:#fcd116;`;
+    const title = document.createElement('div');
+    title.textContent = c.title;
+    title.style.cssText = `margin-top:${Math.round(4 * k)}px;font:700 ${Math.round(26 * k)}px system-ui,sans-serif;letter-spacing:-.01em;`;
+    const act = document.createElement('div');
+    act.textContent = c.action;
+    act.style.cssText = `margin-top:${Math.round(6 * k)}px;font:400 ${Math.round(18 * k)}px/1.45 system-ui,sans-serif;color:rgba(255,255,255,.86);`;
+    cap.append(meta, title, act);
+    document.body.appendChild(cap);
+  }, { boxes, c: { meta: `Step ${m.id} · ${m.role || ''}`, title: m.title || '', action: m.action || '' } }).catch(() => {});
+  await sleep(Math.min(6500, 2200 + 32 * (m.action || '').length));
+  await page.evaluate(() => document.querySelectorAll('[data-wt]').forEach(e => e.remove())).catch(() => {});
+  MARKS.push({ page: page.wtIdx, t: Date.now() - T0, id: m.id, section: m.section, workflow: m.workflow, role: m.role, title: m.title });
+}
+
 async function settle(page, ms = 500) {
   await page.waitForLoadState('networkidle').catch(() => {});
   await page.waitForTimeout(ms);
@@ -89,14 +141,42 @@ async function cap(page, m) {
     time: new Date().toISOString(), health: { error: health.error, loading: health.loading }, visibleLabels: health.labels,
   });
   if (health.error) WARN.push(`${id}: page shows an error text`);
+  if (VIDEO) await showStep(page, m, boxes);
   console.log(`${id}  ${boxes.length}/${(m.targets || []).length} targets  ${page.url().replace(BASE, '')}`);
 }
 
 async function newPage(browser, viewport = DESK, opts = {}) {
+  if (VIDEO) {
+    const size = viewport.width < 700 ? { width: viewport.width * 2, height: viewport.height * 2 } : viewport;
+    opts = { ...opts, recordVideo: { dir: path.join(VIDEO_DIR, 'raw'), size } };
+  }
   const ctx = await browser.newContext({ viewport, acceptDownloads: true, ...opts });
+  if (VIDEO) {
+    // a visible pointer that follows the mouse (recordings do not show the real one)
+    await ctx.addInitScript(() => {
+      const make = () => {
+        if (document.getElementById('wt-cursor') || !document.body) return;
+        const c = document.createElement('div'); c.id = 'wt-cursor';
+        c.style.cssText = 'position:fixed;z-index:2147483647;pointer-events:none;width:22px;height:22px;margin:-11px 0 0 -11px;left:-40px;top:-40px;' +
+          'border-radius:50%;border:2px solid #fff;background:rgba(252,209,22,.55);box-shadow:0 0 0 2px rgba(0,0,0,.45);transition:transform .12s ease;';
+        document.body.appendChild(c);
+        addEventListener('mousemove', e => { c.style.left = e.clientX + 'px'; c.style.top = e.clientY + 'px'; }, true);
+        addEventListener('mousedown', () => { c.style.transform = 'scale(.6)'; }, true);
+        addEventListener('mouseup', () => { c.style.transform = 'scale(1)'; }, true);
+      };
+      document.addEventListener('DOMContentLoaded', make);
+    });
+  }
   const p = await ctx.newPage();
   p.jsErrors = [];
   p.on('pageerror', e => p.jsErrors.push(e.message.split('\n')[0]));
+  if (VIDEO) {
+    p.wtIdx = PAGES.length;
+    PAGES.push({ idx: p.wtIdx, start: Date.now() - T0, page: p });
+    // long waits (a fresh authenticator code) are cut from the film
+    const wait = p.waitForTimeout.bind(p);
+    p.waitForTimeout = async ms => { const from = Date.now() - T0; await wait(ms); if (ms >= 5000) PAUSES.push([from, Date.now() - T0]); };
+  }
   return p;
 }
 
@@ -115,11 +195,11 @@ const pickFirst = (p, sel) => p.evaluate(s => {
   if (!opt) return null; el.value = opt.value;
   el.dispatchEvent(new Event('input', { bubbles: true })); el.dispatchEvent(new Event('change', { bubbles: true })); return opt.value;
 }, sel);
-const freshStep = () => new Promise(r => setTimeout(r, 31000 - (Date.now() % 30000)));
+const freshStep = async () => { const from = Date.now() - T0; await sleep(31000 - (Date.now() % 30000)); PAUSES.push([from, Date.now() - T0]); };
 
 (async () => {
   // full Chromium (new headless): unlike the headless shell it has the PDF viewer the review dialog uses
-  const browser = await chromium.launch({ channel: 'chromium', args: ['--use-fake-ui-for-media-stream', '--use-fake-device-for-media-stream'] });
+  const browser = await chromium.launch({ channel: 'chromium', slowMo: VIDEO ? 90 : 0, args: ['--use-fake-ui-for-media-stream', '--use-fake-device-for-media-stream'] });
   const S = (section, workflow, role) => ({ section, workflow, role });
   try {
     // ================= SECTION 2: landing pages (guest): PCG HRMIS, then MEPCOM HRMIS =================
@@ -189,9 +269,10 @@ const freshStep = () => new Promise(r => setTimeout(r, 31000 - (Date.now() % 300
       targets: [{ sel: '[name=password]', kind: 'field', label: 'Password' }, { sel: '#captureBtn', kind: 'caution', label: 'Capture' }] });
     await n.click('#captureBtn'); await n.waitForTimeout(600);
     await n.click('.swal2-confirm', { timeout: 1500 }).catch(() => {}); await n.waitForTimeout(300);
-    await cap(n, { ...s, id: 'S03-06', title: 'Submit the registration', action: 'Check your photo ("Capture again" retakes it), then select "Submit registration".',
+    if (await n.locator('#regPrivacy').count()) await n.check('#regPrivacy');
+    await cap(n, { ...s, id: 'S03-06', title: 'Agree to the privacy notice and submit', action: 'Check your photo ("Capture again" retakes it), tick "I have read the privacy notice and agree…", then select "Submit registration".',
       expected: 'You return to the sign-in page with "Your account is pending admin approval."',
-      targets: [{ sel: '#registerForm button:has-text("Submit")', kind: 'click', label: 'Submit' }] });
+      targets: [{ sel: '#regPrivacy', kind: 'field', label: 'Privacy consent' }, { sel: '#registerForm button:has-text("Submit")', kind: 'click', label: 'Submit' }] });
     await Promise.all([n.waitForNavigation({ timeout: 15000 }), n.locator('#registerForm button:has-text("Submit")').click()]);
     await cap(n, { ...s, id: 'S03-07', title: 'Registration received', action: 'Read the message at the top of the sign-in page.',
       expected: 'The account exists with status Pending. You cannot sign in until an HR administrator approves it.', kind: 'result',
@@ -265,7 +346,7 @@ const freshStep = () => new Promise(r => setTimeout(r, 31000 - (Date.now() % 300
     await Promise.all([n.waitForNavigation(), n.click('button[type=submit]:has-text("Sign in")')]);
     await cap(n, { ...s, id: 'S03-10', title: 'Your dashboard', action: 'Start from "What would you like to do?": update the SOI, upload documents and 201 files, training, print the SOI.',
       expected: 'Each card opens that task.', kind: 'result', noScroll: true,
-      targets: [{ sel: '#tasks-heading', kind: 'result', label: 'Tasks' }] });
+      targets: [{ sel: '.pcg-hero, #tasks-heading', kind: 'result', label: 'Your next step' }] });
 
     // ================= SECTION 7: unit checker review (returns a document) =================
     s = S('7', 'Review required documents (unit checker)', 'Unit checker');
@@ -275,6 +356,11 @@ const freshStep = () => new Promise(r => setTimeout(r, 31000 - (Date.now() % 300
     await cap(u, { ...s, id: 'S07-05', title: 'Sign in as a unit checker', action: 'Open /unit/login (Unit sign in on the home page), type your Email address and Password, select Sign in.',
       expected: 'The Document review queue for your unit opens.', targets: [{ sel: '#email', kind: 'field' }, { sel: '#password', kind: 'field' }, { sel: 'button[type=submit]', kind: 'click', label: 'Sign in' }] });
     await Promise.all([u.waitForNavigation(), u.click('button[type=submit]')]);
+    if (u.url().includes('/unit/two-factor')) {
+      await cap(u, { ...s, id: 'S07-05b', title: 'Enter the emailed sign-in code', action: 'Open the email "Your sign-in code", type the 6-digit code and select Verify.',
+        expected: 'The Document review queue for your unit opens.', targets: [{ sel: '#code', kind: 'field', label: 'Code' }, { sel: 'button[type=submit]', kind: 'click', label: 'Verify' }] });
+      await lib.passUnitCode(u, 'unit@demo.test');
+    }
     const juan = sql("select serial_number from users where email='member@demo.test'");
     const juanRow = u.locator('.uc-table tr', { hasText: juan }).first();
     await cap(u, { ...s, id: 'S07-06', title: 'Pick a record to review', action: 'The headline says how many records wait. Use the Waiting / Returned / Approved / All filters or search, then select Review.',
@@ -326,13 +412,16 @@ const freshStep = () => new Promise(r => setTimeout(r, 31000 - (Date.now() % 300
     const m = await newPage(browser);
     await signIn(m, '/login', 'member@demo.test', PASS);
     await settle(m, 800);
-    await cap(m, { ...s, id: 'S04-01', title: 'Open your dashboard', action: 'Sign in. The dashboard lists your tasks and any documents the reviewer returned.',
+    const soiRow = m.locator('.pcg-row', { hasText: 'SOI profile' }).first().locator('a, button').last();
+    await cap(m, { ...s, id: 'S04-01', title: 'Open your dashboard', action: 'Sign in. The banner says what needs doing first; "My records" shows each record with its status, and returned documents show the reviewer\'s comment.',
       expected: 'Returned items show the reviewer\'s comment.', kind: 'caution', noScroll: true,
-      targets: [{ sel: '#rejected-heading', kind: 'caution', label: 'Returned documents' }, { sel: 'a:has-text("Update my SOI profile")', kind: 'click', label: 'Update my SOI profile' }] });
-    await m.click('a:has-text("Update my SOI profile")'); await settle(m, 800);
-    await cap(m, { ...s, id: 'S04-02', title: 'Open the SOI', action: 'The Statement of Information (SOI) opens as a summary. Select Edit SOI.',
-      expected: 'The six-step SOI form opens.', targets: [{ sel: 'a:has-text("Edit SOI")', kind: 'click', label: 'Edit SOI' }] });
-    await m.click('a:has-text("Edit SOI")'); await settle(m, 1000);
+      targets: [{ sel: '.pcg-hero', kind: 'caution', label: 'What needs doing' }, { loc: soiRow, kind: 'click', label: 'SOI profile' }] });
+    await soiRow.click(); await settle(m, 800);
+    if (await m.locator('a:has-text("Edit SOI")').count()) {
+      await cap(m, { ...s, id: 'S04-02', title: 'Open the SOI', action: 'The Statement of Information (SOI) opens as a summary. Select Edit SOI.',
+        expected: 'The six-step SOI form opens.', targets: [{ sel: 'a:has-text("Edit SOI")', kind: 'click', label: 'Edit SOI' }] });
+      await m.click('a:has-text("Edit SOI")'); await settle(m, 1000);
+    }
     await cap(m, { ...s, id: 'S04-03', title: 'Step 1: basic information', action: 'Check your name, rank, class, birth date and place. Correct anything wrong.',
       expected: 'Fields keep what you type until you save the step.', noScroll: true,
       targets: [{ sel: '.soi-stepper, [aria-label*="steps"], nav:has(button:has-text("1 Basic information"))', kind: 'field', label: 'Steps' }, { sel: '[x-model="basic.first_name"]', kind: 'field', label: 'First name' }] });
@@ -457,9 +546,9 @@ const freshStep = () => new Promise(r => setTimeout(r, 31000 - (Date.now() % 300
       expected: 'Only people assigned to that unit or its sub-units are listed.',
       targets: [{ loc: a.getByLabel('Unit (incl. subordinate units)'), kind: 'field', label: 'Unit' }, { sel: '.pcg-table', kind: 'result', label: 'Results' }] });
     await a.goto(BASE + '/admin/unit-users'); await settle(a, 600);
-    await cap(a, { ...s, id: 'S06-09', title: 'Give a unit its checker account', action: 'Open MEPCOM registrations > Unit accounts. Under "Create account" enter Full name, Email, Unit and Password, then select "Create account".',
-      expected: 'The checker can sign in at /unit/login and review that unit\'s members. "Grant M1 access" lets a checker review all units.', zoom: true,
-      targets: [{ sel: 'h3:has-text("Create account")', kind: 'result', label: 'Create account' }, { sel: 'form:has(input[name=password]) button[type=submit]:has-text("Create account")', kind: 'click', label: 'Create account' }] });
+    await cap(a, { ...s, id: 'S06-09', title: 'Give a unit its checker account', action: 'Open MEPCOM registrations > Unit accounts. Under "Create account" enter Full name, Email and Unit, then select "Create account". A temporary password is emailed to the checker.',
+      expected: 'The checker signs in at /unit/login with the emailed password, then must choose their own. "Grant M1 access" lets a checker review all units.', zoom: true,
+      targets: [{ sel: 'h3:has-text("Create account")', kind: 'result', label: 'Create account' }, { sel: 'form:has(#full_name) button[type=submit]:has-text("Create account")', kind: 'click', label: 'Create account' }] });
 
     // ================= SECTION 7/8: HR registrations (draft -> submitted -> endorsed -> approved) =================
     s = S('8', 'Personnel registration processing', 'HR administrator');
@@ -589,7 +678,7 @@ const freshStep = () => new Promise(r => setTimeout(r, 31000 - (Date.now() % 300
     await signIn(ph, '/login', 'sample.registrant@demo.test', 'SamplePass123!'); await settle(ph, 600);
     await cap(ph, { ...s, id: 'M-04', title: 'Member dashboard on a phone', action: 'Scroll to "What would you like to do?" and select a task.', expected: 'The task opens.', kind: 'result', noScroll: true, targets: [] });
     const uph = await newPage(browser, PHONE, { isMobile: true, hasTouch: true, deviceScaleFactor: 2 });
-    await signIn(uph, '/unit/login', 'unit@demo.test', PASS); await settle(uph, 600);
+    await signIn(uph, '/unit/login', 'unit@demo.test', PASS); await lib.passUnitCode(uph, 'unit@demo.test'); await settle(uph, 600);
     await cap(uph, { ...s, id: 'M-05', title: 'Unit review queue on a phone', action: 'Filter and select Review as on a computer.', expected: 'The review window opens full screen.', noScroll: true, targets: [{ sel: '.uc-filter', kind: 'field', label: 'Filters' }] });
     await e.setViewportSize(PHONE); await e.goto(BASE + '/admin/reenlistment'); await settle(e, 600);
     await cap(e, { ...s, id: 'M-06', title: 'ETE watchlist on a phone', action: 'Open the menu for the sidebar; wide tables scroll sideways inside their frame.', expected: 'The page fits the phone width.', noScroll: true, targets: [] });
@@ -602,5 +691,14 @@ const freshStep = () => new Promise(r => setTimeout(r, 31000 - (Date.now() % 300
   }
   fs.writeFileSync(path.join(OUT, 'steps.json'), JSON.stringify({ base: BASE, captured: new Date().toISOString(), steps: STEPS, warnings: WARN }, null, 1));
   console.log('steps', STEPS.length, 'warnings', WARN.length); WARN.forEach(w => console.log('WARN', w));
+  if (VIDEO) {
+    for (const pg of PAGES) {
+      await pg.page.context().close().catch(() => {});
+      pg.path = await pg.page.video().path().catch(() => null);
+      delete pg.page;
+    }
+    fs.writeFileSync(path.join(VIDEO_DIR, 'timeline.json'), JSON.stringify({ pages: PAGES, marks: MARKS, pauses: PAUSES }, null, 1));
+    console.log('video timeline: ' + path.join(VIDEO_DIR, 'timeline.json'));
+  }
   await browser.close();
 })();
